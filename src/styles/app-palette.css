@@ -1,0 +1,254 @@
+.palette-color-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.25rem, 1fr));
+  gap: 0.45rem;
+}
+
+.palette-row-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.palette-name-input {
+  width: 100%;
+  min-width: 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  padding: 0.35rem 0.9rem;
+}
+
+.palette-save-row {
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.palette-save-row .palette-name-input {
+  flex: 1;
+  height: 2rem;
+}
+
+.palette-save-row .bv-option-btn {
+  flex-shrink: 0;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+.palette-color-grid--hidden {
+  opacity: 0.58;
+}
+
+.color-list-divider {
+  margin: 0.5rem 0 0.35rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--color-text) 58%, transparent);
+}
+
+.palette-color-chip {
+  min-height: 2.15rem;
+  display: grid;
+  align-content: start;
+  border: 1px solid color-mix(in srgb, var(--color-bg) 48%, transparent);
+  padding: 0.4rem 0.5rem;
+  font-size: 0.74rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.palette-floating-editor {
+  position: absolute;
+  top: 1rem;
+  left: calc(100% + 0.65rem);
+  width: 9.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  padding: 0.48rem;
+  display: grid;
+  align-content: start;
+  gap: 0.38rem;
+  z-index: 30;
+}
+
+.palette-custom-swatch {
+  position: relative;
+  min-height: 2.25rem;
+  border: 1px solid color-mix(in srgb, var(--color-bg) 52%, transparent);
+  padding: 0.35rem 0.42rem;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  cursor: pointer;
+  text-align: left;
+}
+
+.palette-custom-swatch--selected {
+  border-color: var(--color-text);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-text) 65%, transparent);
+}
+
+.palette-custom-swatch--hidden {
+  filter: saturate(0.78);
+}
+
+.palette-custom-swatch-text {
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.palette-custom-swatch-hint {
+  font-size: 0.54rem;
+  letter-spacing: 0.08em;
+  opacity: 0.72;
+}
+
+.palette-custom-swatch-delete-wrap {
+  position: absolute;
+  top: 0.22rem;
+  right: 0.22rem;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.palette-custom-swatch:hover .palette-custom-swatch-delete-wrap,
+.palette-custom-swatch--selected .palette-custom-swatch-delete-wrap {
+  opacity: 1;
+}
+
+.palette-custom-swatch-delete {
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid color-mix(in srgb, #b53636 65%, transparent);
+  background: color-mix(in srgb, var(--color-bg) 65%, transparent);
+  color: color-mix(in srgb, #ffc8c8 80%, var(--color-text));
+  display: grid;
+  place-items: center;
+  line-height: 0;
+  padding: 0;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.palette-custom-swatch-delete:hover {
+  border-color: color-mix(in srgb, #e14a4a 80%, transparent);
+  background: color-mix(in srgb, #7d2020 30%, transparent);
+}
+
+.palette-editor-preview {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border: 1px solid color-mix(in srgb, var(--color-bg) 56%, transparent);
+  cursor: pointer;
+}
+
+.palette-editor-preview input {
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.palette-color-chip--hidden {
+  filter: saturate(0.85);
+}
+
+.palette-library-list {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.palette-library-group {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.palette-library-group-title {
+  margin: 0;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--color-text) 70%, transparent);
+}
+
+.palette-library-card {
+  position: relative;
+}
+
+.palette-library-item {
+  width: 100%;
+  border: 1px solid color-mix(in srgb, var(--color-text) 26%, transparent);
+  background: color-mix(in srgb, var(--color-text) 4%, transparent);
+  color: var(--color-text);
+  text-align: left;
+  padding: 0.45rem 1.75rem 0.45rem 0.45rem;
+  cursor: pointer;
+}
+
+.palette-library-item:hover {
+  border-color: color-mix(in srgb, var(--color-text) 52%, transparent);
+}
+
+.palette-library-delete {
+  position: absolute;
+  top: 0.22rem;
+  right: 0.22rem;
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid color-mix(in srgb, #b53636 65%, transparent);
+  background: color-mix(in srgb, var(--color-bg) 65%, transparent);
+  color: color-mix(in srgb, #ffc8c8 80%, var(--color-text));
+  display: grid;
+  place-items: center;
+  padding: 0;
+  line-height: 0;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease, border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.palette-library-card:hover .palette-library-delete {
+  opacity: 1;
+}
+
+.palette-library-delete:hover {
+  border-color: color-mix(in srgb, #e14a4a 80%, transparent);
+  background: color-mix(in srgb, #7d2020 30%, transparent);
+}
+
+.palette-library-head {
+  display: flex;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.28rem;
+}
+
+.palette-library-swatches-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.42rem;
+}
+
+.palette-library-count {
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  color: color-mix(in srgb, var(--color-text) 76%, transparent);
+}
+
+.palette-library-swatches {
+  display: grid;
+  grid-template-columns: repeat(20, minmax(0, 1fr));
+  gap: 0.15rem;
+}
+
+.palette-library-swatches > span {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, var(--color-bg) 60%, transparent);
+}
+

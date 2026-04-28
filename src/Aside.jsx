@@ -1,0 +1,115 @@
+import { useEffect, useRef } from "react"
+
+const ASIDE_WIDTH_STORAGE_KEY = 'dither-dot:aside-width'
+
+export default function Aside({children}) {
+    const shellRef = useRef(null)
+    const asideRef = useRef(null)
+    const resizeHandleRef = useRef(null)
+
+    useEffect(() => {
+        const shell = shellRef.current
+        const aside = asideRef.current
+        const handle = resizeHandleRef.current
+        const root = document.getElementById('root')
+        if (!shell || !aside || !handle) return
+
+        const computed = window.getComputedStyle(shell)
+        const minW = parseFloat(computed.getPropertyValue('min-width'))
+        const maxW = parseFloat(computed.getPropertyValue('max-width'))
+
+        const clampWidth = (value) => Math.min(maxW, Math.max(minW, value))
+
+        try {
+            const storedWidth = Number(window.localStorage.getItem(ASIDE_WIDTH_STORAGE_KEY))
+            if (Number.isFinite(storedWidth) && storedWidth > 0) {
+                shell.style.width = clampWidth(storedWidth) + 'px'
+            }
+        } catch {
+            // localStorage can be unavailable in hardened browser contexts.
+        }
+
+        let isResizing = false
+        let startX = 0
+        let startWidth = 0
+        let pendingWidth = null
+        let frameId = null
+
+        const flushWidth = () => {
+            frameId = null
+            if (pendingWidth == null) return
+            shell.style.width = pendingWidth + 'px'
+            pendingWidth = null
+        }
+
+        const startResize = (e) => {
+            e.preventDefault()
+            isResizing = true
+            startX = e.clientX
+            startWidth = shell.getBoundingClientRect().width
+            handle.classList.add('dragging')
+            root?.classList.add('is-resizing-aside')
+        }
+
+        const stopResize = () => {
+            if (!isResizing) return
+            isResizing = false
+            handle.classList.remove('dragging')
+            root?.classList.remove('is-resizing-aside')
+
+            if (frameId !== null) {
+                window.cancelAnimationFrame(frameId)
+                frameId = null
+            }
+
+            if (pendingWidth != null) {
+                shell.style.width = pendingWidth + 'px'
+                pendingWidth = null
+            }
+
+            try {
+                const currentWidth = shell.getBoundingClientRect().width
+                window.localStorage.setItem(ASIDE_WIDTH_STORAGE_KEY, String(clampWidth(currentWidth)))
+            } catch {
+                // Ignore storage write failures.
+            }
+        }
+
+        const onMouseMove = (e) => {
+            if (!isResizing) return
+            const deltaX = e.clientX - startX
+            let newWidth = startWidth + deltaX
+            newWidth = clampWidth(newWidth)
+            pendingWidth = newWidth
+
+            if (frameId === null) {
+                frameId = window.requestAnimationFrame(flushWidth)
+            }
+        }
+
+        handle.addEventListener('mousedown', startResize)
+        document.addEventListener('mousemove', onMouseMove)
+        document.addEventListener('mouseup', stopResize)
+
+        return () => {
+            handle.removeEventListener('mousedown', startResize)
+            document.removeEventListener('mousemove', onMouseMove)
+            document.removeEventListener('mouseup', stopResize)
+            stopResize()
+            root?.classList.remove('is-resizing-aside')
+        }
+    }, [])
+
+    return (
+        <div ref={shellRef} className="resizable-shell">
+            <aside ref={asideRef}>
+                {children}
+            </aside>
+            <div
+                ref={resizeHandleRef}
+                className="resize-handle"
+                role="separator"
+            />
+        </div>
+    )
+}

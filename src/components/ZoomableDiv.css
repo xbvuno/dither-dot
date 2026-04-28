@@ -1,0 +1,77 @@
+#root > main .zoomable-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  flex-shrink: 1;
+  background-color: #101010;
+  background-image:
+    linear-gradient(45deg, #1d1d1d 25%, transparent 25%),
+    linear-gradient(-45deg, #1d1d1d 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #1d1d1d 75%),
+    linear-gradient(-45deg, transparent 75%, #1d1d1d 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+
+.zoomable-outer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  cursor: grab;
+}
+
+.zoomable-inner {
+  transform-origin: top left;
+}
+
+.zoomable-inner > :first-child {
+  pointer-events: none;
+  transform-origin: top left;
+} 
+
+.zoomable-loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.68);
+  cursor: progress;
+}
+
+.zoomable-loading-label {
+  color: #fff;
+  font-size: clamp(1.2rem, 2vw, 1.7rem);
+  text-transform: uppercase;
+}
+
+.zoomable-loading-label::after {
+  content: '';
+  display: inline-block;
+  width: 3ch;
+  text-align: left;
+  animation: zoomable-loading-dots 1.2s steps(1, end) infinite;
+}
+
+@keyframes zoomable-loading-dots {
+  0%, 20% {
+    content: '';
+  }
+
+  25%, 45% {
+    content: '.';
+  }
+
+  50%, 70% {
+    content: '..';
+  }
+
+  75%, 95% {
+    content: '...';
+  }
+
+  100% {
+    content: '';
+  }
+}

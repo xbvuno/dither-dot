@@ -1,0 +1,112 @@
+.bv-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.bv-label {
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--color-text) 72%, transparent);
+}
+
+.bv-section > .bv-label:first-child,
+.bv-section > .bv-controls-row:first-child .bv-label {
+  font-size: 0.9rem;
+}
+
+.bv-option-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.bv-option-btn {
+  border: 1px solid color-mix(in srgb, var(--color-text) 28%, transparent);
+  background: color-mix(in srgb, var(--color-text) 3%, transparent);
+  color: var(--color-text);
+  padding: 0.45rem 0.65rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  cursor: pointer;
+  transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+.bv-option-btn.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.bv-option-btn:hover {
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-text) 48%, transparent);
+}
+
+.bv-option-btn.active,
+.bv-option-btn[data-selected='true'] {
+  background: var(--color-text);
+  color: var(--color-bg);
+  border-color: var(--color-text);
+}
+
+.bv-option-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.danger-btn {
+  border-color: color-mix(in srgb, #b12d2d 58%, transparent);
+  color: color-mix(in srgb, #ffb3b3 82%, var(--color-text));
+}
+
+.danger-btn:hover:not(:disabled) {
+  border-color: color-mix(in srgb, #d64848 70%, transparent);
+  background: color-mix(in srgb, #7d2020 15%, transparent);
+}
+
+.dither-toggle-btn[data-dither-enabled='true'][data-selected='true'] {
+  outline: 1px solid color-mix(in srgb, #7ed321 70%, var(--color-text));
+}
+
+.size-controls-ratio-buttons {
+  flex-wrap: nowrap;
+}
+
+/* --- Slider tooltip --- */
+
+.slider-label-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.slider-tooltip {
+  position: absolute;
+  left: calc(100% + 0.5rem);
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: color-mix(in srgb, var(--color-text) 85%, transparent);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  line-height: 1.45;
+  padding: 0.45rem 0.6rem;
+  width: 14rem;
+  z-index: 40;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.slider-label-wrap:hover .slider-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+

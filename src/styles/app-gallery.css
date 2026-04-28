@@ -1,0 +1,127 @@
+.gallery-grid {
+  display: grid;
+  --gallery-thumb-size: 9.4rem;
+  grid-template-columns: repeat(auto-fill, minmax(var(--gallery-thumb-size), var(--gallery-thumb-size)));
+  gap: 0.4rem;
+  justify-content: start;
+  contain: layout paint;
+}
+
+@container aside-panel (max-width: 34rem) {
+  .gallery-grid {
+    --gallery-thumb-size: 7.2rem;
+  }
+}
+
+@container aside-panel (max-width: 26rem) {
+  .gallery-grid {
+    --gallery-thumb-size: 5.8rem;
+  }
+}
+
+.gallery-thumb {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
+  background: color-mix(in srgb, var(--color-text) 5%, transparent);
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 0.12s ease;
+}
+
+.gallery-thumb-wrap {
+  position: relative;
+  width: var(--gallery-thumb-size);
+  height: var(--gallery-thumb-size);
+}
+
+.gallery-thumb:hover {
+  border-color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+.gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  image-rendering: pixelated;
+}
+
+.gallery-thumb-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: color-mix(in srgb, var(--color-bg) 72%, transparent);
+  color: color-mix(in srgb, var(--color-text) 85%, transparent);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-align: center;
+  padding: 0.2rem 0.28rem;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gallery-thumb:hover .gallery-thumb-label,
+.gallery-thumb--active .gallery-thumb-label {
+  opacity: 1;
+}
+
+.gallery-thumb--active {
+  border-color: var(--color-text);
+  border-width: 2px;
+}
+
+.gallery-thumb-delete {
+  position: absolute;
+  top: 0.22rem;
+  right: 0.22rem;
+  width: 1.7rem;
+  height: 1.7rem;
+  border: 1px solid color-mix(in srgb, #b53636 65%, transparent);
+  background: color-mix(in srgb, var(--color-bg) 65%, transparent);
+  color: color-mix(in srgb, #ffc8c8 80%, var(--color-text));
+  display: grid;
+  place-items: center;
+  padding: 0;
+  line-height: 0;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease, border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.gallery-thumb-wrap:hover .gallery-thumb-delete,
+.gallery-thumb-wrap--active .gallery-thumb-delete {
+  opacity: 1;
+}
+
+.gallery-thumb-delete:hover {
+  border-color: color-mix(in srgb, #e14a4a 80%, transparent);
+  background: color-mix(in srgb, #120404 78%, #7d2020);
+}
+
+#root.is-resizing-aside .gallery-thumb,
+#root.is-resizing-aside .gallery-thumb-label,
+#root.is-resizing-aside .gallery-thumb-delete {
+  transition: none !important;
+}
+
+.gallery-thumb-anim-badge {
+  position: absolute;
+  top: 0.2rem;
+  left: 0.2rem;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--color-bg) 90%, transparent);
+  color: var(--color-text);
+  border-radius: 2px;
+  padding: 0.22rem;
+  line-height: 0;
+  opacity: 0.85;
+  pointer-events: none;
+}

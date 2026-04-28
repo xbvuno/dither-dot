@@ -1,0 +1,194 @@
+.gif-timeline-shell {
+  position: relative;
+  min-height: 5.8rem;
+  max-height: 22rem;
+  height: 6.3rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  flex: 0 0 auto;
+  overflow: visible;
+}
+
+.gif-timeline {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-text) 24%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text) 24%, transparent);
+  padding: 0.6rem;
+  background: color-mix(in srgb, var(--color-text) 3%, transparent);
+  display: grid;
+  gap: 0.6rem;
+  height: 100%;
+  overflow: hidden;
+}
+
+.gif-timeline-resize-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 12px;
+  cursor: row-resize;
+  z-index: 20;
+  background-color: transparent;
+}
+
+.gif-timeline-resize-handle::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  width: 2.8rem;
+  height: 1px;
+  transform: translateX(-50%);
+  background: color-mix(in srgb, var(--color-text) 34%, transparent);
+}
+
+#root.is-resizing-timeline {
+  cursor: row-resize;
+}
+
+.gif-timeline-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.gif-timeline-btn {
+  min-width: 4.6rem;
+}
+
+.gif-timeline-icon-btn {
+  min-width: 2rem;
+  width: 2rem;
+  height: 2rem;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+}
+
+.gif-timeline-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--color-text) 72%, transparent);
+}
+
+.gif-delay-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.gif-delay-wrap--right {
+  margin-left: auto;
+}
+
+.gif-delay-input {
+  width: 4.6rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.7rem;
+}
+
+.gif-frame-counter {
+  text-align: right;
+}
+
+.gif-frame-strip {
+  --gif-frame-rows: 1;
+  --gif-frame-columns: 1;
+  display: grid;
+  grid-auto-flow: row;
+  grid-template-columns: repeat(var(--gif-frame-columns), 56px);
+  grid-template-rows: repeat(var(--gif-frame-rows), 44px);
+  align-content: start;
+  gap: 0.35rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  scrollbar-gutter: stable;
+  min-height: 0;
+  padding-bottom: 8px;
+}
+
+.gif-frame-btn {
+  position: relative;
+  width: 56px;
+  height: 44px;
+  border: 1px solid color-mix(in srgb, var(--color-text) 24%, transparent);
+  background: color-mix(in srgb, var(--color-text) 2%, transparent);
+  cursor: pointer;
+  flex: 0 0 auto;
+  padding: 0;
+  overflow: hidden;
+}
+
+.gif-frame-btn img {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  object-fit: cover;
+  display: block;
+}
+
+.gif-frame-btn--pending img {
+  filter: grayscale(100%) blur(0.8px) brightness(0.6);
+}
+
+.gif-timeline-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.gif-frame-btn.active {
+  border-color: color-mix(in srgb, var(--color-text) 85%, transparent);
+  border-top: 4px solid color-mix(in srgb, var(--color-text) 85%, transparent);
+}
+
+.gif-frame-state {
+  position: absolute;
+  right: 0.1rem;
+  bottom: 0.1rem;
+  min-width: 0.95rem;
+  height: 0.85rem;
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.5rem;
+  letter-spacing: 0.02em;
+  padding: 0 0.14rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: var(--color-text);
+}
+
+.gif-frame-index {
+  position: absolute;
+  left: 0.1rem;
+  bottom: 0.1rem;
+  min-width: 0.95rem;
+  height: 0.85rem;
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.5rem;
+  letter-spacing: 0.02em;
+  padding: 0 0.14rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: color-mix(in srgb, var(--color-text) 86%, transparent);
+}
+
+.gif-frame-state--pending {
+  color: #56a8ff;
+}
+
+.gif-frame-state--rendering {
+  color: var(--color-text);
+}
+
+.gif-frame-state--done {
+  color: #5cd56f;
+}
