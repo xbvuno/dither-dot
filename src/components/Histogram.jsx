@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { getPaletteReference, subscribePaletteReference } from '../utils/pixiRegistry';
+import { getPaletteReference, subscribePaletteReference } from '../utils/canvasRegistry';
 
 const CHANNELS = [
   { index: 0, color: '#e05555' },

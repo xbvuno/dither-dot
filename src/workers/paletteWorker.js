@@ -12,7 +12,7 @@ function colorToHex({ r, g, b }) {
 
 self.onmessage = async (event) => {
   const { jobId, pixels, width, height, method, count } = event.data || {};
-  const startTs = self.performance?.now?.() ?? Date.now();
+
 
   try {
     if (!wasmInitialized) {
@@ -36,8 +36,6 @@ self.onmessage = async (event) => {
     }
 
     const palette = wasmPalette.colors.map(colorToHex);
-
-    const elapsed = (self.performance?.now?.() ?? Date.now()) - startTs;
 
     self.postMessage({
       jobId,

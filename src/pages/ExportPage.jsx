@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Save, Copy, Eye } from 'lucide-react';
 import useImageStore from '../stores/imageStore';
 import useGifStore from '../stores/gifStore';
-import { getOutputCanvas, getPixiApp } from '../utils/pixiRegistry';
+import { getOutputCanvas } from '../utils/canvasRegistry';
 import { exportCurrentGif } from '../utils/exportGif';
 import SliderBundle from '../components/SliderBundle';
 
@@ -69,16 +69,6 @@ async function copyCanvasToClipboard(canvas) {
 }
 
 function getExportCanvasOrThrow() {
-  const app = getPixiApp();
-  if (app) {
-    try {
-      const canvas = app.renderer.extract.canvas({ target: app.stage });
-      if (canvas) return canvas;
-    } catch (e) {
-      console.warn('Failed to extract canvas from Pixi stage, falling back to output canvas:', e);
-    }
-  }
-
   const canvas = getOutputCanvas();
   if (!canvas) {
     throw new Error('No output to export yet. Process an image first.');
@@ -175,7 +165,7 @@ export default function ExportPage() {
   };
 
   useEffect(() => {
-    const canvasExists = !!getOutputCanvas() || !!getPixiApp();
+    const canvasExists = !!getOutputCanvas();
     const canGenerate = canvasExists && (!isGifSource || allFramesRendered);
     if (canGenerate) {
       handleGeneratePreview();

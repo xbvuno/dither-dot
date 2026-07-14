@@ -62,7 +62,7 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] }),
     wasm(),
-    topLevelAwait(),
+    // topLevelAwait(),
     generateServiceWorker()
   ],
   resolve: {

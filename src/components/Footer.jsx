@@ -5,7 +5,7 @@ import useViewStore from "../stores/viewStore";
 import usePerformanceStore from "../stores/performanceStore";
 import useParamsStore from "../stores/paramsStore";
 import useWebcamStore from "../stores/webcamStore";
-import { getRenderSnapshot, subscribeRenderSnapshot } from "../utils/pixiRegistry";
+import { getRenderSnapshot, subscribeRenderSnapshot } from "../utils/canvasRegistry";
 import PipelineTimingTooltip from "./PipelineTimingTooltip";
 
 function formatMs(value) {

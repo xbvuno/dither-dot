@@ -5,7 +5,7 @@
   font-size: 0.68rem;
   color: var(--color-text);
   z-index: 1000;
-  min-width: 320px;
+  min-width: 420px;
   pointer-events: none;
 }
 
@@ -25,7 +25,7 @@
 
 .timing-bar-row {
   display: grid;
-  grid-template-columns: 148px minmax(92px, 1fr) 48px;
+  grid-template-columns: 180px minmax(120px, 1fr) 48px;
   align-items: center;
   column-gap: 0.55rem;
 }
@@ -37,10 +37,11 @@
 }
 
 .timing-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
+  display: block;
   min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .timing-label {
@@ -55,9 +56,6 @@
   font-size: 0.58rem;
   letter-spacing: 0.04em;
   color: var(--color-text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .timing-bar-container {

@@ -97,7 +97,7 @@ function decodeGifFrames(arrayBuffer) {
 
 self.onmessage = (event) => {
   const { jobId, gifBuffer } = event.data || {};
-  const startTs = self.performance?.now?.() ?? Date.now();
+
 
   try {
     const buffer = gifBuffer instanceof ArrayBuffer
@@ -115,8 +115,6 @@ self.onmessage = (event) => {
       delay: frame.delay,
       pixels: frame.pixels.buffer,
     }));
-
-    const elapsed = (self.performance?.now?.() ?? Date.now()) - startTs;
 
     self.postMessage(
       {

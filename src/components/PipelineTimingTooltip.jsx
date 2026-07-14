@@ -1,5 +1,6 @@
 import useDitherStore, { DITHER_METHOD } from '../stores/ditherStore';
 import usePaletteStore, { EXTRACT_METHOD } from '../stores/paletteStore';
+import useParamsStore from '../stores/paramsStore';
 import './PipelineTimingTooltip.css';
 
 function formatMs(value) {
@@ -65,38 +66,76 @@ export default function PipelineTimingTooltip({ isVisible, timing, currentPhase,
   const paletteMethod = usePaletteStore((s) => s.method);
   const ditherMethod = useDitherStore((s) => s.method);
   const ditherEnabled = useDitherStore((s) => s.enabled);
+  const params = useParamsStore((s) => s);
+
+  const isNoiseActive = params.noiseCoverage > 0.0;
+  const isAdjustmentActive =
+    params.gamma !== 1.0 ||
+    params.blacks !== 0.0 ||
+    params.whites !== 0.0 ||
+    params.contrast !== 0.0 ||
+    params.saturation !== 1.0 ||
+    params.hue !== 0.0;
+  const isBlurActive = params.blurStrength > 0.0;
 
   const phases = [
     {
       key: 'extraction',
-      label: 'Readback',
+      label: 'READBACK',
       detail: null,
       value: timing.extraction,
       color: '#ff6b6b',
       alwaysShow: true,
     },
     {
+      key: 'noise',
+      label: 'NOISE',
+      detail: isNoiseActive ? `COV: ${Math.round(params.noiseCoverage * 100)}%` : null,
+      value: timing.noise,
+      color: '#a55eea',
+      alwaysShow: false,
+      show: isNoiseActive,
+    },
+    {
+      key: 'adjustment',
+      label: 'COLOR',
+      detail: isAdjustmentActive ? `C: ${Math.round(params.contrast)}% S: ${params.saturation.toFixed(2)}` : null,
+      value: timing.adjustment,
+      color: '#ff9f43',
+      alwaysShow: false,
+      show: isAdjustmentActive,
+    },
+    {
+      key: 'blur',
+      label: 'BLUR',
+      detail: isBlurActive ? `STR: ${params.blurStrength.toFixed(2)}` : null,
+      value: timing.blur,
+      color: '#10ac84',
+      alwaysShow: false,
+      show: isBlurActive,
+    },
+    {
       key: 'palette',
-      label: 'Palette Generation',
+      label: 'PALETTE',
       detail: getPaletteAlgorithmLabel(paletteMethod),
       value: timing.paletteGeneration,
       cached: paletteGenerationCached,
       color: '#ffd93d',
       alwaysShow: true,
+      show: true,
     },
     {
       key: 'dithering',
-      label: 'Dithering',
+      label: 'DITHER',
       detail: getDitherAlgorithmLabel(ditherMethod, ditherEnabled),
       value: timing.dithering,
       color: '#4ecdc4',
       alwaysShow: true,
+      show: true,
     },
   ];
 
-  const displayPhases = phases;
-
-  const visiblePhases = displayPhases.filter((phase) => phase.alwaysShow || phase.value > 0 || phase.key === currentPhase);
+  const visiblePhases = phases.filter((phase) => phase.show || phase.alwaysShow || phase.key === currentPhase);
   const maxValue = Math.max(...visiblePhases.map((phase) => phase.value), 1);
 
   const renderChart = () => (
@@ -108,8 +147,8 @@ export default function PipelineTimingTooltip({ isVisible, timing, currentPhase,
           return (
             <div key={phase.label} className={`timing-bar-row${isActive ? ' timing-bar-row--active' : ''}`}>
               <div className="timing-meta">
-                <div className="timing-label">{phase.label}</div>
-                {phase.detail ? <div className="timing-detail">({phase.detail})</div> : null}
+                <span className="timing-label">{phase.label}</span>
+                {phase.detail ? <span className="timing-detail"> - {phase.detail}</span> : null}
               </div>
               <div className="timing-bar-container">
                 <div

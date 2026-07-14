@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Save, Copy, X, FileUp, Clipboard, Camera, CameraOff, FlipHorizontal, Trash2, Film, Dices } from 'lucide-react';
 import useImageStore from '../stores/imageStore';
 import useGalleryStore, { GALLERY_PRESETS } from '../stores/galleryStore';
-import { getOutputCanvas } from '../utils/pixiRegistry';
+import { getOutputCanvas } from '../utils/canvasRegistry';
 import { clearGalleryHistory } from '../stores/resetAll';
 import useParamsStore from '../stores/paramsStore';
 import useGifStore from '../stores/gifStore';
@@ -847,6 +847,8 @@ export default function ImportPage() {
   const stopWebcam = useWebcamStore(s => s.stopWebcam);
   const showPipeline = useParamsStore((s) => s.pipelineVisible);
   const setShowPipeline = useParamsStore((s) => s.setPipelineVisible);
+  const forceCpu = useParamsStore((s) => s.forceCpu);
+  const setForceCpu = useParamsStore((s) => s.setForceCpu);
 
   const doImport = useCallback(async (blob, name) => {
     if (isGifFile({ type: blob?.type, name })) {
@@ -1125,6 +1127,28 @@ export default function ImportPage() {
               onClick={() => setShowPipeline(false)}
             >
               HIDE
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className='bv-section'>
+        <div className='bv-controls-row'>
+          <span className='bv-label'>FORCE CPU</span>
+          <div className='bv-option-group histogram-toggle-group'>
+            <button
+              type='button'
+              className={`bv-option-btn${forceCpu ? ' active' : ''}`}
+              onClick={() => setForceCpu(true)}
+            >
+              ON
+            </button>
+            <button
+              type='button'
+              className={`bv-option-btn${!forceCpu ? ' active' : ''}`}
+              onClick={() => setForceCpu(false)}
+            >
+              OFF
             </button>
           </div>
         </div>

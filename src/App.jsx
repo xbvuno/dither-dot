@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Smartphone, MonitorSmartphone, TriangleAlert, ArrowRight, Info, Heart, ScrollText, Cat, FileUp, ImageUpscale, SlidersHorizontal, Palette, SprayCan, Download } from 'lucide-react'
 import Aside from './Aside'
 
@@ -42,6 +42,49 @@ function App() {
   const renderProcessing = useProcessingStore(s => s.renderProcessing)
   const watermarkEnabled = useWatermarkStore(s => s.enabled)
   const setWatermarkEnabled = useWatermarkStore(s => s.setEnabled)
+
+  const navRef = useRef(null)
+  const lastScrollTimeRef = useRef(0)
+  const currentPageRef = useRef(currentPage)
+
+  useEffect(() => {
+    currentPageRef.current = currentPage
+  }, [currentPage])
+
+  useEffect(() => {
+    const navEl = navRef.current
+    if (!navEl) return
+
+    const handleWheel = (event) => {
+      event.preventDefault()
+      const now = Date.now()
+      if (now - lastScrollTimeRef.current < 250) {
+        return
+      }
+
+      const delta = event.deltaY
+      if (delta === 0) return
+
+      const pageIds = ICONS.map(item => item.id)
+      const currentIndex = pageIds.indexOf(currentPageRef.current)
+      if (currentIndex === -1) return
+
+      let nextIndex
+      if (delta > 0) {
+        nextIndex = (currentIndex + 1) % pageIds.length
+      } else {
+        nextIndex = (currentIndex - 1 + pageIds.length) % pageIds.length
+      }
+
+      setPage(pageIds[nextIndex])
+      lastScrollTimeRef.current = now
+    }
+
+    navEl.addEventListener('wheel', handleWheel, { passive: false })
+    return () => {
+      navEl.removeEventListener('wheel', handleWheel)
+    }
+  }, [setPage])
 
   const handleNavDragOver = (event, pageId) => {
     event.preventDefault()
@@ -95,7 +138,7 @@ function App() {
   return (
     <>
       <div className='app-layout'>
-        <nav className='app-nav'>
+        <nav ref={navRef} className='app-nav'>
         <img src={watermarkMini} alt='' aria-hidden='true' className='nav-logo-img' />
         <div className='nav-links-wrap'>
           {ICONS.map((item) => {

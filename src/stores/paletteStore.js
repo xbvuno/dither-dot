@@ -7,7 +7,7 @@ import {
   blendHex,
 } from '../utils/colorAlgorithms';
 import { resolvePaletteSampleStride } from '../utils/palette/sampling';
-import { getPaletteReference } from '../utils/pixiRegistry';
+import { getPaletteReference } from '../utils/canvasRegistry';
 import useProcessingStore from './processingStore';
 import usePerformanceStore from './performanceStore';
 
@@ -155,7 +155,7 @@ const DEFAULT_PALETTE_SETTINGS = {
   samplingAccuracy: 0.5,
   autoFit: false,
   autoFitMethod: AUTOFIT_METHOD.MEDIAN_CUT,
-  method: EXTRACT_METHOD.MEDIAN_CUT,
+  method: EXTRACT_METHOD.OCTREE,
 };
 
 const BUILTIN_PALETTES = [
@@ -394,7 +394,7 @@ const usePaletteStore = create(persist((set, get) => ({
     }
 
     const algoMethod = method === EXTRACT_METHOD.CUSTOM
-      ? EXTRACT_METHOD.MEDIAN_CUT
+      ? EXTRACT_METHOD.OCTREE
       : method;
 
     const locked = colors.filter(c => c.locked);
