@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Save, Copy, X, FileUp, Clipboard, Camera, CameraOff, FlipHorizontal, Trash2, Film } from 'lucide-react';
+import { Save, Copy, X, FileUp, Clipboard, Camera, CameraOff, FlipHorizontal, Trash2, Film, Dices } from 'lucide-react';
 import useImageStore from '../stores/imageStore';
 import useGalleryStore, { GALLERY_PRESETS } from '../stores/galleryStore';
-import SizeControls from '../components/SizeControls';
 import { getOutputCanvas } from '../utils/pixiRegistry';
 import { clearGalleryHistory } from '../stores/resetAll';
 import useParamsStore from '../stores/paramsStore';
@@ -834,6 +833,7 @@ export default function ImportPage() {
   const inputRef = useRef(null);
   const [isDropActive, setIsDropActive] = useState(false);
   const [pendingImport, setPendingImport] = useState(null);
+  const [isRandomLoading, setIsRandomLoading] = useState(false);
 
   const setSourceFromBlob = useImageStore(s => s.setSourceFromBlob);
   const pushGifHistory = useGalleryStore(s => s.pushGifHistory);
@@ -1004,6 +1004,30 @@ export default function ImportPage() {
     setSourceDirect(WEBCAM_SOURCE, 'WEBCAM', 'webcam');
   };
 
+  const handleRandomImage = async () => {
+    if (isRandomLoading) return;
+    setIsRandomLoading(true);
+    try {
+      const w = Math.floor(Math.random() * (1920 - 400 + 1)) + 400;
+      const h = Math.floor(Math.random() * (1080 - 300 + 1)) + 300;
+      const url = `https://picsum.photos/${w}/${h}?random=${Date.now()}`;
+      
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch image from Lorem Picsum.');
+      }
+      
+      const blob = await response.blob();
+      await validateImageFile(blob);
+      const name = `lorem-picsum-${w}x${h}`;
+      await importWithSizeCheck(blob, name);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Random image import failed.');
+    } finally {
+      setIsRandomLoading(false);
+    }
+  };
+
   useEffect(() => {
     const onPaste = (event) => handlePaste(event);
     window.addEventListener('paste', onPaste);
@@ -1013,7 +1037,7 @@ export default function ImportPage() {
   return (
     <div>
       <div className='bv-macro-section'>
-      <h2>INPUT</h2>
+      <h2>IMPORT</h2>
 
       <div className='bv-section'>
         <p className='bv-label'>DROP OR PASTE</p>
@@ -1049,6 +1073,15 @@ export default function ImportPage() {
           </button>
           <button
             type='button'
+            className='bv-option-btn import-btn'
+            onClick={handleRandomImage}
+            disabled={isRandomLoading}
+          >
+            <Dices size={13} strokeWidth={1.5} />
+            {isRandomLoading ? 'LOADING...' : 'RANDOM IMG'}
+          </button>
+          <button
+            type='button'
             className={`bv-option-btn import-btn${webcamActive ? ' danger-btn' : ''}`}
             onClick={handleWebcamToggle}
             disabled={webcamStarting}
@@ -1070,13 +1103,8 @@ export default function ImportPage() {
       </div>
 
       <div className='bv-macro-section'>
-        <h2>FILE</h2>
-        <SourceSection />
-        <SizeControls />
-      </div>
-
-      <div className='bv-macro-section'>
         <h2>GALLERY</h2>
+        <SourceSection />
         <GallerySection />
       </div>
 

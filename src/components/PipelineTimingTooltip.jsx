@@ -34,6 +34,8 @@ function getDitherAlgorithmLabel(method, enabled) {
   if (!enabled) return 'Off';
 
   switch (method) {
+    case DITHER_METHOD.ONLY_PALETTE:
+      return 'ONLY PALETTE';
     case DITHER_METHOD.FLOYD_STEINBERG:
       return 'FS';
     case DITHER_METHOD.JJN:

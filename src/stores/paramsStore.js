@@ -166,6 +166,27 @@ const useParamsStore = create(persist((set) => {
     }),
     setHistogramVisible: (visible) => set(() => ({ histogramVisible: Boolean(visible) })),
     setPipelineVisible: (visible) => set(() => ({ pipelineVisible: Boolean(visible) })),
+    resetKeys: (keys) => set(() => {
+      const updates = {};
+      for (const key of keys) {
+        if (initialValues[key] !== undefined) {
+          updates[key] = initialValues[key];
+        }
+      }
+      return updates;
+    }),
+    randomizeKeys: (keys, controlsConfig) => set(() => {
+      const updates = {};
+      for (const key of keys) {
+        const cfg = controlsConfig[key];
+        if (cfg) {
+          const range = cfg.max - cfg.min;
+          const random = cfg.min + Math.random() * range;
+          updates[key] = snap(random, cfg.min, cfg.max, cfg.step);
+        }
+      }
+      return updates;
+    }),
   };
 
   // genera automaticamente tutti i setter

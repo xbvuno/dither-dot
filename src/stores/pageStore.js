@@ -6,6 +6,7 @@ import { create } from "zustand";
 
 export const PAGE = {
     IMPORT: 'import',
+    RESIZING: 'resizing',
     ADJUSTMENTS: 'adjustments',
     DITHER: 'dither',
     EXPORT: 'export',

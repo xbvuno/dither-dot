@@ -2,6 +2,12 @@ import { defineConfig } from 'vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
 import workboxBuild from 'workbox-build'
+import wasm from 'vite-plugin-wasm'
+import topLevelAwait from 'vite-plugin-top-level-await'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 function generateServiceWorker() {
   return {
@@ -55,15 +61,21 @@ export default defineConfig({
   plugins: [
     react(),
     babel({ presets: [reactCompilerPreset()] }),
+    wasm(),
+    topLevelAwait(),
     generateServiceWorker()
   ],
+  resolve: {
+    alias: {
+      'wasm-pkg': path.resolve(__dirname, '../ddot/wasm/pkg'),
+    },
+  },
   build: {
     target: 'esnext',
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          if (id.includes('pixi.js') || id.includes('@pixi/')) return 'pixi'
           if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) return 'react'
           if (id.includes('node_modules/zustand')) return 'zustand'
         }

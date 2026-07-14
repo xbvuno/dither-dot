@@ -8,7 +8,7 @@
 .bv-label {
   font-size: 0.8rem;
   letter-spacing: 0.08em;
-  color: color-mix(in srgb, var(--color-text) 72%, transparent);
+  color: var(--color-text-subtle);
 }
 
 .bv-section > .bv-label:first-child,
@@ -23,15 +23,10 @@
 }
 
 .bv-option-btn {
-  border: 1px solid color-mix(in srgb, var(--color-text) 28%, transparent);
-  background: color-mix(in srgb, var(--color-text) 3%, transparent);
-  color: var(--color-text);
   padding: 0.45rem 0.65rem;
   font-size: 0.76rem;
   letter-spacing: 0.04em;
   line-height: 1.1;
-  cursor: pointer;
-  transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
 }
 
 .bv-option-btn.icon-btn {
@@ -40,35 +35,19 @@
   gap: 0.4rem;
 }
 
-.bv-option-btn:hover {
-  background: color-mix(in srgb, var(--color-text) 10%, transparent);
-  border-color: color-mix(in srgb, var(--color-text) 48%, transparent);
-}
-
-.bv-option-btn.active,
-.bv-option-btn[data-selected='true'] {
-  background: var(--color-text);
-  color: var(--color-bg);
-  border-color: var(--color-text);
-}
-
-.bv-option-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
 .danger-btn {
-  border-color: color-mix(in srgb, #b12d2d 58%, transparent);
-  color: color-mix(in srgb, #ffb3b3 82%, var(--color-text));
+  border-color: var(--color-danger);
+  color: var(--color-danger-text);
 }
 
 .danger-btn:hover:not(:disabled) {
-  border-color: color-mix(in srgb, #d64848 70%, transparent);
-  background: color-mix(in srgb, #7d2020 15%, transparent);
+  border-color: var(--color-danger-hover);
+  background: var(--color-danger-bg-hover);
+  color: var(--color-text);
 }
 
 .dither-toggle-btn[data-dither-enabled='true'][data-selected='true'] {
-  outline: 1px solid color-mix(in srgb, #7ed321 70%, var(--color-text));
+  outline: 1px solid var(--color-success);
 }
 
 .size-controls-ratio-buttons {
@@ -88,11 +67,7 @@
   left: calc(100% + 0.5rem);
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  color: color-mix(in srgb, var(--color-text) 85%, transparent);
+  color: var(--color-text-subtle);
   font-size: 0.72rem;
   letter-spacing: 0.02em;
   line-height: 1.45;
@@ -109,4 +84,96 @@
   visibility: visible;
   opacity: 1;
 }
+
+/* --- Crop Preview --- */
+.crop-preview-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0.75rem 0 1.25rem 0;
+}
+
+.crop-preview-frame {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+  border: 1px solid #3c3c3c;
+}
+
+/* --- Collapsible Accordion Sections --- */
+
+.bv-macro-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.4rem 0;
+  margin-bottom: 0.85rem;
+}
+
+.bv-macro-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bv-macro-section-title h2 {
+  margin: 0;
+  letter-spacing: 0.15rem;
+}
+
+.bv-macro-section-header.modified .bv-macro-section-title h2 {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.bv-macro-section-chevron {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.bv-macro-section-chevron.collapsed {
+  transform: rotate(-90deg);
+}
+
+.bv-macro-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.bv-macro-section-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem;
+  border-radius: 4px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.bv-macro-section-btn:hover {
+  color: var(--color-text);
+  background-color: var(--color-hover);
+}
+
+.bv-macro-section-content {
+  max-height: 1000px;
+  opacity: 1;
+  padding-bottom: 0.6rem;
+  transition: max-height 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, padding-bottom 0.25s ease;
+}
+
+.bv-macro-section-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+
 

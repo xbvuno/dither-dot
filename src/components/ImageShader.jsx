@@ -305,6 +305,16 @@ function extractProcessedPixels(
   splitMaskLeft = null,
   splitMaskRight = null,
 ) {
+  const sizeState = useSizeStore.getState();
+  const left = sizeState.crop?.left || 0;
+  const right = sizeState.crop?.right || 0;
+  const top = sizeState.crop?.top || 0;
+  const bottom = sizeState.crop?.bottom || 0;
+  const hasCrop = left > 0 || right > 0 || top > 0 || bottom > 0;
+
+  const customW = sizeState.customSize.customWidth || app.renderer.width;
+  const customH = sizeState.customSize.customHeight || app.renderer.height;
+
   const prevSourceVisible = sourceSprite.visible;
   const prevOriginalVisible = originalSprite?.visible;
   const prevOutputVisible = outputSprite.visible;
@@ -314,6 +324,21 @@ function extractProcessedPixels(
   const prevWatermarkMiniVisible = watermarkMiniSprite?.visible;
   const prevSplitLeftVisible = splitMaskLeft?.visible;
   const prevSplitRightVisible = splitMaskRight?.visible;
+
+  const prevSourceX = sourceSprite.x;
+  const prevSourceY = sourceSprite.y;
+  const prevSourceW = sourceSprite.width;
+  const prevSourceH = sourceSprite.height;
+  const prevRendererW = app.renderer.width;
+  const prevRendererH = app.renderer.height;
+
+  if (hasCrop) {
+    app.renderer.resize(customW, customH);
+    sourceSprite.x = 0;
+    sourceSprite.y = 0;
+    sourceSprite.width = customW;
+    sourceSprite.height = customH;
+  }
 
   sourceSprite.visible = true;
   if (originalSprite) originalSprite.visible = false;
@@ -326,6 +351,14 @@ function extractProcessedPixels(
   if (splitMaskRight) splitMaskRight.visible = false;
 
   const extracted = app.renderer.extract.pixels({ target: app.stage });
+
+  if (hasCrop) {
+    app.renderer.resize(prevRendererW, prevRendererH);
+    sourceSprite.x = prevSourceX;
+    sourceSprite.y = prevSourceY;
+    sourceSprite.width = prevSourceW;
+    sourceSprite.height = prevSourceH;
+  }
 
   sourceSprite.visible = prevSourceVisible;
   if (originalSprite && typeof prevOriginalVisible === 'boolean') {
@@ -349,19 +382,25 @@ function extractProcessedPixels(
 
   const pixels = extracted?.pixels ?? extracted;
   const buffer = new Uint8ClampedArray(pixels);
-  const preferredWidth = Math.max(1, Math.round(Number(app.renderer?.width) || 1));
-  const preferredHeight = Math.max(1, Math.round(Number(app.renderer?.height) || 1));
-  const { width, height } = resolveExtractDimensions(buffer.length, preferredWidth, preferredHeight);
+  const { width, height } = resolveExtractDimensions(buffer.length, customW, customH);
 
   return { pixels: buffer, width, height };
 }
 
 function getTargetDisplaySize() {
-  const { size, customSize } = useSizeStore.getState();
+  const { size, customSize, crop } = useSizeStore.getState();
   const width = Math.max(1, Math.floor(Number(customSize.customWidth) || Number(size.width) || 1));
   const height = Math.max(1, Math.floor(Number(customSize.customHeight) || Number(size.height) || 1));
 
-  return { width, height };
+  const left = crop?.left || 0;
+  const right = crop?.right || 0;
+  const top = crop?.top || 0;
+  const bottom = crop?.bottom || 0;
+
+  return {
+    width: Math.max(1, width - left - right),
+    height: Math.max(1, height - top - bottom),
+  };
 }
 
 function applyDisplaySize(
@@ -385,12 +424,32 @@ function applyDisplaySize(
     app.canvas.style.imageRendering = 'pixelated';
   }
 
+  const sizeState = useSizeStore.getState();
+  const left = sizeState.crop?.left || 0;
+  const right = sizeState.crop?.right || 0;
+  const top = sizeState.crop?.top || 0;
+  const bottom = sizeState.crop?.bottom || 0;
+  const hasCrop = left > 0 || right > 0 || top > 0 || bottom > 0;
+
   if (sourceSprite) {
-    sourceSprite.width = safeWidth;
-    sourceSprite.height = safeHeight;
+    if (hasCrop) {
+      const customW = sizeState.customSize.customWidth || safeWidth;
+      const customH = sizeState.customSize.customHeight || safeHeight;
+      sourceSprite.x = -left;
+      sourceSprite.y = -top;
+      sourceSprite.width = customW;
+      sourceSprite.height = customH;
+    } else {
+      sourceSprite.x = 0;
+      sourceSprite.y = 0;
+      sourceSprite.width = safeWidth;
+      sourceSprite.height = safeHeight;
+    }
   }
 
   if (outputSprite) {
+    outputSprite.x = 0;
+    outputSprite.y = 0;
     outputSprite.width = safeWidth;
     outputSprite.height = safeHeight;
   }
@@ -570,31 +629,45 @@ export default function ShaderImage({ sourceImg }) {
       return;
     }
 
-    const displayWidth = sourceDims.width;
-    const displayHeight = sourceDims.height;
+    const sizeState = useSizeStore.getState();
+    const customW = sizeState.customSize.customWidth || sourceDims.width;
+    const customH = sizeState.customSize.customHeight || sourceDims.height;
+    const left = sizeState.crop?.left || 0;
+    const right = sizeState.crop?.right || 0;
+    const top = sizeState.crop?.top || 0;
+    const bottom = sizeState.crop?.bottom || 0;
+
+    const scaleX = customW ? (sourceDims.width / customW) : 1;
+    const scaleY = customH ? (sourceDims.height / customH) : 1;
+    const nativeLeft = Math.round(left * scaleX);
+    const nativeRight = Math.round(right * scaleX);
+    const nativeTop = Math.round(top * scaleY);
+    const nativeBottom = Math.round(bottom * scaleY);
+
+    const displayWidth = Math.max(1, sourceDims.width - nativeLeft - nativeRight);
+    const displayHeight = Math.max(1, sourceDims.height - nativeTop - nativeBottom);
 
     if (overlayCanvas.width !== displayWidth || overlayCanvas.height !== displayHeight) {
       overlayCanvas.width = displayWidth;
       overlayCanvas.height = displayHeight;
     }
 
-    const drawRect = resolveContainDrawRect(
-      sourceDims.width,
-      sourceDims.height,
-      displayWidth,
-      displayHeight,
-    );
-
     ctx.clearRect(0, 0, displayWidth, displayHeight);
 
     ctx.save();
     ctx.imageSmoothingEnabled = false;
+    
+    // Draw the cropped sub-rectangle of the original image
     ctx.drawImage(
       overlayImage,
-      drawRect.x,
-      drawRect.y,
-      drawRect.width,
-      drawRect.height,
+      nativeLeft,
+      nativeTop,
+      displayWidth,
+      displayHeight,
+      0,
+      0,
+      displayWidth,
+      displayHeight
     );
     ctx.restore();
 
@@ -610,6 +683,13 @@ export default function ShaderImage({ sourceImg }) {
     const watermarkMiniSprite = watermarkMiniSpriteRef.current;
     if (!sourceSprite || !originalSprite || !outputSprite) return;
 
+    const sizeState = useSizeStore.getState();
+    const left = sizeState.crop?.left || 0;
+    const right = sizeState.crop?.right || 0;
+    const top = sizeState.crop?.top || 0;
+    const bottom = sizeState.crop?.bottom || 0;
+    const hasCrop = left > 0 || right > 0 || top > 0 || bottom > 0;
+
     const hasOutputTexture = Boolean(outputTextureRef.current);
     const showOutput = hasOutputTexture && outputReadyRef.current;
 
@@ -622,18 +702,38 @@ export default function ShaderImage({ sourceImg }) {
       Math.round(Number(app?.renderer?.height) || sourceSprite.height || outputSprite.height || 1),
     );
 
-    sourceSprite.x = 0;
-    sourceSprite.y = 0;
-    originalSprite.x = 0;
-    originalSprite.y = 0;
-    outputSprite.x = 0;
-    outputSprite.y = 0;
-    sourceSprite.width = displayWidth;
-    sourceSprite.height = displayHeight;
-    originalSprite.width = displayWidth;
-    originalSprite.height = displayHeight;
-    outputSprite.width = displayWidth;
-    outputSprite.height = displayHeight;
+    if (hasCrop) {
+      const customW = sizeState.customSize.customWidth;
+      const customH = sizeState.customSize.customHeight;
+
+      sourceSprite.x = -left;
+      sourceSprite.y = -top;
+      sourceSprite.width = customW;
+      sourceSprite.height = customH;
+
+      originalSprite.x = -left;
+      originalSprite.y = -top;
+      originalSprite.width = customW;
+      originalSprite.height = customH;
+
+      outputSprite.x = 0;
+      outputSprite.y = 0;
+      outputSprite.width = displayWidth;
+      outputSprite.height = displayHeight;
+    } else {
+      sourceSprite.x = 0;
+      sourceSprite.y = 0;
+      originalSprite.x = 0;
+      originalSprite.y = 0;
+      outputSprite.x = 0;
+      outputSprite.y = 0;
+      sourceSprite.width = displayWidth;
+      sourceSprite.height = displayHeight;
+      originalSprite.width = displayWidth;
+      originalSprite.height = displayHeight;
+      outputSprite.width = displayWidth;
+      outputSprite.height = displayHeight;
+    }
     originalSprite.mask = null;
     originalSprite.visible = false;
 
@@ -823,6 +923,9 @@ export default function ShaderImage({ sourceImg }) {
       }, DITHER_WORKER_TIMEOUT_MS);
       ditherJobTimeoutsRef.current.set(requestId, timeoutId);
 
+      const sizeState = useSizeStore.getState();
+      const crop = sizeState.crop || { top: 0, bottom: 0, left: 0, right: 0 };
+
       worker.postMessage({
         jobId: requestId,
         processedPixels: extraction.pixels.buffer,
@@ -832,11 +935,15 @@ export default function ShaderImage({ sourceImg }) {
         dither: {
           enabled: ditherEnabled,
           method: ditherState.method,
-          colorSpace: ditherState.colorSpace,
           amount: ditherState.amount,
-          diffusion: ditherState.diffusion,
           seed: ditherState.seed,
           matrixScale: ditherState.matrixScale,
+        },
+        crop: {
+          top: crop.top || 0,
+          bottom: crop.bottom || 0,
+          left: crop.left || 0,
+          right: crop.right || 0,
         },
       }, [extraction.pixels.buffer]);
     } catch (error) {
@@ -875,6 +982,12 @@ export default function ShaderImage({ sourceImg }) {
 
     // Defer all processing work while compare mode is active.
     if (previewingOriginalRef.current) {
+      return;
+    }
+
+    // Bypass debounce delay in webcam mode for real-time rendering
+    if (isWebcamModeRef.current) {
+      flushProcessingQueue();
       return;
     }
 
@@ -1320,7 +1433,7 @@ export default function ShaderImage({ sourceImg }) {
         targetWorker.onmessage = async (event) => {
           if (lifecycleTokenRef.current !== lifecycleToken) return;
 
-          const { jobId, referencePixels, outputPixels, width: outWidth, height: outHeight, uniqueColorCount, error } = event.data;
+          const { jobId, referencePixels, outputPixels, width: outWidth, height: outHeight, uniqueColorCount, histogram, error } = event.data;
           const latestId = latestRequestIdRef.current;
           const shouldRefreshPalette = refreshPaletteForRequestRef.current.get(jobId);
           const wasDitherEnabled = Boolean(ditherEnabledForRequestRef.current.get(jobId));
@@ -1359,7 +1472,12 @@ export default function ShaderImage({ sourceImg }) {
           }
 
           const reference = new Uint8ClampedArray(referencePixels);
-          registerPaletteReference({ width: outWidth, height: outHeight, pixels: reference });
+          registerPaletteReference({
+            width: outWidth,
+            height: outHeight,
+            pixels: reference,
+            histogram: histogram,
+          });
           registerRenderSnapshot({
             uniqueColors: uniqueColorCount ?? 0,
             originalUniqueColors: originalUniqueColorsRef.current,
@@ -1487,9 +1605,8 @@ export default function ShaderImage({ sourceImg }) {
               sourceSprite?.texture?.source?.update?.();
             }
 
-            if (!activeJobsRef.current) {
-              queueProcessing(false);
-            }
+            // Always queue processing in webcam mode to process the latest frame as soon as worker is free
+            queueProcessing(false);
 
             scheduleWebcamFrame();
           }, interval);
@@ -1708,23 +1825,36 @@ export default function ShaderImage({ sourceImg }) {
         ),
       );
 
-      if (w === prevW && h === prevH) {
+      const left = state.crop?.left || 0;
+      const right = state.crop?.right || 0;
+      const top = state.crop?.top || 0;
+      const bottom = state.crop?.bottom || 0;
+
+      const prevLeft = previousState?.crop?.left || 0;
+      const prevRight = previousState?.crop?.right || 0;
+      const prevTop = previousState?.crop?.top || 0;
+      const prevBottom = previousState?.crop?.bottom || 0;
+
+      if (w === prevW && h === prevH && left === prevLeft && right === prevRight && top === prevTop && bottom === prevBottom) {
         return;
       }
+
+      const croppedW = Math.max(1, w - left - right);
+      const croppedH = Math.max(1, h - top - bottom);
 
       applyDisplaySize(
         app,
         sourceSprite,
         outputSprite,
-        w,
-        h,
+        croppedW,
+        croppedH,
         watermarkSprite,
         watermarkMiniSprite,
         watermarkEnabledRef.current,
       );
 
-      const rendererPixelWidth = Math.max(1, Math.round(Number(app.renderer?.width) || w));
-      const rendererPixelHeight = Math.max(1, Math.round(Number(app.renderer?.height) || h));
+      const rendererPixelWidth = Math.max(1, Math.round(Number(app.renderer?.width) || croppedW));
+      const rendererPixelHeight = Math.max(1, Math.round(Number(app.renderer?.height) || croppedH));
 
       if (blurFiltersRef.current.length > 0) {
         for (const blurFilter of blurFiltersRef.current) {
@@ -1861,12 +1991,22 @@ export default function ShaderImage({ sourceImg }) {
     };
   }, [clearViewerLoadingTimer, preserveVisibleOutput, queueProcessing, setProcessingDelta, setProcessingVisible, setSize, sourceImg, swapSourceFrame, syncSourceFilters, syncSplitOverlay, syncVisibleLayer, syncWatermarkPalette, updateOutputTexture]);
 
+  const crop = useSizeStore(s => s.crop) || { top: 0, bottom: 0, left: 0, right: 0 };
+  const { top = 0, bottom = 0, left = 0, right = 0 } = crop;
+
+  const scaleX = customWidth ? (nativeWidth / customWidth) : 1;
+  const scaleY = customHeight ? (nativeHeight / customHeight) : 1;
+  const nativeLeft = Math.round(left * scaleX);
+  const nativeRight = Math.round(right * scaleX);
+  const nativeTop = Math.round(top * scaleY);
+  const nativeBottom = Math.round(bottom * scaleY);
+
   const renderWidth = showingOriginal
-    ? (Number(nativeWidth) || Number(customWidth) || 1)
-    : (Number(customWidth) || Number(nativeWidth) || 1);
+    ? Math.max(1, (Number(nativeWidth) || Number(customWidth) || 1) - nativeLeft - nativeRight)
+    : Math.max(1, (Number(customWidth) || Number(nativeWidth) || 1) - left - right);
   const renderHeight = showingOriginal
-    ? (Number(nativeHeight) || Number(customHeight) || 1)
-    : (Number(customHeight) || Number(nativeHeight) || 1);
+    ? Math.max(1, (Number(nativeHeight) || Number(customHeight) || 1) - nativeTop - nativeBottom)
+    : Math.max(1, (Number(customHeight) || Number(nativeHeight) || 1) - top - bottom);
 
   return (
     <div ref={renderRef} style={{ width: renderWidth, height: renderHeight, position: 'relative' }} id='render'>

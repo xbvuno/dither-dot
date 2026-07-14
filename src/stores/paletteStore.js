@@ -5,9 +5,9 @@ import {
   kMeans,
   octree,
   blendHex,
-  getPaletteReferencePixels,
 } from '../utils/colorAlgorithms';
 import { resolvePaletteSampleStride } from '../utils/palette/sampling';
+import { getPaletteReference } from '../utils/pixiRegistry';
 import useProcessingStore from './processingStore';
 import usePerformanceStore from './performanceStore';
 
@@ -119,6 +119,8 @@ function runExtractionAsync(pixels, method, count, options = {}) {
         {
           jobId,
           pixels: bufferCopy.buffer,
+          width: options.width,
+          height: options.height,
           method,
           count,
           sampleStride: options.sampleStride,
@@ -406,7 +408,8 @@ const usePaletteStore = create(persist((set, get) => ({
       return;
     }
 
-    const pixels = getPaletteReferencePixels();
+    const reference = getPaletteReference();
+    const pixels = reference?.pixels;
     if (!pixels) {
       if (generationToken === latestGenerationToken) {
         set({ isGeneratingPalette: false });
@@ -417,7 +420,11 @@ const usePaletteStore = create(persist((set, get) => ({
 
     try {
       const sampleStride = resolvePaletteSampleStride(samplingAccuracy, pixels.length);
-      const extracted = await runExtractionAsync(pixels, algoMethod, slots, { sampleStride });
+      const extracted = await runExtractionAsync(pixels, algoMethod, slots, {
+        sampleStride,
+        width: reference.width || 1,
+        height: reference.height || 1,
+      });
 
       if (generationToken !== latestGenerationToken) {
         finishProcessing();

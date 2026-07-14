@@ -1,7 +1,8 @@
 import SliderBundle from '../components/SliderBundle';
-import useDitherStore, { DITHER_COLOR_SPACE, DITHER_CONTROLS, DITHER_METHOD } from '../stores/ditherStore';
+import useDitherStore, { DITHER_CONTROLS, DITHER_METHOD } from '../stores/ditherStore';
 
 const METHODS = [
+  { id: DITHER_METHOD.ONLY_PALETTE, label: 'ONLY PALETTE' },
   { id: DITHER_METHOD.FLOYD_STEINBERG, label: 'FLOYD-STEINBERG' },
   { id: DITHER_METHOD.JJN, label: 'JARVIS, JUDICE AND NINKE' },
   { id: DITHER_METHOD.STUCKI, label: 'STUCKI' },
@@ -18,18 +19,14 @@ export default function DitherPage() {
   const enabled = useDitherStore(s => s.enabled);
   const method = useDitherStore(s => s.method);
   const amount = useDitherStore(s => s.amount);
-  const diffusion = useDitherStore(s => s.diffusion);
   const matrixScale = useDitherStore(s => s.matrixScale);
   const seed = useDitherStore(s => s.seed);
-  const colorSpace = useDitherStore(s => s.colorSpace);
 
   const setEnabled = useDitherStore(s => s.setEnabled);
   const setMethod = useDitherStore(s => s.setMethod);
   const setAmount = useDitherStore(s => s.setAmount);
-  const setDiffusion = useDitherStore(s => s.setDiffusion);
   const setMatrixScale = useDitherStore(s => s.setMatrixScale);
   const setSeed = useDitherStore(s => s.setSeed);
-  const setColorSpace = useDitherStore(s => s.setColorSpace);
 
   const selectMethod = (nextMethod) => {
     if (!enabled) {
@@ -39,10 +36,10 @@ export default function DitherPage() {
     setMethod(nextMethod);
   };
 
-  const showDiffusion = method !== DITHER_METHOD.ORDERED_BAYER && method !== DITHER_METHOD.RANDOM;
   const showMatrixScale = method === DITHER_METHOD.ORDERED_BAYER;
   const showSeed = method === DITHER_METHOD.RANDOM;
-  const showControls = enabled;
+  const showAmount = method !== DITHER_METHOD.ONLY_PALETTE;
+  const showControls = enabled && (showAmount || showMatrixScale || showSeed);
 
   return (
     <div>
@@ -82,45 +79,16 @@ export default function DitherPage() {
         <div className='bv-macro-section'>
           <h2>CONTROLS</h2>
           <div className='bv-section'>
-            <p className='bv-label'>COLOR SPACE</p>
-            <div className='bv-option-group'>
-              <button
-                type='button'
-                className={`bv-option-btn${colorSpace === DITHER_COLOR_SPACE.RGB ? ' active' : ''}`}
-                onClick={() => setColorSpace(DITHER_COLOR_SPACE.RGB)}
-              >
-                RGB
-              </button>
-              <button
-                type='button'
-                className={`bv-option-btn${colorSpace === DITHER_COLOR_SPACE.LAB ? ' active' : ''}`}
-                onClick={() => setColorSpace(DITHER_COLOR_SPACE.LAB)}
-              >
-                LAB
-              </button>
-            </div>
-
-            <SliderBundle
-              label='AMOUNT'
-              min={DITHER_CONTROLS.amount.min}
-              max={DITHER_CONTROLS.amount.max}
-              step={DITHER_CONTROLS.amount.step}
-              defaultValue={DITHER_CONTROLS.amount.default}
-              value={amount}
-              onChange={setAmount}
-              tooltip={DITHER_CONTROLS.amount.description}
-            />
-
-            {showDiffusion && (
+            {showAmount && (
               <SliderBundle
-                label='DIFFUSION'
-                min={DITHER_CONTROLS.diffusion.min}
-                max={DITHER_CONTROLS.diffusion.max}
-                step={DITHER_CONTROLS.diffusion.step}
-                defaultValue={DITHER_CONTROLS.diffusion.default}
-                value={diffusion}
-                onChange={setDiffusion}
-                tooltip={DITHER_CONTROLS.diffusion.description}
+                label='AMOUNT'
+                min={DITHER_CONTROLS.amount.min}
+                max={DITHER_CONTROLS.amount.max}
+                step={DITHER_CONTROLS.amount.step}
+                defaultValue={DITHER_CONTROLS.amount.default}
+                value={amount}
+                onChange={setAmount}
+                tooltip={DITHER_CONTROLS.amount.description}
               />
             )}
             {showMatrixScale && (
