@@ -1,22 +1,41 @@
-import { medianCut, kMeans, octree } from '../utils/colorAlgorithms';
+import init, { Image as WasmImage, Palettes } from 'ddot-wasm';
+import wasmUrl from 'ddot-wasm/ddot_wasm_bg.wasm?url';
 
-function runExtraction(pixels, method, count, options = {}) {
-  if (method === 'octree') return octree(pixels, count, options);
-  if (method === 'kmeans') return kMeans(pixels, count, 8, options);
-  return medianCut(pixels, count, options);
+let wasmInitialized = false;
+
+function colorToHex({ r, g, b }) {
+  const R = String(r.toString(16)).padStart(2, '0');
+  const G = String(g.toString(16)).padStart(2, '0');
+  const B = String(b.toString(16)).padStart(2, '0');
+  return `#${R}${G}${B}`;
 }
 
-self.onmessage = (event) => {
-  const { jobId, pixels, method, count, sampleStride } = event.data || {};
-  const startTs = self.performance?.now?.() ?? Date.now();
-  console.log(`[palette-worker] STARTING PALETTE GENERATION (job: ${jobId}, method: ${method}, count: ${count})`);
+self.onmessage = async (event) => {
+  const { jobId, pixels, width, height, method, count } = event.data || {};
+
 
   try {
-    const sourcePixels = new Uint8ClampedArray(pixels);
-    const palette = runExtraction(sourcePixels, method, count, { sampleStride });
+    if (!wasmInitialized) {
+      await init({ module_or_path: wasmUrl });
+      wasmInitialized = true;
+    }
 
-    const elapsed = (self.performance?.now?.() ?? Date.now()) - startTs;
-    console.log(`[palette-worker] COMPLETED PALETTE GENERATION (job: ${jobId}) in ${Math.round(elapsed)}ms`);
+    const pixelsArray = new Uint8ClampedArray(pixels);
+    const imageData = new ImageData(pixelsArray, width, height);
+    const image = new WasmImage(imageData);
+
+    const generators = Palettes.Generators;
+    let wasmPalette;
+
+    if (method === 'octree') {
+      wasmPalette = generators.Octree.calculate(image, count);
+    } else if (method === 'kmeans') {
+      wasmPalette = generators.Kmeans.calculate(image, count);
+    } else {
+      wasmPalette = generators.MedianCut.calculate(image, count);
+    }
+
+    const palette = wasmPalette.colors.map(colorToHex);
 
     self.postMessage({
       jobId,

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 export const DITHER_METHOD = {
+  ONLY_PALETTE: 'only_palette',
   FLOYD_STEINBERG: 'floyd_steinberg',
   JJN: 'jjn',
   STUCKI: 'stucki',
@@ -14,11 +15,6 @@ export const DITHER_METHOD = {
   RANDOM: 'random',
 };
 
-export const DITHER_COLOR_SPACE = {
-  LAB: 'lab',
-  RGB: 'rgb',
-};
-
 export const DITHER_CONTROLS = {
   amount: {
     min: 0.0,
@@ -26,13 +22,6 @@ export const DITHER_CONTROLS = {
     step: 0.01,
     default: 0.65,
     description: 'Scales the magnitude of dither noise added to each pixel before palette snapping. Lower values produce a more subtle effect.',
-  },
-  diffusion: {
-    min: 0.0,
-    max: 2.0,
-    step: 0.01,
-    default: 1.0,
-    description: 'Controls how much quantization error is spread to neighboring pixels. 1 = standard diffusion, 0 = no diffusion (threshold).',
   },
   matrixScale: {
     min: 1.0,
@@ -53,9 +42,7 @@ export const DITHER_CONTROLS = {
 const INITIAL_DITHER_STATE = {
   enabled: true,
   method: DITHER_METHOD.FLOYD_STEINBERG,
-  colorSpace: DITHER_COLOR_SPACE.RGB,
   amount: DITHER_CONTROLS.amount.default,
-  diffusion: DITHER_CONTROLS.diffusion.default,
   matrixScale: DITHER_CONTROLS.matrixScale.default,
   seed: DITHER_CONTROLS.seed.default,
 };
@@ -65,13 +52,7 @@ const useDitherStore = create(persist((set) => ({
 
   setEnabled: (enabled) => set({ enabled }),
   setMethod: (method) => set({ method }),
-  setColorSpace: (colorSpace) => set({
-    colorSpace: colorSpace === DITHER_COLOR_SPACE.RGB
-      ? DITHER_COLOR_SPACE.RGB
-      : DITHER_COLOR_SPACE.LAB,
-  }),
   setAmount: (amount) => set({ amount }),
-  setDiffusion: (diffusion) => set({ diffusion }),
   setMatrixScale: (matrixScale) => set({ matrixScale }),
   setSeed: (seed) => set({ seed }),
   resetDither: () => set({ ...INITIAL_DITHER_STATE }),

@@ -1,18 +1,18 @@
 .import-current-file {
   font-size: 0.78rem;
-  color: color-mix(in srgb, var(--color-text) 86%, transparent);
+  color: var(--color-text-subtle);
   overflow-wrap: anywhere;
 }
 
 .bv-macro-section {
-  border-bottom: 1px solid color-mix(in srgb, var(--color-text) 26%, transparent);
+  border-bottom: 1px solid var(--color-border);
   padding-bottom: 0.4rem;
   margin-bottom: 1rem;
 }
 
 .import-dropzone {
-  border: 1px dashed color-mix(in srgb, var(--color-text) 40%, transparent);
-  background: color-mix(in srgb, var(--color-text) 3%, transparent);
+  border: 1px dashed var(--color-border-hover);
+  background: var(--color-bg-subtle);
   padding: 1rem 0.8rem;
   font-size: 0.78rem;
   letter-spacing: 0.04em;
@@ -21,8 +21,8 @@
 }
 
 .import-dropzone.active {
-  background: color-mix(in srgb, var(--color-text) 12%, transparent);
-  border-color: color-mix(in srgb, var(--color-text) 75%, transparent);
+  background: var(--color-bg-subtle-hover);
+  border-color: var(--color-border-focus);
 }
 
 .import-name-input {
@@ -48,7 +48,7 @@
 .export-name-format {
   font-size: 0.74rem;
   letter-spacing: 0.08em;
-  color: color-mix(in srgb, var(--color-text) 62%, transparent);
+  color: var(--color-text-muted);
   flex-shrink: 0;
 }
 
@@ -66,13 +66,13 @@
 
 .import-export-status {
   font-size: 0.76rem;
-  color: color-mix(in srgb, var(--color-text) 72%, transparent);
+  color: var(--color-text-subtle);
   margin-top: 0.2rem;
 }
 
 .import-export-hint {
   font-size: 0.76rem;
-  color: color-mix(in srgb, var(--color-text) 58%, transparent);
+  color: var(--color-text-muted);
   margin-top: 0.25rem;
   letter-spacing: 0.03em;
 }
@@ -80,8 +80,8 @@
 .large-file-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.58);
-  backdrop-filter: blur(3px);
+  background: var(--color-backdrop);
+  backdrop-filter: var(--filter-floating-blur);
   z-index: 500;
   display: flex;
   align-items: center;
@@ -91,11 +91,11 @@
 
 .large-file-dialog {
   background: var(--color-bg);
-  border: 1px solid color-mix(in srgb, var(--color-text) 32%, transparent);
+  border: 1px solid var(--color-border);
   padding: 1.35rem 1.5rem 1.25rem;
   max-width: 380px;
   width: 100%;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--shadow-floating);
 }
 
 .large-file-dialog-title {
@@ -108,14 +108,14 @@
 .large-file-dialog-dims {
   font-size: 0.74rem;
   letter-spacing: 0.05em;
-  color: color-mix(in srgb, var(--color-text) 62%, transparent);
+  color: var(--color-text-muted);
   margin-bottom: 0.55rem;
 }
 
 .large-file-dialog-body {
   font-size: 0.74rem;
   line-height: 1.55;
-  color: color-mix(in srgb, var(--color-text) 72%, transparent);
+  color: var(--color-text-subtle);
   margin-bottom: 1.1rem;
 }
 
@@ -132,7 +132,7 @@
 }
 
 .large-file-btn-reduce {
-  border-color: color-mix(in srgb, var(--color-text) 65%, transparent);
+  border-color: var(--color-border-hover);
   color: var(--color-text);
 }
 
@@ -142,11 +142,12 @@
   max-height: 480px;
   object-fit: contain;
   margin-top: 0.6rem;
+  image-rendering: pixelated;
 }
 
 .export-preview-hint {
   font-size: 0.74rem;
-  color: color-mix(in srgb, var(--color-text) 52%, transparent);
+  color: var(--color-text-muted);
   margin-top: 0.4rem;
   text-align: center;
   letter-spacing: 0.03em;
