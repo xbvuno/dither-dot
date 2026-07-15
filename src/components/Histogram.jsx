@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { getPaletteReference, subscribePaletteReference } from '../utils/pixiRegistry';
+import { getPaletteReference, subscribePaletteReference } from '../utils/canvasRegistry';
 
 const CHANNELS = [
   { index: 0, color: '#e05555' },
@@ -67,13 +67,19 @@ export default function Histogram() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    if (!reference?.pixels?.length) {
+    if (!reference) {
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       return;
     }
 
-    const counts = computeHistogram(reference.pixels);
+    const counts = reference.histogram || (reference.pixels?.length ? computeHistogram(reference.pixels) : null);
+    if (!counts) {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      return;
+    }
+
     drawHistogram(canvas, counts);
   };
 

@@ -15,10 +15,10 @@
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  border-top: 1px solid color-mix(in srgb, var(--color-text) 24%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--color-text) 24%, transparent);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
   padding: 0.6rem;
-  background: color-mix(in srgb, var(--color-text) 3%, transparent);
+  background: var(--color-bg-subtle);
   display: grid;
   gap: 0.6rem;
   height: 100%;
@@ -44,7 +44,7 @@
   width: 2.8rem;
   height: 1px;
   transform: translateX(-50%);
-  background: color-mix(in srgb, var(--color-text) 34%, transparent);
+  background: var(--color-border-hover);
 }
 
 #root.is-resizing-timeline {
@@ -74,7 +74,7 @@
 .gif-timeline-label {
   font-size: 0.72rem;
   letter-spacing: 0.08em;
-  color: color-mix(in srgb, var(--color-text) 72%, transparent);
+  color: var(--color-text-subtle);
 }
 
 .gif-delay-wrap {
@@ -121,8 +121,8 @@
   position: relative;
   width: 56px;
   height: 44px;
-  border: 1px solid color-mix(in srgb, var(--color-text) 24%, transparent);
-  background: color-mix(in srgb, var(--color-text) 2%, transparent);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-subtle);
   cursor: pointer;
   flex: 0 0 auto;
   padding: 0;
@@ -147,8 +147,8 @@
 }
 
 .gif-frame-btn.active {
-  border-color: color-mix(in srgb, var(--color-text) 85%, transparent);
-  border-top: 4px solid color-mix(in srgb, var(--color-text) 85%, transparent);
+  border-color: var(--color-text-subtle);
+  border-top: 4px solid var(--color-text-subtle);
 }
 
 .gif-frame-state {
@@ -178,11 +178,11 @@
   letter-spacing: 0.02em;
   padding: 0 0.14rem;
   background: rgba(0, 0, 0, 0.7);
-  color: color-mix(in srgb, var(--color-text) 86%, transparent);
+  color: var(--color-text-subtle);
 }
 
 .gif-frame-state--pending {
-  color: #56a8ff;
+  color: var(--color-pending);
 }
 
 .gif-frame-state--rendering {
@@ -190,5 +190,5 @@
 }
 
 .gif-frame-state--done {
-  color: #5cd56f;
+  color: var(--color-success);
 }

@@ -17,7 +17,7 @@
 }
 
 .bv.slider .thumb.modified {
-    background-color: #e43b44;
+    background-color: var(--color-modified);
 }
 
 .bv.slider .track {
@@ -36,11 +36,11 @@
 }
 
 .bv.slider.selected .track {
-    background-color: color-mix(in srgb, var(--color-text) 8%, transparent);
+    background-color: var(--color-bg-subtle-hover);
 }
 
 .bv.slider .thumb.default {
-    background-color: color-mix(in srgb, var(--color-text) 40%, transparent);
+    background-color: var(--color-border-hover);
     opacity: 0.8;
     pointer-events: none;
 }
@@ -95,7 +95,7 @@
 }
 
 .bv.slider-bundle input {
-    background-color: color-mix(in srgb, var(--color-bg) 50%, black);
+    background-color: var(--input-surface);
     border: none;
     color: var(--color-text);
     text-align: right;
@@ -105,11 +105,11 @@
 
     margin-left: auto;
     flex-shrink: 1;
-    transition: 0.2;
+    transition: 0.2s;
 }
 
 .bv.slider-bundle input:hover {
-    background-color: var(--color-hover);
+    background-color: var(--input-surface-hover);
 }
 .bv.slider-bundle [aria-label="reset"] {
     margin-left: auto;
@@ -121,13 +121,13 @@
 
 .bv.slider-bundle input:focus-visible {
     outline: none;
-    border: 1px solid var(--color-text);
-    background-color: rgb(9, 9, 9);
+    border: 1px solid var(--color-border-focus);
+    background-color: var(--input-surface-focus);
     
 }
 
 .bv.slider-bundle input[aria-invalid="true"] {
-    border: 1px solid red
+    border: 1px solid var(--color-danger);
 }
 
 input[type="number"]::-webkit-outer-spin-button,

@@ -44,14 +44,14 @@
   margin: 0.5rem 0 0.35rem;
   font-size: 0.72rem;
   letter-spacing: 0.08em;
-  color: color-mix(in srgb, var(--color-text) 58%, transparent);
+  color: var(--color-text-muted);
 }
 
 .palette-color-chip {
   min-height: 2.15rem;
   display: grid;
   align-content: start;
-  border: 1px solid color-mix(in srgb, var(--color-bg) 48%, transparent);
+  border: 1px solid var(--color-border-subtle);
   padding: 0.4rem 0.5rem;
   font-size: 0.74rem;
   letter-spacing: 0.05em;
@@ -63,10 +63,6 @@
   top: 1rem;
   left: calc(100% + 0.65rem);
   width: 9.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   padding: 0.48rem;
   display: grid;
   align-content: start;
@@ -77,7 +73,7 @@
 .palette-custom-swatch {
   position: relative;
   min-height: 2.25rem;
-  border: 1px solid color-mix(in srgb, var(--color-bg) 52%, transparent);
+  border: 1px solid var(--color-border-subtle);
   padding: 0.35rem 0.42rem;
   display: grid;
   align-content: center;
@@ -88,7 +84,7 @@
 
 .palette-custom-swatch--selected {
   border-color: var(--color-text);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-text) 65%, transparent);
+  box-shadow: inset 0 0 0 1px var(--color-text-subtle);
 }
 
 .palette-custom-swatch--hidden {
@@ -123,9 +119,9 @@
 .palette-custom-swatch-delete {
   width: 1rem;
   height: 1rem;
-  border: 1px solid color-mix(in srgb, #b53636 65%, transparent);
-  background: color-mix(in srgb, var(--color-bg) 65%, transparent);
-  color: color-mix(in srgb, #ffc8c8 80%, var(--color-text));
+  border: 1px solid var(--color-danger);
+  background: var(--color-bg);
+  color: var(--color-danger-text);
   display: grid;
   place-items: center;
   line-height: 0;
@@ -135,15 +131,16 @@
 }
 
 .palette-custom-swatch-delete:hover {
-  border-color: color-mix(in srgb, #e14a4a 80%, transparent);
-  background: color-mix(in srgb, #7d2020 30%, transparent);
+  border-color: var(--color-danger-hover);
+  background: var(--color-danger-bg-hover);
+  color: var(--color-text);
 }
 
 .palette-editor-preview {
   display: block;
   width: 100%;
   aspect-ratio: 4 / 3;
-  border: 1px solid color-mix(in srgb, var(--color-bg) 56%, transparent);
+  border: 1px solid var(--color-border-subtle);
   cursor: pointer;
 }
 
@@ -172,7 +169,7 @@
   margin: 0;
   font-size: 0.66rem;
   letter-spacing: 0.08em;
-  color: color-mix(in srgb, var(--color-text) 70%, transparent);
+  color: var(--color-text-subtle);
 }
 
 .palette-library-card {
@@ -181,8 +178,8 @@
 
 .palette-library-item {
   width: 100%;
-  border: 1px solid color-mix(in srgb, var(--color-text) 26%, transparent);
-  background: color-mix(in srgb, var(--color-text) 4%, transparent);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-subtle);
   color: var(--color-text);
   text-align: left;
   padding: 0.45rem 1.75rem 0.45rem 0.45rem;
@@ -190,7 +187,7 @@
 }
 
 .palette-library-item:hover {
-  border-color: color-mix(in srgb, var(--color-text) 52%, transparent);
+  border-color: var(--color-border-hover);
 }
 
 .palette-library-delete {
@@ -199,9 +196,9 @@
   right: 0.22rem;
   width: 1rem;
   height: 1rem;
-  border: 1px solid color-mix(in srgb, #b53636 65%, transparent);
-  background: color-mix(in srgb, var(--color-bg) 65%, transparent);
-  color: color-mix(in srgb, #ffc8c8 80%, var(--color-text));
+  border: 1px solid var(--color-danger);
+  background: var(--color-bg);
+  color: var(--color-danger-text);
   display: grid;
   place-items: center;
   padding: 0;
@@ -216,8 +213,9 @@
 }
 
 .palette-library-delete:hover {
-  border-color: color-mix(in srgb, #e14a4a 80%, transparent);
-  background: color-mix(in srgb, #7d2020 30%, transparent);
+  border-color: var(--color-danger-hover);
+  background: var(--color-danger-bg-hover);
+  color: var(--color-text);
 }
 
 .palette-library-head {
@@ -237,7 +235,7 @@
 .palette-library-count {
   font-size: 0.68rem;
   letter-spacing: 0.05em;
-  color: color-mix(in srgb, var(--color-text) 76%, transparent);
+  color: var(--color-text-subtle);
 }
 
 .palette-library-swatches {
@@ -249,6 +247,6 @@
 .palette-library-swatches > span {
   width: 100%;
   aspect-ratio: 1;
-  border: 1px solid color-mix(in srgb, var(--color-bg) 60%, transparent);
+  border: 1px solid var(--color-border-subtle);
 }
 

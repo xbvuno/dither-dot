@@ -1,17 +1,9 @@
-let _app = null;
 let _sourceImage = null;
 let _paletteReference = null;
 const _paletteReferenceListeners = new Set();
 let _renderSnapshot = { uniqueColors: 0, originalUniqueColors: 0 };
 const _renderSnapshotListeners = new Set();
-
-export function registerPixiApp(app) {
-  _app = app;
-}
-
-export function getPixiApp() {
-  return _app;
-}
+let _outputCanvas = null;
 
 export function registerSourceImage(sourceImage) {
   _sourceImage = sourceImage;
@@ -55,8 +47,6 @@ export function subscribeRenderSnapshot(listener) {
     _renderSnapshotListeners.delete(listener);
   };
 }
-
-let _outputCanvas = null;
 
 export function registerOutputCanvas(canvas) {
   _outputCanvas = canvas ?? null;

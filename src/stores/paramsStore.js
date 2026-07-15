@@ -31,11 +31,11 @@ export const COLOR_CONTROLS = {
   },
 
   contrast: {
-    min: 0.0,
-    max: 3.0,
-    step: 0.01,
-    default: 1.0,
-    description: 'Expands or compresses the distance between dark and light values. Values above 1 increase contrast, below 1 flatten it.',
+    min: -100.0,
+    max: 500.0,
+    step: 1.0,
+    default: 0.0,
+    description: 'Adjusts image contrast. 0 is unchanged, negative values reduce contrast down to -100, positive values increase it up to 500.',
   },
 
   saturation: {
@@ -144,6 +144,7 @@ const initialValues = Object.fromEntries(
 const UI_DEFAULTS = {
   histogramVisible: true,
   pipelineVisible: false,
+  forceCpu: false,
 };
 
 /* ---------------------------------- */
@@ -166,6 +167,28 @@ const useParamsStore = create(persist((set) => {
     }),
     setHistogramVisible: (visible) => set(() => ({ histogramVisible: Boolean(visible) })),
     setPipelineVisible: (visible) => set(() => ({ pipelineVisible: Boolean(visible) })),
+    setForceCpu: (forceCpu) => set(() => ({ forceCpu: Boolean(forceCpu) })),
+    resetKeys: (keys) => set(() => {
+      const updates = {};
+      for (const key of keys) {
+        if (initialValues[key] !== undefined) {
+          updates[key] = initialValues[key];
+        }
+      }
+      return updates;
+    }),
+    randomizeKeys: (keys, controlsConfig) => set(() => {
+      const updates = {};
+      for (const key of keys) {
+        const cfg = controlsConfig[key];
+        if (cfg) {
+          const range = cfg.max - cfg.min;
+          const random = cfg.min + Math.random() * range;
+          updates[key] = snap(random, cfg.min, cfg.max, cfg.step);
+        }
+      }
+      return updates;
+    }),
   };
 
   // genera automaticamente tutti i setter

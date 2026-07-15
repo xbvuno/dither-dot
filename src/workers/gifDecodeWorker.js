@@ -97,8 +97,7 @@ function decodeGifFrames(arrayBuffer) {
 
 self.onmessage = (event) => {
   const { jobId, gifBuffer } = event.data || {};
-  const startTs = self.performance?.now?.() ?? Date.now();
-  console.log(`[gif-worker] STARTING GIF DECODE (job: ${jobId})`);
+
 
   try {
     const buffer = gifBuffer instanceof ArrayBuffer
@@ -116,9 +115,6 @@ self.onmessage = (event) => {
       delay: frame.delay,
       pixels: frame.pixels.buffer,
     }));
-
-    const elapsed = (self.performance?.now?.() ?? Date.now()) - startTs;
-    console.log(`[gif-worker] COMPLETED GIF DECODE (job: ${jobId}, frames: ${transferableFrames.length}) in ${Math.round(elapsed)}ms`);
 
     self.postMessage(
       {

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Smartphone, MonitorSmartphone, TriangleAlert, ArrowRight, Info, Heart, ScrollText, Cat, FileUp, SlidersHorizontal, Palette, SprayCan, Download } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Smartphone, MonitorSmartphone, TriangleAlert, ArrowRight, Info, Heart, ScrollText, Cat, FileUp, ImageUpscale, SlidersHorizontal, Palette, SprayCan, Download } from 'lucide-react'
 import Aside from './Aside'
 
 import statue from './assets/statue.jpg'
@@ -15,7 +15,8 @@ import useProcessingStore from './stores/processingStore'
 import useWatermarkStore from './stores/watermarkStore'
 
 const ICONS = [
-  { id: PAGE.IMPORT, label: 'Input', Icon: FileUp },
+  { id: PAGE.IMPORT, label: 'Import', Icon: FileUp },
+  { id: PAGE.RESIZING, label: 'Resizing', Icon: ImageUpscale },
   { id: PAGE.ADJUSTMENTS, label: 'Adjustments', Icon: SlidersHorizontal },
   { id: PAGE.PALETTE, label: 'Palette', Icon: Palette },
   { id: PAGE.DITHER, label: 'Dither', Icon: SprayCan },
@@ -31,11 +32,6 @@ const IS_MOBILE = (() => {
   return /Android|iPhone|iPad|iPod|Windows Phone|Mobi/i.test(ua) || touchMac
 })()
 
-const WEBGL2_SUPPORTED = (() => {
-  const canvas = document.createElement('canvas')
-  return !!canvas.getContext('webgl2')
-})()
-
 function App() {
   const [modalType, setModalType] = useState(null)
   const [continueOnMobile, setContinueOnMobile] = useState(false)
@@ -46,6 +42,49 @@ function App() {
   const renderProcessing = useProcessingStore(s => s.renderProcessing)
   const watermarkEnabled = useWatermarkStore(s => s.enabled)
   const setWatermarkEnabled = useWatermarkStore(s => s.setEnabled)
+
+  const navRef = useRef(null)
+  const lastScrollTimeRef = useRef(0)
+  const currentPageRef = useRef(currentPage)
+
+  useEffect(() => {
+    currentPageRef.current = currentPage
+  }, [currentPage])
+
+  useEffect(() => {
+    const navEl = navRef.current
+    if (!navEl) return
+
+    const handleWheel = (event) => {
+      event.preventDefault()
+      const now = Date.now()
+      if (now - lastScrollTimeRef.current < 250) {
+        return
+      }
+
+      const delta = event.deltaY
+      if (delta === 0) return
+
+      const pageIds = ICONS.map(item => item.id)
+      const currentIndex = pageIds.indexOf(currentPageRef.current)
+      if (currentIndex === -1) return
+
+      let nextIndex
+      if (delta > 0) {
+        nextIndex = (currentIndex + 1) % pageIds.length
+      } else {
+        nextIndex = (currentIndex - 1 + pageIds.length) % pageIds.length
+      }
+
+      setPage(pageIds[nextIndex])
+      lastScrollTimeRef.current = now
+    }
+
+    navEl.addEventListener('wheel', handleWheel, { passive: false })
+    return () => {
+      navEl.removeEventListener('wheel', handleWheel)
+    }
+  }, [setPage])
 
   const handleNavDragOver = (event, pageId) => {
     event.preventDefault()
@@ -96,58 +135,12 @@ function App() {
     )
   }
 
-  if (!WEBGL2_SUPPORTED) {
-    return (
-      <div className='webgl2-blocker'>
-        <div>
-          <div aria-hidden='true'>
-            <TriangleAlert size={34} strokeWidth={1.75} />
-          </div>
-          <h1>WEBGL2 REQUIRED</h1>
-          <p>
-            This app needs WebGL2 to run. Your browser or GPU does not expose a WebGL2 context.
-          </p>
-          <p>
-            Try enabling hardware acceleration, updating graphics drivers, or using a modern Chromium or Firefox build.
-          </p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <>
-      <header className='app-header'>
-        <span className='app-header-title'>
-          <img src={watermarkMini} alt='' aria-hidden='true' className='app-header-mark' />
-          <span className='app-header-title-name'>DITHER-DOT</span>
-        </span>
-        <div className='app-header-links'>
-          <button type='button' className='header-link-btn' onClick={() => setModalType('about')}>
-            <Info size={13} strokeWidth={2} />
-            ABOUT
-          </button>
-          <button type='button' className='header-link-btn' onClick={() => setModalType('changelog')}>
-            <ScrollText size={13} strokeWidth={2} />
-            CHANGELOG
-          </button>
-          <button type='button' className='header-link-btn' onClick={() => setModalType('support')}>
-            <Heart size={13} strokeWidth={2} />
-            SUPPORT
-          </button>
-          <a
-            href='https://github.com/xbvuno/dither-dot'
-            target='_blank'
-            rel='noopener noreferrer'
-            className='header-link-btn'
-          >
-            <Cat size={13} strokeWidth={2} />
-            GITHUB
-          </a>
-        </div>
-      </header>
-      <main>
-        <nav>
+      <div className='app-layout'>
+        <nav ref={navRef} className='app-nav'>
+        <img src={watermarkMini} alt='' aria-hidden='true' className='nav-logo-img' />
+        <div className='nav-links-wrap'>
           {ICONS.map((item) => {
             const Icon = item.Icon
             return (
@@ -165,23 +158,56 @@ function App() {
               </button>
             )
           })}
-        </nav>
-        <Aside>
-          <AsideRouter />
-        </Aside>
-        <div className='flex-v'>
-          <div className='zoomable-wrap'>
-            <ZoomableDiv content={<ImageShader sourceImg={sourceImg || statue} />} />
-            {(viewerLoading || renderProcessing) && (
-              <div className='zoomable-loading-overlay' role='status' aria-live='polite' aria-label='Loading media'>
-                <span className='zoomable-loading-label'>LOADING</span>
-              </div>
-            )}
-          </div>
-          <GifTimeline />
-          <Footer />
         </div>
-      </main>
+      </nav>
+      <div className='app-body-container'>
+        <header className='app-header'>
+          <span className='app-header-title'>
+            <span className='app-header-title-name'>DITHER-DOT</span>
+          </span>
+          <div className='app-header-links'>
+            <button type='button' className='header-link-btn' onClick={() => setModalType('about')}>
+              <Info size={13} strokeWidth={2} />
+              ABOUT
+            </button>
+            <button type='button' className='header-link-btn' onClick={() => setModalType('changelog')}>
+              <ScrollText size={13} strokeWidth={2} />
+              CHANGELOG
+            </button>
+            <button type='button' className='header-link-btn' onClick={() => setModalType('support')}>
+              <Heart size={13} strokeWidth={2} />
+              SUPPORT
+            </button>
+            <a
+              href='https://github.com/xbvuno/dither-dot'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='header-link-btn'
+            >
+              <Cat size={13} strokeWidth={2} />
+              GITHUB
+            </a>
+          </div>
+        </header>
+        <main>
+          <Aside>
+            <AsideRouter />
+          </Aside>
+          <div className='flex-v'>
+            <div className='zoomable-wrap'>
+              <ZoomableDiv content={<ImageShader sourceImg={sourceImg || statue} />} />
+              {(viewerLoading || renderProcessing) && (
+                <div className='zoomable-loading-overlay' role='status' aria-live='polite' aria-label='Loading media'>
+                  <span className='zoomable-loading-label'>LOADING</span>
+                </div>
+              )}
+            </div>
+            <GifTimeline />
+            <Footer />
+          </div>
+        </main>
+      </div>
+    </div>
       {activeModal && (
         <div className='header-modal-backdrop' onClick={() => setModalType(null)}>
           <section
