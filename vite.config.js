@@ -3,11 +3,6 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
 import workboxBuild from 'workbox-build'
 import wasm from 'vite-plugin-wasm'
-import topLevelAwait from 'vite-plugin-top-level-await'
-import path from 'path'
-import { fileURLToPath } from 'url'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 function generateServiceWorker() {
   return {
@@ -65,11 +60,6 @@ export default defineConfig({
     // topLevelAwait(),
     generateServiceWorker()
   ],
-  resolve: {
-    alias: {
-      'wasm-pkg': path.resolve(__dirname, '../ddot/wasm/pkg'),
-    },
-  },
   build: {
     target: 'esnext',
     chunkSizeWarningLimit: 600,
