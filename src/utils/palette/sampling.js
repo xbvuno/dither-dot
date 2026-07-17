@@ -1,15 +1,3 @@
-export function extractColors(pixels, sampleStride = 1) {
-  const out = [];
-  const step = 4 * Math.max(1, sampleStride | 0);
-
-  for (let i = 0; i < pixels.length; i += step) {
-    if (pixels[i + 3] < 128) continue;
-    out.push([pixels[i], pixels[i + 1], pixels[i + 2]]);
-  }
-
-  return out;
-}
-
 export function resolvePaletteSampleStride(accuracy, pixelsLength) {
   const a = Number.isFinite(accuracy) ? Math.max(0, Math.min(1, accuracy)) : 0.5;
   const pixelCount = Math.max(1, Math.floor((pixelsLength || 0) / 4));
@@ -54,16 +42,6 @@ export function extractColorHistogram(pixels, sampleStride = 1) {
   return out;
 }
 
-export function extractPackedColors(pixels) {
-  const out = [];
-
-  for (let i = 0; i < pixels.length; i += 4) {
-    if (pixels[i + 3] < 128) continue;
-    out.push((pixels[i] << 16) | (pixels[i + 1] << 8) | pixels[i + 2]);
-  }
-
-  return out;
-}
 
 export function extractPackedColorsWithStride(pixels, sampleStride = 1) {
   const out = [];
