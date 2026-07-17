@@ -42,7 +42,7 @@ function isLikelyImageFile(file) {
   return SUPPORTED_EXTENSIONS.has(getExtension(file.name));
 }
 
-const LARGE_IMAGE_THRESHOLD = 1_000_000;
+const LARGE_IMAGE_THRESHOLD = 1920 * 1080;
 
 function isGifFile(file) {
   if (!file) return false;
@@ -1009,7 +1009,7 @@ export default function ImportPage() {
     if (isRandomLoading) return;
     setIsRandomLoading(true);
     try {
-      const w = Math.floor(Math.random() * (1920 - 400 + 1)) + 400;
+      const w = Math.floor(Math.random() * (1980 - 400 + 1)) + 400;
       const h = Math.floor(Math.random() * (1080 - 300 + 1)) + 300;
       const url = `https://picsum.photos/${w}/${h}?random=${Date.now()}`;
       
@@ -1079,7 +1079,7 @@ export default function ImportPage() {
             disabled={isRandomLoading}
           >
             <Dices size={13} strokeWidth={1.5} />
-            {isRandomLoading ? 'LOADING...' : 'RANDOM IMG'}
+            {isRandomLoading ? 'LOADING...' : 'RANDOM IMAGE'}
           </button>
           <button
             type='button'
