@@ -1,7 +1,7 @@
 import { encode } from 'modern-gif';
 import gifWorkerUrl from 'modern-gif/worker?url';
 import useGifStore from '../stores/gifStore';
-import { getOutputCanvas, getPixiApp } from './pixiRegistry';
+import { getOutputCanvas } from './canvasRegistry';
 
 function waitForFrameRendered(frameIndex, timeoutMs = 20000) {
   const initial = useGifStore.getState();
@@ -42,22 +42,6 @@ function captureCanvasPixels(canvas) {
 }
 
 function captureCompositedPixels() {
-  const app = getPixiApp();
-  if (app?.renderer?.extract) {
-    const width = Math.max(1, Number(app.renderer.width) || 1);
-    const height = Math.max(1, Number(app.renderer.height) || 1);
-    const extracted = app.renderer.extract.pixels({ target: app.stage });
-    const pixels = extracted?.pixels ?? extracted;
-
-    if (pixels) {
-      return {
-        width,
-        height,
-        pixels: new Uint8Array(pixels),
-      };
-    }
-  }
-
   const outputCanvas = getOutputCanvas();
   if (!outputCanvas) {
     throw new Error('No processed canvas available for GIF export.');

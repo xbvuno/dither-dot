@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Save, Copy, Eye } from 'lucide-react';
 import useImageStore from '../stores/imageStore';
 import useGifStore from '../stores/gifStore';
-import { getOutputCanvas } from '../utils/pixiRegistry';
+import { getOutputCanvas } from '../utils/canvasRegistry';
 import { exportCurrentGif } from '../utils/exportGif';
 import SliderBundle from '../components/SliderBundle';
 
@@ -164,6 +164,51 @@ export default function ExportPage() {
     }
   };
 
+  useEffect(() => {
+    const canvasExists = !!getOutputCanvas();
+    const canGenerate = canvasExists && (!isGifSource || allFramesRendered);
+    if (canGenerate) {
+      handleGeneratePreview();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allFramesRendered, isGifSource, sourceName, upscale]);
+
+  const handleCopy = async () => {
+    try {
+      setPreviewGenerating(true);
+      setStatus('GENERATING PREVIEW...');
+      
+      const canvasNode = getExportCanvasOrThrow();
+      const upscaledCanvas = createUpscaledCanvas(canvasNode, upscale);
+      
+      // Generate preview first
+      if (isGifSource) {
+        if (!allFramesRendered) {
+          setStatus('CANNOT GENERATE GIF PREVIEW: NOT ALL FRAMES DITHERED YET');
+          setTimeout(() => setStatus(null), 3500);
+          return;
+        }
+        const gifDataUrl = await exportCurrentGif(exportBaseName, { upscale, returnDataUrl: true });
+        setExportPreviewUrl(gifDataUrl);
+      } else {
+        const dataUrl = await canvasToDataUrl(upscaledCanvas);
+        setExportPreviewUrl(dataUrl);
+      }
+      
+      setStatus('COPYING TO CLIPBOARD...');
+      // Copy to clipboard
+      await copyCanvasToClipboard(upscaledCanvas);
+      setStatus('COPIED TO CLIPBOARD!');
+      setTimeout(() => setStatus(null), 2500);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Copy failed.';
+      setStatus(msg);
+      setTimeout(() => setStatus(null), 3500);
+    } finally {
+      setPreviewGenerating(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!isGifSource) {
       await withCanvas((canvasNode) => saveCanvasAsPng(createUpscaledCanvas(canvasNode, upscale), exportBaseName));
@@ -202,10 +247,7 @@ export default function ExportPage() {
             <span className='export-name-format'>{exportFormat}</span>
           </div>
         </div>
-      </div>
 
-      <div className='bv-macro-section'>
-        <h2>UPSCALING</h2>
         <div className='bv-section'>
           <SliderBundle
             label='UPSCALE'
@@ -216,14 +258,8 @@ export default function ExportPage() {
             value={upscale}
             onChange={setUpscale}
           />
-          <p className='import-export-hint'>
-            FINAL {exportFormat} SIZE: {finalWidth} x {finalHeight}
-          </p>
         </div>
-      </div>
 
-      <div className='bv-macro-section'>
-        <h2>ACTIONS</h2>
         <div className='bv-section'>
           <div className='bv-option-group'>
             <button
@@ -233,7 +269,7 @@ export default function ExportPage() {
               disabled={gifExporting || previewGenerating || (isGifSource && !allFramesRendered)}
             >
               <Eye size={13} strokeWidth={1.5} />
-              {previewGenerating ? 'GENERATING...' : 'GENERATE PREVIEW'}
+              {previewGenerating ? 'GENERATING...' : previewUrl ? 'REFRESH PREVIEW' : 'GENERATE PREVIEW'}
             </button>
             <button
               type='button'
@@ -247,8 +283,8 @@ export default function ExportPage() {
             <button
               type='button'
               className='bv-option-btn export-btn'
-              onClick={() => withCanvas((canvasNode) => copyCanvasToClipboard(createUpscaledCanvas(canvasNode, upscale)))}
-              disabled={gifExporting}
+              onClick={handleCopy}
+              disabled={gifExporting || previewGenerating || (isGifSource && !allFramesRendered)}
             >
               <Copy size={13} strokeWidth={1.5} />
               COPY
@@ -259,7 +295,7 @@ export default function ExportPage() {
 
         {previewUrl && (
           <div className='bv-section'>
-            <p className='bv-label'>PREVIEW</p>
+            <p className='bv-label'>PREVIEW ({finalWidth} x {finalHeight})</p>
             <img
               src={previewUrl}
               className='export-preview-floating'
