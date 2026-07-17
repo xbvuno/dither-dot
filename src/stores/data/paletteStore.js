@@ -1,10 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { medianCut } from '../../utils/palette/medianCut';
-import { kMeans } from '../../utils/palette/kMeans';
-import { octree } from '../../utils/palette/octree';
-import { blendHex } from '../../utils/palette/colorMath';
-import { resolvePaletteSampleStride } from '../../utils/palette/sampling';
+import { blendHex } from '../../utils/colorMath';
 import { getPaletteReference } from '../../utils/canvasRegistry';
 import useProcessingStore from '../engine/processingStore';
 import usePerformanceStore from '../engine/performanceStore';
@@ -65,15 +61,9 @@ function makeColor(hex, locked = false) {
   return { id: _uid++, hex, locked, hidden: false };
 }
 
-function runExtraction(pixels, method, count, options = {}) {
-  if (method === EXTRACT_METHOD.OCTREE) return octree(pixels, count, options);
-  if (method === EXTRACT_METHOD.KMEANS) return kMeans(pixels, count, 8, options);
-  return medianCut(pixels, count, options);
-}
-
 function runExtractionAsync(pixels, method, count, options = {}) {
   if (!paletteWorker) {
-    return Promise.resolve(runExtraction(pixels, method, count, options));
+    return Promise.resolve([]);
   }
 
   const bufferCopy = new Uint8ClampedArray(pixels);
@@ -82,18 +72,12 @@ function runExtractionAsync(pixels, method, count, options = {}) {
   return new Promise((resolve, reject) => {
     let settled = false;
 
-    // Safety timeout: if the worker hangs, fall back to main-thread extraction
     const timeout = setTimeout(() => {
       if (settled) return;
       settled = true;
       paletteWorkerJobs.delete(jobId);
-      console.warn('[palette] Worker timed out, falling back to main thread');
-      try {
-        const fallback = runExtraction(new Uint8ClampedArray(pixels), method, count, options);
-        resolve(fallback);
-      } catch (e) {
-        reject(e);
-      }
+      console.warn('[palette] Worker timed out');
+      reject(new Error('Palette extraction timed out'));
     }, 15000);
 
     const wrappedResolve = (result) => {
@@ -121,7 +105,6 @@ function runExtractionAsync(pixels, method, count, options = {}) {
           height: options.height,
           method,
           count,
-          sampleStride: options.sampleStride,
         },
         [bufferCopy.buffer],
       );
@@ -417,9 +400,7 @@ const usePaletteStore = create(persist((set, get) => ({
     }
 
     try {
-      const sampleStride = resolvePaletteSampleStride(samplingAccuracy, pixels.length);
       const extracted = await runExtractionAsync(pixels, algoMethod, slots, {
-        sampleStride,
         width: reference.width || 1,
         height: reference.height || 1,
       });
