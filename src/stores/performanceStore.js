@@ -6,6 +6,9 @@ const usePerformanceStore = create((set) => ({
     pipelineTotal: 0,
     extraction: 0,
     paletteGeneration: 0,
+    noise: 0,
+    adjustment: 0,
+    blur: 0,
     dithering: 0,
     textureUpdate: 0,
     layerSync: 0,
@@ -32,6 +35,9 @@ const usePerformanceStore = create((set) => ({
       pipelineTotal: 0,
       extraction: 0,
       paletteGeneration: state.pendingPaletteCarryOver,
+      noise: 0,
+      adjustment: 0,
+      blur: 0,
       dithering: 0,
       textureUpdate: 0,
       layerSync: 0,
@@ -88,9 +94,8 @@ const usePerformanceStore = create((set) => ({
   })),
 
   recordPipelineComplete: () => set((state) => {
-    const { extraction, paletteGeneration, dithering, textureUpdate, layerSync } = state.timing;
-    // Sum the three main phases: extraction + palette + dithering (+ minor phases)
-    const pipelineTotal = extraction + paletteGeneration + dithering + textureUpdate + layerSync;
+    const { extraction, paletteGeneration, noise, adjustment, blur, dithering, textureUpdate, layerSync } = state.timing;
+    const pipelineTotal = extraction + paletteGeneration + noise + adjustment + blur + dithering + textureUpdate + layerSync;
     return {
       pipelineEnd: performance.now(),
       currentPhase: null,
@@ -106,6 +111,9 @@ const usePerformanceStore = create((set) => ({
       pipelineTotal: 0,
       extraction: 0,
       paletteGeneration: 0,
+      noise: 0,
+      adjustment: 0,
+      blur: 0,
       dithering: 0,
       textureUpdate: 0,
       layerSync: 0,

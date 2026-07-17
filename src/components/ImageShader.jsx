@@ -1,17 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
 import useViewStore from "../stores/viewStore";
-import {
-  Application,
-  Sprite,
-  Filter,
-  GlProgram,
-  Texture,
-  TextureStyle,
-} from "pixi.js";
-
-import base_vertex from '../shaders/base_vertex.glsl?raw'
-import color_adjustments from '../shaders/color_adjustments.glsl?raw'
-import kawase_blur from '../shaders/kawase_blur.glsl?raw'
 import useSizeStore from "../stores/sizeStore";
 import useParamsStore, { BLUR_CONTROLS } from "../stores/paramsStore";
 import usePaletteStore, { EXTRACT_METHOD } from "../stores/paletteStore";
@@ -23,32 +11,13 @@ import useWatermarkStore from "../stores/watermarkStore";
 import useImageStore from "../stores/imageStore";
 import useWebcamStore, { WEBCAM_SOURCE } from "../stores/webcamStore";
 import {
-  registerPixiApp,
   registerRenderSnapshot,
   registerSourceImage,
   registerPaletteReference,
   registerOutputCanvas,
-} from "../utils/pixiRegistry";
+} from "../utils/canvasRegistry";
 import watermarkImage from "../assets/water-mark.png";
 import watermarkMiniImage from "../assets/water-mark-mini.png";
-
-const watermark_palette_fragment = `
-in vec2 vTextureCoord;
-
-uniform sampler2D uTexture;
-uniform vec3 uDarkColor;
-uniform vec3 uLightColor;
-
-out vec4 finalColor;
-
-void main()
-{
-  vec4 tex = texture(uTexture, vTextureCoord);
-  float luminance = dot(tex.rgb, vec3(0.2126, 0.7152, 0.0722));
-  vec3 mapped = mix(uDarkColor, uLightColor, luminance);
-  finalColor = vec4(mapped, tex.a);
-}
-`;
 
 const MAX_PALETTE_SIZE = 64;
 const PROCESSING_DEBOUNCE_MS = 48;
@@ -57,8 +26,6 @@ const VIEWER_LOADING_VISIBILITY_DELAY_MS = 100;
 const DITHER_WORKER_TIMEOUT_MS = 10000;
 const WATERMARK_MARGIN_NORMAL = 4;
 const WATERMARK_MARGIN_MINI = 2;
-
-// scaleMode 'nearest' is applied only to the dithered output texture, not globally.
 
 function hexToRgbUnit(hex) {
   const clean = hex.replace('#', '');
@@ -121,15 +88,6 @@ function normalizePalette(colors, colorCount) {
   return picked;
 }
 
-function buildFilterChain(colorFilter, blurFilters, blurStrength, blurPasses) {
-  if (!Array.isArray(blurFilters) || blurFilters.length === 0 || Number(blurStrength) <= 0) {
-    return [colorFilter];
-  }
-
-  const passCount = Math.max(1, Math.floor(blurPasses));
-  return [colorFilter, ...blurFilters.slice(0, passCount)];
-}
-
 function drawWebcamFrameToCanvas(video, canvas, ctx, mirrored) {
   if (!video || !canvas || !ctx) return;
 
@@ -171,25 +129,6 @@ function getDrawableDimensions(source) {
   };
 }
 
-function resolveContainDrawRect(sourceWidth, sourceHeight, displayWidth, displayHeight) {
-  const safeSourceWidth = Math.max(1, Number(sourceWidth) || 1);
-  const safeSourceHeight = Math.max(1, Number(sourceHeight) || 1);
-  const safeDisplayWidth = Math.max(1, Number(displayWidth) || 1);
-  const safeDisplayHeight = Math.max(1, Number(displayHeight) || 1);
-
-  // Draw source at native size (1:1). If it exceeds viewport bounds,
-  // canvas clipping will crop it rather than scaling it.
-  const width = safeSourceWidth;
-  const height = safeSourceHeight;
-
-  return {
-    x: Math.round((safeDisplayWidth - width) / 2),
-    y: Math.round((safeDisplayHeight - height) / 2),
-    width,
-    height,
-  };
-}
-
 async function loadTexture(sourceImg) {
   if (!sourceImg) return null;
 
@@ -206,35 +145,7 @@ async function loadTexture(sourceImg) {
     throw new Error('Loaded image has invalid dimensions');
   }
 
-  return Texture.from(image);
-}
-
-function resolveExtractDimensions(pixelLength, preferredWidth, preferredHeight) {
-  const pixelCount = Math.floor(pixelLength / 4);
-  let width = Math.max(1, Math.floor(preferredWidth));
-  let height = Math.max(1, Math.floor(preferredHeight));
-
-  if (width * height === pixelCount) {
-    return { width, height };
-  }
-
-  if (pixelCount % width === 0) {
-    return { width, height: Math.floor(pixelCount / width) };
-  }
-
-  if (pixelCount % height === 0) {
-    return { width: Math.floor(pixelCount / height), height };
-  }
-
-  width = Math.max(1, Math.floor(Math.sqrt(pixelCount)));
-  while (width > 1 && pixelCount % width !== 0) {
-    width -= 1;
-  }
-
-  return {
-    width,
-    height: Math.max(1, Math.floor(pixelCount / width)),
-  };
+  return image;
 }
 
 function countUniqueColorsFromPixels(pixels) {
@@ -295,131 +206,57 @@ async function countUniqueColorsFromImageSource(sourceImg) {
   return countUniqueColorsFromPixels(imageData.data);
 }
 
-function extractProcessedPixels(
-  app,
-  sourceSprite,
-  originalSprite,
-  outputSprite,
-  watermarkSprite,
-  watermarkMiniSprite,
-  splitMaskLeft = null,
-  splitMaskRight = null,
-) {
-  const prevSourceVisible = sourceSprite.visible;
-  const prevOriginalVisible = originalSprite?.visible;
-  const prevOutputVisible = outputSprite.visible;
-  const prevSourceMask = sourceSprite.mask;
-  const prevOutputMask = outputSprite.mask;
-  const prevWatermarkVisible = watermarkSprite?.visible;
-  const prevWatermarkMiniVisible = watermarkMiniSprite?.visible;
-  const prevSplitLeftVisible = splitMaskLeft?.visible;
-  const prevSplitRightVisible = splitMaskRight?.visible;
-
-  sourceSprite.visible = true;
-  if (originalSprite) originalSprite.visible = false;
-  outputSprite.visible = false;
-  sourceSprite.mask = null;
-  outputSprite.mask = null;
-  if (watermarkSprite) watermarkSprite.visible = false;
-  if (watermarkMiniSprite) watermarkMiniSprite.visible = false;
-  if (splitMaskLeft) splitMaskLeft.visible = false;
-  if (splitMaskRight) splitMaskRight.visible = false;
-
-  const extracted = app.renderer.extract.pixels({ target: app.stage });
-
-  sourceSprite.visible = prevSourceVisible;
-  if (originalSprite && typeof prevOriginalVisible === 'boolean') {
-    originalSprite.visible = prevOriginalVisible;
-  }
-  outputSprite.visible = prevOutputVisible;
-  sourceSprite.mask = prevSourceMask;
-  outputSprite.mask = prevOutputMask;
-  if (watermarkSprite && typeof prevWatermarkVisible === 'boolean') {
-    watermarkSprite.visible = prevWatermarkVisible;
-  }
-  if (watermarkMiniSprite && typeof prevWatermarkMiniVisible === 'boolean') {
-    watermarkMiniSprite.visible = prevWatermarkMiniVisible;
-  }
-  if (splitMaskLeft && typeof prevSplitLeftVisible === 'boolean') {
-    splitMaskLeft.visible = prevSplitLeftVisible;
-  }
-  if (splitMaskRight && typeof prevSplitRightVisible === 'boolean') {
-    splitMaskRight.visible = prevSplitRightVisible;
-  }
-
-  const pixels = extracted?.pixels ?? extracted;
-  const buffer = new Uint8ClampedArray(pixels);
-  const preferredWidth = Math.max(1, Math.round(Number(app.renderer?.width) || 1));
-  const preferredHeight = Math.max(1, Math.round(Number(app.renderer?.height) || 1));
-  const { width, height } = resolveExtractDimensions(buffer.length, preferredWidth, preferredHeight);
-
-  return { pixels: buffer, width, height };
-}
-
 function getTargetDisplaySize() {
-  const { size, customSize } = useSizeStore.getState();
+  const { size, customSize, crop } = useSizeStore.getState();
   const width = Math.max(1, Math.floor(Number(customSize.customWidth) || Number(size.width) || 1));
   const height = Math.max(1, Math.floor(Number(customSize.customHeight) || Number(size.height) || 1));
 
-  return { width, height };
+  const left = crop?.left || 0;
+  const right = crop?.right || 0;
+  const top = crop?.top || 0;
+  const bottom = crop?.bottom || 0;
+
+  return {
+    width: Math.max(1, width - left - right),
+    height: Math.max(1, height - top - bottom),
+  };
 }
 
-function applyDisplaySize(
-  app,
-  sourceSprite,
-  outputSprite,
-  width,
-  height,
-  watermarkSprite = null,
-  watermarkMiniSprite = null,
-  watermarkEnabled = true,
-) {
-  const safeWidth = Math.max(1, Math.floor(Number(width) || 1));
-  const safeHeight = Math.max(1, Math.floor(Number(height) || 1));
+function generateRecoloredWatermark(watermarkImg, darkColor, lightColor) {
+  if (!watermarkImg) return null;
+  const canvas = document.createElement('canvas');
+  canvas.width = watermarkImg.width;
+  canvas.height = watermarkImg.height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(watermarkImg, 0, 0);
 
-  app.renderer.resize(safeWidth, safeHeight);
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imgData.data;
 
-  if (app.canvas) {
-    app.canvas.style.width = `${safeWidth}px`;
-    app.canvas.style.height = `${safeHeight}px`;
-    app.canvas.style.imageRendering = 'pixelated';
+  const dr = darkColor[0] * 255;
+  const dg = darkColor[1] * 255;
+  const db = darkColor[2] * 255;
+
+  const lr = lightColor[0] * 255;
+  const lg = lightColor[1] * 255;
+  const lb = lightColor[2] * 255;
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i+1];
+    const b = data[i+2];
+    const a = data[i+3];
+    if (a === 0) continue;
+
+    const luma = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255.0;
+
+    data[i] = dr + (lr - dr) * luma;
+    data[i+1] = dg + (lg - dg) * luma;
+    data[i+2] = db + (lb - db) * luma;
   }
 
-  if (sourceSprite) {
-    sourceSprite.width = safeWidth;
-    sourceSprite.height = safeHeight;
-  }
-
-  if (outputSprite) {
-    outputSprite.width = safeWidth;
-    outputSprite.height = safeHeight;
-  }
-
-  if (watermarkSprite) {
-    watermarkSprite.scale.set(1);
-    watermarkSprite.position.set(
-      safeWidth - WATERMARK_MARGIN_NORMAL,
-      safeHeight - WATERMARK_MARGIN_NORMAL,
-    );
-  }
-
-  if (watermarkMiniSprite) {
-    watermarkMiniSprite.scale.set(1);
-    watermarkMiniSprite.position.set(
-      safeWidth - WATERMARK_MARGIN_MINI,
-      safeHeight - WATERMARK_MARGIN_MINI,
-    );
-  }
-
-  const useMiniWatermark = safeWidth < 64 || safeHeight < 64;
-  if (watermarkSprite) {
-    watermarkSprite.visible = watermarkEnabled && !useMiniWatermark;
-  }
-  if (watermarkMiniSprite) {
-    watermarkMiniSprite.visible = watermarkEnabled && useMiniWatermark;
-  }
-
-  return { width: safeWidth, height: safeHeight };
+  ctx.putImageData(imgData, 0, 0);
+  return canvas;
 }
 
 export default function ShaderImage({ sourceImg }) {
@@ -435,17 +272,12 @@ export default function ShaderImage({ sourceImg }) {
 
   const renderRef = useRef(null);
   const canvasHostRef = useRef(null);
-  const appRef = useRef(null);
-  const sourceSpriteRef = useRef(null);
-  const originalSpriteRef = useRef(null);
-  const outputSpriteRef = useRef(null);
-  const watermarkSpriteRef = useRef(null);
-  const watermarkMiniSpriteRef = useRef(null);
-  const watermarkFilterRef = useRef(null);
-  const colorFilterRef = useRef(null);
-  const blurFiltersRef = useRef([]);
-  const outputTextureRef = useRef(null);
-  const retiredOutputTexturesRef = useRef([]);
+  const viewportCanvasRef = useRef(null);
+  const activeSourceRef = useRef(null);
+  const watermarkImgRef = useRef(null);
+  const watermarkMiniImgRef = useRef(null);
+  const recoloredWatermarkCanvasRef = useRef(null);
+  const recoloredWatermarkMiniCanvasRef = useRef(null);
   const outputCanvasRef = useRef(null);
   const outputContextRef = useRef(null);
   const frameCanvasRef = useRef(null);
@@ -484,7 +316,6 @@ export default function ShaderImage({ sourceImg }) {
   const webcamMirrorRef = useRef(Boolean(useWebcamStore.getState().mirrored));
   const noiseFrameRef = useRef(0);
 
-  // Performance tracking
   // Split overlay
   const splitOverlayCanvasRef = useRef(null);
   const splitOverlayCtxRef = useRef(null);
@@ -493,6 +324,50 @@ export default function ShaderImage({ sourceImg }) {
   // Performance tracking
   const workerStartTimeRef = useRef(new Map());
   const textureUpdateStartTimeRef = useRef(new Map());
+
+  const applyDisplaySize = useCallback((width, height) => {
+    const safeWidth = Math.max(1, Math.floor(Number(width) || 1));
+    const safeHeight = Math.max(1, Math.floor(Number(height) || 1));
+
+    const viewportCanvas = viewportCanvasRef.current;
+    if (viewportCanvas) {
+      viewportCanvas.style.width = `${safeWidth}px`;
+      viewportCanvas.style.height = `${safeHeight}px`;
+      viewportCanvas.style.imageRendering = 'pixelated';
+    }
+
+    window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
+
+    return { width: safeWidth, height: safeHeight };
+  }, []);
+
+  const extractProcessedPixels = useCallback(() => {
+    const source = activeSourceRef.current;
+    if (!source) {
+      return { pixels: new Uint8ClampedArray(), width: 0, height: 0 };
+    }
+
+    const sizeState = useSizeStore.getState();
+    const sourceW = source.naturalWidth || source.width || 1;
+    const sourceH = source.naturalHeight || source.height || 1;
+
+    const customW = sizeState.customSize.customWidth || sourceW;
+    const customH = sizeState.customSize.customHeight || sourceH;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = customW;
+    canvas.height = customH;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return { pixels: new Uint8ClampedArray(), width: 0, height: 0 };
+    }
+
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(source, 0, 0, customW, customH);
+    const imgData = ctx.getImageData(0, 0, customW, customH);
+
+    return { pixels: imgData.data, width: customW, height: customH };
+  }, []);
 
   const setProcessingVisible = useCallback((visible) => {
     processingVisibleRef.current = visible;
@@ -530,22 +405,8 @@ export default function ShaderImage({ sourceImg }) {
     setProcessingVisible(false);
   }, [setProcessingVisible]);
 
-  const syncSourceFilters = useCallback(() => {
-    const sourceSprite = sourceSpriteRef.current;
-    if (!sourceSprite || !colorFilterRef.current || blurFiltersRef.current.length === 0) return;
-
-    const { blurStrength, passes } = useParamsStore.getState();
-
-    sourceSprite.filters = buildFilterChain(
-      colorFilterRef.current,
-      blurFiltersRef.current,
-      blurStrength,
-      passes,
-    );
-  }, []);
-
   // Draws the original (unprocessed) source image into a 2D canvas overlay that sits on top
-  // of the Pixi canvas for hold-to-compare only.
+  // of the viewport canvas for hold-to-compare only.
   const syncSplitOverlay = useCallback(() => {
     const overlayCanvas = splitOverlayCanvasRef.current;
     const overlayImage = splitOverlayImageRef.current;
@@ -570,31 +431,45 @@ export default function ShaderImage({ sourceImg }) {
       return;
     }
 
-    const displayWidth = sourceDims.width;
-    const displayHeight = sourceDims.height;
+    const sizeState = useSizeStore.getState();
+    const customW = sizeState.customSize.customWidth || sourceDims.width;
+    const customH = sizeState.customSize.customHeight || sourceDims.height;
+    const left = sizeState.crop?.left || 0;
+    const right = sizeState.crop?.right || 0;
+    const top = sizeState.crop?.top || 0;
+    const bottom = sizeState.crop?.bottom || 0;
+
+    const scaleX = customW ? (sourceDims.width / customW) : 1;
+    const scaleY = customH ? (sourceDims.height / customH) : 1;
+    const nativeLeft = Math.round(left * scaleX);
+    const nativeRight = Math.round(right * scaleX);
+    const nativeTop = Math.round(top * scaleY);
+    const nativeBottom = Math.round(bottom * scaleY);
+
+    const displayWidth = Math.max(1, sourceDims.width - nativeLeft - nativeRight);
+    const displayHeight = Math.max(1, sourceDims.height - nativeTop - nativeBottom);
 
     if (overlayCanvas.width !== displayWidth || overlayCanvas.height !== displayHeight) {
       overlayCanvas.width = displayWidth;
       overlayCanvas.height = displayHeight;
     }
 
-    const drawRect = resolveContainDrawRect(
-      sourceDims.width,
-      sourceDims.height,
-      displayWidth,
-      displayHeight,
-    );
-
     ctx.clearRect(0, 0, displayWidth, displayHeight);
 
     ctx.save();
     ctx.imageSmoothingEnabled = false;
+
+    // Draw the cropped sub-rectangle of the original image
     ctx.drawImage(
       overlayImage,
-      drawRect.x,
-      drawRect.y,
-      drawRect.width,
-      drawRect.height,
+      nativeLeft,
+      nativeTop,
+      displayWidth,
+      displayHeight,
+      0,
+      0,
+      displayWidth,
+      displayHeight
     );
     ctx.restore();
 
@@ -602,91 +477,103 @@ export default function ShaderImage({ sourceImg }) {
   }, []);
 
   const syncVisibleLayer = useCallback(() => {
-    const app = appRef.current;
-    const sourceSprite = sourceSpriteRef.current;
-    const originalSprite = originalSpriteRef.current;
-    const outputSprite = outputSpriteRef.current;
-    const watermarkSprite = watermarkSpriteRef.current;
-    const watermarkMiniSprite = watermarkMiniSpriteRef.current;
-    if (!sourceSprite || !originalSprite || !outputSprite) return;
+    const sizeState = useSizeStore.getState();
+    const left = sizeState.crop?.left || 0;
+    const right = sizeState.crop?.right || 0;
+    const top = sizeState.crop?.top || 0;
+    const bottom = sizeState.crop?.bottom || 0;
+    const hasCrop = left > 0 || right > 0 || top > 0 || bottom > 0;
 
-    const hasOutputTexture = Boolean(outputTextureRef.current);
-    const showOutput = hasOutputTexture && outputReadyRef.current;
-
-    const displayWidth = Math.max(
-      1,
-      Math.round(Number(app?.renderer?.width) || sourceSprite.width || outputSprite.width || 1),
-    );
-    const displayHeight = Math.max(
-      1,
-      Math.round(Number(app?.renderer?.height) || sourceSprite.height || outputSprite.height || 1),
-    );
-
-    sourceSprite.x = 0;
-    sourceSprite.y = 0;
-    originalSprite.x = 0;
-    originalSprite.y = 0;
-    outputSprite.x = 0;
-    outputSprite.y = 0;
-    sourceSprite.width = displayWidth;
-    sourceSprite.height = displayHeight;
-    originalSprite.width = displayWidth;
-    originalSprite.height = displayHeight;
-    outputSprite.width = displayWidth;
-    outputSprite.height = displayHeight;
-    originalSprite.mask = null;
-    originalSprite.visible = false;
-
-    if (previewingOriginalRef.current) {
-      sourceSprite.mask = null;
-      outputSprite.mask = null;
-      sourceSprite.visible = false;
-      outputSprite.visible = false;
-      originalSprite.visible = false;
-      syncSplitOverlay();
-      if (watermarkSprite) watermarkSprite.visible = false;
-      if (watermarkMiniSprite) watermarkMiniSprite.visible = false;
-      return;
-    }
+    const hasOutput = outputReadyRef.current && outputCanvasRef.current;
 
     // Not in compare mode — hide the overlay.
-    if (splitOverlayCanvasRef.current) splitOverlayCanvasRef.current.style.display = 'none';
-
-    sourceSprite.mask = null;
-    outputSprite.mask = null;
-
-    sourceSprite.visible = !showOutput;
-    outputSprite.visible = showOutput;
-
-    const useMiniWatermark = displayWidth < 64 || displayHeight < 64;
-    if (watermarkSprite) {
-      watermarkSprite.visible = Boolean(watermarkEnabledRef.current) && !useMiniWatermark;
+    if (previewingOriginalRef.current) {
+      syncSplitOverlay();
+      return;
+    } else {
+      if (splitOverlayCanvasRef.current) {
+        splitOverlayCanvasRef.current.style.display = 'none';
+      }
     }
-    if (watermarkMiniSprite) {
-      watermarkMiniSprite.visible = Boolean(watermarkEnabledRef.current) && useMiniWatermark;
+
+    const viewportCanvas = viewportCanvasRef.current;
+    if (!viewportCanvas) return;
+
+    if (hasOutput) {
+      const canvas = outputCanvasRef.current;
+      viewportCanvas.width = canvas.width;
+      viewportCanvas.height = canvas.height;
+      const ctx = viewportCanvas.getContext('2d');
+      if (ctx) {
+        ctx.imageSmoothingEnabled = false;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(canvas, 0, 0);
+      }
+      applyDisplaySize(canvas.width, canvas.height, watermarkEnabledRef.current);
+    } else {
+      const source = activeSourceRef.current;
+      if (source) {
+        const sourceW = source.naturalWidth || source.width || 1;
+        const sourceH = source.naturalHeight || source.height || 1;
+
+        const customW = sizeState.customSize.customWidth || sourceW;
+        const customH = sizeState.customSize.customHeight || sourceH;
+
+        const cropLeft = hasCrop ? left : 0;
+        const cropTop = hasCrop ? top : 0;
+        const cropRight = hasCrop ? right : 0;
+        const cropBottom = hasCrop ? bottom : 0;
+
+        const displayWidth = Math.max(1, customW - cropLeft - cropRight);
+        const displayHeight = Math.max(1, customH - cropTop - cropBottom);
+
+        viewportCanvas.width = displayWidth;
+        viewportCanvas.height = displayHeight;
+        const ctx = viewportCanvas.getContext('2d');
+        if (ctx) {
+          ctx.imageSmoothingEnabled = false;
+          ctx.clearRect(0, 0, displayWidth, displayHeight);
+          ctx.drawImage(
+            source,
+            cropLeft,
+            cropTop,
+            displayWidth,
+            displayHeight,
+            0,
+            0,
+            displayWidth,
+            displayHeight
+          );
+        }
+        applyDisplaySize(displayWidth, displayHeight, watermarkEnabledRef.current);
+      }
     }
   }, [syncSplitOverlay]);
 
   const syncWatermarkPalette = useCallback(() => {
-    const watermarkFilter = watermarkFilterRef.current;
-    if (!watermarkFilter) return;
-
     const paletteState = usePaletteStore.getState();
     const { darkColor, lightColor } = getPaletteExtremes(
       paletteState.colors,
       paletteState.colorCount,
     );
 
-    const uniforms = watermarkFilter.resources.uniforms.uniforms;
-    uniforms.uDarkColor = new Float32Array(darkColor);
-    uniforms.uLightColor = new Float32Array(lightColor);
+    recoloredWatermarkCanvasRef.current = generateRecoloredWatermark(
+      watermarkImgRef.current,
+      darkColor,
+      lightColor
+    );
+    recoloredWatermarkMiniCanvasRef.current = generateRecoloredWatermark(
+      watermarkMiniImgRef.current,
+      darkColor,
+      lightColor
+    );
   }, []);
 
   const preserveVisibleOutput = useCallback(() => {
     const ditherEnabled = useDitherStore.getState().enabled;
-    const hasOutputTexture = Boolean(outputTextureRef.current);
+    const hasOutputCanvas = Boolean(outputCanvasRef.current);
     const expectedMode = ditherEnabled ? 'dither' : 'clean';
-    outputReadyRef.current = hasOutputTexture && outputModeRef.current === expectedMode;
+    outputReadyRef.current = hasOutputCanvas && outputModeRef.current === expectedMode;
     syncVisibleLayer();
   }, [syncVisibleLayer]);
 
@@ -730,36 +617,44 @@ export default function ShaderImage({ sourceImg }) {
     }
 
     context.putImageData(new ImageData(data, safeWidth, safeHeight), 0, 0);
-    registerOutputCanvas(outputCanvasRef.current);
 
-    if (!outputTextureRef.current || needsFreshCanvas) {
-      const previousTexture = outputTextureRef.current;
-      outputTextureRef.current = Texture.from(canvas);
-      outputTextureRef.current.source.scaleMode = 'nearest';
+    if (watermarkEnabledRef.current) {
+      const useMiniWatermark = safeWidth < 64 || safeHeight < 64;
+      const watermarkCanvas = useMiniWatermark 
+        ? recoloredWatermarkMiniCanvasRef.current 
+        : recoloredWatermarkCanvasRef.current;
 
-      if (previousTexture) {
-        retiredOutputTexturesRef.current.push(previousTexture);
+      if (watermarkCanvas) {
+        const margin = useMiniWatermark ? WATERMARK_MARGIN_MINI : WATERMARK_MARGIN_NORMAL;
+        const x = safeWidth - margin - watermarkCanvas.width;
+        const y = safeHeight - margin - watermarkCanvas.height;
+        context.drawImage(watermarkCanvas, x, y);
       }
     }
 
-    outputTextureRef.current.source.update?.();
+    registerOutputCanvas(outputCanvasRef.current);
 
-    return outputTextureRef.current;
+    const viewportCanvas = viewportCanvasRef.current;
+    if (viewportCanvas) {
+      viewportCanvas.width = safeWidth;
+      viewportCanvas.height = safeHeight;
+      const viewCtx = viewportCanvas.getContext('2d');
+      if (viewCtx) {
+        viewCtx.imageSmoothingEnabled = false;
+        viewCtx.clearRect(0, 0, safeWidth, safeHeight);
+        viewCtx.drawImage(canvas, 0, 0);
+      }
+    }
+
+    return outputCanvasRef.current;
   }, []);
 
   const dispatchProcessing = useCallback((refreshPalette = false) => {
-    const app = appRef.current;
     const worker = workerRef.current;
-    const sourceSprite = sourceSpriteRef.current;
-    const outputSprite = outputSpriteRef.current;
-    const watermarkSprite = watermarkSpriteRef.current;
-    const watermarkMiniSprite = watermarkMiniSpriteRef.current;
-    if (!app || !worker || !sourceSprite || !outputSprite || !watermarkSprite || !watermarkMiniSprite || activeJobsRef.current > 0) return;
+    if (!worker || activeJobsRef.current > 0) return;
 
-    // While comparing, never dispatch processing jobs.
     if (previewingOriginalRef.current) return;
 
-    // Start performance tracking
     usePerformanceStore.getState().setPipelineStart();
 
     const paletteState = usePaletteStore.getState();
@@ -769,12 +664,8 @@ export default function ShaderImage({ sourceImg }) {
     const ditherEnabled = Boolean(ditherState.enabled);
     const gifState = useGifStore.getState();
     const frameIndex = gifState.frames.length > 1 ? gifState.currentFrameIndex : -1;
-    const colorUniforms = colorFilterRef.current?.resources?.uniforms?.uniforms;
 
-    if (colorUniforms) {
-      noiseFrameRef.current += 1;
-      colorUniforms.uNoisePhase = noiseFrameRef.current;
-    }
+    noiseFrameRef.current += 1;
 
     preserveVisibleOutput();
 
@@ -783,14 +674,7 @@ export default function ShaderImage({ sourceImg }) {
 
     try {
       extractionStartTime = performance.now();
-      extraction = extractProcessedPixels(
-        app,
-        sourceSprite,
-        originalSpriteRef.current,
-        outputSprite,
-        watermarkSprite,
-        watermarkMiniSprite,
-      );
+      extraction = extractProcessedPixels();
       const extractionDuration = performance.now() - extractionStartTime;
       usePerformanceStore.getState().recordExtractionEnd(extractionDuration);
     } catch (error) {
@@ -809,7 +693,6 @@ export default function ShaderImage({ sourceImg }) {
     setProcessingDelta(1);
     usePerformanceStore.getState().setCurrentPhase('dithering');
 
-    // Track worker start time
     const workerStartTime = performance.now();
     workerStartTimeRef.current.set(requestId, workerStartTime);
 
@@ -823,20 +706,48 @@ export default function ShaderImage({ sourceImg }) {
       }, DITHER_WORKER_TIMEOUT_MS);
       ditherJobTimeoutsRef.current.set(requestId, timeoutId);
 
+      const sizeState = useSizeStore.getState();
+      const crop = sizeState.crop || { top: 0, bottom: 0, left: 0, right: 0 };
+      const paramsState = useParamsStore.getState();
+
       worker.postMessage({
         jobId: requestId,
         processedPixels: extraction.pixels.buffer,
         width: extraction.width,
         height: extraction.height,
         paletteRgb,
+        forceCpu: paramsState.forceCpu,
         dither: {
           enabled: ditherEnabled,
           method: ditherState.method,
-          colorSpace: ditherState.colorSpace,
           amount: ditherState.amount,
-          diffusion: ditherState.diffusion,
           seed: ditherState.seed,
           matrixScale: ditherState.matrixScale,
+        },
+        crop: {
+          top: crop.top || 0,
+          bottom: crop.bottom || 0,
+          left: crop.left || 0,
+          right: crop.right || 0,
+        },
+        adjustments: {
+          gamma: paramsState.gamma,
+          blacks: paramsState.blacks,
+          whites: paramsState.whites,
+          contrast: paramsState.contrast,
+          saturation: paramsState.saturation,
+          hue: paramsState.hue,
+        },
+        noise: {
+          noiseCoverage: paramsState.noiseCoverage,
+          noiseIntensity: paramsState.noiseIntensity,
+          noiseSaturation: paramsState.noiseSaturation,
+          noisePhase: noiseFrameRef.current,
+        },
+        blur: {
+          blurStrength: paramsState.blurStrength,
+          edgeStrength: paramsState.edgeStrength,
+          passes: paramsState.passes,
         },
       }, [extraction.pixels.buffer]);
     } catch (error) {
@@ -850,7 +761,7 @@ export default function ShaderImage({ sourceImg }) {
       setProcessingDelta(-1);
       preserveVisibleOutput();
     }
-  }, [preserveVisibleOutput, setProcessingDelta]);
+  }, [setProcessingDelta]);
 
   const flushProcessingQueue = useCallback(() => {
     if (processingTimerRef.current !== null) {
@@ -873,8 +784,12 @@ export default function ShaderImage({ sourceImg }) {
     pendingPaletteRefreshRef.current = pendingPaletteRefreshRef.current || refreshPalette;
     processingQueuedRef.current = true;
 
-    // Defer all processing work while compare mode is active.
     if (previewingOriginalRef.current) {
+      return;
+    }
+
+    if (isWebcamModeRef.current) {
+      flushProcessingQueue();
       return;
     }
 
@@ -910,15 +825,6 @@ export default function ShaderImage({ sourceImg }) {
   }, [syncVisibleLayer, syncSplitOverlay]);
 
   const swapSourceFrame = useCallback((frameIndex) => {
-    const app = appRef.current;
-    const sourceSprite = sourceSpriteRef.current;
-    const originalSprite = originalSpriteRef.current;
-    const outputSprite = outputSpriteRef.current;
-    const watermarkSprite = watermarkSpriteRef.current;
-    const watermarkMiniSprite = watermarkMiniSpriteRef.current;
-
-    if (!app || !sourceSprite || !originalSprite || !outputSprite || !watermarkSprite || !watermarkMiniSprite) return;
-
     const gifState = useGifStore.getState();
     const frame = gifState.frames?.[frameIndex];
     if (!frame || !frame.width || !frame.height || !frame.pixels) return;
@@ -940,31 +846,16 @@ export default function ShaderImage({ sourceImg }) {
 
     frameContextRef.current.putImageData(new ImageData(frame.pixels, frame.width, frame.height), 0, 0);
 
-    const previousTexture = sourceSprite.texture;
-    const nextTexture = Texture.from(frameCanvasRef.current);
-    sourceSprite.texture = nextTexture;
-    originalSprite.texture = nextTexture;
-    nextTexture.source.update?.();
-
-  // Keep the overlay source in sync with the current GIF frame.
-  splitOverlayImageRef.current = frameCanvasRef.current;
-
-    if (previousTexture && previousTexture !== nextTexture) {
-      previousTexture.destroy(true);
-    }
+    activeSourceRef.current = frameCanvasRef.current;
+    splitOverlayImageRef.current = frameCanvasRef.current;
 
     internalFrameSwapRef.current = true;
     setSize({ width: frame.width, height: frame.height }, { resetCustom: false });
 
     const displaySize = getTargetDisplaySize();
     applyDisplaySize(
-      app,
-      sourceSprite,
-      outputSprite,
       displaySize.width,
       displaySize.height,
-      watermarkSprite,
-      watermarkMiniSprite,
       watermarkEnabledRef.current,
     );
 
@@ -981,15 +872,9 @@ export default function ShaderImage({ sourceImg }) {
         : new Uint8ClampedArray(cachedFrame.pixels || []);
 
       if (cachedPixels.length > 0) {
-        const cachedTexture = updateOutputTexture(cachedPixels, cachedFrame.width, cachedFrame.height);
+        updateOutputTexture(cachedPixels, cachedFrame.width, cachedFrame.height);
         outputModeRef.current = useDitherStore.getState().enabled ? 'dither' : 'clean';
         outputReadyRef.current = true;
-
-        if (outputSpriteRef.current) {
-          outputSpriteRef.current.texture = cachedTexture;
-          outputSpriteRef.current.width = displaySize.width;
-          outputSpriteRef.current.height = displaySize.height;
-        }
 
         registerRenderSnapshot({
           uniqueColors: cachedFrame.uniqueColors ?? 0,
@@ -1013,8 +898,7 @@ export default function ShaderImage({ sourceImg }) {
 
   useEffect(() => {
     registerSourceImage(sourceImg || null);
-
-    if (!sourceImg || !canvasHostRef.current || appRef.current) return;
+    if (!sourceImg || !canvasHostRef.current || viewportCanvasRef.current) return;
 
     disposedRef.current = false;
     const lifecycleToken = ++lifecycleTokenRef.current;
@@ -1073,7 +957,8 @@ export default function ShaderImage({ sourceImg }) {
         webcamVideoRef.current = video;
         webcamCanvasRef.current = webcamCanvas;
         webcamCtxRef.current = webcamCtx;
-        texture = Texture.from(webcamCanvas);
+        texture = webcamCanvas;
+        activeSourceRef.current = webcamCanvas;
         originalUniqueColorsRef.current = 0;
       } else {
         texture = await loadTexture(sourceImg);
@@ -1082,6 +967,7 @@ export default function ShaderImage({ sourceImg }) {
         if (!texture) {
           throw new Error('Unable to create texture from source image');
         }
+        activeSourceRef.current = texture;
 
         try {
           originalUniqueColorsRef.current = await countUniqueColorsFromImageSource(sourceImg);
@@ -1091,10 +977,11 @@ export default function ShaderImage({ sourceImg }) {
         }
       }
 
-      const { width, height } = texture;
+      const width = texture.naturalWidth || texture.width || 0;
+      const height = texture.naturalHeight || texture.height || 0;
 
       if (!width || !height) {
-        throw new Error('Source texture has invalid size');
+        throw new Error('Source image has invalid size');
       }
 
       const [watermarkTexture, watermarkMiniTexture] = await Promise.all([
@@ -1111,26 +998,16 @@ export default function ShaderImage({ sourceImg }) {
 
       const initialDisplaySize = getTargetDisplaySize();
 
-      const app = new Application();
-      await app.init({
-        preference: "webgl",
-        width: initialDisplaySize.width,
-        height: initialDisplaySize.height,
-        backgroundAlpha: 0,
-      });
-      app.stage.sortableChildren = true;
-
-      if (lifecycleTokenRef.current !== lifecycleToken) {
-        app.destroy(true);
-        return;
-      }
-
+      const viewportCanvas = document.createElement('canvas');
+      viewportCanvas.width = initialDisplaySize.width;
+      viewportCanvas.height = initialDisplaySize.height;
+      viewportCanvas.style.position = 'absolute';
+      viewportCanvas.style.inset = '0';
+      viewportCanvas.style.display = 'block';
+      viewportCanvas.style.imageRendering = 'pixelated';
       canvasHostRef.current.replaceChildren();
-      canvasHostRef.current.appendChild(app.canvas);
-      app.canvas.style.position = 'absolute';
-      app.canvas.style.inset = '0';
-      app.canvas.style.display = 'block';
-      appRef.current = app;
+      canvasHostRef.current.appendChild(viewportCanvas);
+      viewportCanvasRef.current = viewportCanvas;
 
       const overlayCanvas = document.createElement('canvas');
       overlayCanvas.style.position = 'absolute';
@@ -1155,113 +1032,30 @@ export default function ShaderImage({ sourceImg }) {
         splitOverlayImageRef.current = webcamCanvasRef.current;
       }
 
-      registerPixiApp(app);
-
-      const sourceSprite = new Sprite(texture);
-      sourceSpriteRef.current = sourceSprite;
-      app.stage.addChild(sourceSprite);
-
-      const originalSprite = new Sprite(texture);
-      originalSprite.visible = false;
-      originalSpriteRef.current = originalSprite;
-      app.stage.addChild(originalSprite);
-
-      const outputSprite = new Sprite(texture);
-      outputSprite.visible = false;
-      outputSpriteRef.current = outputSprite;
-      app.stage.addChild(outputSprite);
-
-      const watermarkSprite = new Sprite(watermarkTexture);
-      watermarkSprite.anchor.set(1, 1);
-      watermarkSprite.zIndex = 100;
-      watermarkSpriteRef.current = watermarkSprite;
-      app.stage.addChild(watermarkSprite);
-
-      const watermarkMiniSprite = new Sprite(watermarkMiniTexture);
-      watermarkMiniSprite.anchor.set(1, 1);
-      watermarkMiniSprite.zIndex = 101;
-      watermarkMiniSprite.visible = false;
-      watermarkMiniSpriteRef.current = watermarkMiniSprite;
-      app.stage.addChild(watermarkMiniSprite);
-
-      const watermarkProgram = new GlProgram({
-        fragment: watermark_palette_fragment,
-        vertex: base_vertex,
-      });
-
-      watermarkFilterRef.current = new Filter({
-        glProgram: watermarkProgram,
-        resources: {
-          uniforms: {
-            uDarkColor: { value: new Float32Array([0, 0, 0]), type: "vec3<f32>" },
-            uLightColor: { value: new Float32Array([1, 1, 1]), type: "vec3<f32>" },
-          },
-        },
-      });
-
-      watermarkSprite.filters = [watermarkFilterRef.current];
-      watermarkMiniSprite.filters = [watermarkFilterRef.current];
+      watermarkImgRef.current = watermarkTexture;
+      watermarkMiniImgRef.current = watermarkMiniTexture;
       syncWatermarkPalette();
 
       applyDisplaySize(
-        app,
-        sourceSprite,
-        outputSprite,
         initialDisplaySize.width,
         initialDisplaySize.height,
-        watermarkSprite,
-        watermarkMiniSprite,
         watermarkEnabledRef.current,
       );
 
-      const colorProgram = new GlProgram({
-        fragment: color_adjustments,
-        vertex: base_vertex,
-      });
-
       const initParams = useParamsStore.getState();
 
-      colorFilterRef.current = new Filter({
-        glProgram: colorProgram,
-        resources: {
-          uniforms: {
-            uNoiseCoverage: { value: initParams.noiseCoverage, type: "f32" },
-            uNoiseIntensity: { value: initParams.noiseIntensity, type: "f32" },
-            uNoiseSaturation: { value: initParams.noiseSaturation, type: "f32" },
-            uNoisePhase: { value: 0, type: "f32" },
-            uGamma: { value: initParams.gamma, type: "f32" },
-            uBlacks: { value: initParams.blacks, type: "f32" },
-            uWhites: { value: initParams.whites, type: "f32" },
-            uContrast: { value: initParams.contrast, type: "f32" },
-            uSaturation: { value: initParams.saturation, type: "f32" },
-            uHue: { value: initParams.hue, type: "f32" },
-          },
-        },
-      });
-
-      const blurProgram = new GlProgram({
-        fragment: kawase_blur,
-        vertex: base_vertex,
-      });
-
-      blurFiltersRef.current = Array.from({ length: BLUR_CONTROLS.passes.max }, () => (
-        new Filter({
-          glProgram: blurProgram,
-          resources: {
-            uniforms: {
-              uTexelSize: {
-                value: new Float32Array([
-                  1 / Math.max(1, initialDisplaySize.width),
-                  1 / Math.max(1, initialDisplaySize.height),
-                ]),
-                type: "vec2<f32>",
-              },
-              uOffset: { value: initParams.blurStrength, type: "f32" },
-              uEdgeStrength: { value: initParams.edgeStrength, type: "f32" },
-            },
-          },
-        })
-      ));
+      const nextColorParams = {
+        noiseCoverage: initParams.noiseCoverage,
+        noiseIntensity: initParams.noiseIntensity,
+        noiseSaturation: initParams.noiseSaturation,
+        gamma: initParams.gamma,
+        blacks: initParams.blacks,
+        whites: initParams.whites,
+        contrast: initParams.contrast,
+        saturation: initParams.saturation,
+        hue: initParams.hue,
+      };
+      previousColorParamsRef.current = nextColorParams;
 
       const clearDitherJobTimeout = (jobId) => {
         const timeoutId = ditherJobTimeoutsRef.current.get(jobId);
@@ -1315,35 +1109,31 @@ export default function ShaderImage({ sourceImg }) {
       };
 
       restartDitherWorkerRef.current = recoverFromWorkerFailure;
-
       const bindWorkerHandlers = (targetWorker) => {
         targetWorker.onmessage = async (event) => {
           if (lifecycleTokenRef.current !== lifecycleToken) return;
 
-          const { jobId, referencePixels, outputPixels, width: outWidth, height: outHeight, uniqueColorCount, error } = event.data;
+          const {
+            jobId,
+            referencePixels,
+            outputPixels,
+            width: outWidth,
+            height: outHeight,
+            uniqueColorCount,
+            histogram,
+            error,
+            isImageReady,
+            isStatsReady,
+          } = event.data;
+
           const latestId = latestRequestIdRef.current;
-          const shouldRefreshPalette = refreshPaletteForRequestRef.current.get(jobId);
-          const wasDitherEnabled = Boolean(ditherEnabledForRequestRef.current.get(jobId));
-          const gifFrameIndex = gifFrameForRequestRef.current.get(jobId);
-
-          clearDitherJobTimeout(jobId);
-
-          // Record worker processing time
-          const workerStartTime = workerStartTimeRef.current.get(jobId);
-          if (workerStartTime) {
-            const workerDuration = performance.now() - workerStartTime;
-            usePerformanceStore.getState().recordDithering(workerDuration);
-            workerStartTimeRef.current.delete(jobId);
-          }
-
-          refreshPaletteForRequestRef.current.delete(jobId);
-          ditherEnabledForRequestRef.current.delete(jobId);
-          gifFrameForRequestRef.current.delete(jobId);
 
           if (jobId !== latestId) {
-            setProcessingDelta(-1);
-            if (processingQueuedRef.current) {
-              queueProcessing(false);
+            if (isImageReady) {
+              setProcessingDelta(-1);
+              if (processingQueuedRef.current) {
+                queueProcessing(false);
+              }
             }
             return;
           }
@@ -1358,93 +1148,136 @@ export default function ShaderImage({ sourceImg }) {
             return;
           }
 
-          const reference = new Uint8ClampedArray(referencePixels);
-          registerPaletteReference({ width: outWidth, height: outHeight, pixels: reference });
-          registerRenderSnapshot({
-            uniqueColors: uniqueColorCount ?? 0,
-            originalUniqueColors: originalUniqueColorsRef.current,
-          });
+          const shouldRefreshPalette = refreshPaletteForRequestRef.current.get(jobId);
+          const wasDitherEnabled = Boolean(ditherEnabledForRequestRef.current.get(jobId));
+          const gifFrameIndex = gifFrameForRequestRef.current.get(jobId);
 
-          if (shouldRefreshPalette) {
-            try {
-              const paletteState = usePaletteStore.getState();
-              await paletteState.generatePalette();
-            } catch (err) {
-              console.error('[pipeline] palette generation failed:', err);
+          if (isImageReady) {
+            clearDitherJobTimeout(jobId);
+
+            const workerStartTime = workerStartTimeRef.current.get(jobId);
+            if (workerStartTime) {
+              const workerDuration = performance.now() - workerStartTime;
+              usePerformanceStore.getState().recordDithering(workerDuration);
+              workerStartTimeRef.current.delete(jobId);
             }
-            queueProcessing(false);
-            setProcessingDelta(-1);
-            return;
-          }
 
-          const output = new Uint8ClampedArray(outputPixels);
-
-          // Track texture update timing
-          const textureUpdateStart = performance.now();
-          usePerformanceStore.getState().setCurrentPhase('texture');
-          const nextTexture = updateOutputTexture(output, outWidth, outHeight);
-          textureUpdateStartTimeRef.current.set(jobId, textureUpdateStart);
-          const textureUpdateDuration = performance.now() - textureUpdateStart;
-          usePerformanceStore.getState().recordTextureUpdate(textureUpdateDuration);
-
-          outputModeRef.current = wasDitherEnabled ? 'dither' : 'clean';
-          outputReadyRef.current = true;
-
-          const displaySize = getTargetDisplaySize();
-
-          if (outputSpriteRef.current) {
-            outputSpriteRef.current.texture = nextTexture;
-            outputSpriteRef.current.width = displaySize.width;
-            outputSpriteRef.current.height = displaySize.height;
-          }
-
-          if (gifFrameIndex >= 0) {
-            const thumbnailUrl = captureThumbnailDataUrl(outputCanvasRef.current, 60);
-            const cachedFrame = {
-              width: outWidth,
-              height: outHeight,
-              pixels: new Uint8ClampedArray(output),
-              uniqueColors: uniqueColorCount ?? 0,
-            };
-            if (thumbnailUrl) {
-              useGifStore.getState().markFrameRendered(gifFrameIndex, thumbnailUrl, cachedFrame);
-            } else {
-              useGifStore.getState().markFrameRendered(gifFrameIndex, '', cachedFrame);
+            if (event.data.timings) {
+              const { noise, adjustment, blur, dithering } = event.data.timings;
+              usePerformanceStore.setState((state) => ({
+                timing: {
+                  ...state.timing,
+                  noise: noise || 0,
+                  adjustment: adjustment || 0,
+                  blur: blur || 0,
+                  dithering: dithering || 0,
+                }
+              }));
             }
-          }
 
-          // Track visible layer sync timing
-          const syncStart = performance.now();
-          usePerformanceStore.getState().setCurrentPhase('sync');
-          syncVisibleLayer();
-          const syncDuration = performance.now() - syncStart;
-          usePerformanceStore.getState().recordLayerSync(syncDuration);
+            const output = new Uint8ClampedArray(outputPixels);
 
-          // Record pipeline completion
-          usePerformanceStore.getState().recordPipelineComplete();
+            const textureUpdateStart = performance.now();
+            usePerformanceStore.getState().setCurrentPhase('texture');
+            updateOutputTexture(output, outWidth, outHeight);
+            textureUpdateStartTimeRef.current.set(jobId, textureUpdateStart);
+            const textureUpdateDuration = performance.now() - textureUpdateStart;
+            usePerformanceStore.getState().recordTextureUpdate(textureUpdateDuration);
 
-          if (isWebcamModeRef.current) {
-            useWebcamStore.getState().recordRenderedFrame();
+            outputModeRef.current = wasDitherEnabled ? 'dither' : 'clean';
+            outputReadyRef.current = true;
 
-            if (!paletteFrozenForWebcamRef.current) {
-              paletteFrozenForWebcamRef.current = true;
-              const paletteState = usePaletteStore.getState();
-              if (paletteState.method !== EXTRACT_METHOD.CUSTOM) {
-                paletteState.generatePalette().then(() => {
-                  usePaletteStore.getState().setMethod(EXTRACT_METHOD.CUSTOM);
-                  useWebcamStore.getState().setPaletteFrozen(true);
-                }).catch(() => {
-                  useWebcamStore.getState().setPaletteFrozen(true);
-                });
+            if (gifFrameIndex >= 0) {
+              const thumbnailUrl = captureThumbnailDataUrl(outputCanvasRef.current, 60);
+              const cachedFrame = {
+                width: outWidth,
+                height: outHeight,
+                pixels: new Uint8ClampedArray(output),
+                uniqueColors: uniqueColorCount ?? 0,
+              };
+              if (thumbnailUrl) {
+                useGifStore.getState().markFrameRendered(gifFrameIndex, thumbnailUrl, cachedFrame);
               } else {
-                useWebcamStore.getState().setPaletteFrozen(true);
+                useGifStore.getState().markFrameRendered(gifFrameIndex, '', cachedFrame);
+              }
+            }
+
+            const syncStart = performance.now();
+            usePerformanceStore.getState().setCurrentPhase('sync');
+            syncVisibleLayer();
+            const syncDuration = performance.now() - syncStart;
+            usePerformanceStore.getState().recordLayerSync(syncDuration);
+
+            usePerformanceStore.getState().recordPipelineComplete();
+
+            if (isWebcamModeRef.current) {
+              useWebcamStore.getState().recordRenderedFrame();
+
+              if (!paletteFrozenForWebcamRef.current) {
+                paletteFrozenForWebcamRef.current = true;
+                const paletteState = usePaletteStore.getState();
+                if (paletteState.method !== EXTRACT_METHOD.CUSTOM) {
+                  paletteState.generatePalette().then(() => {
+                    usePaletteStore.getState().setMethod(EXTRACT_METHOD.CUSTOM);
+                    useWebcamStore.getState().setPaletteFrozen(true);
+                  }).catch(() => {
+                    useWebcamStore.getState().setPaletteFrozen(true);
+                  });
+                } else {
+                  useWebcamStore.getState().setPaletteFrozen(true);
+                }
+              }
+            }
+
+            ditherEnabledForRequestRef.current.delete(jobId);
+
+            if (!shouldRefreshPalette) {
+              setProcessingDelta(-1);
+              if (processingQueuedRef.current) {
+                queueProcessing(false);
               }
             }
           }
 
-          setProcessingDelta(-1);
-          if (processingQueuedRef.current) {
-            queueProcessing(false);
+          if (isStatsReady) {
+            const reference = new Uint8ClampedArray(referencePixels);
+            registerPaletteReference({
+              width: outWidth,
+              height: outHeight,
+              pixels: reference,
+              histogram: histogram,
+            });
+            registerRenderSnapshot({
+              uniqueColors: uniqueColorCount ?? 0,
+              originalUniqueColors: originalUniqueColorsRef.current,
+            });
+
+            if (gifFrameIndex >= 0) {
+              const gifState = useGifStore.getState();
+              const existingFrame = gifState.frames[gifFrameIndex];
+              if (existingFrame) {
+                useGifStore.getState().markFrameRendered(gifFrameIndex, existingFrame.thumbnailUrl, {
+                  ...existingFrame.cachedFrame,
+                  uniqueColors: uniqueColorCount ?? 0,
+                });
+              }
+            }
+
+            refreshPaletteForRequestRef.current.delete(jobId);
+            gifFrameForRequestRef.current.delete(jobId);
+
+            if (shouldRefreshPalette) {
+              try {
+                const paletteState = usePaletteStore.getState();
+                await paletteState.generatePalette();
+              } catch (err) {
+                console.error('[pipeline] palette generation failed:', err);
+              }
+              setProcessingDelta(-1);
+              if (processingQueuedRef.current) {
+                queueProcessing(false);
+              }
+            }
           }
         };
 
@@ -1463,7 +1296,6 @@ export default function ShaderImage({ sourceImg }) {
       workerRef.current = worker;
       bindWorkerHandlers(worker);
 
-      syncSourceFilters();
       syncVisibleLayer();
       queueProcessing(true);
 
@@ -1480,16 +1312,12 @@ export default function ShaderImage({ sourceImg }) {
             const video = webcamVideoRef.current;
             const canvas = webcamCanvasRef.current;
             const ctx = webcamCtxRef.current;
-            const sourceSprite = sourceSpriteRef.current;
 
             if (video && canvas && ctx && video.readyState >= 2) {
               drawWebcamFrameToCanvas(video, canvas, ctx, webcamMirrorRef.current);
-              sourceSprite?.texture?.source?.update?.();
             }
 
-            if (!activeJobsRef.current) {
-              queueProcessing(false);
-            }
+            queueProcessing(false);
 
             scheduleWebcamFrame();
           }, interval);
@@ -1520,8 +1348,6 @@ export default function ShaderImage({ sourceImg }) {
       const hasFrames = (state?.frames?.length || 0) > 1;
       if (!hasFrames && !hadFrames) return;
 
-      // When a GIF is first loaded, currentFrameIndex is usually already 0.
-      // Force a source-frame swap so processing is queued and timeline state can advance from pending.
       if (!hadFrames && hasFrames) {
         swapSourceFrame(state.currentFrameIndex);
         return;
@@ -1533,8 +1359,6 @@ export default function ShaderImage({ sourceImg }) {
     });
 
     const unsubParams = useParamsStore.subscribe((state, previousState) => {
-      if (!colorFilterRef.current || blurFiltersRef.current.length === 0) return;
-
       const processingParamsChanged = !previousState || (
         state.noiseCoverage !== previousState.noiseCoverage ||
         state.noiseIntensity !== previousState.noiseIntensity ||
@@ -1553,17 +1377,6 @@ export default function ShaderImage({ sourceImg }) {
       if (!processingParamsChanged) {
         return;
       }
-
-      const cu = colorFilterRef.current.resources.uniforms.uniforms;
-      cu.uNoiseCoverage = state.noiseCoverage;
-      cu.uNoiseIntensity = state.noiseIntensity;
-      cu.uNoiseSaturation = state.noiseSaturation;
-      cu.uGamma = state.gamma;
-      cu.uBlacks = state.blacks;
-      cu.uWhites = state.whites;
-      cu.uContrast = state.contrast;
-      cu.uSaturation = state.saturation;
-      cu.uHue = state.hue;
 
       const nextColorParams = {
         noiseCoverage: state.noiseCoverage,
@@ -1598,30 +1411,20 @@ export default function ShaderImage({ sourceImg }) {
         usePaletteStore.getState().clearPaletteCache?.();
       }
 
-      for (const blurFilter of blurFiltersRef.current) {
-        const bu = blurFilter.resources.uniforms.uniforms;
-        bu.uOffset = state.blurStrength;
-        bu.uEdgeStrength = state.edgeStrength;
-      }
-
-      syncSourceFilters();
       markGifFramesPending();
       queueProcessing(true);
     });
 
     const unsubWebcam = useWebcamStore.subscribe((state, previousState) => {
-      // --- Mirror toggled ---
       if (state.mirrored !== previousState.mirrored) {
         webcamMirrorRef.current = Boolean(state.mirrored);
 
         const video = webcamVideoRef.current;
         const canvas = webcamCanvasRef.current;
         const ctx = webcamCtxRef.current;
-        const sourceSprite = sourceSpriteRef.current;
 
         if (video && canvas && ctx && video.readyState >= 2) {
           drawWebcamFrameToCanvas(video, canvas, ctx, webcamMirrorRef.current);
-          sourceSprite?.texture?.source?.update?.();
         }
 
         if (isWebcamModeRef.current) {
@@ -1629,20 +1432,11 @@ export default function ShaderImage({ sourceImg }) {
         }
       }
 
-      // --- Camera stopped externally (track ended, permission revoked, USB unplug) ---
-      // When stopWebcam() is triggered by a hardware/permission event rather than
-      // the user pressing STOP, imageStore still points to WEBCAM_SOURCE and the
-      // frame loop is still running.  Reset the image source so the renderer tears
-      // down cleanly via the normal sourceImg change path.
       if (previousState.active && !state.active && isWebcamModeRef.current) {
-        // Stop the frame-capture loop immediately so we don't keep trying to draw
-        // from a dead video element.
         if (webcamLoopTimerRef.current !== null) {
           window.clearTimeout(webcamLoopTimerRef.current);
           webcamLoopTimerRef.current = null;
         }
-        // Defer to next microtask so the Zustand listener finishes before we
-        // trigger a cascade of store updates.
         Promise.resolve().then(() => {
           useImageStore.getState().resetToDefault();
         });
@@ -1651,6 +1445,7 @@ export default function ShaderImage({ sourceImg }) {
 
     const unsubPalette = usePaletteStore.subscribe((state, previousState) => {
       syncWatermarkPalette();
+      syncVisibleLayer();
 
       const methodChanged = state.method !== previousState.method;
       const colorCountChanged = state.colorCount !== previousState.colorCount;
@@ -1673,20 +1468,19 @@ export default function ShaderImage({ sourceImg }) {
     });
 
     const unsubSize = useSizeStore.subscribe((state, previousState) => {
-      const app = appRef.current;
-      const sourceSprite = sourceSpriteRef.current;
-      const outputSprite = outputSpriteRef.current;
-      const watermarkSprite = watermarkSpriteRef.current;
-      const watermarkMiniSprite = watermarkMiniSpriteRef.current;
-      if (!app || !sourceSprite || !outputSprite || !watermarkSprite || !watermarkMiniSprite) return;
+      const source = activeSourceRef.current;
+      if (!source) return;
+
+      const sourceW = source.naturalWidth || source.width || 1;
+      const sourceH = source.naturalHeight || source.height || 1;
 
       const w = Math.max(
         1,
-        Math.floor(Number(state.customSize.customWidth) || Number(state.size.width) || sourceSprite.width || 1),
+        Math.floor(Number(state.customSize.customWidth) || Number(state.size.width) || sourceW || 1),
       );
       const h = Math.max(
         1,
-        Math.floor(Number(state.customSize.customHeight) || Number(state.size.height) || sourceSprite.height || 1),
+        Math.floor(Number(state.customSize.customHeight) || Number(state.size.height) || sourceH || 1),
       );
 
       const prevW = Math.max(
@@ -1694,7 +1488,7 @@ export default function ShaderImage({ sourceImg }) {
         Math.floor(
           Number(previousState?.customSize?.customWidth) ||
           Number(previousState?.size?.width) ||
-          sourceSprite.width ||
+          sourceW ||
           1,
         ),
       );
@@ -1703,38 +1497,29 @@ export default function ShaderImage({ sourceImg }) {
         Math.floor(
           Number(previousState?.customSize?.customHeight) ||
           Number(previousState?.size?.height) ||
-          sourceSprite.height ||
+          sourceH ||
           1,
         ),
       );
 
-      if (w === prevW && h === prevH) {
+      const left = state.crop?.left || 0;
+      const right = state.crop?.right || 0;
+      const top = state.crop?.top || 0;
+      const bottom = state.crop?.bottom || 0;
+
+      const prevLeft = previousState?.crop?.left || 0;
+      const prevRight = previousState?.crop?.right || 0;
+      const prevTop = previousState?.crop?.top || 0;
+      const prevBottom = previousState?.crop?.bottom || 0;
+
+      if (w === prevW && h === prevH && left === prevLeft && right === prevRight && top === prevTop && bottom === prevBottom) {
         return;
       }
 
-      applyDisplaySize(
-        app,
-        sourceSprite,
-        outputSprite,
-        w,
-        h,
-        watermarkSprite,
-        watermarkMiniSprite,
-        watermarkEnabledRef.current,
-      );
+      const croppedW = Math.max(1, w - left - right);
+      const croppedH = Math.max(1, h - top - bottom);
 
-      const rendererPixelWidth = Math.max(1, Math.round(Number(app.renderer?.width) || w));
-      const rendererPixelHeight = Math.max(1, Math.round(Number(app.renderer?.height) || h));
-
-      if (blurFiltersRef.current.length > 0) {
-        for (const blurFilter of blurFiltersRef.current) {
-          blurFilter.resources.uniforms.uniforms.uTexelSize = new Float32Array([
-            1 / rendererPixelWidth,
-            1 / rendererPixelHeight,
-          ]);
-        }
-      }
-
+      applyDisplaySize(croppedW, croppedH, watermarkEnabledRef.current);
       syncSplitOverlay();
 
       if (!internalFrameSwapRef.current) {
@@ -1745,24 +1530,8 @@ export default function ShaderImage({ sourceImg }) {
 
     const unsubWatermark = useWatermarkStore.subscribe((state) => {
       watermarkEnabledRef.current = Boolean(state.enabled);
-
-      const app = appRef.current;
-      const sourceSprite = sourceSpriteRef.current;
-      const outputSprite = outputSpriteRef.current;
-      const watermarkSprite = watermarkSpriteRef.current;
-      const watermarkMiniSprite = watermarkMiniSpriteRef.current;
-      if (!app || !sourceSprite || !outputSprite || !watermarkSprite || !watermarkMiniSprite) return;
-
-      applyDisplaySize(
-        app,
-        sourceSprite,
-        outputSprite,
-        Math.max(1, Number(app.renderer?.width) || sourceSprite.width || 1),
-        Math.max(1, Number(app.renderer?.height) || sourceSprite.height || 1),
-        watermarkSprite,
-        watermarkMiniSprite,
-        watermarkEnabledRef.current,
-      );
+      syncWatermarkPalette();
+      syncVisibleLayer();
     });
 
     return () => {
@@ -1770,7 +1539,6 @@ export default function ShaderImage({ sourceImg }) {
       lifecycleTokenRef.current += 1;
       registerSourceImage(null);
       registerPaletteReference(null);
-      registerPixiApp(null);
       registerOutputCanvas(null);
       registerRenderSnapshot({ uniqueColors: 0, originalUniqueColors: 0 });
 
@@ -1794,30 +1562,22 @@ export default function ShaderImage({ sourceImg }) {
       ditherJobTimeoutsRef.current.clear();
       restartDitherWorkerRef.current = null;
 
-            if (webcamLoopTimerRef.current !== null) {
-              window.clearTimeout(webcamLoopTimerRef.current);
-              webcamLoopTimerRef.current = null;
-            }
+      if (webcamLoopTimerRef.current !== null) {
+        window.clearTimeout(webcamLoopTimerRef.current);
+        webcamLoopTimerRef.current = null;
+      }
 
-            const webcamVideo = webcamVideoRef.current;
-            if (webcamVideo) {
-              webcamVideo.pause();
-              webcamVideo.srcObject = null;
-              webcamVideoRef.current = null;
-            }
-            webcamCanvasRef.current = null;
-            webcamCtxRef.current = null;
-            isWebcamModeRef.current = false;
+      const webcamVideo = webcamVideoRef.current;
+      if (webcamVideo) {
+        webcamVideo.pause();
+        webcamVideo.srcObject = null;
+        webcamVideoRef.current = null;
+      }
+      webcamCanvasRef.current = null;
+      webcamCtxRef.current = null;
+      isWebcamModeRef.current = false;
 
       workerRef.current = null;
-
-      outputTextureRef.current?.destroy(true);
-      outputTextureRef.current = null;
-
-      for (const texture of retiredOutputTexturesRef.current) {
-        texture?.destroy(true);
-      }
-      retiredOutputTexturesRef.current = [];
 
       outputCanvasRef.current = null;
       outputContextRef.current = null;
@@ -1834,22 +1594,11 @@ export default function ShaderImage({ sourceImg }) {
       frameContextRef.current = null;
       setProcessingVisible(false);
 
-      sourceSpriteRef.current = null;
-      originalSpriteRef.current = null;
-      outputSpriteRef.current = null;
-      watermarkSpriteRef.current = null;
-      watermarkMiniSpriteRef.current = null;
-      watermarkFilterRef.current = null;
-      colorFilterRef.current = null;
-      blurFiltersRef.current = [];
-
+      viewportCanvasRef.current = null;
       splitOverlayCanvasRef.current?.remove();
       splitOverlayCanvasRef.current = null;
       splitOverlayCtxRef.current = null;
       splitOverlayImageRef.current = null;
-
-      appRef.current?.destroy(true);
-      appRef.current = null;
 
       unsubParams();
       unsubWebcam();
@@ -1859,14 +1608,24 @@ export default function ShaderImage({ sourceImg }) {
       unsubWatermark();
       unsubGif();
     };
-  }, [clearViewerLoadingTimer, preserveVisibleOutput, queueProcessing, setProcessingDelta, setProcessingVisible, setSize, sourceImg, swapSourceFrame, syncSourceFilters, syncSplitOverlay, syncVisibleLayer, syncWatermarkPalette, updateOutputTexture]);
+  }, [clearViewerLoadingTimer, preserveVisibleOutput, queueProcessing, setProcessingDelta, setProcessingVisible, setSize, sourceImg, swapSourceFrame, syncSplitOverlay, syncVisibleLayer, syncWatermarkPalette, updateOutputTexture]);
+
+  const crop = useSizeStore(s => s.crop) || { top: 0, bottom: 0, left: 0, right: 0 };
+  const { top = 0, bottom = 0, left = 0, right = 0 } = crop;
+
+  const scaleX = customWidth ? (nativeWidth / customWidth) : 1;
+  const scaleY = customHeight ? (nativeHeight / customHeight) : 1;
+  const nativeLeft = Math.round(left * scaleX);
+  const nativeRight = Math.round(right * scaleX);
+  const nativeTop = Math.round(top * scaleY);
+  const nativeBottom = Math.round(bottom * scaleY);
 
   const renderWidth = showingOriginal
-    ? (Number(nativeWidth) || Number(customWidth) || 1)
-    : (Number(customWidth) || Number(nativeWidth) || 1);
+    ? Math.max(1, (Number(nativeWidth) || Number(customWidth) || 1) - nativeLeft - nativeRight)
+    : Math.max(1, (Number(customWidth) || Number(nativeWidth) || 1) - left - right);
   const renderHeight = showingOriginal
-    ? (Number(nativeHeight) || Number(customHeight) || 1)
-    : (Number(customHeight) || Number(nativeHeight) || 1);
+    ? Math.max(1, (Number(nativeHeight) || Number(customHeight) || 1) - nativeTop - nativeBottom)
+    : Math.max(1, (Number(customHeight) || Number(nativeHeight) || 1) - top - bottom);
 
   return (
     <div ref={renderRef} style={{ width: renderWidth, height: renderHeight, position: 'relative' }} id='render'>
@@ -1888,9 +1647,10 @@ export default function ShaderImage({ sourceImg }) {
         style={{
           visibility: 'visible',
           opacity: 1,
+          position: 'absolute',
+          inset: '0',
         }}
       />
     </div>
   );
 }
-

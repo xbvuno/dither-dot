@@ -1,4 +1,4 @@
-import { getPaletteReference } from './pixiRegistry';
+import { getPaletteReference } from './canvasRegistry';
 import { blendHex, hexToRgb } from './palette/colorMath';
 import { medianCut } from './palette/medianCut';
 import { kMeans } from './palette/kMeans';

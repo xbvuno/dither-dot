@@ -3,6 +3,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  border-top: 1px solid var(--color-border);
 }
 
 .app-footer-left {
@@ -15,7 +16,7 @@
 .pipeline-timing {
   font-size: 0.76rem;
   letter-spacing: 0.08em;
-  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+  color: var(--color-text-muted);
   white-space: nowrap;
   padding: 0.2rem 0;
   border: none;
@@ -26,7 +27,7 @@
 }
 
 .pipeline-timing:hover {
-  color: color-mix(in srgb, var(--color-text) 75%, transparent);
+  color: var(--color-text-subtle);
 }
 
 .pipeline-timing--busy {
@@ -42,30 +43,16 @@
 .app-footer-status {
   font-size: 0.76rem;
   letter-spacing: 0.08em;
-  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+  color: var(--color-text-muted);
   white-space: nowrap;
 }
 
 .footer-preview-btn {
-  border: 1px solid color-mix(in srgb, var(--color-text) 28%, transparent);
-  background: color-mix(in srgb, var(--color-text) 3%, transparent);
-  color: color-mix(in srgb, var(--color-text) 72%, transparent);
+  color: var(--color-text-subtle);
   padding: 0.2rem 0.55rem;
   font-size: 0.72rem;
   letter-spacing: 0.06em;
-  cursor: pointer;
   white-space: nowrap;
   user-select: none;
-  transition: background-color 0.1s, color 0.1s, border-color 0.1s;
 }
 
-.footer-preview-btn:hover {
-  border-color: color-mix(in srgb, var(--color-text) 48%, transparent);
-  color: var(--color-text);
-}
-
-.footer-preview-btn--active {
-  background: var(--color-text);
-  color: var(--color-bg) !important;
-  border-color: var(--color-text); 
-}

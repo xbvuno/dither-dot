@@ -5,7 +5,7 @@ import useViewStore from "../stores/viewStore";
 import usePerformanceStore from "../stores/performanceStore";
 import useParamsStore from "../stores/paramsStore";
 import useWebcamStore from "../stores/webcamStore";
-import { getRenderSnapshot, subscribeRenderSnapshot } from "../utils/pixiRegistry";
+import { getRenderSnapshot, subscribeRenderSnapshot } from "../utils/canvasRegistry";
 import PipelineTimingTooltip from "./PipelineTimingTooltip";
 
 function formatMs(value) {
@@ -38,6 +38,20 @@ export default function Footer() {
   const height = useSizeStore(s => s.size.height);
   const customWidth = useSizeStore(s => s.customSize.customWidth);
   const customHeight = useSizeStore(s => s.customSize.customHeight);
+  const crop = useSizeStore(s => s.crop) || { top: 0, bottom: 0, left: 0, right: 0 };
+
+  const scaleX = customWidth ? (width / customWidth) : 1;
+  const scaleY = customHeight ? (height / customHeight) : 1;
+  const nativeLeft = Math.round((crop.left || 0) * scaleX);
+  const nativeRight = Math.round((crop.right || 0) * scaleX);
+  const nativeTop = Math.round((crop.top || 0) * scaleY);
+  const nativeBottom = Math.round((crop.bottom || 0) * scaleY);
+
+  const displayOriginalWidth = Math.max(1, (width || 0) - nativeLeft - nativeRight);
+  const displayOriginalHeight = Math.max(1, (height || 0) - nativeTop - nativeBottom);
+
+  const displayWidth = Math.max(1, (customWidth || 0) - (crop.left || 0) - (crop.right || 0));
+  const displayHeight = Math.max(1, (customHeight || 0) - (crop.top || 0) - (crop.bottom || 0));
   const isProcessing = useProcessingStore(s => s.isProcessing);
   const processingLabel = useProcessingStore(s => s.processingLabel);
   const previewingOriginal = useViewStore(s => s.previewingOriginal);
@@ -187,8 +201,8 @@ export default function Footer() {
 
       <span className="app-footer-status">
         {previewingOriginal
-          ? `${width} x ${height} | COLORS: ${originalUniqueColors}`
-          : `${customWidth} x ${customHeight} | COLORS: ${uniqueColors}${webcamActive ? ` | FPS: ${webcamFps}` : ''}`}
+          ? `${displayOriginalWidth} x ${displayOriginalHeight} | COLORS: ${originalUniqueColors}`
+          : `${displayWidth} x ${displayHeight} | COLORS: ${uniqueColors}${webcamActive ? ` | FPS: ${webcamFps}` : ''}`}
       </span>
 
       <PipelineTimingTooltip

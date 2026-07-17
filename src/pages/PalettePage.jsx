@@ -28,29 +28,6 @@ function ColorCountSection() {
   );
 }
 
-function AccuracySection() {
-  const method = usePaletteStore(s => s.method);
-  const samplingAccuracy = usePaletteStore(s => s.samplingAccuracy);
-  const setSamplingAccuracy = usePaletteStore(s => s.setSamplingAccuracy);
-
-  if (method === EXTRACT_METHOD.CUSTOM) return null;
-
-  return (
-    <div className="bv-section">
-      <SliderBundle
-        label="ACCURACY"
-        min={0.1}
-        max={1}
-        step={0.1}
-        defaultValue={0.5}
-        value={samplingAccuracy}
-        onChange={setSamplingAccuracy}
-        tooltip="Higher values sample more pixels for better palette fidelity; lower values are faster."
-      />
-    </div>
-  );
-}
-
 /* ---------------------------------- */
 /* METHOD SELECTOR                    */
 /* ---------------------------------- */
@@ -487,7 +464,6 @@ export default function PalettePage() {
         <h2>PALETTE</h2>
         <MethodSection />
         <ColorCountSection />
-        <AccuracySection />
       </div>
 
       <div className="bv-macro-section">

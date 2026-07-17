@@ -1,12 +1,98 @@
 @import url('https://fonts.googleapis.com/css2?family=Google+Sans+Code:ital,wght@0,300..800;1,300..800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Ramabhadra&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bitcount+Grid+Single:wght@100..900&display=swap');
 
 :root {
+    /* Color Palette */
     --color-bg: #12120F;
     --color-text: #EEEEDF;
+    
+    /* Interactive & Utility Colors */
     --color-hover: rgba(255, 255, 255, 0.1);
+    --color-bg-subtle: color-mix(in srgb, var(--color-text) 3%, transparent);
+    --color-bg-subtle-hover: color-mix(in srgb, var(--color-text) 10%, transparent);
+    --color-text-subtle: color-mix(in srgb, var(--color-text) 72%, transparent);
+    --color-text-muted: color-mix(in srgb, var(--color-text) 58%, transparent);
+    
+    /* Borders */
+    --color-border: color-mix(in srgb, var(--color-text) 28%, transparent);
+    --color-border-subtle: color-mix(in srgb, var(--color-text) 22%, transparent);
+    --color-border-hover: color-mix(in srgb, var(--color-text) 48%, transparent);
+    --color-border-focus: var(--color-text);
+    
+    /* Inputs */
     --input-surface: color-mix(in srgb, var(--color-bg) 50%, black);
+    --input-surface-hover: var(--color-hover);
     --input-surface-focus: rgb(9, 9, 9);
+    
+    /* Floating Panels / Tooltips */
+    --color-backdrop: rgba(0, 0, 0, 0.58);
+    --color-floating-bg: rgba(0, 0, 0, 0.85);
+    --color-floating-border: rgba(255, 255, 255, 0.12);
+    --shadow-floating: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-floating-inset: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    --filter-floating-blur: blur(4px);
+    
+    /* State & Accent Colors */
+    --color-danger: #b53636;
+    --color-danger-text: #ffc8c8;
+    --color-danger-hover: #e14a4a;
+    --color-danger-bg-hover: color-mix(in srgb, var(--color-danger) 15%, transparent);
+    --color-success: #5cd56f;
+    --color-pending: #56a8ff;
+    --color-modified: #e43b44;
+}
+
+/* Base Button Styling Group */
+.bv-option-btn,
+.header-modal-close,
+.webgl2-blocker-continue-btn,
+.footer-preview-btn,
+.gif-timeline-btn {
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-subtle);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.bv-option-btn:hover,
+.header-modal-close:hover,
+.webgl2-blocker-continue-btn:hover,
+.footer-preview-btn:hover,
+.gif-timeline-btn:hover {
+    background: var(--color-bg-subtle-hover);
+    border-color: var(--color-border-hover);
+    color: var(--color-text);
+}
+
+.bv-option-btn.active,
+.bv-option-btn[data-selected='true'],
+.header-modal-close[aria-pressed='true'],
+.footer-preview-btn--active,
+.gif-timeline-btn.active {
+    background: var(--color-text);
+    color: var(--color-bg);
+    border-color: var(--color-text);
+}
+
+.bv-option-btn:disabled,
+.header-modal-close:disabled,
+.webgl2-blocker-continue-btn:disabled,
+.footer-preview-btn:disabled,
+.gif-timeline-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* Base Floating Panels Group */
+.palette-floating-editor,
+.histogram-floating-panel,
+.pipeline-timing-tooltip,
+.slider-tooltip {
+    background: var(--color-floating-bg);
+    backdrop-filter: var(--filter-floating-blur);
+    border: 1px solid var(--color-floating-border);
+    box-shadow: var(--shadow-floating), var(--shadow-floating-inset);
 }
 
 * {
@@ -17,7 +103,8 @@
 }
 
 h2 {
-    font-family: 'Ramabhadra';
+    font-family: 'Bitcount Grid Single', sans-serif;
+    font-weight: 400;
     letter-spacing: 0.15rem;
 }
 
@@ -43,17 +130,19 @@ body,
 
 header,
 footer {
-    background-color: var(--color-bg);
     padding: 0.6rem;
-    border-bottom: 1px solid var(--color-text);
-    width: 100%;
 }
 
 .app-header {
+    border-bottom: 1px solid var(--color-border);
+    background-color: #000;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
+    height: 3.2rem;
+    padding: 0 1rem;
+    flex-shrink: 0;
 }
 
 .app-header-title {
@@ -65,24 +154,11 @@ footer {
 }
 
 .app-header-title-name {
-    font-family: 'Ramabhadra';
-    margin-left: 3.4rem;
-    font-size: 1.2rem;
-    line-height: 1.5rem;
+    font-family: 'Bitcount Grid Single', sans-serif;
+    margin-left: 0;
+    font-size: 1.6rem;
     white-space: nowrap;
     letter-spacing: 0.1rem;
-}
-
-.app-header-mark {
-    position: absolute;
-    top: -0.7rem;
-    left: -0.6rem;
-    width: 3.2rem;
-    height: auto;
-    image-rendering: pixelated;
-    flex-shrink: 0;
-    border-right: 1px solid var(--color-text);
-    padding-bottom: 1rem;
 }
 
 .app-header-links {
@@ -115,7 +191,7 @@ footer {
 .header-modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.58);
+    background: var(--color-backdrop);
     display: grid;
     place-items: center;
     z-index: 999;
@@ -124,8 +200,8 @@ footer {
 
 .header-modal {
     width: min(36rem, 100%);
-    border: 1px solid var(--color-text);
-    background: color-mix(in srgb, var(--color-bg) 92%, #000);
+    border: 1px solid var(--color-border);
+    background: var(--color-floating-bg);
     padding: 1rem;
     display: grid;
     gap: 0.8rem;
@@ -175,18 +251,9 @@ footer {
 }
 
 .header-modal-close {
-    border: 1px solid var(--color-text);
-    background: transparent;
-    color: var(--color-text);
     padding: 0.3rem 0.55rem;
     font-size: 0.75rem;
     letter-spacing: 0.08em;
-    cursor: pointer;
-}
-
-.header-modal-close:hover {
-    background: var(--color-text);
-    color: var(--color-bg);
 }
 
 .header-modal-setting {
@@ -245,7 +312,7 @@ input[type='number'] {
 
 input[type='text']:hover,
 input[type='number']:hover {
-    background-color: var(--color-hover);
+    background-color: var(--input-surface-hover);
 }
 
 input[type='text']:focus,
@@ -253,13 +320,13 @@ input[type='number']:focus,
 input[type='text']:focus-visible,
 input[type='number']:focus-visible {
     outline: none;
-    border: 1px solid var(--color-text);
+    border: 1px solid var(--color-border-focus);
     background-color: var(--input-surface-focus);
 }
 
 input[type='text'][aria-invalid='true'],
 input[type='number'][aria-invalid='true'] {
-    border: 1px solid red;
+    border: 1px solid var(--color-danger);
 }
 
 input[type='number'] {
@@ -273,7 +340,7 @@ input[type='number']::-webkit-inner-spin-button {
     margin: 0;
 }
 
-#root>main {
+.app-body-container > main {
     display: flex;
     min-height: 0;
 }
@@ -295,7 +362,8 @@ aside {
     width: 100%;
     container-type: inline-size;
     container-name: aside-panel;
-    border-right: 1px solid var(--color-text);
+    border-right: 1px solid var(--color-border);
+    border-left: 1px solid var(--color-border);
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-gutter: stable;
@@ -339,25 +407,53 @@ aside {
     cursor: col-resize;
 }
 
-nav {
+.app-layout {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.app-body-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+}
+
+.app-nav {
     height: 100%;
     width: 3.2rem;
     background-color: #000;
-    padding-right: 0.3rem;
-    border-right: 1px solid var(--color-text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    z-index: 10;
+}
+
+.nav-logo-img {
+    width: 100%;
+    height: auto;
+    image-rendering: pixelated;
+    margin-top: 0.1rem;
+}
+
+.nav-links-wrap {
+    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     row-gap: 0.5rem;
-    overflow-x: visible;
-    flex-shrink: 0;
+    width: 100%;
 }
 
 .nav-icon-btn {
     position: relative;
     box-sizing: content-box;
-    padding: 0.8rem 0.5rem;
+    padding: 0.8rem 0;
     width: 100%;
     border: none;
     background: transparent;
@@ -426,11 +522,6 @@ nav {
     min-height: 0;
 }
 
-footer {
-    border: none;
-    border-top: 1px solid var(--color-text);
-}
-
 #render {
     display: block;
     width: min-content;
@@ -492,18 +583,9 @@ h3 {
     align-items: center;
     justify-content: center;
     gap: 0.4rem;
-    border: 1px solid var(--color-text);
-    background: transparent;
-    color: var(--color-text);
     padding: 0.45rem 0.7rem;
     font-size: 0.74rem;
     letter-spacing: 0.08em;
-    cursor: pointer;
-}
-
-.webgl2-blocker-continue-btn:hover {
-    background: var(--color-text);
-    color: var(--color-bg);
 }
 
 ::-webkit-scrollbar {
