@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import statue from '../../assets/statue.jpg';
+import statue from '../../assets/STATUE.jpg';
 import useGalleryStore from '../data/galleryStore';
 import useGifStore from './gifStore';
 import useWebcamStore, { WEBCAM_SOURCE } from './webcamStore';
