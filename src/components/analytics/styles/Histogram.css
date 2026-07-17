@@ -1,0 +1,22 @@
+.histogram-toggle-group {
+  flex-wrap: nowrap;
+}
+
+.histogram-floating-panel {
+  position: absolute;
+  top: 1rem;
+  left: calc(100% + 0.65rem);
+  width: 14rem;
+  padding: 0.48rem;
+  z-index: 29;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.histogram-canvas {
+  display: block;
+  width: 100%;
+  height: 64px;
+  image-rendering: pixelated;
+}
+

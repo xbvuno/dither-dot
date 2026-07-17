@@ -4,12 +4,6 @@
   overflow-wrap: anywhere;
 }
 
-.bv-macro-section {
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: 0.4rem;
-  margin-bottom: 1rem;
-}
-
 .import-dropzone {
   border: 1px dashed var(--color-border-hover);
   background: var(--color-bg-subtle);

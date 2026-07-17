@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
-import usePaletteStore, { EXTRACT_METHOD } from '../stores/paletteStore';
-import SliderBundle from '../components/SliderBundle';
+import usePaletteStore, { EXTRACT_METHOD } from '../stores/data/paletteStore';
+import SliderBundle from '../components/ui/shared/SliderBundle';
 
 /* ---------------------------------- */
 /* COLOR COUNT                         */

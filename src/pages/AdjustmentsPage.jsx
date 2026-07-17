@@ -1,11 +1,11 @@
 import { useCallback, useState } from "react";
 import { createPortal } from "react-dom";
 import { RotateCcw, Dices, ChevronDown } from "lucide-react";
-import ColorControls from "../components/ColorControls";
-import BlurControls from "../components/BlurControls";
-import Histogram from "../components/Histogram";
-import NoiseControls from "../components/NoiseControls";
-import useParamsStore, { COLOR_CONTROLS, BLUR_CONTROLS, NOISE_CONTROLS } from "../stores/paramsStore";
+import ColorControls from "../components/controls/ColorControls";
+import BlurControls from "../components/controls/BlurControls";
+import Histogram from "../components/analytics/Histogram";
+import NoiseControls from "../components/controls/NoiseControls";
+import useParamsStore, { COLOR_CONTROLS, BLUR_CONTROLS, NOISE_CONTROLS } from "../stores/data/paramsStore";
 
 const colorKeys = Object.keys(COLOR_CONTROLS);
 const blurKeys = Object.keys(BLUR_CONTROLS);

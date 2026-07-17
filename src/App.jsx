@@ -1,18 +1,17 @@
 import { useState, useEffect, useRef } from 'react'
 import { Smartphone, MonitorSmartphone, TriangleAlert, ArrowRight, Info, Heart, ScrollText, Cat, FileUp, ImageUpscale, SlidersHorizontal, Palette, SprayCan, Download } from 'lucide-react'
-import Aside from './Aside'
+import Aside from './components/layout/Aside'
 
-import statue from './assets/statue.jpg'
-import watermarkMini from './assets/water-mark-mini.png'
-import ZoomableDiv from './components/ZoomableDiv'
-import ImageShader from './components/ImageShader'
-import AsideRouter from './components/AsideRouter'
-import GifTimeline from './components/GifTimeline'
-import Footer from './components/Footer'
-import usePageStore, { PAGE } from './stores/pageStore'
-import useImageStore from './stores/imageStore'
-import useProcessingStore from './stores/processingStore'
-import useWatermarkStore from './stores/watermarkStore'
+import watermarkMini from './assets/watermark/watermark-mini.png'
+import ZoomableDiv from './components/ui/shared/ZoomableDiv'
+import ImageShader from './components/canvas/ImageShader'
+import AsideRouter from './components/layout/AsideRouter'
+import GifTimeline from './components/timeline/GifTimeline'
+import Footer from './components/layout/Footer'
+import usePageStore, { PAGE } from './stores/ui/pageStore'
+import useImageStore from './stores/media/imageStore'
+import useProcessingStore from './stores/engine/processingStore'
+import useWatermarkStore from './stores/media/watermarkStore'
 
 const ICONS = [
   { id: PAGE.IMPORT, label: 'Import', Icon: FileUp },
@@ -112,7 +111,7 @@ function App() {
 
   if (IS_MOBILE && !continueOnMobile) {
     return (
-      <div className='webgl2-blocker'>
+      <div className='fullscreen-blocker'>
         <div>
           <h1>MOBILE NOT SUPPORTED YET</h1>
           <p>
@@ -124,7 +123,7 @@ function App() {
           <br/>
           <button
             type='button'
-            className='webgl2-blocker-continue-btn'
+            className='fullscreen-blocker-btn'
             onClick={() => setContinueOnMobile(true)}
           >
             <ArrowRight size={14} strokeWidth={1.8} />
@@ -195,7 +194,7 @@ function App() {
           </Aside>
           <div className='flex-v'>
             <div className='zoomable-wrap'>
-              <ZoomableDiv content={<ImageShader sourceImg={sourceImg || statue} />} />
+              <ZoomableDiv content={<ImageShader sourceImg={sourceImg} />} />
               {(viewerLoading || renderProcessing) && (
                 <div className='zoomable-loading-overlay' role='status' aria-live='polite' aria-label='Loading media'>
                   <span className='zoomable-loading-label'>LOADING</span>

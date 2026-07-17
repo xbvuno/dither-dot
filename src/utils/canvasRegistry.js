@@ -9,9 +9,6 @@ export function registerSourceImage(sourceImage) {
   _sourceImage = sourceImage;
 }
 
-export function getSourceImage() {
-  return _sourceImage;
-}
 
 export function registerPaletteReference(reference) {
   _paletteReference = reference;
