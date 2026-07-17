@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
 import statue from '../../assets/STATUE.jpg';
 import useGalleryStore from '../data/galleryStore';
 import useGifStore from './gifStore';
@@ -35,7 +34,7 @@ function readBlobAsDataUrl(blob) {
 
 purgeOversizedPersistedState(IMAGE_STORE_KEY);
 
-const useImageStore = create(persist((set, get) => ({
+const useImageStore = create((set, get) => ({
   ...DEFAULT_IMAGE_STATE,
   viewerLoading: false,
   exportPreviewUrl: null,
@@ -75,11 +74,6 @@ const useImageStore = create(persist((set, get) => ({
     useGifStore.getState().clearFrames?.();
     set({ ...DEFAULT_IMAGE_STATE, exportPreviewUrl: null });
   },
-}), {
-  name: IMAGE_STORE_KEY,
-  storage: createJSONStorage(() => localStorage),
-  // Never persist imported data URLs; they quickly exceed localStorage quota.
-  partialize: () => ({ ...DEFAULT_IMAGE_STATE }),
 }));
 
 export default useImageStore;
