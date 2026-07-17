@@ -111,7 +111,7 @@ function App() {
 
   if (IS_MOBILE && !continueOnMobile) {
     return (
-      <div className='webgl2-blocker'>
+      <div className='fullscreen-blocker'>
         <div>
           <h1>MOBILE NOT SUPPORTED YET</h1>
           <p>
@@ -123,7 +123,7 @@ function App() {
           <br/>
           <button
             type='button'
-            className='webgl2-blocker-continue-btn'
+            className='fullscreen-blocker-btn'
             onClick={() => setContinueOnMobile(true)}
           >
             <ArrowRight size={14} strokeWidth={1.8} />

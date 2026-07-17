@@ -16,6 +16,13 @@
   font-size: 0.9rem;
 }
 
+.bv-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
 .bv-option-group {
   display: flex;
   flex-wrap: wrap;
@@ -98,7 +105,11 @@
   border: 1px solid #3c3c3c;
 }
 
-/* --- Collapsible Accordion Sections --- */
+.bv-macro-section {
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.4rem;
+  margin-bottom: 1rem;
+}
 
 .bv-macro-section-header {
   display: flex;
@@ -174,6 +185,3 @@
   overflow: hidden;
   pointer-events: none;
 }
-
-
-

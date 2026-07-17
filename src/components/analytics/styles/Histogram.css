@@ -1,10 +1,3 @@
-.bv-controls-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.6rem;
-}
-
 .histogram-toggle-group {
   flex-wrap: nowrap;
 }
@@ -26,5 +19,4 @@
   height: 64px;
   image-rendering: pixelated;
 }
-
 
