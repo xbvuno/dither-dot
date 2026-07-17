@@ -16,8 +16,8 @@ import {
   registerPaletteReference,
   registerOutputCanvas,
 } from "../utils/canvasRegistry";
-import watermarkImage from "../assets/water-mark.png";
-import watermarkMiniImage from "../assets/water-mark-mini.png";
+import watermarkImage from "../assets/watermark/watermark.png";
+import watermarkMiniImage from "../assets/watermark/watermark-mini.png";
 
 const MAX_PALETTE_SIZE = 64;
 const PROCESSING_DEBOUNCE_MS = 48;

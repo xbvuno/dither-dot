@@ -9,8 +9,8 @@ import useParamsStore from '../stores/paramsStore';
 import useGifStore from '../stores/gifStore';
 import useWebcamStore, { WEBCAM_SOURCE } from '../stores/webcamStore';
 import useWatermarkStore from '../stores/watermarkStore';
-import watermarkImage from '../assets/water-mark.png';
-import watermarkMiniImage from '../assets/water-mark-mini.png';
+import watermarkImage from '../assets/watermark/watermark.png';
+import watermarkMiniImage from '../assets/watermark/watermark-mini.png';
 
 const SUPPORTED_EXTENSIONS = new Set([
   'png',

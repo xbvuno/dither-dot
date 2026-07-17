@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Smartphone, MonitorSmartphone, TriangleAlert, ArrowRight, Info, Heart, ScrollText, Cat, FileUp, ImageUpscale, SlidersHorizontal, Palette, SprayCan, Download } from 'lucide-react'
 import Aside from './Aside'
 
-import statue from './assets/statue.jpg'
-import watermarkMini from './assets/water-mark-mini.png'
+import watermarkMini from './assets/watermark/watermark-mini.png'
 import ZoomableDiv from './components/ZoomableDiv'
 import ImageShader from './components/ImageShader'
 import AsideRouter from './components/AsideRouter'
@@ -195,7 +194,7 @@ function App() {
           </Aside>
           <div className='flex-v'>
             <div className='zoomable-wrap'>
-              <ZoomableDiv content={<ImageShader sourceImg={sourceImg || statue} />} />
+              <ZoomableDiv content={<ImageShader sourceImg={sourceImg} />} />
               {(viewerLoading || renderProcessing) && (
                 <div className='zoomable-loading-overlay' role='status' aria-live='polite' aria-label='Loading media'>
                   <span className='zoomable-loading-label'>LOADING</span>
