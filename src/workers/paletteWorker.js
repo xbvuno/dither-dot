@@ -1,5 +1,5 @@
-import init, { Image as WasmImage, Palettes } from 'wasm-pkg';
-import wasmUrl from 'wasm-pkg/ddot_wasm_bg.wasm?url';
+import init, { Image as WasmImage, Palettes } from 'ddot-wasm';
+import wasmUrl from 'ddot-wasm/ddot_wasm_bg.wasm?url';
 
 let wasmInitialized = false;
 
