@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, RotateCcw } from "lucide-react";
-import SliderBundle from "./SliderBundle";
-import useSizeStore from "../stores/sizeStore";
+import SliderBundle from "../ui/shared/SliderBundle";
+import useSizeStore from "../../stores/media/sizeStore";
 
 function gcd(a, b) {
   a = Math.abs(Math.round(a));

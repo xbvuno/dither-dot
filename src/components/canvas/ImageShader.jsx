@@ -1,23 +1,23 @@
 import { useCallback, useEffect, useRef } from "react";
-import useViewStore from "../stores/viewStore";
-import useSizeStore from "../stores/sizeStore";
-import useParamsStore, { BLUR_CONTROLS } from "../stores/paramsStore";
-import usePaletteStore, { EXTRACT_METHOD } from "../stores/paletteStore";
-import useDitherStore from "../stores/ditherStore";
-import useGifStore from "../stores/gifStore";
-import useProcessingStore from "../stores/processingStore";
-import usePerformanceStore from "../stores/performanceStore";
-import useWatermarkStore from "../stores/watermarkStore";
-import useImageStore from "../stores/imageStore";
-import useWebcamStore, { WEBCAM_SOURCE } from "../stores/webcamStore";
+import useViewStore from "../../stores/ui/viewStore";
+import useSizeStore from "../../stores/media/sizeStore";
+import useParamsStore, { BLUR_CONTROLS } from "../../stores/data/paramsStore";
+import usePaletteStore, { EXTRACT_METHOD } from "../../stores/data/paletteStore";
+import useDitherStore from "../../stores/engine/ditherStore";
+import useGifStore from "../../stores/media/gifStore";
+import useProcessingStore from "../../stores/engine/processingStore";
+import usePerformanceStore from "../../stores/engine/performanceStore";
+import useWatermarkStore from "../../stores/media/watermarkStore";
+import useImageStore from "../../stores/media/imageStore";
+import useWebcamStore, { WEBCAM_SOURCE } from "../../stores/media/webcamStore";
 import {
   registerRenderSnapshot,
   registerSourceImage,
   registerPaletteReference,
   registerOutputCanvas,
-} from "../utils/canvasRegistry";
-import watermarkImage from "../assets/watermark/watermark.png";
-import watermarkMiniImage from "../assets/watermark/watermark-mini.png";
+} from "../../utils/canvasRegistry";
+import watermarkImage from "../../assets/watermark/watermark.png";
+import watermarkMiniImage from "../../assets/watermark/watermark-mini.png";
 
 const MAX_PALETTE_SIZE = 64;
 const PROCESSING_DEBOUNCE_MS = 48;
@@ -1102,7 +1102,7 @@ export default function ShaderImage({ sourceImg }) {
           // Worker may already be terminated.
         }
 
-        worker = new Worker(new URL('../workers/ditherWorker.js', import.meta.url), { type: 'module' });
+        worker = new Worker(new URL('../../workers/ditherWorker.js', import.meta.url), { type: 'module' });
         workerRef.current = worker;
         bindWorkerHandlers(worker);
         console.warn(`[pipeline] restarted dither worker after ${reason} (job ${jobId})`);
@@ -1292,7 +1292,7 @@ export default function ShaderImage({ sourceImg }) {
         };
       };
 
-      worker = new Worker(new URL('../workers/ditherWorker.js', import.meta.url), { type: 'module' });
+      worker = new Worker(new URL('../../workers/ditherWorker.js', import.meta.url), { type: 'module' });
       workerRef.current = worker;
       bindWorkerHandlers(worker);
 

@@ -1,12 +1,13 @@
 import { useEffect, useState, useRef } from "react";
-import useSizeStore from "../stores/sizeStore";
-import useProcessingStore from "../stores/processingStore";
-import useViewStore from "../stores/viewStore";
-import usePerformanceStore from "../stores/performanceStore";
-import useParamsStore from "../stores/paramsStore";
-import useWebcamStore from "../stores/webcamStore";
-import { getRenderSnapshot, subscribeRenderSnapshot } from "../utils/canvasRegistry";
-import PipelineTimingTooltip from "./PipelineTimingTooltip";
+import "./styles/Footer.css";
+import useSizeStore from "../../stores/media/sizeStore";
+import useProcessingStore from "../../stores/engine/processingStore";
+import useViewStore from "../../stores/ui/viewStore";
+import usePerformanceStore from "../../stores/engine/performanceStore";
+import useParamsStore from "../../stores/data/paramsStore";
+import useWebcamStore from "../../stores/media/webcamStore";
+import { getRenderSnapshot, subscribeRenderSnapshot } from "../../utils/canvasRegistry";
+import PipelineTimingTooltip from "../analytics/PipelineTimingTooltip";
 
 function formatMs(value) {
   if (!Number.isFinite(value) || value <= 0) return '0ms';

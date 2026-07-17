@@ -1,6 +1,6 @@
 import { encode } from 'modern-gif';
 import gifWorkerUrl from 'modern-gif/worker?url';
-import useGifStore from '../stores/gifStore';
+import useGifStore from '../stores/media/gifStore';
 import { getOutputCanvas } from './canvasRegistry';
 
 function waitForFrameRendered(frameIndex, timeoutMs = 20000) {

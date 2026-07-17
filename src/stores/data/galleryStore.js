@@ -1,13 +1,13 @@
 import { create } from 'zustand';
-import statue from '../assets/STATUE.jpg';
-import sunset from '../assets/SUNSET.jpg';
-import flames from '../assets/FLAMES.jpg';
-import pizzaCow from '../assets/PIZZA_COW.gif';
+import statue from '../../assets/STATUE.jpg';
+import sunset from '../../assets/SUNSET.jpg';
+import flames from '../../assets/FLAMES.jpg';
+import pizzaCow from '../../assets/PIZZA_COW.gif';
 import {
   clearGalleryHistoryFromDb,
   loadGalleryHistoryFromDb,
   saveGalleryHistoryToDb,
-} from '../utils/galleryIndexedDb';
+} from '../../utils/galleryIndexedDb';
 
 export const GALLERY_PRESETS = [
   { id: 'preset-statue', src: statue, name: 'STATUE' },

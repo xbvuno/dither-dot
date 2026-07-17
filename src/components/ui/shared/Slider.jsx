@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import "./Slider.css";
+import "./styles/Slider.css";
 
 /* ---------------- utils ---------------- */
 

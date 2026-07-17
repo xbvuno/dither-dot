@@ -1,5 +1,5 @@
-import SliderBundle from "./SliderBundle";
-import useParamsStore, { COLOR_CONTROLS } from "../stores/paramsStore";
+import SliderBundle from "../ui/shared/SliderBundle";
+import useParamsStore, { COLOR_CONTROLS } from "../../stores/data/paramsStore";
 
 function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);

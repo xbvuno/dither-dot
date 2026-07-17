@@ -1,12 +1,12 @@
 import { Suspense, lazy } from "react";
-import usePageStore, { PAGE } from "../stores/pageStore";
+import usePageStore, { PAGE } from "../../stores/ui/pageStore";
 
-const ImportPage = lazy(() => import("../pages/ImportPage"));
-const ResizingPage = lazy(() => import("../pages/ResizingPage"));
-const AdjustmentsPage = lazy(() => import("../pages/AdjustmentsPage"));
-const DitherPage = lazy(() => import("../pages/DitherPage"));
-const ExportPage = lazy(() => import("../pages/ExportPage"));
-const PalettePage = lazy(() => import("../pages/PalettePage"));
+const ImportPage = lazy(() => import("../../pages/ImportPage"));
+const ResizingPage = lazy(() => import("../../pages/ResizingPage"));
+const AdjustmentsPage = lazy(() => import("../../pages/AdjustmentsPage"));
+const DitherPage = lazy(() => import("../../pages/DitherPage"));
+const ExportPage = lazy(() => import("../../pages/ExportPage"));
+const PalettePage = lazy(() => import("../../pages/PalettePage"));
 
 const PAGES = {
   [PAGE.IMPORT]: ImportPage,

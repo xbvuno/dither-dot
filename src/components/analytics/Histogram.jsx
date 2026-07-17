@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { getPaletteReference, subscribePaletteReference } from '../utils/canvasRegistry';
+import "./styles/Histogram.css";
+import { getPaletteReference, subscribePaletteReference } from '../../utils/canvasRegistry';
 
 const CHANNELS = [
   { index: 0, color: '#e05555' },

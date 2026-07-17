@@ -1,7 +1,7 @@
-import useDitherStore, { DITHER_METHOD } from '../stores/ditherStore';
-import usePaletteStore, { EXTRACT_METHOD } from '../stores/paletteStore';
-import useParamsStore from '../stores/paramsStore';
-import './PipelineTimingTooltip.css';
+import useDitherStore, { DITHER_METHOD } from '../../stores/engine/ditherStore';
+import usePaletteStore, { EXTRACT_METHOD } from '../../stores/data/paletteStore';
+import useParamsStore from '../../stores/data/paramsStore';
+import './styles/PipelineTimingTooltip.css';
 
 function formatMs(value) {
   if (!Number.isFinite(value) || value <= 0) return '0ms';

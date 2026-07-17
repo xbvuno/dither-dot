@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Save, Copy, Eye } from 'lucide-react';
-import useImageStore from '../stores/imageStore';
-import useGifStore from '../stores/gifStore';
+import useImageStore from '../stores/media/imageStore';
+import useGifStore from '../stores/media/gifStore';
 import { getOutputCanvas } from '../utils/canvasRegistry';
 import { exportCurrentGif } from '../utils/exportGif';
-import SliderBundle from '../components/SliderBundle';
+import SliderBundle from '../components/ui/shared/SliderBundle';
 
 function getExportBaseName(sourceName = '') {
   return sourceName.replace(/\.[^.]+$/, '').trim() || 'export';

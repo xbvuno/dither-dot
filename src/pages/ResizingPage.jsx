@@ -1,4 +1,4 @@
-import SizeControls from "../components/SizeControls";
+import SizeControls from "../components/controls/SizeControls";
 
 export default function ResizingPage() {
   return (

@@ -1,5 +1,5 @@
-import SliderBundle from '../components/SliderBundle';
-import useDitherStore, { DITHER_CONTROLS, DITHER_METHOD } from '../stores/ditherStore';
+import SliderBundle from '../components/ui/shared/SliderBundle';
+import useDitherStore, { DITHER_CONTROLS, DITHER_METHOD } from '../stores/engine/ditherStore';
 
 const METHODS = [
   { id: DITHER_METHOD.ONLY_PALETTE, label: 'ONLY PALETTE' },

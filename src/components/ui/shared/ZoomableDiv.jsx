@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import "./ZoomableDiv.css";
+import "./styles/ZoomableDiv.css";
 
 export default function ZoomableDiv({ content }) {
   const outerRef = useRef(null);

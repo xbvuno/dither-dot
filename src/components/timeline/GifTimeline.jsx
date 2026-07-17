@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
+import "./styles/GifTimeline.css";
 import { Check, Pause, Play, SkipBack, SkipForward, Square } from 'lucide-react';
-import useGifStore from '../stores/gifStore';
+import useGifStore from '../../stores/media/gifStore';
 
 const THUMB_WIDTH = 50;
 const THUMB_HEIGHT = 36;
@@ -417,4 +418,3 @@ export default function GifTimeline() {
     </div>
   );
 }
-

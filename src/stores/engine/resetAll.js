@@ -1,4 +1,4 @@
-import useGalleryStore from './galleryStore';
+import useGalleryStore from '../data/galleryStore';
 
 
 export function clearGalleryHistory() {

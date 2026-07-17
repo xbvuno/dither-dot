@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Save, Copy, X, FileUp, Clipboard, Camera, CameraOff, FlipHorizontal, Trash2, Film, Dices } from 'lucide-react';
-import useImageStore from '../stores/imageStore';
-import useGalleryStore, { GALLERY_PRESETS } from '../stores/galleryStore';
+import useImageStore from '../stores/media/imageStore';
+import useGalleryStore, { GALLERY_PRESETS } from '../stores/data/galleryStore';
 import { getOutputCanvas } from '../utils/canvasRegistry';
-import { clearGalleryHistory } from '../stores/resetAll';
-import useParamsStore from '../stores/paramsStore';
-import useGifStore from '../stores/gifStore';
-import useWebcamStore, { WEBCAM_SOURCE } from '../stores/webcamStore';
-import useWatermarkStore from '../stores/watermarkStore';
+import { clearGalleryHistory } from '../stores/engine/resetAll';
+import useParamsStore from '../stores/data/paramsStore';
+import useGifStore from '../stores/media/gifStore';
+import useWebcamStore, { WEBCAM_SOURCE } from '../stores/media/webcamStore';
+import useWatermarkStore from '../stores/media/watermarkStore';
 import watermarkImage from '../assets/watermark/watermark.png';
 import watermarkMiniImage from '../assets/watermark/watermark-mini.png';
 

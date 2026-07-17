@@ -5,11 +5,11 @@ import {
   kMeans,
   octree,
   blendHex,
-} from '../utils/colorAlgorithms';
-import { resolvePaletteSampleStride } from '../utils/palette/sampling';
-import { getPaletteReference } from '../utils/canvasRegistry';
-import useProcessingStore from './processingStore';
-import usePerformanceStore from './performanceStore';
+} from '../../utils/colorAlgorithms';
+import { resolvePaletteSampleStride } from '../../utils/palette/sampling';
+import { getPaletteReference } from '../../utils/canvasRegistry';
+import useProcessingStore from '../engine/processingStore';
+import usePerformanceStore from '../engine/performanceStore';
 
 const MAX_PALETTE_COLORS = 64;
 const MIN_PALETTE_COLORS = 2;
@@ -17,7 +17,7 @@ const MIN_PALETTE_COLORS = 2;
 let latestGenerationToken = 0;
 
 const paletteWorker = typeof Worker !== 'undefined'
-  ? new Worker(new URL('../workers/paletteWorker.js', import.meta.url), { type: 'module' })
+  ? new Worker(new URL('../../workers/paletteWorker.js', import.meta.url), { type: 'module' })
   : null;
 
 let paletteWorkerJobId = 0;
