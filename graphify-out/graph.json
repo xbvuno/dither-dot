@@ -812,28 +812,6 @@
       "norm_label": "app()"
     },
     {
-      "label": "Aside.jsx",
-      "file_type": "code",
-      "source_file": "src/Aside.jsx",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "src_aside",
-      "community": 7,
-      "community_name": "Aside Navigation Router",
-      "norm_label": "aside.jsx"
-    },
-    {
-      "label": "Aside()",
-      "file_type": "code",
-      "source_file": "src/Aside.jsx",
-      "source_location": "L5",
-      "_origin": "ast",
-      "id": "src_aside_aside",
-      "community": 7,
-      "community_name": "Aside Navigation Router",
-      "norm_label": "aside()"
-    },
-    {
       "label": "Histogram.jsx",
       "file_type": "code",
       "source_file": "src/components/analytics/Histogram.jsx",
@@ -1329,6 +1307,28 @@
       "norm_label": "sizecontrols()"
     },
     {
+      "label": "Aside.jsx",
+      "file_type": "code",
+      "source_file": "src/components/layout/Aside.jsx",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_components_layout_aside",
+      "community": 7,
+      "community_name": "Aside Navigation Router",
+      "norm_label": "aside.jsx"
+    },
+    {
+      "label": "Aside()",
+      "file_type": "code",
+      "source_file": "src/components/layout/Aside.jsx",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "src_components_layout_aside_aside",
+      "community": 7,
+      "community_name": "Aside Navigation Router",
+      "norm_label": "aside()"
+    },
+    {
       "label": "AsideRouter.jsx",
       "file_type": "code",
       "source_file": "src/components/layout/AsideRouter.jsx",
@@ -1533,8 +1533,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_components_ui_shared_slider",
-      "community": 2,
-      "community_name": "Input & Blur Controls",
+      "community": 9,
+      "community_name": "Pipeline Timing Tooltips",
       "norm_label": "slider.jsx"
     },
     {
@@ -1544,8 +1544,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "src_components_ui_shared_slider_clamp",
-      "community": 2,
-      "community_name": "Input & Blur Controls",
+      "community": 9,
+      "community_name": "Pipeline Timing Tooltips",
       "norm_label": "clamp()"
     },
     {
@@ -1555,8 +1555,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "src_components_ui_shared_slider_valuetopercent",
-      "community": 2,
-      "community_name": "Input & Blur Controls",
+      "community": 9,
+      "community_name": "Pipeline Timing Tooltips",
       "norm_label": "valuetopercent()"
     },
     {
@@ -1566,8 +1566,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "src_components_ui_shared_slider_percenttovalue",
-      "community": 2,
-      "community_name": "Input & Blur Controls",
+      "community": 9,
+      "community_name": "Pipeline Timing Tooltips",
       "norm_label": "percenttovalue()"
     },
     {
@@ -1577,8 +1577,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "src_components_ui_shared_slider_snapvalue",
-      "community": 2,
-      "community_name": "Input & Blur Controls",
+      "community": 9,
+      "community_name": "Pipeline Timing Tooltips",
       "norm_label": "snapvalue()"
     },
     {
@@ -1588,8 +1588,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "src_components_ui_shared_slider_slider",
-      "community": 2,
-      "community_name": "Input & Blur Controls",
+      "community": 9,
+      "community_name": "Pipeline Timing Tooltips",
       "norm_label": "slider()"
     },
     {
@@ -1664,10 +1664,10 @@
       "source_file": "src/pages/AdjustmentsPage.jsx",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 2,
-      "norm_label": "colorkeys",
       "id": "src_pages_adjustmentspage_colorkeys",
-      "community_name": "Input & Blur Controls"
+      "community": 2,
+      "community_name": "Input & Blur Controls",
+      "norm_label": "colorkeys"
     },
     {
       "label": "blurKeys",
@@ -1675,10 +1675,10 @@
       "source_file": "src/pages/AdjustmentsPage.jsx",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 2,
-      "norm_label": "blurkeys",
       "id": "src_pages_adjustmentspage_blurkeys",
-      "community_name": "Input & Blur Controls"
+      "community": 2,
+      "community_name": "Input & Blur Controls",
+      "norm_label": "blurkeys"
     },
     {
       "label": "noiseKeys",
@@ -1686,10 +1686,10 @@
       "source_file": "src/pages/AdjustmentsPage.jsx",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 2,
-      "norm_label": "noisekeys",
       "id": "src_pages_adjustmentspage_noisekeys",
-      "community_name": "Input & Blur Controls"
+      "community": 2,
+      "community_name": "Input & Blur Controls",
+      "norm_label": "noisekeys"
     },
     {
       "label": "AdjustmentsPage()",
@@ -1697,10 +1697,10 @@
       "source_file": "src/pages/AdjustmentsPage.jsx",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 2,
-      "norm_label": "adjustmentspage()",
       "id": "src_pages_adjustmentspage_adjustmentspage",
-      "community_name": "Input & Blur Controls"
+      "community": 2,
+      "community_name": "Input & Blur Controls",
+      "norm_label": "adjustmentspage()"
     },
     {
       "label": "DitherPage.jsx",
@@ -1719,10 +1719,10 @@
       "source_file": "src/pages/DitherPage.jsx",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 10,
-      "norm_label": "methods",
       "id": "src_pages_ditherpage_methods",
-      "community_name": "Color Palette Editor Page"
+      "community": 10,
+      "community_name": "Color Palette Editor Page",
+      "norm_label": "methods"
     },
     {
       "label": "DitherPage()",
@@ -1730,10 +1730,10 @@
       "source_file": "src/pages/DitherPage.jsx",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 10,
-      "norm_label": "ditherpage()",
       "id": "src_pages_ditherpage_ditherpage",
-      "community_name": "Color Palette Editor Page"
+      "community": 10,
+      "community_name": "Color Palette Editor Page",
+      "norm_label": "ditherpage()"
     },
     {
       "label": "ExportPage.jsx",
@@ -1752,10 +1752,10 @@
       "source_file": "src/pages/ExportPage.jsx",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 8,
-      "norm_label": "getexportbasename()",
       "id": "src_pages_exportpage_getexportbasename",
-      "community_name": "Export Operations Page"
+      "community": 8,
+      "community_name": "Export Operations Page",
+      "norm_label": "getexportbasename()"
     },
     {
       "label": "getDefaultExportName()",
@@ -1763,10 +1763,10 @@
       "source_file": "src/pages/ExportPage.jsx",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 8,
-      "norm_label": "getdefaultexportname()",
       "id": "src_pages_exportpage_getdefaultexportname",
-      "community_name": "Export Operations Page"
+      "community": 8,
+      "community_name": "Export Operations Page",
+      "norm_label": "getdefaultexportname()"
     },
     {
       "label": "saveCanvasAsPng()",
@@ -1774,10 +1774,10 @@
       "source_file": "src/pages/ExportPage.jsx",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 8,
-      "norm_label": "savecanvasaspng()",
       "id": "src_pages_exportpage_savecanvasaspng",
-      "community_name": "Export Operations Page"
+      "community": 8,
+      "community_name": "Export Operations Page",
+      "norm_label": "savecanvasaspng()"
     },
     {
       "label": "createUpscaledCanvas()",
@@ -1785,10 +1785,10 @@
       "source_file": "src/pages/ExportPage.jsx",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 8,
-      "norm_label": "createupscaledcanvas()",
       "id": "src_pages_exportpage_createupscaledcanvas",
-      "community_name": "Export Operations Page"
+      "community": 8,
+      "community_name": "Export Operations Page",
+      "norm_label": "createupscaledcanvas()"
     },
     {
       "label": "copyCanvasToClipboard()",
@@ -1796,10 +1796,10 @@
       "source_file": "src/pages/ExportPage.jsx",
       "source_location": "L53",
       "_origin": "ast",
-      "community": 8,
-      "norm_label": "copycanvastoclipboard()",
       "id": "src_pages_exportpage_copycanvastoclipboard",
-      "community_name": "Export Operations Page"
+      "community": 8,
+      "community_name": "Export Operations Page",
+      "norm_label": "copycanvastoclipboard()"
     },
     {
       "label": "getExportCanvasOrThrow()",
@@ -1807,10 +1807,10 @@
       "source_file": "src/pages/ExportPage.jsx",
       "source_location": "L71",
       "_origin": "ast",
-      "community": 8,
-      "norm_label": "getexportcanvasorthrow()",
       "id": "src_pages_exportpage_getexportcanvasorthrow",
-      "community_name": "Export Operations Page"
+      "community": 8,
+      "community_name": "Export Operations Page",
+      "norm_label": "getexportcanvasorthrow()"
     },
     {
       "label": "canvasToDataUrl()",
@@ -1818,10 +1818,10 @@
       "source_file": "src/pages/ExportPage.jsx",
       "source_location": "L79",
       "_origin": "ast",
-      "community": 8,
-      "norm_label": "canvastodataurl()",
       "id": "src_pages_exportpage_canvastodataurl",
-      "community_name": "Export Operations Page"
+      "community": 8,
+      "community_name": "Export Operations Page",
+      "norm_label": "canvastodataurl()"
     },
     {
       "label": "ExportPage()",
@@ -1829,10 +1829,10 @@
       "source_file": "src/pages/ExportPage.jsx",
       "source_location": "L91",
       "_origin": "ast",
-      "community": 8,
-      "norm_label": "exportpage()",
       "id": "src_pages_exportpage_exportpage",
-      "community_name": "Export Operations Page"
+      "community": 8,
+      "community_name": "Export Operations Page",
+      "norm_label": "exportpage()"
     },
     {
       "label": "ImportPage.jsx",
@@ -1851,10 +1851,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "supported_extensions",
       "id": "src_pages_importpage_supported_extensions",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "supported_extensions"
     },
     {
       "label": "getExtension()",
@@ -1862,10 +1862,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L30",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "getextension()",
       "id": "src_pages_importpage_getextension",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "getextension()"
     },
     {
       "label": "stripExtension()",
@@ -1873,10 +1873,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "stripextension()",
       "id": "src_pages_importpage_stripextension",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "stripextension()"
     },
     {
       "label": "isLikelyImageFile()",
@@ -1884,10 +1884,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L40",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "islikelyimagefile()",
       "id": "src_pages_importpage_islikelyimagefile",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "islikelyimagefile()"
     },
     {
       "label": "isGifFile()",
@@ -1895,10 +1895,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L48",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "isgiffile()",
       "id": "src_pages_importpage_isgiffile",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "isgiffile()"
     },
     {
       "label": "isWebpFile()",
@@ -1906,10 +1906,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L54",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "iswebpfile()",
       "id": "src_pages_importpage_iswebpfile",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "iswebpfile()"
     },
     {
       "label": "getSourceExtension()",
@@ -1917,10 +1917,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L60",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "getsourceextension()",
       "id": "src_pages_importpage_getsourceextension",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "getsourceextension()"
     },
     {
       "label": "isAnimatedSource()",
@@ -1928,10 +1928,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L64",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "isanimatedsource()",
       "id": "src_pages_importpage_isanimatedsource",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "isanimatedsource()"
     },
     {
       "label": "getImageDimensions()",
@@ -1939,10 +1939,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L69",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "getimagedimensions()",
       "id": "src_pages_importpage_getimagedimensions",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "getimagedimensions()"
     },
     {
       "label": "getReducedDimensions()",
@@ -1950,10 +1950,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L84",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "getreduceddimensions()",
       "id": "src_pages_importpage_getreduceddimensions",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "getreduceddimensions()"
     },
     {
       "label": "scaleDownBlob()",
@@ -1961,10 +1961,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L97",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "scaledownblob()",
       "id": "src_pages_importpage_scaledownblob",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "scaledownblob()"
     },
     {
       "label": "rgbaFrameToPngBlob()",
@@ -1972,10 +1972,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L133",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "rgbaframetopngblob()",
       "id": "src_pages_importpage_rgbaframetopngblob",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "rgbaframetopngblob()"
     },
     {
       "label": "decodeGifWithWorker()",
@@ -1983,10 +1983,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L156",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "decodegifwithworker()",
       "id": "src_pages_importpage_decodegifwithworker",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "decodegifwithworker()"
     },
     {
       "label": "blobToDataUrl()",
@@ -1994,10 +1994,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L200",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "blobtodataurl()",
       "id": "src_pages_importpage_blobtodataurl",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "blobtodataurl()"
     },
     {
       "label": "getStaticPreviewFromBlob()",
@@ -2005,10 +2005,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L209",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "getstaticpreviewfromblob()",
       "id": "src_pages_importpage_getstaticpreviewfromblob",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "getstaticpreviewfromblob()"
     },
     {
       "label": "LargeImageDialog()",
@@ -2016,10 +2016,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L229",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "largeimagedialog()",
       "id": "src_pages_importpage_largeimagedialog",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "largeimagedialog()"
     },
     {
       "label": "buildClipboardFileName()",
@@ -2027,10 +2027,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L295",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "buildclipboardfilename()",
       "id": "src_pages_importpage_buildclipboardfilename",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "buildclipboardfilename()"
     },
     {
       "label": "validateImageFile()",
@@ -2038,10 +2038,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L300",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "validateimagefile()",
       "id": "src_pages_importpage_validateimagefile",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "validateimagefile()"
     },
     {
       "label": "getExportBaseName()",
@@ -2049,10 +2049,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L333",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "getexportbasename()",
       "id": "src_pages_importpage_getexportbasename",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "getexportbasename()"
     },
     {
       "label": "saveCanvasAsPng()",
@@ -2060,10 +2060,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L337",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "savecanvasaspng()",
       "id": "src_pages_importpage_savecanvasaspng",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "savecanvasaspng()"
     },
     {
       "label": "copyCanvasToClipboard()",
@@ -2071,10 +2071,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L354",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "copycanvastoclipboard()",
       "id": "src_pages_importpage_copycanvastoclipboard",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "copycanvastoclipboard()"
     },
     {
       "label": "getExportCanvasOrThrow()",
@@ -2082,10 +2082,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L372",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "getexportcanvasorthrow()",
       "id": "src_pages_importpage_getexportcanvasorthrow",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "getexportcanvasorthrow()"
     },
     {
       "label": "compositeWithWatermark()",
@@ -2093,10 +2093,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L380",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "compositewithwatermark()",
       "id": "src_pages_importpage_compositewithwatermark",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "compositewithwatermark()"
     },
     {
       "label": "WebcamSection()",
@@ -2104,10 +2104,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L407",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "webcamsection()",
       "id": "src_pages_importpage_webcamsection",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "webcamsection()"
     },
     {
       "label": "SourceSection()",
@@ -2115,10 +2115,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L503",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "sourcesection()",
       "id": "src_pages_importpage_sourcesection",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "sourcesection()"
     },
     {
       "label": "GalleryThumbItem()",
@@ -2126,10 +2126,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L586",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "gallerythumbitem()",
       "id": "src_pages_importpage_gallerythumbitem",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "gallerythumbitem()"
     },
     {
       "label": "GallerySection()",
@@ -2137,10 +2137,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L630",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "gallerysection()",
       "id": "src_pages_importpage_gallerysection",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "gallerysection()"
     },
     {
       "label": "ImportPage()",
@@ -2148,10 +2148,10 @@
       "source_file": "src/pages/ImportPage.jsx",
       "source_location": "L832",
       "_origin": "ast",
-      "community": 0,
-      "norm_label": "importpage()",
       "id": "src_pages_importpage_importpage",
-      "community_name": "GIF & Image Timeline"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "importpage()"
     },
     {
       "label": "PalettePage.jsx",
@@ -2170,10 +2170,10 @@
       "source_file": "src/pages/PalettePage.jsx",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 10,
-      "norm_label": "colorcountsection()",
       "id": "src_pages_palettepage_colorcountsection",
-      "community_name": "Color Palette Editor Page"
+      "community": 10,
+      "community_name": "Color Palette Editor Page",
+      "norm_label": "colorcountsection()"
     },
     {
       "label": "METHODS",
@@ -2181,10 +2181,10 @@
       "source_file": "src/pages/PalettePage.jsx",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 10,
-      "norm_label": "methods",
       "id": "src_pages_palettepage_methods",
-      "community_name": "Color Palette Editor Page"
+      "community": 10,
+      "community_name": "Color Palette Editor Page",
+      "norm_label": "methods"
     },
     {
       "label": "MethodSection()",
@@ -2192,10 +2192,10 @@
       "source_file": "src/pages/PalettePage.jsx",
       "source_location": "L42",
       "_origin": "ast",
-      "community": 10,
-      "norm_label": "methodsection()",
       "id": "src_pages_palettepage_methodsection",
-      "community_name": "Color Palette Editor Page"
+      "community": 10,
+      "community_name": "Color Palette Editor Page",
+      "norm_label": "methodsection()"
     },
     {
       "label": "parsePaletteText()",
@@ -2203,10 +2203,10 @@
       "source_file": "src/pages/PalettePage.jsx",
       "source_location": "L64",
       "_origin": "ast",
-      "community": 10,
-      "norm_label": "parsepalettetext()",
       "id": "src_pages_palettepage_parsepalettetext",
-      "community_name": "Color Palette Editor Page"
+      "community": 10,
+      "community_name": "Color Palette Editor Page",
+      "norm_label": "parsepalettetext()"
     },
     {
       "label": "getHexTextColor()",
@@ -2214,10 +2214,10 @@
       "source_file": "src/pages/PalettePage.jsx",
       "source_location": "L82",
       "_origin": "ast",
-      "community": 10,
-      "norm_label": "gethextextcolor()",
       "id": "src_pages_palettepage_gethextextcolor",
-      "community_name": "Color Palette Editor Page"
+      "community": 10,
+      "community_name": "Color Palette Editor Page",
+      "norm_label": "gethextextcolor()"
     },
     {
       "label": "ColorEntry()",
@@ -2225,10 +2225,10 @@
       "source_file": "src/pages/PalettePage.jsx",
       "source_location": "L93",
       "_origin": "ast",
-      "community": 10,
-      "norm_label": "colorentry()",
       "id": "src_pages_palettepage_colorentry",
-      "community_name": "Color Palette Editor Page"
+      "community": 10,
+      "community_name": "Color Palette Editor Page",
+      "norm_label": "colorentry()"
     },
     {
       "label": "CustomColorSwatch()",
@@ -2236,10 +2236,10 @@
       "source_file": "src/pages/PalettePage.jsx",
       "source_location": "L107",
       "_origin": "ast",
-      "community": 10,
-      "norm_label": "customcolorswatch()",
       "id": "src_pages_palettepage_customcolorswatch",
-      "community_name": "Color Palette Editor Page"
+      "community": 10,
+      "community_name": "Color Palette Editor Page",
+      "norm_label": "customcolorswatch()"
     },
     {
       "label": "ColorsSection()",
@@ -2247,10 +2247,10 @@
       "source_file": "src/pages/PalettePage.jsx",
       "source_location": "L158",
       "_origin": "ast",
-      "community": 10,
-      "norm_label": "colorssection()",
       "id": "src_pages_palettepage_colorssection",
-      "community_name": "Color Palette Editor Page"
+      "community": 10,
+      "community_name": "Color Palette Editor Page",
+      "norm_label": "colorssection()"
     },
     {
       "label": "PaletteLibrarySection()",
@@ -2258,10 +2258,10 @@
       "source_file": "src/pages/PalettePage.jsx",
       "source_location": "L267",
       "_origin": "ast",
-      "community": 10,
-      "norm_label": "palettelibrarysection()",
       "id": "src_pages_palettepage_palettelibrarysection",
-      "community_name": "Color Palette Editor Page"
+      "community": 10,
+      "community_name": "Color Palette Editor Page",
+      "norm_label": "palettelibrarysection()"
     },
     {
       "label": "FloatingColorEditor()",
@@ -2269,10 +2269,10 @@
       "source_file": "src/pages/PalettePage.jsx",
       "source_location": "L413",
       "_origin": "ast",
-      "community": 10,
-      "norm_label": "floatingcoloreditor()",
       "id": "src_pages_palettepage_floatingcoloreditor",
-      "community_name": "Color Palette Editor Page"
+      "community": 10,
+      "community_name": "Color Palette Editor Page",
+      "norm_label": "floatingcoloreditor()"
     },
     {
       "label": "PalettePage()",
@@ -2280,10 +2280,10 @@
       "source_file": "src/pages/PalettePage.jsx",
       "source_location": "L439",
       "_origin": "ast",
-      "community": 10,
-      "norm_label": "palettepage()",
       "id": "src_pages_palettepage_palettepage",
-      "community_name": "Color Palette Editor Page"
+      "community": 10,
+      "community_name": "Color Palette Editor Page",
+      "norm_label": "palettepage()"
     },
     {
       "label": "ResizingPage.jsx",
@@ -2302,10 +2302,10 @@
       "source_file": "src/pages/ResizingPage.jsx",
       "source_location": "L3",
       "_origin": "ast",
-      "community": 4,
-      "norm_label": "resizingpage()",
       "id": "src_pages_resizingpage_resizingpage",
-      "community_name": "Histogram & Thumbnail Rendering"
+      "community": 4,
+      "community_name": "Histogram & Thumbnail Rendering",
+      "norm_label": "resizingpage()"
     },
     {
       "label": "galleryStore.js",
@@ -2314,8 +2314,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_stores_data_gallerystore",
-      "community": 9,
-      "community_name": "Pipeline Timing Tooltips",
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
       "norm_label": "gallerystore.js"
     },
     {
@@ -2325,8 +2325,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "src_stores_data_gallerystore_gallery_presets",
-      "community": 9,
-      "community_name": "Pipeline Timing Tooltips",
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
       "norm_label": "gallery_presets"
     },
     {
@@ -2336,8 +2336,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "src_stores_data_gallerystore_normalizehistoryentry",
-      "community": 9,
-      "community_name": "Pipeline Timing Tooltips",
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
       "norm_label": "normalizehistoryentry()"
     },
     {
@@ -3083,10 +3083,10 @@
       "source_file": "src/utils/canvasRegistry.js",
       "source_location": "L3",
       "_origin": "ast",
-      "community": 4,
-      "norm_label": "_palettereferencelisteners",
       "id": "src_utils_canvasregistry_palettereferencelisteners",
-      "community_name": "Histogram & Thumbnail Rendering"
+      "community": 4,
+      "community_name": "Histogram & Thumbnail Rendering",
+      "norm_label": "_palettereferencelisteners"
     },
     {
       "label": "_renderSnapshot",
@@ -3094,10 +3094,10 @@
       "source_file": "src/utils/canvasRegistry.js",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 4,
-      "norm_label": "_rendersnapshot",
       "id": "src_utils_canvasregistry_rendersnapshot",
-      "community_name": "Histogram & Thumbnail Rendering"
+      "community": 4,
+      "community_name": "Histogram & Thumbnail Rendering",
+      "norm_label": "_rendersnapshot"
     },
     {
       "label": "_renderSnapshotListeners",
@@ -3105,10 +3105,10 @@
       "source_file": "src/utils/canvasRegistry.js",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 4,
-      "norm_label": "_rendersnapshotlisteners",
       "id": "src_utils_canvasregistry_rendersnapshotlisteners",
-      "community_name": "Histogram & Thumbnail Rendering"
+      "community": 4,
+      "community_name": "Histogram & Thumbnail Rendering",
+      "norm_label": "_rendersnapshotlisteners"
     },
     {
       "label": "registerSourceImage()",
@@ -3116,10 +3116,10 @@
       "source_file": "src/utils/canvasRegistry.js",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 4,
-      "norm_label": "registersourceimage()",
       "id": "src_utils_canvasregistry_registersourceimage",
-      "community_name": "Histogram & Thumbnail Rendering"
+      "community": 4,
+      "community_name": "Histogram & Thumbnail Rendering",
+      "norm_label": "registersourceimage()"
     },
     {
       "label": "registerPaletteReference()",
@@ -3127,10 +3127,10 @@
       "source_file": "src/utils/canvasRegistry.js",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 4,
-      "norm_label": "registerpalettereference()",
       "id": "src_utils_canvasregistry_registerpalettereference",
-      "community_name": "Histogram & Thumbnail Rendering"
+      "community": 4,
+      "community_name": "Histogram & Thumbnail Rendering",
+      "norm_label": "registerpalettereference()"
     },
     {
       "label": "getPaletteReference()",
@@ -3138,10 +3138,10 @@
       "source_file": "src/utils/canvasRegistry.js",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 1,
-      "norm_label": "getpalettereference()",
       "id": "src_utils_canvasregistry_getpalettereference",
-      "community_name": "K-Means Palette Algorithms"
+      "community": 1,
+      "community_name": "K-Means Palette Algorithms",
+      "norm_label": "getpalettereference()"
     },
     {
       "label": "subscribePaletteReference()",
@@ -3149,10 +3149,10 @@
       "source_file": "src/utils/canvasRegistry.js",
       "source_location": "L24",
       "_origin": "ast",
-      "community": 1,
-      "norm_label": "subscribepalettereference()",
       "id": "src_utils_canvasregistry_subscribepalettereference",
-      "community_name": "K-Means Palette Algorithms"
+      "community": 1,
+      "community_name": "K-Means Palette Algorithms",
+      "norm_label": "subscribepalettereference()"
     },
     {
       "label": "registerRenderSnapshot()",
@@ -3160,10 +3160,10 @@
       "source_file": "src/utils/canvasRegistry.js",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 4,
-      "norm_label": "registerrendersnapshot()",
       "id": "src_utils_canvasregistry_registerrendersnapshot",
-      "community_name": "Histogram & Thumbnail Rendering"
+      "community": 4,
+      "community_name": "Histogram & Thumbnail Rendering",
+      "norm_label": "registerrendersnapshot()"
     },
     {
       "label": "getRenderSnapshot()",
@@ -3171,10 +3171,10 @@
       "source_file": "src/utils/canvasRegistry.js",
       "source_location": "L37",
       "_origin": "ast",
-      "community": 4,
-      "norm_label": "getrendersnapshot()",
       "id": "src_utils_canvasregistry_getrendersnapshot",
-      "community_name": "Histogram & Thumbnail Rendering"
+      "community": 4,
+      "community_name": "Histogram & Thumbnail Rendering",
+      "norm_label": "getrendersnapshot()"
     },
     {
       "label": "subscribeRenderSnapshot()",
@@ -3182,10 +3182,10 @@
       "source_file": "src/utils/canvasRegistry.js",
       "source_location": "L41",
       "_origin": "ast",
-      "community": 4,
-      "norm_label": "subscriberendersnapshot()",
       "id": "src_utils_canvasregistry_subscriberendersnapshot",
-      "community_name": "Histogram & Thumbnail Rendering"
+      "community": 4,
+      "community_name": "Histogram & Thumbnail Rendering",
+      "norm_label": "subscriberendersnapshot()"
     },
     {
       "label": "registerOutputCanvas()",
@@ -3193,10 +3193,10 @@
       "source_file": "src/utils/canvasRegistry.js",
       "source_location": "L48",
       "_origin": "ast",
-      "community": 4,
-      "norm_label": "registeroutputcanvas()",
       "id": "src_utils_canvasregistry_registeroutputcanvas",
-      "community_name": "Histogram & Thumbnail Rendering"
+      "community": 4,
+      "community_name": "Histogram & Thumbnail Rendering",
+      "norm_label": "registeroutputcanvas()"
     },
     {
       "label": "getOutputCanvas()",
@@ -3204,10 +3204,10 @@
       "source_file": "src/utils/canvasRegistry.js",
       "source_location": "L52",
       "_origin": "ast",
-      "community": 8,
-      "norm_label": "getoutputcanvas()",
       "id": "src_utils_canvasregistry_getoutputcanvas",
-      "community_name": "Export Operations Page"
+      "community": 8,
+      "community_name": "Export Operations Page",
+      "norm_label": "getoutputcanvas()"
     },
     {
       "label": "colorAlgorithms.js",
@@ -3226,10 +3226,10 @@
       "source_file": "src/utils/colorAlgorithms.js",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 1,
-      "norm_label": "getpalettereferencepixels()",
       "id": "src_utils_coloralgorithms_getpalettereferencepixels",
-      "community_name": "K-Means Palette Algorithms"
+      "community": 1,
+      "community_name": "K-Means Palette Algorithms",
+      "norm_label": "getpalettereferencepixels()"
     },
     {
       "label": "addMidpoints()",
@@ -3237,10 +3237,10 @@
       "source_file": "src/utils/colorAlgorithms.js",
       "source_location": "L41",
       "_origin": "ast",
-      "community": 1,
-      "norm_label": "addmidpoints()",
       "id": "src_utils_coloralgorithms_addmidpoints",
-      "community_name": "K-Means Palette Algorithms"
+      "community": 1,
+      "community_name": "K-Means Palette Algorithms",
+      "norm_label": "addmidpoints()"
     },
     {
       "label": "exportGif.js",
@@ -3259,10 +3259,10 @@
       "source_file": "src/utils/exportGif.js",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 8,
-      "norm_label": "waitforframerendered()",
       "id": "src_utils_exportgif_waitforframerendered",
-      "community_name": "Export Operations Page"
+      "community": 8,
+      "community_name": "Export Operations Page",
+      "norm_label": "waitforframerendered()"
     },
     {
       "label": "captureCanvasPixels()",
@@ -3270,10 +3270,10 @@
       "source_file": "src/utils/exportGif.js",
       "source_location": "L28",
       "_origin": "ast",
-      "community": 8,
-      "norm_label": "capturecanvaspixels()",
       "id": "src_utils_exportgif_capturecanvaspixels",
-      "community_name": "Export Operations Page"
+      "community": 8,
+      "community_name": "Export Operations Page",
+      "norm_label": "capturecanvaspixels()"
     },
     {
       "label": "captureCompositedPixels()",
@@ -3281,10 +3281,10 @@
       "source_file": "src/utils/exportGif.js",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 8,
-      "norm_label": "capturecompositedpixels()",
       "id": "src_utils_exportgif_capturecompositedpixels",
-      "community_name": "Export Operations Page"
+      "community": 8,
+      "community_name": "Export Operations Page",
+      "norm_label": "capturecompositedpixels()"
     },
     {
       "label": "getExportBaseName()",
@@ -3292,10 +3292,10 @@
       "source_file": "src/utils/exportGif.js",
       "source_location": "L53",
       "_origin": "ast",
-      "community": 8,
-      "norm_label": "getexportbasename()",
       "id": "src_utils_exportgif_getexportbasename",
-      "community_name": "Export Operations Page"
+      "community": 8,
+      "community_name": "Export Operations Page",
+      "norm_label": "getexportbasename()"
     },
     {
       "label": "upscaleFramePixels()",
@@ -3303,10 +3303,10 @@
       "source_file": "src/utils/exportGif.js",
       "source_location": "L57",
       "_origin": "ast",
-      "community": 8,
-      "norm_label": "upscaleframepixels()",
       "id": "src_utils_exportgif_upscaleframepixels",
-      "community_name": "Export Operations Page"
+      "community": 8,
+      "community_name": "Export Operations Page",
+      "norm_label": "upscaleframepixels()"
     },
     {
       "label": "waitForFrameSelected()",
@@ -3314,10 +3314,10 @@
       "source_file": "src/utils/exportGif.js",
       "source_location": "L96",
       "_origin": "ast",
-      "community": 8,
-      "norm_label": "waitforframeselected()",
       "id": "src_utils_exportgif_waitforframeselected",
-      "community_name": "Export Operations Page"
+      "community": 8,
+      "community_name": "Export Operations Page",
+      "norm_label": "waitforframeselected()"
     },
     {
       "label": "nextAnimationFrame()",
@@ -3325,10 +3325,10 @@
       "source_file": "src/utils/exportGif.js",
       "source_location": "L118",
       "_origin": "ast",
-      "community": 8,
-      "norm_label": "nextanimationframe()",
       "id": "src_utils_exportgif_nextanimationframe",
-      "community_name": "Export Operations Page"
+      "community": 8,
+      "community_name": "Export Operations Page",
+      "norm_label": "nextanimationframe()"
     },
     {
       "label": "exportCurrentGif()",
@@ -3336,10 +3336,10 @@
       "source_file": "src/utils/exportGif.js",
       "source_location": "L124",
       "_origin": "ast",
-      "community": 8,
-      "norm_label": "exportcurrentgif()",
       "id": "src_utils_exportgif_exportcurrentgif",
-      "community_name": "Export Operations Page"
+      "community": 8,
+      "community_name": "Export Operations Page",
+      "norm_label": "exportcurrentgif()"
     },
     {
       "label": "galleryIndexedDb.js",
@@ -3348,8 +3348,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_utils_galleryindexeddb",
-      "community": 9,
-      "community_name": "Pipeline Timing Tooltips",
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
       "norm_label": "galleryindexeddb.js"
     },
     {
@@ -3358,10 +3358,10 @@
       "source_file": "src/utils/galleryIndexedDb.js",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 9,
-      "norm_label": "opendb()",
       "id": "src_utils_galleryindexeddb_opendb",
-      "community_name": "Pipeline Timing Tooltips"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "opendb()"
     },
     {
       "label": "withStore()",
@@ -3369,10 +3369,10 @@
       "source_file": "src/utils/galleryIndexedDb.js",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 9,
-      "norm_label": "withstore()",
       "id": "src_utils_galleryindexeddb_withstore",
-      "community_name": "Pipeline Timing Tooltips"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "withstore()"
     },
     {
       "label": "loadGalleryHistoryFromDb()",
@@ -3380,10 +3380,10 @@
       "source_file": "src/utils/galleryIndexedDb.js",
       "source_location": "L62",
       "_origin": "ast",
-      "community": 9,
-      "norm_label": "loadgalleryhistoryfromdb()",
       "id": "src_utils_galleryindexeddb_loadgalleryhistoryfromdb",
-      "community_name": "Pipeline Timing Tooltips"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "loadgalleryhistoryfromdb()"
     },
     {
       "label": "saveGalleryHistoryToDb()",
@@ -3391,10 +3391,10 @@
       "source_file": "src/utils/galleryIndexedDb.js",
       "source_location": "L78",
       "_origin": "ast",
-      "community": 9,
-      "norm_label": "savegalleryhistorytodb()",
       "id": "src_utils_galleryindexeddb_savegalleryhistorytodb",
-      "community_name": "Pipeline Timing Tooltips"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "savegalleryhistorytodb()"
     },
     {
       "label": "clearGalleryHistoryFromDb()",
@@ -3402,10 +3402,10 @@
       "source_file": "src/utils/galleryIndexedDb.js",
       "source_location": "L90",
       "_origin": "ast",
-      "community": 9,
-      "norm_label": "cleargalleryhistoryfromdb()",
       "id": "src_utils_galleryindexeddb_cleargalleryhistoryfromdb",
-      "community_name": "Pipeline Timing Tooltips"
+      "community": 0,
+      "community_name": "GIF & Image Timeline",
+      "norm_label": "cleargalleryhistoryfromdb()"
     },
     {
       "label": "colorMath.js",
@@ -3424,10 +3424,10 @@
       "source_file": "src/utils/palette/colorMath.js",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 1,
-      "norm_label": "rgbtohex()",
       "id": "src_utils_palette_colormath_rgbtohex",
-      "community_name": "K-Means Palette Algorithms"
+      "community": 1,
+      "community_name": "K-Means Palette Algorithms",
+      "norm_label": "rgbtohex()"
     },
     {
       "label": "hexToRgb()",
@@ -3435,10 +3435,10 @@
       "source_file": "src/utils/palette/colorMath.js",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 1,
-      "norm_label": "hextorgb()",
       "id": "src_utils_palette_colormath_hextorgb",
-      "community_name": "K-Means Palette Algorithms"
+      "community": 1,
+      "community_name": "K-Means Palette Algorithms",
+      "norm_label": "hextorgb()"
     },
     {
       "label": "blendHex()",
@@ -3446,10 +3446,10 @@
       "source_file": "src/utils/palette/colorMath.js",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 1,
-      "norm_label": "blendhex()",
       "id": "src_utils_palette_colormath_blendhex",
-      "community_name": "K-Means Palette Algorithms"
+      "community": 1,
+      "community_name": "K-Means Palette Algorithms",
+      "norm_label": "blendhex()"
     },
     {
       "label": "kMeans.js",
@@ -3468,10 +3468,10 @@
       "source_file": "src/utils/palette/kMeans.js",
       "source_location": "L5",
       "_origin": "ast",
-      "community": 1,
-      "norm_label": "runkmeanscore()",
       "id": "src_utils_palette_kmeans_runkmeanscore",
-      "community_name": "K-Means Palette Algorithms"
+      "community": 1,
+      "community_name": "K-Means Palette Algorithms",
+      "norm_label": "runkmeanscore()"
     },
     {
       "label": "kMeans()",
@@ -3479,10 +3479,10 @@
       "source_file": "src/utils/palette/kMeans.js",
       "source_location": "L74",
       "_origin": "ast",
-      "community": 1,
-      "norm_label": "kmeans()",
       "id": "src_utils_palette_kmeans_kmeans",
-      "community_name": "K-Means Palette Algorithms"
+      "community": 1,
+      "community_name": "K-Means Palette Algorithms",
+      "norm_label": "kmeans()"
     },
     {
       "label": "refinePaletteWithKMeansSeeds()",
@@ -3490,10 +3490,10 @@
       "source_file": "src/utils/palette/kMeans.js",
       "source_location": "L86",
       "_origin": "ast",
-      "community": 1,
-      "norm_label": "refinepalettewithkmeansseeds()",
       "id": "src_utils_palette_kmeans_refinepalettewithkmeansseeds",
-      "community_name": "K-Means Palette Algorithms"
+      "community": 1,
+      "community_name": "K-Means Palette Algorithms",
+      "norm_label": "refinepalettewithkmeansseeds()"
     },
     {
       "label": "medianCut.js",
@@ -3512,10 +3512,10 @@
       "source_file": "src/utils/palette/medianCut.js",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 1,
-      "norm_label": "avgpackedbucket()",
       "id": "src_utils_palette_mediancut_avgpackedbucket",
-      "community_name": "K-Means Palette Algorithms"
+      "community": 1,
+      "community_name": "K-Means Palette Algorithms",
+      "norm_label": "avgpackedbucket()"
     },
     {
       "label": "channelRange()",
@@ -3523,10 +3523,10 @@
       "source_file": "src/utils/palette/medianCut.js",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 1,
-      "norm_label": "channelrange()",
       "id": "src_utils_palette_mediancut_channelrange",
-      "community_name": "K-Means Palette Algorithms"
+      "community": 1,
+      "community_name": "K-Means Palette Algorithms",
+      "norm_label": "channelrange()"
     },
     {
       "label": "medianCut()",
@@ -3534,10 +3534,10 @@
       "source_file": "src/utils/palette/medianCut.js",
       "source_location": "L45",
       "_origin": "ast",
-      "community": 1,
-      "norm_label": "mediancut()",
       "id": "src_utils_palette_mediancut_mediancut",
-      "community_name": "K-Means Palette Algorithms"
+      "community": 1,
+      "community_name": "K-Means Palette Algorithms",
+      "norm_label": "mediancut()"
     },
     {
       "label": "octree.js",
@@ -3556,10 +3556,10 @@
       "source_file": "src/utils/palette/octree.js",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 1,
-      "norm_label": "octree()",
       "id": "src_utils_palette_octree_octree",
-      "community_name": "K-Means Palette Algorithms"
+      "community": 1,
+      "community_name": "K-Means Palette Algorithms",
+      "norm_label": "octree()"
     },
     {
       "label": "sampling.js",
@@ -3578,10 +3578,10 @@
       "source_file": "src/utils/palette/sampling.js",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 1,
-      "norm_label": "resolvepalettesamplestride()",
       "id": "src_utils_palette_sampling_resolvepalettesamplestride",
-      "community_name": "K-Means Palette Algorithms"
+      "community": 1,
+      "community_name": "K-Means Palette Algorithms",
+      "norm_label": "resolvepalettesamplestride()"
     },
     {
       "label": "extractColorHistogram()",
@@ -3589,10 +3589,10 @@
       "source_file": "src/utils/palette/sampling.js",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 1,
-      "norm_label": "extractcolorhistogram()",
       "id": "src_utils_palette_sampling_extractcolorhistogram",
-      "community_name": "K-Means Palette Algorithms"
+      "community": 1,
+      "community_name": "K-Means Palette Algorithms",
+      "norm_label": "extractcolorhistogram()"
     },
     {
       "label": "extractPackedColorsWithStride()",
@@ -3600,10 +3600,10 @@
       "source_file": "src/utils/palette/sampling.js",
       "source_location": "L46",
       "_origin": "ast",
-      "community": 1,
-      "norm_label": "extractpackedcolorswithstride()",
       "id": "src_utils_palette_sampling_extractpackedcolorswithstride",
-      "community_name": "K-Means Palette Algorithms"
+      "community": 1,
+      "community_name": "K-Means Palette Algorithms",
+      "norm_label": "extractpackedcolorswithstride()"
     },
     {
       "label": "ditherWorker.js",
@@ -3622,10 +3622,10 @@
       "source_file": "src/workers/ditherWorker.js",
       "source_location": "L7",
       "_origin": "ast",
-      "community": 5,
-      "norm_label": "countuniquecolors()",
       "id": "src_workers_ditherworker_countuniquecolors",
-      "community_name": "Dithering Worker Thread"
+      "community": 5,
+      "community_name": "Dithering Worker Thread",
+      "norm_label": "countuniquecolors()"
     },
     {
       "label": "applyBinaryAlphaThreshold()",
@@ -3633,10 +3633,10 @@
       "source_file": "src/workers/ditherWorker.js",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 5,
-      "norm_label": "applybinaryalphathreshold()",
       "id": "src_workers_ditherworker_applybinaryalphathreshold",
-      "community_name": "Dithering Worker Thread"
+      "community": 5,
+      "community_name": "Dithering Worker Thread",
+      "norm_label": "applybinaryalphathreshold()"
     },
     {
       "label": "gifDecodeWorker.js",
@@ -3655,10 +3655,10 @@
       "source_file": "src/workers/gifDecodeWorker.js",
       "source_location": "L3",
       "_origin": "ast",
-      "community": 13,
-      "norm_label": "clearframerect()",
       "id": "src_workers_gifdecodeworker_clearframerect",
-      "community_name": "GIF Frame Decoder Worker"
+      "community": 13,
+      "community_name": "GIF Frame Decoder Worker",
+      "norm_label": "clearframerect()"
     },
     {
       "label": "applyPatch()",
@@ -3666,10 +3666,10 @@
       "source_file": "src/workers/gifDecodeWorker.js",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 13,
-      "norm_label": "applypatch()",
       "id": "src_workers_gifdecodeworker_applypatch",
-      "community_name": "GIF Frame Decoder Worker"
+      "community": 13,
+      "community_name": "GIF Frame Decoder Worker",
+      "norm_label": "applypatch()"
     },
     {
       "label": "parseLoopCount()",
@@ -3677,10 +3677,10 @@
       "source_file": "src/workers/gifDecodeWorker.js",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 13,
-      "norm_label": "parseloopcount()",
       "id": "src_workers_gifdecodeworker_parseloopcount",
-      "community_name": "GIF Frame Decoder Worker"
+      "community": 13,
+      "community_name": "GIF Frame Decoder Worker",
+      "norm_label": "parseloopcount()"
     },
     {
       "label": "decodeGifFrames()",
@@ -3688,10 +3688,10 @@
       "source_file": "src/workers/gifDecodeWorker.js",
       "source_location": "L55",
       "_origin": "ast",
-      "community": 13,
-      "norm_label": "decodegifframes()",
       "id": "src_workers_gifdecodeworker_decodegifframes",
-      "community_name": "GIF Frame Decoder Worker"
+      "community": 13,
+      "community_name": "GIF Frame Decoder Worker",
+      "norm_label": "decodegifframes()"
     },
     {
       "label": "paletteWorker.js",
@@ -3710,10 +3710,10 @@
       "source_file": "src/workers/paletteWorker.js",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 15,
-      "norm_label": "colortohex()",
       "id": "src_workers_paletteworker_colortohex",
-      "community_name": "Color Palette Extraction Worker"
+      "community": 15,
+      "community_name": "Color Palette Extraction Worker",
+      "norm_label": "colortohex()"
     },
     {
       "label": "vite.config.js",
@@ -3744,8 +3744,8 @@
       "source_location": "L13",
       "community": 6,
       "norm_label": "ddot-wasm",
-      "id": "dither_dot_package_dependencies_ddot_wasm",
-      "community_name": "Application Layout Components"
+      "community_name": "Application Layout Components",
+      "id": "dither_dot_package_dependencies_ddot_wasm"
     },
     {
       "label": "gifuct-js",
@@ -3754,8 +3754,8 @@
       "source_location": "L14",
       "community": 6,
       "norm_label": "gifuct-js",
-      "id": "dither_dot_package_dependencies_gifuct_js",
-      "community_name": "Application Layout Components"
+      "community_name": "Application Layout Components",
+      "id": "dither_dot_package_dependencies_gifuct_js"
     },
     {
       "label": "lucide-react",
@@ -3764,8 +3764,8 @@
       "source_location": "L15",
       "community": 6,
       "norm_label": "lucide-react",
-      "id": "dither_dot_package_dependencies_lucide_react",
-      "community_name": "Application Layout Components"
+      "community_name": "Application Layout Components",
+      "id": "dither_dot_package_dependencies_lucide_react"
     },
     {
       "label": "modern-gif",
@@ -3774,8 +3774,8 @@
       "source_location": "L16",
       "community": 6,
       "norm_label": "modern-gif",
-      "id": "dither_dot_package_dependencies_modern_gif",
-      "community_name": "Application Layout Components"
+      "community_name": "Application Layout Components",
+      "id": "dither_dot_package_dependencies_modern_gif"
     },
     {
       "label": "react",
@@ -3784,8 +3784,8 @@
       "source_location": "L17",
       "community": 6,
       "norm_label": "react",
-      "id": "dither_dot_package_dependencies_react",
-      "community_name": "Application Layout Components"
+      "community_name": "Application Layout Components",
+      "id": "dither_dot_package_dependencies_react"
     },
     {
       "label": "react-dom",
@@ -3794,8 +3794,8 @@
       "source_location": "L18",
       "community": 6,
       "norm_label": "react-dom",
-      "id": "dither_dot_package_dependencies_react_dom",
-      "community_name": "Application Layout Components"
+      "community_name": "Application Layout Components",
+      "id": "dither_dot_package_dependencies_react_dom"
     },
     {
       "label": "zustand",
@@ -3804,8 +3804,8 @@
       "source_location": "L19",
       "community": 6,
       "norm_label": "zustand",
-      "id": "dither_dot_package_dependencies_zustand",
-      "community_name": "Application Layout Components"
+      "community_name": "Application Layout Components",
+      "id": "dither_dot_package_dependencies_zustand"
     },
     {
       "label": "@babel/core",
@@ -3814,8 +3814,8 @@
       "source_location": "L22",
       "community": 3,
       "norm_label": "@babel/core",
-      "id": "dither_dot_package_devdependencies_babel_core",
-      "community_name": "Package Dependencies"
+      "community_name": "Package Dependencies",
+      "id": "dither_dot_package_devdependencies_babel_core"
     },
     {
       "label": "@eslint/js",
@@ -3824,8 +3824,8 @@
       "source_location": "L23",
       "community": 3,
       "norm_label": "@eslint/js",
-      "id": "dither_dot_package_devdependencies_eslint_js",
-      "community_name": "Package Dependencies"
+      "community_name": "Package Dependencies",
+      "id": "dither_dot_package_devdependencies_eslint_js"
     },
     {
       "label": "@rolldown/plugin-babel",
@@ -3834,8 +3834,8 @@
       "source_location": "L24",
       "community": 3,
       "norm_label": "@rolldown/plugin-babel",
-      "id": "dither_dot_package_devdependencies_rolldown_plugin_babel",
-      "community_name": "Package Dependencies"
+      "community_name": "Package Dependencies",
+      "id": "dither_dot_package_devdependencies_rolldown_plugin_babel"
     },
     {
       "label": "@types/react",
@@ -3844,8 +3844,8 @@
       "source_location": "L25",
       "community": 3,
       "norm_label": "@types/react",
-      "id": "dither_dot_package_devdependencies_types_react",
-      "community_name": "Package Dependencies"
+      "community_name": "Package Dependencies",
+      "id": "dither_dot_package_devdependencies_types_react"
     },
     {
       "label": "@vitejs/plugin-react",
@@ -3854,8 +3854,8 @@
       "source_location": "L26",
       "community": 3,
       "norm_label": "@vitejs/plugin-react",
-      "id": "dither_dot_package_devdependencies_vitejs_plugin_react",
-      "community_name": "Package Dependencies"
+      "community_name": "Package Dependencies",
+      "id": "dither_dot_package_devdependencies_vitejs_plugin_react"
     },
     {
       "label": "babel-plugin-react-compiler",
@@ -3864,8 +3864,8 @@
       "source_location": "L27",
       "community": 3,
       "norm_label": "babel-plugin-react-compiler",
-      "id": "dither_dot_package_devdependencies_babel_plugin_react_compiler",
-      "community_name": "Package Dependencies"
+      "community_name": "Package Dependencies",
+      "id": "dither_dot_package_devdependencies_babel_plugin_react_compiler"
     },
     {
       "label": "esbuild",
@@ -3874,8 +3874,8 @@
       "source_location": "L28",
       "community": 3,
       "norm_label": "esbuild",
-      "id": "dither_dot_package_devdependencies_esbuild",
-      "community_name": "Package Dependencies"
+      "community_name": "Package Dependencies",
+      "id": "dither_dot_package_devdependencies_esbuild"
     },
     {
       "label": "eslint",
@@ -3884,8 +3884,8 @@
       "source_location": "L29",
       "community": 3,
       "norm_label": "eslint",
-      "id": "dither_dot_package_devdependencies_eslint",
-      "community_name": "Package Dependencies"
+      "community_name": "Package Dependencies",
+      "id": "dither_dot_package_devdependencies_eslint"
     },
     {
       "label": "eslint-plugin-react-hooks",
@@ -3894,8 +3894,8 @@
       "source_location": "L30",
       "community": 3,
       "norm_label": "eslint-plugin-react-hooks",
-      "id": "dither_dot_package_devdependencies_eslint_plugin_react_hooks",
-      "community_name": "Package Dependencies"
+      "community_name": "Package Dependencies",
+      "id": "dither_dot_package_devdependencies_eslint_plugin_react_hooks"
     },
     {
       "label": "eslint-plugin-react-refresh",
@@ -3904,8 +3904,8 @@
       "source_location": "L31",
       "community": 3,
       "norm_label": "eslint-plugin-react-refresh",
-      "id": "dither_dot_package_devdependencies_eslint_plugin_react_refresh",
-      "community_name": "Package Dependencies"
+      "community_name": "Package Dependencies",
+      "id": "dither_dot_package_devdependencies_eslint_plugin_react_refresh"
     },
     {
       "label": "globals",
@@ -3914,8 +3914,8 @@
       "source_location": "L32",
       "community": 3,
       "norm_label": "globals",
-      "id": "dither_dot_package_devdependencies_globals",
-      "community_name": "Package Dependencies"
+      "community_name": "Package Dependencies",
+      "id": "dither_dot_package_devdependencies_globals"
     },
     {
       "label": "vite",
@@ -3924,8 +3924,8 @@
       "source_location": "L33",
       "community": 3,
       "norm_label": "vite",
-      "id": "dither_dot_package_devdependencies_vite",
-      "community_name": "Package Dependencies"
+      "community_name": "Package Dependencies",
+      "id": "dither_dot_package_devdependencies_vite"
     },
     {
       "label": "vite-plugin-top-level-await",
@@ -3934,8 +3934,8 @@
       "source_location": "L34",
       "community": 3,
       "norm_label": "vite-plugin-top-level-await",
-      "id": "dither_dot_package_devdependencies_vite_plugin_top_level_await",
-      "community_name": "Package Dependencies"
+      "community_name": "Package Dependencies",
+      "id": "dither_dot_package_devdependencies_vite_plugin_top_level_await"
     },
     {
       "label": "vite-plugin-wasm",
@@ -3944,8 +3944,8 @@
       "source_location": "L35",
       "community": 3,
       "norm_label": "vite-plugin-wasm",
-      "id": "dither_dot_package_devdependencies_vite_plugin_wasm",
-      "community_name": "Package Dependencies"
+      "community_name": "Package Dependencies",
+      "id": "dither_dot_package_devdependencies_vite_plugin_wasm"
     },
     {
       "label": "workbox-build",
@@ -3954,8 +3954,8 @@
       "source_location": "L36",
       "community": 3,
       "norm_label": "workbox-build",
-      "id": "dither_dot_package_devdependencies_workbox_build",
-      "community_name": "Package Dependencies"
+      "community_name": "Package Dependencies",
+      "id": "dither_dot_package_devdependencies_workbox_build"
     },
     {
       "label": "tWasmInitStart",
@@ -3964,8 +3964,8 @@
       "source_location": "L55",
       "community": 5,
       "norm_label": "twasminitstart",
-      "id": "src_workers_ditherworker_twasminitstart",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_twasminitstart"
     },
     {
       "label": "tSetupStart",
@@ -3974,8 +3974,8 @@
       "source_location": "L63",
       "community": 5,
       "norm_label": "tsetupstart",
-      "id": "src_workers_ditherworker_tsetupstart",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_tsetupstart"
     },
     {
       "label": "pixelsArray",
@@ -3984,8 +3984,8 @@
       "source_location": "L66",
       "community": 5,
       "norm_label": "pixelsarray",
-      "id": "src_workers_ditherworker_pixelsarray",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_pixelsarray"
     },
     {
       "label": "imageData",
@@ -3994,8 +3994,8 @@
       "source_location": "L67",
       "community": 5,
       "norm_label": "imagedata",
-      "id": "src_workers_ditherworker_imagedata",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_imagedata"
     },
     {
       "label": "image",
@@ -4004,8 +4004,8 @@
       "source_location": "L68",
       "community": 5,
       "norm_label": "image",
-      "id": "src_workers_ditherworker_image",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_image"
     },
     {
       "label": "filters",
@@ -4014,8 +4014,8 @@
       "source_location": "L81",
       "community": 5,
       "norm_label": "filters",
-      "id": "src_workers_ditherworker_filters",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_filters"
     },
     {
       "label": "tNoiseStart",
@@ -4024,8 +4024,8 @@
       "source_location": "L83",
       "community": 5,
       "norm_label": "tnoisestart",
-      "id": "src_workers_ditherworker_tnoisestart",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_tnoisestart"
     },
     {
       "label": "tAdjustStart",
@@ -4034,8 +4034,8 @@
       "source_location": "L98",
       "community": 5,
       "norm_label": "tadjuststart",
-      "id": "src_workers_ditherworker_tadjuststart",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_tadjuststart"
     },
     {
       "label": "tBlurStart",
@@ -4044,8 +4044,8 @@
       "source_location": "L115",
       "community": 5,
       "norm_label": "tblurstart",
-      "id": "src_workers_ditherworker_tblurstart",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_tblurstart"
     },
     {
       "label": "tDitherStart",
@@ -4054,8 +4054,8 @@
       "source_location": "L132",
       "community": 5,
       "norm_label": "tditherstart",
-      "id": "src_workers_ditherworker_tditherstart",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_tditherstart"
     },
     {
       "label": "colors",
@@ -4064,8 +4064,8 @@
       "source_location": "L135",
       "community": 5,
       "norm_label": "colors",
-      "id": "src_workers_ditherworker_colors",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_colors"
     },
     {
       "label": "wasmPalette",
@@ -4074,8 +4074,8 @@
       "source_location": "L143",
       "community": 5,
       "norm_label": "wasmpalette",
-      "id": "src_workers_ditherworker_wasmpalette",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_wasmpalette"
     },
     {
       "label": "algs",
@@ -4084,8 +4084,8 @@
       "source_location": "L145",
       "community": 5,
       "norm_label": "algs",
-      "id": "src_workers_ditherworker_algs",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_algs"
     },
     {
       "label": "alg",
@@ -4094,8 +4094,8 @@
       "source_location": "L147",
       "community": 5,
       "norm_label": "alg",
-      "id": "src_workers_ditherworker_alg",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_alg"
     },
     {
       "label": "tFinalStart",
@@ -4104,8 +4104,8 @@
       "source_location": "L158",
       "community": 5,
       "norm_label": "tfinalstart",
-      "id": "src_workers_ditherworker_tfinalstart",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_tfinalstart"
     },
     {
       "label": "outputPixels",
@@ -4114,8 +4114,8 @@
       "source_location": "L161",
       "community": 5,
       "norm_label": "outputpixels",
-      "id": "src_workers_ditherworker_outputpixels",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_outputpixels"
     },
     {
       "label": "statsOutputPixels",
@@ -4124,8 +4124,8 @@
       "source_location": "L169",
       "community": 5,
       "norm_label": "statsoutputpixels",
-      "id": "src_workers_ditherworker_statsoutputpixels",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_statsoutputpixels"
     },
     {
       "label": "tStatsStart",
@@ -4134,8 +4134,8 @@
       "source_location": "L209",
       "community": 5,
       "norm_label": "tstatsstart",
-      "id": "src_workers_ditherworker_tstatsstart",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_tstatsstart"
     },
     {
       "label": "tHistogramStart",
@@ -4144,8 +4144,8 @@
       "source_location": "L211",
       "community": 5,
       "norm_label": "thistogramstart",
-      "id": "src_workers_ditherworker_thistogramstart",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_thistogramstart"
     },
     {
       "label": "croppedPixels",
@@ -4154,8 +4154,8 @@
       "source_location": "L212",
       "community": 5,
       "norm_label": "croppedpixels",
-      "id": "src_workers_ditherworker_croppedpixels",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_croppedpixels"
     },
     {
       "label": "rCounts",
@@ -4164,8 +4164,8 @@
       "source_location": "L215",
       "community": 5,
       "norm_label": "rcounts",
-      "id": "src_workers_ditherworker_rcounts",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_rcounts"
     },
     {
       "label": "gCounts",
@@ -4174,8 +4174,8 @@
       "source_location": "L216",
       "community": 5,
       "norm_label": "gcounts",
-      "id": "src_workers_ditherworker_gcounts",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_gcounts"
     },
     {
       "label": "bCounts",
@@ -4184,8 +4184,8 @@
       "source_location": "L217",
       "community": 5,
       "norm_label": "bcounts",
-      "id": "src_workers_ditherworker_bcounts",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_bcounts"
     },
     {
       "label": "tColorsStart",
@@ -4194,8 +4194,8 @@
       "source_location": "L225",
       "community": 5,
       "norm_label": "tcolorsstart",
-      "id": "src_workers_ditherworker_tcolorsstart",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_tcolorsstart"
     },
     {
       "label": "uniqueColorCount",
@@ -4204,8 +4204,8 @@
       "source_location": "L226",
       "community": 5,
       "norm_label": "uniquecolorcount",
-      "id": "src_workers_ditherworker_uniquecolorcount",
-      "community_name": "Dithering Worker Thread"
+      "community_name": "Dithering Worker Thread",
+      "id": "src_workers_ditherworker_uniquecolorcount"
     },
     {
       "label": "decoded",
@@ -4214,8 +4214,8 @@
       "source_location": "L111",
       "community": 13,
       "norm_label": "decoded",
-      "id": "src_workers_gifdecodeworker_decoded",
-      "community_name": "GIF Frame Decoder Worker"
+      "community_name": "GIF Frame Decoder Worker",
+      "id": "src_workers_gifdecodeworker_decoded"
     },
     {
       "label": "transferableFrames",
@@ -4224,8 +4224,8 @@
       "source_location": "L112",
       "community": 13,
       "norm_label": "transferableframes",
-      "id": "src_workers_gifdecodeworker_transferableframes",
-      "community_name": "GIF Frame Decoder Worker"
+      "community_name": "GIF Frame Decoder Worker",
+      "id": "src_workers_gifdecodeworker_transferableframes"
     },
     {
       "label": "pixelsArray",
@@ -4234,8 +4234,8 @@
       "source_location": "L23",
       "community": 15,
       "norm_label": "pixelsarray",
-      "id": "src_workers_paletteworker_pixelsarray",
-      "community_name": "Color Palette Extraction Worker"
+      "community_name": "Color Palette Extraction Worker",
+      "id": "src_workers_paletteworker_pixelsarray"
     },
     {
       "label": "imageData",
@@ -4244,8 +4244,8 @@
       "source_location": "L24",
       "community": 15,
       "norm_label": "imagedata",
-      "id": "src_workers_paletteworker_imagedata",
-      "community_name": "Color Palette Extraction Worker"
+      "community_name": "Color Palette Extraction Worker",
+      "id": "src_workers_paletteworker_imagedata"
     },
     {
       "label": "image",
@@ -4254,8 +4254,8 @@
       "source_location": "L25",
       "community": 15,
       "norm_label": "image",
-      "id": "src_workers_paletteworker_image",
-      "community_name": "Color Palette Extraction Worker"
+      "community_name": "Color Palette Extraction Worker",
+      "id": "src_workers_paletteworker_image"
     },
     {
       "label": "palette",
@@ -4264,8 +4264,8 @@
       "source_location": "L38",
       "community": 15,
       "norm_label": "palette",
-      "id": "src_workers_paletteworker_palette",
-      "community_name": "Color Palette Extraction Worker"
+      "community_name": "Color Palette Extraction Worker",
+      "id": "src_workers_paletteworker_palette"
     },
     {
       "label": "Root DOM Element",
@@ -4278,8 +4278,8 @@
       "contributor": null,
       "community": 19,
       "norm_label": "root dom element",
-      "id": "index_root",
-      "community_name": "Root DOM Entrypoint"
+      "community_name": "Root DOM Entrypoint",
+      "id": "index_root"
     },
     {
       "label": "Main JavaScript Entry Script Reference",
@@ -4292,8 +4292,8 @@
       "contributor": null,
       "community": 12,
       "norm_label": "main javascript entry script reference",
-      "id": "index_main_entry",
-      "community_name": "App Entry & Deployment"
+      "community_name": "App Entry & Deployment",
+      "id": "index_main_entry"
     },
     {
       "label": "DITHER-DOT",
@@ -4306,8 +4306,8 @@
       "contributor": null,
       "community": 12,
       "norm_label": "dither-dot",
-      "id": "readme_dither_dot",
-      "community_name": "App Entry & Deployment"
+      "community_name": "App Entry & Deployment",
+      "id": "readme_dither_dot"
     },
     {
       "label": "Dithering Algorithms",
@@ -4320,8 +4320,8 @@
       "contributor": null,
       "community": 12,
       "norm_label": "dithering algorithms",
-      "id": "readme_dithering_algorithms",
-      "community_name": "App Entry & Deployment"
+      "community_name": "App Entry & Deployment",
+      "id": "readme_dithering_algorithms"
     },
     {
       "label": "Palette Extraction",
@@ -4334,8 +4334,8 @@
       "contributor": null,
       "community": 12,
       "norm_label": "palette extraction",
-      "id": "readme_palette_extraction",
-      "community_name": "App Entry & Deployment"
+      "community_name": "App Entry & Deployment",
+      "id": "readme_palette_extraction"
     },
     {
       "label": "Tech Stack",
@@ -4348,8 +4348,8 @@
       "contributor": null,
       "community": 12,
       "norm_label": "tech stack",
-      "id": "readme_tech_stack",
-      "community_name": "App Entry & Deployment"
+      "community_name": "App Entry & Deployment",
+      "id": "readme_tech_stack"
     },
     {
       "label": "PixiJS WebGL Renderer",
@@ -4362,8 +4362,8 @@
       "contributor": null,
       "community": 12,
       "norm_label": "pixijs webgl renderer",
-      "id": "readme_pixijs",
-      "community_name": "App Entry & Deployment"
+      "community_name": "App Entry & Deployment",
+      "id": "readme_pixijs"
     },
     {
       "label": "React Framework",
@@ -4376,8 +4376,8 @@
       "contributor": null,
       "community": 12,
       "norm_label": "react framework",
-      "id": "readme_react",
-      "community_name": "App Entry & Deployment"
+      "community_name": "App Entry & Deployment",
+      "id": "readme_react"
     },
     {
       "label": "Zustand State Management",
@@ -4390,8 +4390,8 @@
       "contributor": null,
       "community": 12,
       "norm_label": "zustand state management",
-      "id": "readme_zustand",
-      "community_name": "App Entry & Deployment"
+      "community_name": "App Entry & Deployment",
+      "id": "readme_zustand"
     },
     {
       "label": "Cloudflare Pages",
@@ -4404,8 +4404,8 @@
       "contributor": null,
       "community": 12,
       "norm_label": "cloudflare pages",
-      "id": "readme_cloudflare_pages",
-      "community_name": "App Entry & Deployment"
+      "community_name": "App Entry & Deployment",
+      "id": "readme_cloudflare_pages"
     },
     {
       "label": "Graphify Usage Rules",
@@ -4418,8 +4418,8 @@
       "contributor": null,
       "community": 16,
       "norm_label": "graphify usage rules",
-      "id": "_agents_rules_graphify_graphify_rules",
-      "community_name": "Graphify Rule Workflows"
+      "community_name": "Graphify Rule Workflows",
+      "id": "_agents_rules_graphify_graphify_rules"
     },
     {
       "label": "Graphify Query Tool",
@@ -4432,8 +4432,8 @@
       "contributor": null,
       "community": 16,
       "norm_label": "graphify query tool",
-      "id": "_agents_rules_graphify_graphify_query",
-      "community_name": "Graphify Rule Workflows"
+      "community_name": "Graphify Rule Workflows",
+      "id": "_agents_rules_graphify_graphify_query"
     },
     {
       "label": "Graphify Workflow",
@@ -4446,8 +4446,8 @@
       "contributor": null,
       "community": 16,
       "norm_label": "graphify workflow",
-      "id": "_agents_workflows_graphify_workflow_graphify",
-      "community_name": "Graphify Rule Workflows"
+      "community_name": "Graphify Rule Workflows",
+      "id": "_agents_workflows_graphify_workflow_graphify"
     },
     {
       "label": "Cloudflare Pages Deployment Workflow",
@@ -4460,8 +4460,8 @@
       "contributor": null,
       "community": 12,
       "norm_label": "cloudflare pages deployment workflow",
-      "id": "_github_workflows_deploy_cloudflare_pages_deploy",
-      "community_name": "App Entry & Deployment"
+      "community_name": "App Entry & Deployment",
+      "id": "_github_workflows_deploy_cloudflare_pages_deploy"
     },
     {
       "label": "favicon.svg",
@@ -4474,8 +4474,8 @@
       "contributor": null,
       "community": 20,
       "norm_label": "favicon.svg",
-      "id": "public_favicon_svg",
-      "community_name": "Favicon SVG Asset"
+      "community_name": "Favicon SVG Asset",
+      "id": "public_favicon_svg"
     },
     {
       "label": "icon-192.png",
@@ -4488,8 +4488,8 @@
       "contributor": null,
       "community": 21,
       "norm_label": "icon-192.png",
-      "id": "public_icon_192_png",
-      "community_name": "App Icon 192px Asset"
+      "community_name": "App Icon 192px Asset",
+      "id": "public_icon_192_png"
     },
     {
       "label": "icon-512.png",
@@ -4502,8 +4502,8 @@
       "contributor": null,
       "community": 22,
       "norm_label": "icon-512.png",
-      "id": "public_icon_512_png",
-      "community_name": "App Icon 512px Asset"
+      "community_name": "App Icon 512px Asset",
+      "id": "public_icon_512_png"
     },
     {
       "label": "wallpaper.jpg",
@@ -4516,8 +4516,8 @@
       "contributor": null,
       "community": 23,
       "norm_label": "wallpaper.jpg",
-      "id": "public_wallpaper_jpg",
-      "community_name": "Wallpaper Sample Image Asset"
+      "community_name": "Wallpaper Sample Image Asset",
+      "id": "public_wallpaper_jpg"
     },
     {
       "label": "FLAMES.jpg",
@@ -4530,8 +4530,8 @@
       "contributor": null,
       "community": 24,
       "norm_label": "flames.jpg",
-      "id": "src_assets_flames_jpg",
-      "community_name": "Flames Sample Image Asset"
+      "community_name": "Flames Sample Image Asset",
+      "id": "src_assets_flames_jpg"
     },
     {
       "label": "PIZZA_COW.gif",
@@ -4544,8 +4544,8 @@
       "contributor": null,
       "community": 25,
       "norm_label": "pizza_cow.gif",
-      "id": "src_assets_pizza_cow_gif",
-      "community_name": "Pizza Cow Sample Image Asset"
+      "community_name": "Pizza Cow Sample Image Asset",
+      "id": "src_assets_pizza_cow_gif"
     },
     {
       "label": "STATUE.jpg",
@@ -4558,8 +4558,8 @@
       "contributor": null,
       "community": 26,
       "norm_label": "statue.jpg",
-      "id": "src_assets_statue_jpg",
-      "community_name": "Statue Sample Image Asset"
+      "community_name": "Statue Sample Image Asset",
+      "id": "src_assets_statue_jpg"
     },
     {
       "label": "SUNSET.jpg",
@@ -4572,8 +4572,8 @@
       "contributor": null,
       "community": 27,
       "norm_label": "sunset.jpg",
-      "id": "src_assets_sunset_jpg",
-      "community_name": "Sunset Sample Image Asset"
+      "community_name": "Sunset Sample Image Asset",
+      "id": "src_assets_sunset_jpg"
     },
     {
       "label": "watermark-mini.png",
@@ -4586,8 +4586,8 @@
       "contributor": null,
       "community": 28,
       "norm_label": "watermark-mini.png",
-      "id": "src_assets_watermark_watermark_mini_png",
-      "community_name": "Watermark Mini Image Asset"
+      "community_name": "Watermark Mini Image Asset",
+      "id": "src_assets_watermark_watermark_mini_png"
     },
     {
       "label": "watermark.png",
@@ -4600,8 +4600,8 @@
       "contributor": null,
       "community": 29,
       "norm_label": "watermark.png",
-      "id": "src_assets_watermark_watermark_png",
-      "community_name": "Watermark Main Image Asset"
+      "community_name": "Watermark Main Image Asset",
+      "id": "src_assets_watermark_watermark_png"
     }
   ],
   "links": [
@@ -4612,9 +4612,9 @@
       "source_location": "L12",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "package",
-      "target": "package_dependencies"
+      "target": "package_dependencies",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -4623,9 +4623,9 @@
       "source_location": "L21",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "package",
-      "target": "package_devdependencies"
+      "target": "package_devdependencies",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -4634,9 +4634,9 @@
       "source_location": "L2",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "package",
-      "target": "package_name"
+      "target": "package_name",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -4645,9 +4645,9 @@
       "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "package",
-      "target": "package_private"
+      "target": "package_private",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -4656,9 +4656,9 @@
       "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "package",
-      "target": "package_scripts"
+      "target": "package_scripts",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -4667,9 +4667,9 @@
       "source_location": "L5",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "package",
-      "target": "package_type"
+      "target": "package_type",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -4678,9 +4678,9 @@
       "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "package",
-      "target": "package_version"
+      "target": "package_version",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -4688,10 +4688,10 @@
       "source_file": "package.json",
       "source_location": "L8",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "_origin": "ast",
       "source": "package_scripts",
-      "target": "package_scripts_build"
+      "target": "package_scripts_build",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -4699,10 +4699,10 @@
       "source_file": "package.json",
       "source_location": "L7",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "_origin": "ast",
       "source": "package_scripts",
-      "target": "package_scripts_dev"
+      "target": "package_scripts_dev",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -4710,10 +4710,10 @@
       "source_file": "package.json",
       "source_location": "L9",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "_origin": "ast",
       "source": "package_scripts",
-      "target": "package_scripts_lint"
+      "target": "package_scripts_lint",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -4721,10 +4721,10 @@
       "source_file": "package.json",
       "source_location": "L10",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "_origin": "ast",
       "source": "package_scripts",
-      "target": "package_scripts_preview"
+      "target": "package_scripts_preview",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -5459,9 +5459,9 @@
       "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "public_manifest",
-      "target": "public_manifest_background_color"
+      "target": "public_manifest_background_color",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -5470,9 +5470,9 @@
       "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "public_manifest",
-      "target": "public_manifest_description"
+      "target": "public_manifest_description",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -5481,9 +5481,9 @@
       "source_location": "L7",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "public_manifest",
-      "target": "public_manifest_display"
+      "target": "public_manifest_display",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -5492,9 +5492,9 @@
       "source_location": "L11",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "public_manifest",
-      "target": "public_manifest_icons"
+      "target": "public_manifest_icons",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -5503,9 +5503,9 @@
       "source_location": "L2",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "public_manifest",
-      "target": "public_manifest_name"
+      "target": "public_manifest_name",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -5514,9 +5514,9 @@
       "source_location": "L10",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "public_manifest",
-      "target": "public_manifest_orientation"
+      "target": "public_manifest_orientation",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -5525,9 +5525,9 @@
       "source_location": "L9",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "public_manifest",
-      "target": "public_manifest_scope"
+      "target": "public_manifest_scope",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -5536,9 +5536,9 @@
       "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "public_manifest",
-      "target": "public_manifest_short_name"
+      "target": "public_manifest_short_name",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -5547,9 +5547,9 @@
       "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "public_manifest",
-      "target": "public_manifest_start_url"
+      "target": "public_manifest_start_url",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -5558,9 +5558,9 @@
       "source_location": "L5",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "public_manifest",
-      "target": "public_manifest_theme_color"
+      "target": "public_manifest_theme_color",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -5569,9 +5569,9 @@
       "source_location": "L34",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_app",
-      "target": "src_app_app"
+      "target": "src_app_app",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -5580,9 +5580,9 @@
       "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_app",
-      "target": "src_app_icons"
+      "target": "src_app_icons",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -5591,32 +5591,8 @@
       "source_location": "L25",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_app",
-      "target": "src_app_is_mobile"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/App.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_app",
-      "target": "src_aside"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/App.jsx",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_app",
-      "target": "src_aside_aside",
+      "target": "src_app_is_mobile",
       "confidence_score": 1.0
     },
     {
@@ -5641,6 +5617,30 @@
       "_origin": "ast",
       "source": "src_app",
       "target": "src_components_canvas_imageshader_shaderimage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_app",
+      "target": "src_components_layout_aside",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/App.jsx",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_app",
+      "target": "src_components_layout_aside_aside",
       "confidence_score": 1.0
     },
     {
@@ -5855,9 +5855,9 @@
       "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_main",
-      "target": "src_app"
+      "target": "src_app",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -5918,17 +5918,6 @@
       "source": "src_main",
       "target": "src_app_app",
       "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/Aside.jsx",
-      "source_location": "L5",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_aside",
-      "target": "src_aside_aside"
     },
     {
       "relation": "contains",
@@ -7695,6 +7684,17 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "src/components/layout/Aside.jsx",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_components_layout_aside",
+      "target": "src_components_layout_aside_aside",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "src/components/layout/AsideRouter.jsx",
       "source_location": "L6",
       "weight": 1.0,
@@ -8518,9 +8518,9 @@
       "source_location": "L14",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_adjustmentspage",
-      "target": "src_pages_adjustmentspage_adjustmentspage"
+      "target": "src_pages_adjustmentspage_adjustmentspage",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8529,9 +8529,9 @@
       "source_location": "L11",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_adjustmentspage",
-      "target": "src_pages_adjustmentspage_blurkeys"
+      "target": "src_pages_adjustmentspage_blurkeys",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8540,9 +8540,9 @@
       "source_location": "L10",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_adjustmentspage",
-      "target": "src_pages_adjustmentspage_colorkeys"
+      "target": "src_pages_adjustmentspage_colorkeys",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8551,9 +8551,9 @@
       "source_location": "L12",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_adjustmentspage",
-      "target": "src_pages_adjustmentspage_noisekeys"
+      "target": "src_pages_adjustmentspage_noisekeys",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -8634,9 +8634,9 @@
       "source_location": "L18",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_ditherpage",
-      "target": "src_pages_ditherpage_ditherpage"
+      "target": "src_pages_ditherpage_ditherpage",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8645,9 +8645,9 @@
       "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_ditherpage",
-      "target": "src_pages_ditherpage_methods"
+      "target": "src_pages_ditherpage_methods",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -8716,9 +8716,9 @@
       "source_location": "L79",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_exportpage",
-      "target": "src_pages_exportpage_canvastodataurl"
+      "target": "src_pages_exportpage_canvastodataurl",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8727,9 +8727,9 @@
       "source_location": "L53",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_exportpage",
-      "target": "src_pages_exportpage_copycanvastoclipboard"
+      "target": "src_pages_exportpage_copycanvastoclipboard",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8738,9 +8738,9 @@
       "source_location": "L35",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_exportpage",
-      "target": "src_pages_exportpage_createupscaledcanvas"
+      "target": "src_pages_exportpage_createupscaledcanvas",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8749,9 +8749,9 @@
       "source_location": "L91",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_exportpage",
-      "target": "src_pages_exportpage_exportpage"
+      "target": "src_pages_exportpage_exportpage",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8760,9 +8760,9 @@
       "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_exportpage",
-      "target": "src_pages_exportpage_getdefaultexportname"
+      "target": "src_pages_exportpage_getdefaultexportname",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8771,9 +8771,9 @@
       "source_location": "L9",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_exportpage",
-      "target": "src_pages_exportpage_getexportbasename"
+      "target": "src_pages_exportpage_getexportbasename",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8782,9 +8782,9 @@
       "source_location": "L71",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_exportpage",
-      "target": "src_pages_exportpage_getexportcanvasorthrow"
+      "target": "src_pages_exportpage_getexportcanvasorthrow",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -8793,9 +8793,9 @@
       "source_location": "L18",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_exportpage",
-      "target": "src_pages_exportpage_savecanvasaspng"
+      "target": "src_pages_exportpage_savecanvasaspng",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -8853,9 +8853,9 @@
       "source_location": "L5",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_exportpage",
-      "target": "src_utils_canvasregistry"
+      "target": "src_utils_canvasregistry",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -8865,9 +8865,9 @@
       "source_location": "L5",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_exportpage",
-      "target": "src_utils_canvasregistry_getoutputcanvas"
+      "target": "src_utils_canvasregistry_getoutputcanvas",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -8877,9 +8877,9 @@
       "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_exportpage",
-      "target": "src_utils_exportgif"
+      "target": "src_utils_exportgif",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -8889,9 +8889,9 @@
       "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_exportpage",
-      "target": "src_utils_exportgif_exportcurrentgif"
+      "target": "src_utils_exportgif_exportcurrentgif",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -8901,9 +8901,9 @@
       "source_location": "L105",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_exportpage_exportpage",
-      "target": "src_pages_exportpage_getexportbasename"
+      "target": "src_pages_exportpage_getexportbasename",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -8913,9 +8913,9 @@
       "source_location": "L14",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_exportpage_getdefaultexportname",
-      "target": "src_pages_exportpage_getexportbasename"
+      "target": "src_pages_exportpage_getexportbasename",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -8937,9 +8937,9 @@
       "source_location": "L97",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_exportpage_exportpage",
-      "target": "src_pages_exportpage_getdefaultexportname"
+      "target": "src_pages_exportpage_getdefaultexportname",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -8997,9 +8997,9 @@
       "source_location": "L72",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_exportpage_getexportcanvasorthrow",
-      "target": "src_utils_canvasregistry_getoutputcanvas"
+      "target": "src_utils_canvasregistry_getoutputcanvas",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9068,9 +9068,9 @@
       "source_location": "L200",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_blobtodataurl"
+      "target": "src_pages_importpage_blobtodataurl",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9079,9 +9079,9 @@
       "source_location": "L295",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_buildclipboardfilename"
+      "target": "src_pages_importpage_buildclipboardfilename",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9090,9 +9090,9 @@
       "source_location": "L380",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_compositewithwatermark"
+      "target": "src_pages_importpage_compositewithwatermark",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9101,9 +9101,9 @@
       "source_location": "L354",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_copycanvastoclipboard"
+      "target": "src_pages_importpage_copycanvastoclipboard",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9112,9 +9112,9 @@
       "source_location": "L156",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_decodegifwithworker"
+      "target": "src_pages_importpage_decodegifwithworker",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9123,9 +9123,9 @@
       "source_location": "L630",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_gallerysection"
+      "target": "src_pages_importpage_gallerysection",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9134,9 +9134,9 @@
       "source_location": "L586",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_gallerythumbitem"
+      "target": "src_pages_importpage_gallerythumbitem",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9145,9 +9145,9 @@
       "source_location": "L333",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_getexportbasename"
+      "target": "src_pages_importpage_getexportbasename",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9156,9 +9156,9 @@
       "source_location": "L372",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_getexportcanvasorthrow"
+      "target": "src_pages_importpage_getexportcanvasorthrow",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9167,9 +9167,9 @@
       "source_location": "L30",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_getextension"
+      "target": "src_pages_importpage_getextension",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9178,9 +9178,9 @@
       "source_location": "L69",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_getimagedimensions"
+      "target": "src_pages_importpage_getimagedimensions",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9189,9 +9189,9 @@
       "source_location": "L84",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_getreduceddimensions"
+      "target": "src_pages_importpage_getreduceddimensions",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9200,9 +9200,9 @@
       "source_location": "L60",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_getsourceextension"
+      "target": "src_pages_importpage_getsourceextension",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9211,9 +9211,9 @@
       "source_location": "L209",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_getstaticpreviewfromblob"
+      "target": "src_pages_importpage_getstaticpreviewfromblob",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9222,9 +9222,9 @@
       "source_location": "L832",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_importpage"
+      "target": "src_pages_importpage_importpage",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9233,9 +9233,9 @@
       "source_location": "L64",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_isanimatedsource"
+      "target": "src_pages_importpage_isanimatedsource",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9244,9 +9244,9 @@
       "source_location": "L48",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_isgiffile"
+      "target": "src_pages_importpage_isgiffile",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9255,9 +9255,9 @@
       "source_location": "L40",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_islikelyimagefile"
+      "target": "src_pages_importpage_islikelyimagefile",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9266,9 +9266,9 @@
       "source_location": "L54",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_iswebpfile"
+      "target": "src_pages_importpage_iswebpfile",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9277,9 +9277,9 @@
       "source_location": "L229",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_largeimagedialog"
+      "target": "src_pages_importpage_largeimagedialog",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9288,9 +9288,9 @@
       "source_location": "L133",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_rgbaframetopngblob"
+      "target": "src_pages_importpage_rgbaframetopngblob",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9299,9 +9299,9 @@
       "source_location": "L337",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_savecanvasaspng"
+      "target": "src_pages_importpage_savecanvasaspng",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9310,9 +9310,9 @@
       "source_location": "L97",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_scaledownblob"
+      "target": "src_pages_importpage_scaledownblob",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9321,9 +9321,9 @@
       "source_location": "L503",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_sourcesection"
+      "target": "src_pages_importpage_sourcesection",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9332,9 +9332,9 @@
       "source_location": "L35",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_stripextension"
+      "target": "src_pages_importpage_stripextension",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9343,9 +9343,9 @@
       "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_supported_extensions"
+      "target": "src_pages_importpage_supported_extensions",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9354,9 +9354,9 @@
       "source_location": "L300",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_validateimagefile"
+      "target": "src_pages_importpage_validateimagefile",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -9365,9 +9365,9 @@
       "source_location": "L407",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_pages_importpage_webcamsection"
+      "target": "src_pages_importpage_webcamsection",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -9557,9 +9557,9 @@
       "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_utils_canvasregistry"
+      "target": "src_utils_canvasregistry",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -9569,9 +9569,9 @@
       "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage",
-      "target": "src_utils_canvasregistry_getoutputcanvas"
+      "target": "src_utils_canvasregistry_getoutputcanvas",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -9593,9 +9593,9 @@
       "source_location": "L61",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage_getsourceextension",
-      "target": "src_pages_importpage_getextension"
+      "target": "src_pages_importpage_getextension",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9605,9 +9605,9 @@
       "source_location": "L51",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage_isgiffile",
-      "target": "src_pages_importpage_getextension"
+      "target": "src_pages_importpage_getextension",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9617,9 +9617,9 @@
       "source_location": "L43",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage_islikelyimagefile",
-      "target": "src_pages_importpage_getextension"
+      "target": "src_pages_importpage_getextension",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9629,9 +9629,9 @@
       "source_location": "L57",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage_iswebpfile",
-      "target": "src_pages_importpage_getextension"
+      "target": "src_pages_importpage_getextension",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9653,9 +9653,9 @@
       "source_location": "L305",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage_validateimagefile",
-      "target": "src_pages_importpage_islikelyimagefile"
+      "target": "src_pages_importpage_islikelyimagefile",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9677,9 +9677,9 @@
       "source_location": "L230",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage_largeimagedialog",
-      "target": "src_pages_importpage_isgiffile"
+      "target": "src_pages_importpage_isgiffile",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9713,9 +9713,9 @@
       "source_location": "L65",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage_isanimatedsource",
-      "target": "src_pages_importpage_getsourceextension"
+      "target": "src_pages_importpage_getsourceextension",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9749,9 +9749,9 @@
       "source_location": "L231",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage_largeimagedialog",
-      "target": "src_pages_importpage_getreduceddimensions"
+      "target": "src_pages_importpage_getreduceddimensions",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9905,9 +9905,9 @@
       "source_location": "L511",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage_sourcesection",
-      "target": "src_pages_importpage_getexportbasename"
+      "target": "src_pages_importpage_getexportbasename",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9941,9 +9941,9 @@
       "source_location": "L373",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_importpage_getexportcanvasorthrow",
-      "target": "src_utils_canvasregistry_getoutputcanvas"
+      "target": "src_utils_canvasregistry_getoutputcanvas",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10120,9 +10120,9 @@
       "source_location": "L11",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_palettepage",
-      "target": "src_pages_palettepage_colorcountsection"
+      "target": "src_pages_palettepage_colorcountsection",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10131,9 +10131,9 @@
       "source_location": "L93",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_palettepage",
-      "target": "src_pages_palettepage_colorentry"
+      "target": "src_pages_palettepage_colorentry",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10142,9 +10142,9 @@
       "source_location": "L158",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_palettepage",
-      "target": "src_pages_palettepage_colorssection"
+      "target": "src_pages_palettepage_colorssection",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10153,9 +10153,9 @@
       "source_location": "L107",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_palettepage",
-      "target": "src_pages_palettepage_customcolorswatch"
+      "target": "src_pages_palettepage_customcolorswatch",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10164,9 +10164,9 @@
       "source_location": "L413",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_palettepage",
-      "target": "src_pages_palettepage_floatingcoloreditor"
+      "target": "src_pages_palettepage_floatingcoloreditor",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10175,9 +10175,9 @@
       "source_location": "L82",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_palettepage",
-      "target": "src_pages_palettepage_gethextextcolor"
+      "target": "src_pages_palettepage_gethextextcolor",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10186,9 +10186,9 @@
       "source_location": "L35",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_palettepage",
-      "target": "src_pages_palettepage_methods"
+      "target": "src_pages_palettepage_methods",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10197,9 +10197,9 @@
       "source_location": "L42",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_palettepage",
-      "target": "src_pages_palettepage_methodsection"
+      "target": "src_pages_palettepage_methodsection",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10208,9 +10208,9 @@
       "source_location": "L267",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_palettepage",
-      "target": "src_pages_palettepage_palettelibrarysection"
+      "target": "src_pages_palettepage_palettelibrarysection",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10219,9 +10219,9 @@
       "source_location": "L439",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_palettepage",
-      "target": "src_pages_palettepage_palettepage"
+      "target": "src_pages_palettepage_palettepage",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -10230,9 +10230,9 @@
       "source_location": "L64",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_palettepage",
-      "target": "src_pages_palettepage_parsepalettetext"
+      "target": "src_pages_palettepage_parsepalettetext",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -10314,9 +10314,9 @@
       "source_location": "L94",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_palettepage_colorentry",
-      "target": "src_pages_palettepage_gethextextcolor"
+      "target": "src_pages_palettepage_gethextextcolor",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10326,9 +10326,9 @@
       "source_location": "L108",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_palettepage_customcolorswatch",
-      "target": "src_pages_palettepage_gethextextcolor"
+      "target": "src_pages_palettepage_gethextextcolor",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10373,9 +10373,9 @@
       "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_pages_resizingpage",
-      "target": "src_pages_resizingpage_resizingpage"
+      "target": "src_pages_resizingpage_resizingpage",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11385,9 +11385,9 @@
       "source_location": "L52",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_canvasregistry",
-      "target": "src_utils_canvasregistry_getoutputcanvas"
+      "target": "src_utils_canvasregistry_getoutputcanvas",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11396,9 +11396,9 @@
       "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_canvasregistry",
-      "target": "src_utils_canvasregistry_getpalettereference"
+      "target": "src_utils_canvasregistry_getpalettereference",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11407,9 +11407,9 @@
       "source_location": "L37",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_canvasregistry",
-      "target": "src_utils_canvasregistry_getrendersnapshot"
+      "target": "src_utils_canvasregistry_getrendersnapshot",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11418,9 +11418,9 @@
       "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_canvasregistry",
-      "target": "src_utils_canvasregistry_palettereferencelisteners"
+      "target": "src_utils_canvasregistry_palettereferencelisteners",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11429,9 +11429,9 @@
       "source_location": "L48",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_canvasregistry",
-      "target": "src_utils_canvasregistry_registeroutputcanvas"
+      "target": "src_utils_canvasregistry_registeroutputcanvas",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11440,9 +11440,9 @@
       "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_canvasregistry",
-      "target": "src_utils_canvasregistry_registerpalettereference"
+      "target": "src_utils_canvasregistry_registerpalettereference",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11451,9 +11451,9 @@
       "source_location": "L29",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_canvasregistry",
-      "target": "src_utils_canvasregistry_registerrendersnapshot"
+      "target": "src_utils_canvasregistry_registerrendersnapshot",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11462,9 +11462,9 @@
       "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_canvasregistry",
-      "target": "src_utils_canvasregistry_registersourceimage"
+      "target": "src_utils_canvasregistry_registersourceimage",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11473,9 +11473,9 @@
       "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_canvasregistry",
-      "target": "src_utils_canvasregistry_rendersnapshot"
+      "target": "src_utils_canvasregistry_rendersnapshot",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11484,9 +11484,9 @@
       "source_location": "L5",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_canvasregistry",
-      "target": "src_utils_canvasregistry_rendersnapshotlisteners"
+      "target": "src_utils_canvasregistry_rendersnapshotlisteners",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11495,9 +11495,9 @@
       "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_canvasregistry",
-      "target": "src_utils_canvasregistry_subscribepalettereference"
+      "target": "src_utils_canvasregistry_subscribepalettereference",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11506,9 +11506,9 @@
       "source_location": "L41",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_canvasregistry",
-      "target": "src_utils_canvasregistry_subscriberendersnapshot"
+      "target": "src_utils_canvasregistry_subscriberendersnapshot",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -11518,9 +11518,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_coloralgorithms",
-      "target": "src_utils_canvasregistry"
+      "target": "src_utils_canvasregistry",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -11530,9 +11530,9 @@
       "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_exportgif",
-      "target": "src_utils_canvasregistry"
+      "target": "src_utils_canvasregistry",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -11542,9 +11542,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_coloralgorithms",
-      "target": "src_utils_canvasregistry_getpalettereference"
+      "target": "src_utils_canvasregistry_getpalettereference",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -11566,9 +11566,9 @@
       "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_exportgif",
-      "target": "src_utils_canvasregistry_getoutputcanvas"
+      "target": "src_utils_canvasregistry_getoutputcanvas",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -11578,9 +11578,9 @@
       "source_location": "L45",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_exportgif_capturecompositedpixels",
-      "target": "src_utils_canvasregistry_getoutputcanvas"
+      "target": "src_utils_canvasregistry_getoutputcanvas",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11589,9 +11589,9 @@
       "source_location": "L41",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_coloralgorithms",
-      "target": "src_utils_coloralgorithms_addmidpoints"
+      "target": "src_utils_coloralgorithms_addmidpoints",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11600,21 +11600,21 @@
       "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_coloralgorithms",
-      "target": "src_utils_coloralgorithms_getpalettereferencepixels"
+      "target": "src_utils_coloralgorithms_getpalettereferencepixels",
+      "confidence_score": 1.0
     },
     {
-      "relation": "imports_from",
-      "context": "import",
+      "relation": "re_exports",
+      "context": "export",
       "confidence": "EXTRACTED",
       "source_file": "src/utils/colorAlgorithms.js",
-      "source_location": "L2",
+      "source_location": "L11",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_coloralgorithms",
-      "target": "src_utils_palette_colormath"
+      "target": "src_utils_palette_colormath",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -11624,9 +11624,9 @@
       "source_location": "L2",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_coloralgorithms",
-      "target": "src_utils_palette_colormath_blendhex"
+      "target": "src_utils_palette_colormath_blendhex",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -11636,45 +11636,45 @@
       "source_location": "L2",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_coloralgorithms",
-      "target": "src_utils_palette_colormath_hextorgb"
+      "target": "src_utils_palette_colormath_hextorgb",
+      "confidence_score": 1.0
     },
     {
-      "relation": "imports_from",
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/utils/colorAlgorithms.js",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_utils_coloralgorithms",
+      "target": "src_utils_palette_kmeans",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "src/utils/colorAlgorithms.js",
       "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_coloralgorithms",
-      "target": "src_utils_palette_kmeans"
+      "target": "src_utils_palette_kmeans_kmeans",
+      "confidence_score": 1.0
     },
     {
-      "relation": "imports",
-      "context": "import",
+      "relation": "re_exports",
+      "context": "export",
       "confidence": "EXTRACTED",
       "source_file": "src/utils/colorAlgorithms.js",
-      "source_location": "L4",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_coloralgorithms",
-      "target": "src_utils_palette_kmeans_kmeans"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/utils/colorAlgorithms.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_utils_coloralgorithms",
-      "target": "src_utils_palette_mediancut"
+      "target": "src_utils_palette_mediancut",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -11684,21 +11684,21 @@
       "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_coloralgorithms",
-      "target": "src_utils_palette_mediancut_mediancut"
+      "target": "src_utils_palette_mediancut_mediancut",
+      "confidence_score": 1.0
     },
     {
-      "relation": "imports_from",
-      "context": "import",
+      "relation": "re_exports",
+      "context": "export",
       "confidence": "EXTRACTED",
       "source_file": "src/utils/colorAlgorithms.js",
-      "source_location": "L5",
+      "source_location": "L35",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_coloralgorithms",
-      "target": "src_utils_palette_octree"
+      "target": "src_utils_palette_octree",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -11708,9 +11708,9 @@
       "source_location": "L5",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_coloralgorithms",
-      "target": "src_utils_palette_octree_octree"
+      "target": "src_utils_palette_octree_octree",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -11743,9 +11743,9 @@
       "source_location": "L28",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_exportgif",
-      "target": "src_utils_exportgif_capturecanvaspixels"
+      "target": "src_utils_exportgif_capturecanvaspixels",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11754,9 +11754,9 @@
       "source_location": "L44",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_exportgif",
-      "target": "src_utils_exportgif_capturecompositedpixels"
+      "target": "src_utils_exportgif_capturecompositedpixels",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11765,9 +11765,9 @@
       "source_location": "L124",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_exportgif",
-      "target": "src_utils_exportgif_exportcurrentgif"
+      "target": "src_utils_exportgif_exportcurrentgif",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11776,9 +11776,9 @@
       "source_location": "L53",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_exportgif",
-      "target": "src_utils_exportgif_getexportbasename"
+      "target": "src_utils_exportgif_getexportbasename",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11787,9 +11787,9 @@
       "source_location": "L118",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_exportgif",
-      "target": "src_utils_exportgif_nextanimationframe"
+      "target": "src_utils_exportgif_nextanimationframe",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11798,9 +11798,9 @@
       "source_location": "L57",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_exportgif",
-      "target": "src_utils_exportgif_upscaleframepixels"
+      "target": "src_utils_exportgif_upscaleframepixels",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11809,9 +11809,9 @@
       "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_exportgif",
-      "target": "src_utils_exportgif_waitforframerendered"
+      "target": "src_utils_exportgif_waitforframerendered",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11820,9 +11820,9 @@
       "source_location": "L96",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_exportgif",
-      "target": "src_utils_exportgif_waitforframeselected"
+      "target": "src_utils_exportgif_waitforframeselected",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -11832,9 +11832,9 @@
       "source_location": "L143",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_exportgif_exportcurrentgif",
-      "target": "src_utils_exportgif_waitforframerendered"
+      "target": "src_utils_exportgif_waitforframerendered",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -11844,9 +11844,9 @@
       "source_location": "L50",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_exportgif_capturecompositedpixels",
-      "target": "src_utils_exportgif_capturecanvaspixels"
+      "target": "src_utils_exportgif_capturecanvaspixels",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -11856,9 +11856,9 @@
       "source_location": "L147",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_exportgif_exportcurrentgif",
-      "target": "src_utils_exportgif_capturecompositedpixels"
+      "target": "src_utils_exportgif_capturecompositedpixels",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -11868,9 +11868,9 @@
       "source_location": "L180",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_exportgif_exportcurrentgif",
-      "target": "src_utils_exportgif_getexportbasename"
+      "target": "src_utils_exportgif_getexportbasename",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -11880,9 +11880,9 @@
       "source_location": "L147",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_exportgif_exportcurrentgif",
-      "target": "src_utils_exportgif_upscaleframepixels"
+      "target": "src_utils_exportgif_upscaleframepixels",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -11892,9 +11892,9 @@
       "source_location": "L142",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_exportgif_exportcurrentgif",
-      "target": "src_utils_exportgif_waitforframeselected"
+      "target": "src_utils_exportgif_waitforframeselected",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -11904,9 +11904,9 @@
       "source_location": "L144",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_exportgif_exportcurrentgif",
-      "target": "src_utils_exportgif_nextanimationframe"
+      "target": "src_utils_exportgif_nextanimationframe",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11915,9 +11915,9 @@
       "source_location": "L90",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_galleryindexeddb",
-      "target": "src_utils_galleryindexeddb_cleargalleryhistoryfromdb"
+      "target": "src_utils_galleryindexeddb_cleargalleryhistoryfromdb",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11926,9 +11926,9 @@
       "source_location": "L62",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_galleryindexeddb",
-      "target": "src_utils_galleryindexeddb_loadgalleryhistoryfromdb"
+      "target": "src_utils_galleryindexeddb_loadgalleryhistoryfromdb",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11937,9 +11937,9 @@
       "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_galleryindexeddb",
-      "target": "src_utils_galleryindexeddb_opendb"
+      "target": "src_utils_galleryindexeddb_opendb",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11948,9 +11948,9 @@
       "source_location": "L78",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_galleryindexeddb",
-      "target": "src_utils_galleryindexeddb_savegalleryhistorytodb"
+      "target": "src_utils_galleryindexeddb_savegalleryhistorytodb",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11959,9 +11959,9 @@
       "source_location": "L33",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_galleryindexeddb",
-      "target": "src_utils_galleryindexeddb_withstore"
+      "target": "src_utils_galleryindexeddb_withstore",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -11971,9 +11971,9 @@
       "source_location": "L34",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_galleryindexeddb_withstore",
-      "target": "src_utils_galleryindexeddb_opendb"
+      "target": "src_utils_galleryindexeddb_opendb",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -11983,9 +11983,9 @@
       "source_location": "L92",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_galleryindexeddb_cleargalleryhistoryfromdb",
-      "target": "src_utils_galleryindexeddb_withstore"
+      "target": "src_utils_galleryindexeddb_withstore",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -11995,9 +11995,9 @@
       "source_location": "L64",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_galleryindexeddb_loadgalleryhistoryfromdb",
-      "target": "src_utils_galleryindexeddb_withstore"
+      "target": "src_utils_galleryindexeddb_withstore",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -12007,9 +12007,9 @@
       "source_location": "L80",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_galleryindexeddb_savegalleryhistorytodb",
-      "target": "src_utils_galleryindexeddb_withstore"
+      "target": "src_utils_galleryindexeddb_withstore",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12018,9 +12018,9 @@
       "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_colormath",
-      "target": "src_utils_palette_colormath_blendhex"
+      "target": "src_utils_palette_colormath_blendhex",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12029,9 +12029,9 @@
       "source_location": "L14",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_colormath",
-      "target": "src_utils_palette_colormath_hextorgb"
+      "target": "src_utils_palette_colormath_hextorgb",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12040,9 +12040,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_colormath",
-      "target": "src_utils_palette_colormath_rgbtohex"
+      "target": "src_utils_palette_colormath_rgbtohex",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -12052,9 +12052,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_kmeans",
-      "target": "src_utils_palette_colormath"
+      "target": "src_utils_palette_colormath",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -12064,9 +12064,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_mediancut",
-      "target": "src_utils_palette_colormath"
+      "target": "src_utils_palette_colormath",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -12076,9 +12076,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_octree",
-      "target": "src_utils_palette_colormath"
+      "target": "src_utils_palette_colormath",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -12088,9 +12088,9 @@
       "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_colormath_blendhex",
-      "target": "src_utils_palette_colormath_rgbtohex"
+      "target": "src_utils_palette_colormath_rgbtohex",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -12100,9 +12100,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_kmeans",
-      "target": "src_utils_palette_colormath_rgbtohex"
+      "target": "src_utils_palette_colormath_rgbtohex",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -12136,9 +12136,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_mediancut",
-      "target": "src_utils_palette_colormath_rgbtohex"
+      "target": "src_utils_palette_colormath_rgbtohex",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -12148,9 +12148,9 @@
       "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_mediancut_avgpackedbucket",
-      "target": "src_utils_palette_colormath_rgbtohex"
+      "target": "src_utils_palette_colormath_rgbtohex",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -12160,9 +12160,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_octree",
-      "target": "src_utils_palette_colormath_rgbtohex"
+      "target": "src_utils_palette_colormath_rgbtohex",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -12184,9 +12184,9 @@
       "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_colormath_blendhex",
-      "target": "src_utils_palette_colormath_hextorgb"
+      "target": "src_utils_palette_colormath_hextorgb",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -12196,9 +12196,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_kmeans",
-      "target": "src_utils_palette_colormath_hextorgb"
+      "target": "src_utils_palette_colormath_hextorgb",
+      "confidence_score": 1.0
     },
     {
       "relation": "indirect_call",
@@ -12231,9 +12231,9 @@
       "source_location": "L74",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_kmeans",
-      "target": "src_utils_palette_kmeans_kmeans"
+      "target": "src_utils_palette_kmeans_kmeans",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12242,9 +12242,9 @@
       "source_location": "L86",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_kmeans",
-      "target": "src_utils_palette_kmeans_refinepalettewithkmeansseeds"
+      "target": "src_utils_palette_kmeans_refinepalettewithkmeansseeds",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12253,9 +12253,9 @@
       "source_location": "L5",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_kmeans",
-      "target": "src_utils_palette_kmeans_runkmeanscore"
+      "target": "src_utils_palette_kmeans_runkmeanscore",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -12265,9 +12265,9 @@
       "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_kmeans",
-      "target": "src_utils_palette_mediancut"
+      "target": "src_utils_palette_mediancut",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -12277,9 +12277,9 @@
       "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_kmeans",
-      "target": "src_utils_palette_mediancut_mediancut"
+      "target": "src_utils_palette_mediancut_mediancut",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -12289,9 +12289,9 @@
       "source_location": "L2",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_kmeans",
-      "target": "src_utils_palette_sampling"
+      "target": "src_utils_palette_sampling",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -12301,9 +12301,9 @@
       "source_location": "L2",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_kmeans",
-      "target": "src_utils_palette_sampling_extractcolorhistogram"
+      "target": "src_utils_palette_sampling_extractcolorhistogram",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -12313,9 +12313,9 @@
       "source_location": "L2",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_octree",
-      "target": "src_utils_palette_kmeans"
+      "target": "src_utils_palette_kmeans",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -12325,9 +12325,9 @@
       "source_location": "L81",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_kmeans_kmeans",
-      "target": "src_utils_palette_kmeans_runkmeanscore"
+      "target": "src_utils_palette_kmeans_runkmeanscore",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -12337,9 +12337,9 @@
       "source_location": "L94",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_kmeans_refinepalettewithkmeansseeds",
-      "target": "src_utils_palette_kmeans_runkmeanscore"
+      "target": "src_utils_palette_kmeans_runkmeanscore",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -12385,9 +12385,9 @@
       "source_location": "L2",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_octree",
-      "target": "src_utils_palette_kmeans_refinepalettewithkmeansseeds"
+      "target": "src_utils_palette_kmeans_refinepalettewithkmeansseeds",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -12408,9 +12408,9 @@
       "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_mediancut",
-      "target": "src_utils_palette_mediancut_avgpackedbucket"
+      "target": "src_utils_palette_mediancut_avgpackedbucket",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12419,9 +12419,9 @@
       "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_mediancut",
-      "target": "src_utils_palette_mediancut_channelrange"
+      "target": "src_utils_palette_mediancut_channelrange",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12430,9 +12430,9 @@
       "source_location": "L45",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_mediancut",
-      "target": "src_utils_palette_mediancut_mediancut"
+      "target": "src_utils_palette_mediancut_mediancut",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -12442,9 +12442,9 @@
       "source_location": "L2",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_mediancut",
-      "target": "src_utils_palette_sampling"
+      "target": "src_utils_palette_sampling",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -12454,9 +12454,9 @@
       "source_location": "L2",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_mediancut",
-      "target": "src_utils_palette_sampling_extractpackedcolorswithstride"
+      "target": "src_utils_palette_sampling_extractpackedcolorswithstride",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -12478,9 +12478,9 @@
       "source_location": "L61",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_mediancut_mediancut",
-      "target": "src_utils_palette_mediancut_channelrange"
+      "target": "src_utils_palette_mediancut_channelrange",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -12501,9 +12501,9 @@
       "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_octree",
-      "target": "src_utils_palette_octree_octree"
+      "target": "src_utils_palette_octree_octree",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12512,9 +12512,9 @@
       "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_sampling",
-      "target": "src_utils_palette_sampling_extractcolorhistogram"
+      "target": "src_utils_palette_sampling_extractcolorhistogram",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12523,9 +12523,9 @@
       "source_location": "L46",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_sampling",
-      "target": "src_utils_palette_sampling_extractpackedcolorswithstride"
+      "target": "src_utils_palette_sampling_extractpackedcolorswithstride",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12534,31 +12534,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_utils_palette_sampling",
-      "target": "src_utils_palette_sampling_resolvepalettesamplestride"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/workers/ditherWorker.js",
-      "source_location": "L16",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_workers_ditherworker",
-      "target": "src_workers_ditherworker_applybinaryalphathreshold"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/workers/ditherWorker.js",
-      "source_location": "L7",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_workers_ditherworker",
-      "target": "src_workers_ditherworker_countuniquecolors"
+      "target": "src_utils_palette_sampling_resolvepalettesamplestride",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12584,6 +12562,17 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/workers/ditherWorker.js",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_workers_ditherworker",
+      "target": "src_workers_ditherworker_applybinaryalphathreshold",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/workers/ditherWorker.js",
       "source_location": "L217",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -12599,6 +12588,17 @@
       "confidence_score": 1.0,
       "source": "src_workers_ditherworker",
       "target": "src_workers_ditherworker_colors"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/workers/ditherWorker.js",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_workers_ditherworker",
+      "target": "src_workers_ditherworker_countuniquecolors",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12817,9 +12817,9 @@
       "source_location": "L17",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_workers_gifdecodeworker",
-      "target": "src_workers_gifdecodeworker_applypatch"
+      "target": "src_workers_gifdecodeworker_applypatch",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12828,31 +12828,9 @@
       "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_workers_gifdecodeworker",
-      "target": "src_workers_gifdecodeworker_clearframerect"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/workers/gifDecodeWorker.js",
-      "source_location": "L55",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_workers_gifdecodeworker",
-      "target": "src_workers_gifdecodeworker_decodegifframes"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/workers/gifDecodeWorker.js",
-      "source_location": "L44",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_workers_gifdecodeworker",
-      "target": "src_workers_gifdecodeworker_parseloopcount"
+      "target": "src_workers_gifdecodeworker_clearframerect",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12863,6 +12841,28 @@
       "confidence_score": 1.0,
       "source": "src_workers_gifdecodeworker",
       "target": "src_workers_gifdecodeworker_decoded"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/workers/gifDecodeWorker.js",
+      "source_location": "L55",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_workers_gifdecodeworker",
+      "target": "src_workers_gifdecodeworker_decodegifframes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/workers/gifDecodeWorker.js",
+      "source_location": "L44",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_workers_gifdecodeworker",
+      "target": "src_workers_gifdecodeworker_parseloopcount",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12882,9 +12882,9 @@
       "source_location": "L69",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_workers_gifdecodeworker_decodegifframes",
-      "target": "src_workers_gifdecodeworker_clearframerect"
+      "target": "src_workers_gifdecodeworker_clearframerect",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -12894,9 +12894,9 @@
       "source_location": "L78",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_workers_gifdecodeworker_decodegifframes",
-      "target": "src_workers_gifdecodeworker_applypatch"
+      "target": "src_workers_gifdecodeworker_applypatch",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -12906,9 +12906,9 @@
       "source_location": "L93",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_workers_gifdecodeworker_decodegifframes",
-      "target": "src_workers_gifdecodeworker_parseloopcount"
+      "target": "src_workers_gifdecodeworker_parseloopcount",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12917,9 +12917,9 @@
       "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "src_workers_paletteworker",
-      "target": "src_workers_paletteworker_colortohex"
+      "target": "src_workers_paletteworker_colortohex",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12968,9 +12968,9 @@
       "source_location": "L7",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
       "source": "vite_config",
-      "target": "vite_config_generateserviceworker"
+      "target": "vite_config_generateserviceworker",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -13098,5 +13098,5 @@
       "source_file": "README.md"
     }
   ],
-  "built_at_commit": "db7795a5f5481a144bba409ee6b034cef04910d2"
+  "built_at_commit": "7435917fc9eaad65d4eb3bad46fbf1d115315465"
 }

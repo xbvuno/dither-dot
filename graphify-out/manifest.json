@@ -20,14 +20,9 @@
     "semantic_hash": "6ad86e052e1b5b682cf7626090efa906"
   },
   "src/App.jsx": {
-    "mtime": 1784312102.9762688,
-    "ast_hash": "420632983c525c32b912203b9a52d26f",
+    "mtime": 1784313945.6942596,
+    "ast_hash": "4cb0331a76485f95532c2b7ea7a166bf",
     "semantic_hash": ""
-  },
-  "src/Aside.jsx": {
-    "mtime": 1784059641.439713,
-    "ast_hash": "703bbdbbca0f18b62c7b6a55ea5207a4",
-    "semantic_hash": "703bbdbbca0f18b62c7b6a55ea5207a4"
   },
   "src/main.jsx": {
     "mtime": 1784296736.0077877,
@@ -270,8 +265,8 @@
     "semantic_hash": ""
   },
   "src/stores/data/galleryStore.js": {
-    "mtime": 1784312128.4324424,
-    "ast_hash": "d7ca4c95199a8464b52b6836831841be",
+    "mtime": 1784315994.8454828,
+    "ast_hash": "cf0e3677542ce05d2536dcd579fdbd85",
     "semantic_hash": ""
   },
   "src/stores/data/paletteStore.js": {
@@ -310,8 +305,8 @@
     "semantic_hash": ""
   },
   "src/stores/media/imageStore.js": {
-    "mtime": 1784312103.131767,
-    "ast_hash": "0a0b72e5b540cbdec7485367604746fa",
+    "mtime": 1784315993.2435434,
+    "ast_hash": "7feb0ebc624f76cf2f2655024100058a",
     "semantic_hash": ""
   },
   "src/stores/media/sizeStore.js": {
@@ -337,6 +332,11 @@
   "src/stores/ui/viewStore.js": {
     "mtime": 1784312090.908077,
     "ast_hash": "e186057d4b2a2351fadf487ba2a411a2",
+    "semantic_hash": ""
+  },
+  "src/components/layout/Aside.jsx": {
+    "mtime": 1784059641.439713,
+    "ast_hash": "703bbdbbca0f18b62c7b6a55ea5207a4",
     "semantic_hash": ""
   }
 }

@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `db7795a5`
+- Built from commit: `7435917f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -66,16 +66,16 @@
 ## Communities (29 total, 1 thin omitted)
 
 ### Community 0 - "GIF & Image Timeline"
-Cohesion: 0.11
-Nodes (34): blobToDataUrl(), buildClipboardFileName(), compositeWithWatermark(), copyCanvasToClipboard(), decodeGifWithWorker(), GallerySection(), getExportBaseName(), getExportCanvasOrThrow() (+26 more)
+Cohesion: 0.09
+Nodes (40): blobToDataUrl(), buildClipboardFileName(), compositeWithWatermark(), copyCanvasToClipboard(), decodeGifWithWorker(), GallerySection(), getExportBaseName(), getExportCanvasOrThrow() (+32 more)
 
 ### Community 1 - "K-Means Palette Algorithms"
 Cohesion: 0.11
 Nodes (30): CHANNELS, computeHistogram(), drawHistogram(), Histogram(), AUTOFIT_METHOD, BUILTIN_PALETTES, DEFAULT_PALETTE, DEFAULT_PALETTE_SETTINGS (+22 more)
 
 ### Community 2 - "Input & Blur Controls"
-Cohesion: 0.10
-Nodes (33): BLUR_ENTRIES, BlurControls(), capitalize(), formatLabel(), ParamSlider(), capitalize(), COLOR_ENTRIES, ColorControls() (+25 more)
+Cohesion: 0.11
+Nodes (28): BLUR_ENTRIES, BlurControls(), capitalize(), formatLabel(), ParamSlider(), capitalize(), COLOR_ENTRIES, ColorControls() (+20 more)
 
 ### Community 3 - "Package Dependencies"
 Cohesion: 0.04
@@ -102,8 +102,8 @@ Cohesion: 0.17
 Nodes (18): canvasToDataUrl(), copyCanvasToClipboard(), createUpscaledCanvas(), ExportPage(), getDefaultExportName(), getExportBaseName(), getExportCanvasOrThrow(), saveCanvasAsPng() (+10 more)
 
 ### Community 9 - "Pipeline Timing Tooltips"
-Cohesion: 0.42
-Nodes (6): GALLERY_PRESETS, clearGalleryHistoryFromDb(), loadGalleryHistoryFromDb(), openDb(), saveGalleryHistoryToDb(), withStore()
+Cohesion: 0.73
+Nodes (5): clamp(), percentToValue(), Slider(), snapValue(), valueToPercent()
 
 ### Community 10 - "Color Palette Editor Page"
 Cohesion: 0.13
@@ -144,10 +144,10 @@ _Questions this graph is uniquely positioned to answer:_
 - **What connects `name`, `private`, `version` to the rest of the system?**
   _136 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `GIF & Image Timeline` be split into smaller, more focused modules?**
-  _Cohesion score 0.11097560975609756 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09061224489795919 - nodes in this community are weakly interconnected._
 - **Should `K-Means Palette Algorithms` be split into smaller, more focused modules?**
   _Cohesion score 0.10741971207087486 - nodes in this community are weakly interconnected._
 - **Should `Input & Blur Controls` be split into smaller, more focused modules?**
-  _Cohesion score 0.09634146341463415 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11092436974789915 - nodes in this community are weakly interconnected._
 - **Should `Package Dependencies` be split into smaller, more focused modules?**
   _Cohesion score 0.043478260869565216 - nodes in this community are weakly interconnected._

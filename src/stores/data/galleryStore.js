@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import statue from '../../assets/STATUE.jpg';
-import sunset from '../../assets/SUNSET.jpg';
-import flames from '../../assets/FLAMES.jpg';
+import statue from '../../assets/statue.jpg';
+import sunset from '../../assets/sunset.jpg';
+import flames from '../../assets/flames.jpg';
 import pizzaCow from '../../assets/PIZZA_COW.gif';
 import {
   clearGalleryHistoryFromDb,
