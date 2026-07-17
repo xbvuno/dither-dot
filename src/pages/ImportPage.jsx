@@ -4,7 +4,6 @@ import { Save, Copy, X, FileUp, Clipboard, Camera, CameraOff, FlipHorizontal, Tr
 import useImageStore from '../stores/media/imageStore';
 import useGalleryStore, { GALLERY_PRESETS } from '../stores/data/galleryStore';
 import { getOutputCanvas } from '../utils/canvasRegistry';
-import { clearGalleryHistory } from '../stores/engine/resetAll';
 import useParamsStore from '../stores/data/paramsStore';
 import useGifStore from '../stores/media/gifStore';
 import useWebcamStore, { WEBCAM_SOURCE } from '../stores/media/webcamStore';
@@ -671,7 +670,7 @@ function GallerySection() {
   }, [presetItems]);
 
   const handleClear = () => {
-    clearGalleryHistory();
+    useGalleryStore.getState().clearHistory();
     if (sourceImg && history.some((item) => item.src === sourceImg)) {
       resetToDefault();
     }

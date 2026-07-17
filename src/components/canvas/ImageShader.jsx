@@ -12,7 +12,6 @@ import useImageStore from "../../stores/media/imageStore";
 import useWebcamStore, { WEBCAM_SOURCE } from "../../stores/media/webcamStore";
 import {
   registerRenderSnapshot,
-  registerSourceImage,
   registerPaletteReference,
   registerOutputCanvas,
 } from "../../utils/canvasRegistry";
@@ -897,7 +896,6 @@ export default function ShaderImage({ sourceImg }) {
   }, [queueProcessing, setSize, syncVisibleLayer, updateOutputTexture]);
 
   useEffect(() => {
-    registerSourceImage(sourceImg || null);
     if (!sourceImg || !canvasHostRef.current || viewportCanvasRef.current) return;
 
     disposedRef.current = false;
@@ -1537,7 +1535,6 @@ export default function ShaderImage({ sourceImg }) {
     return () => {
       disposedRef.current = true;
       lifecycleTokenRef.current += 1;
-      registerSourceImage(null);
       registerPaletteReference(null);
       registerOutputCanvas(null);
       registerRenderSnapshot({ uniqueColors: 0, originalUniqueColors: 0 });
