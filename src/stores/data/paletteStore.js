@@ -1,11 +1,9 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import {
-  medianCut,
-  kMeans,
-  octree,
-  blendHex,
-} from '../../utils/colorAlgorithms';
+import { medianCut } from '../../utils/palette/medianCut';
+import { kMeans } from '../../utils/palette/kMeans';
+import { octree } from '../../utils/palette/octree';
+import { blendHex } from '../../utils/palette/colorMath';
 import { resolvePaletteSampleStride } from '../../utils/palette/sampling';
 import { getPaletteReference } from '../../utils/canvasRegistry';
 import useProcessingStore from '../engine/processingStore';
