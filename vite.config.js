@@ -3,6 +3,9 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
 import workboxBuild from 'workbox-build'
 import wasm from 'vite-plugin-wasm'
+import { readFileSync } from 'fs'
+
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8'))
 
 function generateServiceWorker() {
   return {
@@ -53,6 +56,9 @@ function generateServiceWorker() {
 }
 
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   plugins: [
     react(),
     babel({ presets: [reactCompilerPreset()] }),
