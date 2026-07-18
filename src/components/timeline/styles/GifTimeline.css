@@ -211,3 +211,13 @@
     opacity: 1;
   }
 }
+
+.gif-timeline-shell--decoding {
+  height: 3.2rem !important;
+  min-height: 3.2rem !important;
+  max-height: 3.2rem !important;
+}
+
+.gif-timeline-shell--decoding .gif-timeline-resize-handle {
+  display: none !important;
+}

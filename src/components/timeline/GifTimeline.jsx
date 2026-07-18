@@ -329,7 +329,7 @@ export default function GifTimeline() {
   };
 
   return (
-    <div ref={timelineRef} className='gif-timeline-shell'>
+    <div ref={timelineRef} className={`gif-timeline-shell${decoding ? ' gif-timeline-shell--decoding' : ''}`}>
       <section ref={timelineContentRef} className='gif-timeline' aria-label='GIF TIMELINE'>
         <div
           ref={resizeHandleRef}
