@@ -17,7 +17,7 @@ export default function ShaderImage({ sourceImg }) {
   }, [sourceImg]);
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }} id='render'>
+    <div style={{ position: 'relative' }} id='render'>
       <div
         ref={canvasHostRef}
         className="render-canvas-layer"

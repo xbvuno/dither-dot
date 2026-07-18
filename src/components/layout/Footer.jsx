@@ -170,6 +170,14 @@ export default function Footer() {
     }
   }, [pipelineVisible, timing.pipelineTotal, currentPhase]);
 
+  const lastRenderTime = timing.pipelineTotal > 0 ? formatMs(timing.pipelineTotal) : '—';
+  const statusSuffix = activePhaseLabel 
+    ? `${activePhaseLabel}...` 
+    : (isProcessing ? (processingLabel || 'PROCESSING...') : '');
+  const displayText = statusSuffix 
+    ? `${lastRenderTime} | ${statusSuffix}` 
+    : lastRenderTime;
+
   return (
     <footer className="app-footer">
       <div className="app-footer-left">
@@ -188,15 +196,9 @@ export default function Footer() {
           onMouseEnter={handleTimingHover}
           onMouseLeave={handleTimingLeave}
         >
-          {showBusyState ? (
-            <span>
-              {activePhaseLabel ? `${activePhaseLabel}...` : (processingLabel || 'PROCESSING...')}
-            </span>
-          ) : (
-            <span title="Hover for pipeline breakdown">
-              {timing.pipelineTotal > 0 ? formatMs(timing.pipelineTotal) : '—'}
-            </span>
-          )}
+          <span title="Hover for pipeline breakdown">
+            {displayText}
+          </span>
         </div>
       </div>
 
