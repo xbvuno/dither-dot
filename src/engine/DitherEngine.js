@@ -300,7 +300,7 @@ class DitherEngine {
     );
 
     this.subscriptions.push(
-      useParamsStore.subscribe((state, previousState) => {
+      useParamsStore.subscribe((state) => {
         const prevParams = this.previousColorParams || {};
         const nextParams = {
           noiseCoverage: state.noiseCoverage,
