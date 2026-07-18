@@ -142,6 +142,9 @@ class DitherEngine {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('dither-dot:debug', enabled ? 'true' : 'false');
     }
+    if (this.worker) {
+      this.worker.postMessage({ type: 'setLogging', enabled: this.debugEnabled });
+    }
     console.log(
       `%c[DitherEngine]%c Debug logging has been ${enabled ? 'ENABLED' : 'DISABLED'}.`,
       'color: #1d4ed8; font-weight: bold;',
@@ -181,6 +184,7 @@ class DitherEngine {
     // Initialize worker
     this.worker = new Worker(new URL('../workers/ditherWorker.js', import.meta.url), { type: 'module' });
     this.bindWorkerHandlers(this.worker);
+    this.worker.postMessage({ type: 'setLogging', enabled: this.debugEnabled });
 
     try {
       this.setEngineState('LOADING');
@@ -810,6 +814,7 @@ class DitherEngine {
 
     this.worker = new Worker(new URL('../workers/ditherWorker.js', import.meta.url), { type: 'module' });
     this.bindWorkerHandlers(this.worker);
+    this.worker.postMessage({ type: 'setLogging', enabled: this.debugEnabled });
 
     // Recreate viewport canvas because old one's control was permanently transferred to crashed worker
     this.recreateViewportCanvas();

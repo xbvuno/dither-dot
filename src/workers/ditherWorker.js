@@ -3,6 +3,7 @@ import wasmUrl from 'ddot-wasm/ddot_wasm_bg.wasm?url';
 
 let wasmInitialized = false;
 let activeJobId = null;
+let debugEnabled = false;
 
 // Persistent worker-side canvas elements for offscreen rendering
 let viewportCanvas = null;
@@ -15,6 +16,34 @@ let scratchCtx = null;
 
 const WATERMARK_MARGIN_NORMAL = 4;
 const WATERMARK_MARGIN_MINI = 2;
+
+function log(category, message, ...args) {
+  if (!debugEnabled) return;
+  console.log(
+    `%c[DitherWorker][${category}]%c ${message}`,
+    'color: #0d9488; font-weight: bold; padding: 2px 4px; background: #ccfbf1; border: 1px solid #99f6e4; border-radius: 4px;',
+    'color: inherit;',
+    ...args
+  );
+}
+
+function warn(category, message, ...args) {
+  console.warn(
+    `%c[DitherWorker][${category}]%c ${message}`,
+    'color: #b45309; font-weight: bold; padding: 2px 4px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 4px;',
+    'color: inherit;',
+    ...args
+  );
+}
+
+function error(category, message, ...args) {
+  console.error(
+    `%c[DitherWorker][${category}]%c ${message}`,
+    'color: #b91c1c; font-weight: bold; padding: 2px 4px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 4px;',
+    'color: inherit;',
+    ...args
+  );
+}
 
 function getScratchContext(width, height) {
   if (!scratchCanvas) {
@@ -47,15 +76,20 @@ function applyBinaryAlphaThreshold(pixels) {
 self.onmessage = async (event) => {
   const { type } = event.data;
 
+  if (type === 'setLogging') {
+    debugEnabled = Boolean(event.data.enabled);
+    return;
+  }
+
   if (type === 'initCanvas') {
     viewportCanvas = event.data.canvas;
     viewportCtx = viewportCanvas.getContext('2d');
-    console.log("[Worker] Received initCanvas. Canvas context is ready:", !!viewportCtx);
+    log('Canvas', 'Received initCanvas. Canvas context is ready: %o', !!viewportCtx);
     return;
   }
 
   if (type === 'setWatermarks') {
-    console.log("[Worker] Received setWatermarks. normal:", !!event.data.normal, "mini:", !!event.data.mini);
+    log('Watermark', 'Received setWatermarks. normal: %o, mini: %o', !!event.data.normal, !!event.data.mini);
     if (watermarkBitmap) watermarkBitmap.close();
     if (watermarkMiniBitmap) watermarkMiniBitmap.close();
     watermarkBitmap = event.data.normal;
@@ -81,7 +115,7 @@ self.onmessage = async (event) => {
   } = event.data;
 
   activeJobId = jobId;
-  console.log("[Worker] Received process job. jobId:", jobId, "previewOriginal:", previewingOriginal, "source width/height:", source?.width, "x", source?.height, "custom size requested:", customWidth, "x", customHeight);
+  log('Worker', 'Received process job. jobId: %d, previewingOriginal: %o, size: %d x %d', jobId, previewingOriginal, source?.width, source?.height);
 
   const backend = forceCpu ? Backend.CPU : Backend.AUTO;
   const startTs = self.performance?.now?.() ?? Date.now();
@@ -216,9 +250,9 @@ self.onmessage = async (event) => {
 
     // Render directly to OffscreenCanvas if available
     if (viewportCanvas && viewportCtx) {
-      console.log("[Worker] Drawing output pixels to OffscreenCanvas. dimensions:", outWidth, "x", outHeight);
+      log('Canvas', 'Drawing output pixels to OffscreenCanvas. dimensions: %d x %d', outWidth, outHeight);
       if (viewportCanvas.width !== outWidth || viewportCanvas.height !== outHeight) {
-        console.log("[Worker] Resizing OffscreenCanvas from", viewportCanvas.width, "x", viewportCanvas.height, "to", outWidth, "x", outHeight);
+        log('Canvas', 'Resizing OffscreenCanvas from %d x %d to %d x %d', viewportCanvas.width, viewportCanvas.height, outWidth, outHeight);
         viewportCanvas.width = outWidth;
         viewportCanvas.height = outHeight;
       }
@@ -235,17 +269,18 @@ self.onmessage = async (event) => {
           const y = outHeight - margin - watermark.height;
           viewportCtx.drawImage(watermark, x, y);
         } else {
-          console.warn("[Worker] Watermark requested but bitmap is not loaded!");
+          warn('Watermark', 'Watermark requested but bitmap is not loaded!');
         }
       }
     } else {
-      console.warn("[Worker] Cannot draw directly to OffscreenCanvas: viewportCanvas is", !!viewportCanvas, "viewportCtx is", !!viewportCtx);
+      warn('Canvas', 'Cannot draw directly to OffscreenCanvas: viewportCanvas is %o, viewportCtx is %o', !!viewportCanvas, !!viewportCtx);
     }
 
     const elapsed = (self.performance?.now?.() ?? Date.now()) - startTs;
 
-    console.log(
-      `[dither-worker] Job ${jobId} image ready (${outWidth}x${outHeight}px):\n` +
+    log(
+      'Worker',
+      `Job ${jobId} image ready (${outWidth}x${outHeight}px):\n` +
       `  - WASM Init:       ${tWasmInit.toFixed(2)}ms\n` +
       `  - Setup & Crop:    ${tSetup.toFixed(2)}ms\n` +
       `  - Noise Filter:    ${tNoise.toFixed(2)}ms\n` +
@@ -302,8 +337,9 @@ self.onmessage = async (event) => {
 
       const statsElapsed = performance.now() - tStatsStart;
 
-      console.log(
-        `[dither-worker] Job ${jobId} stats computed (async):\n` +
+      log(
+        'Worker',
+        `Job ${jobId} stats computed (async):\n` +
         `  - Histogram:       ${tHistogram.toFixed(2)}ms\n` +
         `  - Color Count:     ${tColors.toFixed(2)}ms\n` +
         `  => Stats Total:    ${statsElapsed.toFixed(2)}ms`
@@ -325,11 +361,11 @@ self.onmessage = async (event) => {
       );
     }, 10);
 
-  } catch (error) {
-    console.error(`[dither-worker] ERROR ${phaseLabel} (job: ${jobId})`, error);
+  } catch (errorObj) {
+    error('Worker', 'ERROR %s (job: %d): %o', phaseLabel, jobId, errorObj);
     self.postMessage({
       jobId,
-      error: error instanceof Error ? error.message : 'WASM processing failed',
+      error: errorObj instanceof Error ? errorObj.message : 'WASM processing failed',
     });
   } finally {
     if (source) {
