@@ -896,7 +896,7 @@ export default function ImportPage() {
     }
 
     await setSourceFromBlob(blob, name);
-  }, [clearGifFrames, pushGifHistory, setGifFrames, setSourceFromBlob]);
+  }, [clearGifFrames, pushGifHistory, setGifFrames, setSourceFromBlob, setDecoding]);
 
   const importWithSizeCheck = useCallback(async (blob, name) => {
     const dims = await getImageDimensions(blob);

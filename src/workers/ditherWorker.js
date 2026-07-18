@@ -250,6 +250,11 @@ self.onmessage = async (event) => {
     const outWidth = image.width;
     const outHeight = image.height;
 
+    // Clone the pre-dither pixels immediately — dithering mutates image.pixels in-place,
+    // so reading croppedBuffer later would yield quantized (post-dither) pixel data instead
+    // of the original source colors, causing palette extraction to see only palette colors.
+    const croppedSnapshot = new Uint8Array(croppedBuffer);
+
     let outputPixels;
 
     if (previewingOriginal) {
@@ -358,8 +363,8 @@ self.onmessage = async (event) => {
 
       const tStatsStart = performance.now();
       
-      // Clone croppedBuffer to prevent transferring the WASM memory buffer directly
-      const referenceCopy = new Uint8Array(croppedBuffer);
+      // Use the pre-dither snapshot — croppedBuffer was already mutated by dithering
+      const referenceCopy = new Uint8Array(croppedSnapshot);
       const croppedPixels = new Uint8ClampedArray(referenceCopy.buffer);
 
       const tHistogramStart = performance.now();
