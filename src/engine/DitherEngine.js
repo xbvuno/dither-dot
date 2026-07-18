@@ -127,9 +127,10 @@ class DitherEngine {
       window.toggleDitherDebug = (enabled) => this.setLogging(enabled);
 
       const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
       console.log(
         '%c ',
-        'background: url(/wallpaper.jpg) no-repeat; background-size: contain; padding: 40px 80px; line-height: 0; font-size: 0;'
+        `background: url(${origin}/wallpaper.jpg) no-repeat; background-size: contain; padding: 40px 80px; line-height: 0; font-size: 0;`
       );
       if (!this.debugEnabled) {
         console.log(
@@ -201,9 +202,10 @@ class DitherEngine {
       'color: #1d4ed8; font-weight: bold;',
       'color: inherit;'
     );
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
     console.log(
       '%c ',
-      'background: url(/wallpaper.jpg) no-repeat; background-size: contain; padding: 40px 80px; line-height: 0; font-size: 0;'
+      `background: url(${origin}/wallpaper.jpg) no-repeat; background-size: contain; padding: 40px 80px; line-height: 0; font-size: 0;`
     );
     const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
     if (enabled) {
