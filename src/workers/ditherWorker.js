@@ -271,7 +271,10 @@ self.onmessage = async (event) => {
       if (activeJobId !== jobId) return;
 
       const tStatsStart = performance.now();
-      const croppedPixels = new Uint8ClampedArray(croppedBuffer.buffer);
+      
+      // Clone croppedBuffer to prevent transferring the WASM memory buffer directly
+      const referenceCopy = new Uint8Array(croppedBuffer);
+      const croppedPixels = new Uint8ClampedArray(referenceCopy.buffer);
 
       const tHistogramStart = performance.now();
       const rCounts = new Uint32Array(256);
@@ -302,14 +305,14 @@ self.onmessage = async (event) => {
       self.postMessage(
         {
           jobId,
-          referencePixels: croppedBuffer.buffer,
+          referencePixels: referenceCopy.buffer,
           uniqueColorCount,
           histogram: [rCounts, gCounts, bCounts],
           width: outWidth,
           height: outHeight,
           isStatsReady: true,
         },
-        [croppedBuffer.buffer, rCounts.buffer, gCounts.buffer, bCounts.buffer],
+        [referenceCopy.buffer, rCounts.buffer, gCounts.buffer, bCounts.buffer],
       );
     }, 10);
 

@@ -493,8 +493,6 @@ export default function ShaderImage({ sourceImg }) {
 
       setSize({ width, height }, { resetCustom: true });
 
-      setSize({ width, height }, { resetCustom: true });
-
       recreateViewportCanvas();
 
       if (!isWebcam) {

@@ -508,6 +508,9 @@ export default function useDitherWorker({
     workerRef.current = worker;
     bindWorkerHandlers(worker);
 
+    // Recreate and transfer canvas immediately to the newly initialized worker
+    recreateViewportCanvas();
+
     return () => {
       worker?.terminate();
       workerRef.current = null;

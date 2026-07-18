@@ -113,6 +113,7 @@ export default function ExportPage() {
   const allFramesRendered = frameStates.length > 0 && frameStates.every(state => state === 'done');
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setExportName(getDefaultExportName(sourceName));
   }, [sourceName]);
 
@@ -168,6 +169,7 @@ export default function ExportPage() {
     const canvasExists = !!getOutputCanvas();
     const canGenerate = canvasExists && (!isGifSource || allFramesRendered);
     if (canGenerate) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       handleGeneratePreview();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
