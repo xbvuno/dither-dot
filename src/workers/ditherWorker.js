@@ -17,29 +17,45 @@ let scratchCtx = null;
 const WATERMARK_MARGIN_NORMAL = 4;
 const WATERMARK_MARGIN_MINI = 2;
 
+const getWorkerCategoryColor = (category) => {
+  const cat = String(category || '').toLowerCase();
+  switch (cat) {
+    case 'canvas': return '#059669';    // Emerald Green
+    case 'watermark': return '#16a34a'; // Medium Green
+    case 'pipeline':
+    case 'job': return '#15803d';       // Forest Green
+    case 'wasm':
+    case 'init': return '#4d7c0f';       // Olive Green
+    default: return '#0d9488';          // Teal Green
+  }
+};
+
 function log(category, message, ...args) {
   if (!debugEnabled) return;
+  const color = getWorkerCategoryColor(category);
   console.log(
     `%c[DitherWorker][${category}]%c ${message}`,
-    'color: #0d9488; font-weight: bold;',
+    `color: ${color}; font-weight: bold;`,
     'color: inherit;',
     ...args
   );
 }
 
 function warn(category, message, ...args) {
+  const color = getWorkerCategoryColor(category);
   console.warn(
     `%c[DitherWorker][${category}]%c ${message}`,
-    'color: #b45309; font-weight: bold;',
+    `color: ${color}; font-weight: bold;`,
     'color: inherit;',
     ...args
   );
 }
 
 function error(category, message, ...args) {
+  const color = getWorkerCategoryColor(category);
   console.error(
     `%c[DitherWorker][${category}]%c ${message}`,
-    'color: #b91c1c; font-weight: bold;',
+    `color: ${color}; font-weight: bold;`,
     'color: inherit;',
     ...args
   );

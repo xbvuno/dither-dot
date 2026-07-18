@@ -38,6 +38,22 @@ const VIEWER_LOADING_VISIBILITY_DELAY_MS = 100;
 const WATERMARK_MARGIN_NORMAL = 4;
 const WATERMARK_MARGIN_MINI = 2;
 
+const getEngineCategoryColor = (category) => {
+  const cat = String(category || '').toLowerCase();
+  switch (cat) {
+    case 'lifecycle': return '#1e40af'; // Indigo/Dark Blue
+    case 'canvas': return '#0284c7';    // Sky Blue
+    case 'pipeline': return '#2563eb';  // Royal Blue
+    case 'webcam': return '#0369a1';    // Deep Cyan/Steel Blue
+    case 'palette':
+    case 'colors': return '#4f46e5';    // Indigo
+    case 'watermark': return '#6366f1'; // Violet-Indigo
+    case 'subscription':
+    case 'store': return '#0891b2';      // Cyan-Blue
+    default: return '#1d4ed8';          // Classic Blue
+  }
+};
+
 class DitherEngine {
   constructor() {
     this.canvasHost = null;
@@ -121,27 +137,30 @@ class DitherEngine {
 
   log(category, message, ...args) {
     if (!this.debugEnabled) return;
+    const color = getEngineCategoryColor(category);
     console.log(
       `%c[DitherEngine][${category}]%c ${message}`,
-      'color: #1d4ed8; font-weight: bold;',
+      `color: ${color}; font-weight: bold;`,
       'color: inherit;',
       ...args
     );
   }
 
   warn(category, message, ...args) {
+    const color = getEngineCategoryColor(category);
     console.warn(
       `%c[DitherEngine][${category}]%c ${message}`,
-      'color: #b45309; font-weight: bold;',
+      `color: ${color}; font-weight: bold;`,
       'color: inherit;',
       ...args
     );
   }
 
   error(category, message, ...args) {
+    const color = getEngineCategoryColor(category);
     console.error(
       `%c[DitherEngine][${category}]%c ${message}`,
-      'color: #b91c1c; font-weight: bold;',
+      `color: ${color}; font-weight: bold;`,
       'color: inherit;',
       ...args
     );
