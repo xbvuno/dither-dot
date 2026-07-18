@@ -30,6 +30,7 @@ import {
 } from '../utils/shaderHelpers';
 
 import watermarkImage from "../assets/watermark/watermark.png";
+import watermarkImageInline from "../assets/watermark/watermark.png?inline";
 import watermarkMiniImage from "../assets/watermark/watermark-mini.png";
 
 const DITHER_WORKER_TIMEOUT_MS = 10000;
@@ -127,7 +128,7 @@ class DitherEngine {
       const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
       console.log(
         '%c ',
-        `background: url(${watermarkImage}) no-repeat; background-size: contain; padding: 12px 36px; line-height: 0; font-size: 0;`
+        `background: url(${watermarkImageInline}) no-repeat; background-size: contain; padding: 12px 36px; line-height: 0; font-size: 0;`
       );
       console.log(
         `%cDITHER-DOT v${appVersion}%c\n%c[GITHUB]%c\u00A0https://github.com/xbvuno/dither-dot`,
@@ -198,7 +199,7 @@ class DitherEngine {
     if (enabled) {
       console.log(
         '%c ',
-        `background: url(${watermarkImage}) no-repeat; background-size: contain; padding: 12px 36px; line-height: 0; font-size: 0;`
+        `background: url(${watermarkImageInline}) no-repeat; background-size: contain; padding: 12px 36px; line-height: 0; font-size: 0;`
       );
       console.info(
         '%cRun toggleDitherDebug(false) to disable detailed rendering logs in the console.',
