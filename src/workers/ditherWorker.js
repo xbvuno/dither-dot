@@ -1,8 +1,33 @@
-import init, { Image as WasmImage, FilterHandle, Filters, Dithering, Palette as WasmPalette, Transform, Backend } from 'ddot-wasm';
+import init, { Image as WasmImage, Filters, Dithering, Palette as WasmPalette, Transform, Backend } from 'ddot-wasm';
 import wasmUrl from 'ddot-wasm/ddot_wasm_bg.wasm?url';
 
 let wasmInitialized = false;
 let activeJobId = null;
+
+// Persistent worker-side canvas elements for offscreen rendering
+let viewportCanvas = null;
+let viewportCtx = null;
+let watermarkBitmap = null;
+let watermarkMiniBitmap = null;
+
+let scratchCanvas = null;
+let scratchCtx = null;
+
+const WATERMARK_MARGIN_NORMAL = 4;
+const WATERMARK_MARGIN_MINI = 2;
+
+function getScratchContext(width, height) {
+  if (!scratchCanvas) {
+    scratchCanvas = new OffscreenCanvas(width, height);
+    scratchCtx = scratchCanvas.getContext('2d');
+  } else {
+    if (scratchCanvas.width !== width || scratchCanvas.height !== height) {
+      scratchCanvas.width = width;
+      scratchCanvas.height = height;
+    }
+  }
+  return scratchCtx;
+}
 
 function countUniqueColors(pixels) {
   const unique = new Set();
@@ -20,11 +45,29 @@ function applyBinaryAlphaThreshold(pixels) {
 }
 
 self.onmessage = async (event) => {
+  const { type } = event.data;
+
+  if (type === 'initCanvas') {
+    viewportCanvas = event.data.canvas;
+    viewportCtx = viewportCanvas.getContext('2d');
+    return;
+  }
+
+  if (type === 'setWatermarks') {
+    if (watermarkBitmap) watermarkBitmap.close();
+    if (watermarkMiniBitmap) watermarkMiniBitmap.close();
+    watermarkBitmap = event.data.normal;
+    watermarkMiniBitmap = event.data.mini;
+    return;
+  }
+
+  // Otherwise, it is a processing job
   const {
     jobId,
-    processedPixels,
-    width,
-    height,
+    source,
+    previewingOriginal,
+    customWidth,
+    customHeight,
     paletteRgb,
     dither,
     crop,
@@ -32,12 +75,12 @@ self.onmessage = async (event) => {
     noise,
     blur,
     forceCpu,
+    watermarkEnabled,
   } = event.data;
 
   activeJobId = jobId;
 
   const backend = forceCpu ? Backend.CPU : Backend.AUTO;
-
   const startTs = self.performance?.now?.() ?? Date.now();
   const phaseLabel = dither?.enabled ? 'DITHERING' : 'COPY SOURCE';
 
@@ -47,13 +90,10 @@ self.onmessage = async (event) => {
     let tNoise = 0;
     let tAdjust = 0;
     let tBlur = 0;
-    let tHistogram = 0;
     let tDither = 0;
     let tFinal = 0;
-    let tColors = 0;
 
     const tWasmInitStart = performance.now();
-    // Dynamically initialize WASM if not already done
     if (!wasmInitialized) {
       await init({ module_or_path: wasmUrl });
       wasmInitialized = true;
@@ -61,11 +101,13 @@ self.onmessage = async (event) => {
     tWasmInit = performance.now() - tWasmInitStart;
 
     const tSetupStart = performance.now();
-    // 1. Initialize WASM image wrapper from the transferred buffer
-    // ImageData constructor is supported in workers in modern browsers
-    const pixelsArray = new Uint8ClampedArray(processedPixels);
-    const imageData = new ImageData(pixelsArray, width, height);
-    let image = new WasmImage(imageData);
+    // 1. Draw source ImageBitmap to scratch OffscreenCanvas to retrieve pixel data
+    const sCtx = getScratchContext(customWidth, customHeight);
+    sCtx.imageSmoothingEnabled = false;
+    sCtx.drawImage(source, 0, 0, customWidth, customHeight);
+    const imgData = sCtx.getImageData(0, 0, customWidth, customHeight);
+
+    let image = new WasmImage(imgData);
 
     // Apply crop if settings are provided
     if (crop && (crop.top > 0 || crop.bottom > 0 || crop.left > 0 || crop.right > 0)) {
@@ -81,7 +123,6 @@ self.onmessage = async (event) => {
     const filters = Filters.getFilters();
 
     const tNoiseStart = performance.now();
-    // 2. Apply noise filter if enabled
     if (noise && noise.noiseCoverage > 0 && noise.noiseIntensity > 0) {
       const noiseFilter = filters.noise;
       if (noiseFilter) {
@@ -96,7 +137,6 @@ self.onmessage = async (event) => {
     tNoise = performance.now() - tNoiseStart;
 
     const tAdjustStart = performance.now();
-    // 3. Apply adjustment filter if provided
     if (adjustments) {
       const adjustmentFilter = filters.adjustment;
       if (adjustmentFilter) {
@@ -113,7 +153,6 @@ self.onmessage = async (event) => {
     tAdjust = performance.now() - tAdjustStart;
 
     const tBlurStart = performance.now();
-    // 4. Apply Kawase blur if enabled
     if (blur && blur.blurStrength > 0 && blur.passes > 0) {
       const blurFilter = filters.kawase_blur;
       if (blurFilter) {
@@ -126,52 +165,78 @@ self.onmessage = async (event) => {
     }
     tBlur = performance.now() - tBlurStart;
 
-    // Get pre-dithered filtered pixels for palette generation and stats reference
     const croppedBuffer = image.pixels;
+    const outWidth = image.width;
+    const outHeight = image.height;
 
-    const tDitherStart = performance.now();
-    // 2. Apply dither algorithm on CPU
-    if (dither.enabled) {
-      const colors = paletteRgb.map(color => {
-        return {
-          r: Math.round(color[0] * 255) & 255,
-          g: Math.round(color[1] * 255) & 255,
-          b: Math.round(color[2] * 255) & 255,
-          a: 255
-        };
-      });
-      const wasmPalette = new WasmPalette(colors);
+    let outputPixels;
 
-      const algs = Dithering.getAlgorithms();
-      const methodName = dither.method === 'ordered_bayer' ? 'bayer' : dither.method;
-      const alg = algs.find(a => a.name === methodName);
-      if (alg) {
-        await alg.apply(image, wasmPalette, {
-          amount: dither.amount,
-          matrixScale: dither.matrixScale,
-          seed: dither.seed,
+    if (previewingOriginal) {
+      // Just retrieve the filtered original image
+      const outputBuffer = image.pixels;
+      outputPixels = new Uint8ClampedArray(outputBuffer.buffer);
+    } else {
+      const tDitherStart = performance.now();
+      if (dither.enabled) {
+        const colors = paletteRgb.map(color => {
+          return {
+            r: Math.round(color[0] * 255) & 255,
+            g: Math.round(color[1] * 255) & 255,
+            b: Math.round(color[2] * 255) & 255,
+            a: 255
+          };
         });
+        const wasmPalette = new WasmPalette(colors);
+
+        const algs = Dithering.getAlgorithms();
+        const methodName = dither.method === 'ordered_bayer' ? 'bayer' : dither.method;
+        const alg = algs.find(a => a.name === methodName);
+        if (alg) {
+          await alg.apply(image, wasmPalette, {
+            amount: dither.amount,
+            matrixScale: dither.matrixScale,
+            seed: dither.seed,
+          });
+        }
+      }
+      tDither = performance.now() - tDitherStart;
+
+      const tFinalStart = performance.now();
+      const outputBuffer = image.pixels;
+      outputPixels = new Uint8ClampedArray(outputBuffer.buffer);
+
+      if (dither.enabled) {
+        applyBinaryAlphaThreshold(outputPixels);
+      }
+      tFinal = performance.now() - tFinalStart;
+    }
+
+    // Render directly to OffscreenCanvas if available
+    if (viewportCanvas && viewportCtx) {
+      if (viewportCanvas.width !== outWidth || viewportCanvas.height !== outHeight) {
+        viewportCanvas.width = outWidth;
+        viewportCanvas.height = outHeight;
+      }
+      viewportCtx.imageSmoothingEnabled = false;
+      const imgDataOut = new ImageData(outputPixels, outWidth, outHeight);
+      viewportCtx.putImageData(imgDataOut, 0, 0);
+
+      if (watermarkEnabled) {
+        const useMini = outWidth < 64 || outHeight < 64;
+        const watermark = useMini ? watermarkMiniBitmap : watermarkBitmap;
+        if (watermark) {
+          const margin = useMini ? WATERMARK_MARGIN_MINI : WATERMARK_MARGIN_NORMAL;
+          const x = outWidth - margin - watermark.width;
+          const y = outHeight - margin - watermark.height;
+          viewportCtx.drawImage(watermark, x, y);
+        }
       }
     }
-    tDither = performance.now() - tDitherStart;
-
-    const tFinalStart = performance.now();
-    // 4. Retrieve final pixel values as transferable buffer
-    const outputBuffer = image.pixels; // Uint8Array copy from WASM memory
-    const outputPixels = new Uint8ClampedArray(outputBuffer.buffer);
-
-    if (dither.enabled) {
-      applyBinaryAlphaThreshold(outputPixels);
-    }
-    tFinal = performance.now() - tFinalStart;
-
-    // Clone output pixels to count colors asynchronously without locking the thread
-    const statsOutputPixels = outputPixels.slice();
 
     const elapsed = (self.performance?.now?.() ?? Date.now()) - startTs;
 
     console.log(
-      `[dither-worker] Job ${jobId} image ready (${width}x${height}px):\n` +
+      `[dither-worker] Job ${jobId} image ready (${outWidth}x${outHeight}px):\n` +
       `  - WASM Init:       ${tWasmInit.toFixed(2)}ms\n` +
       `  - Setup & Crop:    ${tSetup.toFixed(2)}ms\n` +
       `  - Noise Filter:    ${tNoise.toFixed(2)}ms\n` +
@@ -182,13 +247,14 @@ self.onmessage = async (event) => {
       `  => Total Image:    ${elapsed.toFixed(2)}ms`
     );
 
-    // Send the rendered output back to the main thread immediately
+    // Send the rendered output back to the main thread (for export cache)
+    const clonedOutput = new Uint8ClampedArray(outputPixels);
     self.postMessage(
       {
         jobId,
-        outputPixels: outputPixels.buffer,
-        width: image.width,
-        height: image.height,
+        outputPixels: clonedOutput.buffer,
+        width: outWidth,
+        height: outHeight,
         isImageReady: true,
         timings: {
           noise: tNoise,
@@ -197,21 +263,17 @@ self.onmessage = async (event) => {
           dithering: tDither,
         }
       },
-      [outputPixels.buffer],
+      [clonedOutput.buffer],
     );
 
-    // Run stats calculations when the browser event loop is idle / free
+    // Run stats calculations when browser event loop is idle
     setTimeout(() => {
-      if (activeJobId !== jobId) {
-        return;
-      }
+      if (activeJobId !== jobId) return;
 
       const tStatsStart = performance.now();
-
-      const tHistogramStart = performance.now();
       const croppedPixels = new Uint8ClampedArray(croppedBuffer.buffer);
 
-      // Compute RGB histogram counts
+      const tHistogramStart = performance.now();
       const rCounts = new Uint32Array(256);
       const gCounts = new Uint32Array(256);
       const bCounts = new Uint32Array(256);
@@ -220,11 +282,11 @@ self.onmessage = async (event) => {
         gCounts[croppedPixels[i + 1]]++;
         bCounts[croppedPixels[i + 2]]++;
       }
-      tHistogram = performance.now() - tHistogramStart;
+      const tHistogram = performance.now() - tHistogramStart;
 
       const tColorsStart = performance.now();
-      const uniqueColorCount = countUniqueColors(statsOutputPixels);
-      tColors = performance.now() - tColorsStart;
+      const uniqueColorCount = countUniqueColors(outputPixels);
+      const tColors = performance.now() - tColorsStart;
 
       const statsElapsed = performance.now() - tStatsStart;
 
@@ -235,9 +297,7 @@ self.onmessage = async (event) => {
         `  => Stats Total:    ${statsElapsed.toFixed(2)}ms`
       );
 
-      if (activeJobId !== jobId) {
-        return;
-      }
+      if (activeJobId !== jobId) return;
 
       self.postMessage(
         {
@@ -245,18 +305,23 @@ self.onmessage = async (event) => {
           referencePixels: croppedBuffer.buffer,
           uniqueColorCount,
           histogram: [rCounts, gCounts, bCounts],
-          width: image.width,
-          height: image.height,
+          width: outWidth,
+          height: outHeight,
           isStatsReady: true,
         },
         [croppedBuffer.buffer, rCounts.buffer, gCounts.buffer, bCounts.buffer],
       );
     }, 10);
+
   } catch (error) {
     console.error(`[dither-worker] ERROR ${phaseLabel} (job: ${jobId})`, error);
     self.postMessage({
       jobId,
       error: error instanceof Error ? error.message : 'WASM processing failed',
     });
+  } finally {
+    if (source) {
+      source.close();
+    }
   }
 };

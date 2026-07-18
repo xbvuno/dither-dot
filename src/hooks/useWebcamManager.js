@@ -9,6 +9,7 @@ export default function useWebcamManager({
   isWebcamModeRef,
   paletteFrozenForWebcamRef,
   lifecycleTokenRef,
+  disposedRef,
   queueProcessing,
   engineStateRef,
 }) {

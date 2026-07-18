@@ -6,10 +6,9 @@ import usePaletteStore, { EXTRACT_METHOD } from "../../stores/data/paletteStore"
 import useDitherStore from "../../stores/engine/ditherStore";
 import useGifStore from "../../stores/media/gifStore";
 import useProcessingStore from "../../stores/engine/processingStore";
-import usePerformanceStore from "../../stores/engine/performanceStore";
 import useWatermarkStore from "../../stores/media/watermarkStore";
 import useImageStore from "../../stores/media/imageStore";
-import useWebcamStore, { WEBCAM_SOURCE } from "../../stores/media/webcamStore";
+import { WEBCAM_SOURCE } from "../../stores/media/webcamStore";
 import {
   registerRenderSnapshot,
   registerPaletteReference,
@@ -76,6 +75,7 @@ export default function ShaderImage({ sourceImg }) {
   const pendingPaletteRefreshRef = useRef(false);
   const processingQueuedRef = useRef(false);
   const engineStateRef = useRef('IDLE');
+  const workerRef = useRef(null);
 
   const applyDisplaySize = useCallback((width, height) => {
     const safeWidth = Math.max(1, Math.floor(Number(width) || 1));
@@ -93,33 +93,7 @@ export default function ShaderImage({ sourceImg }) {
     return { width: safeWidth, height: safeHeight };
   }, []);
 
-  const extractProcessedPixels = useCallback(() => {
-    const source = activeSourceRef.current;
-    if (!source) {
-      return { pixels: new Uint8ClampedArray(), width: 0, height: 0 };
-    }
 
-    const sizeState = useSizeStore.getState();
-    const sourceW = source.naturalWidth || source.width || 1;
-    const sourceH = source.naturalHeight || source.height || 1;
-
-    const customW = sizeState.customSize.customWidth || sourceW;
-    const customH = sizeState.customSize.customHeight || sourceH;
-
-    const canvas = document.createElement('canvas');
-    canvas.width = customW;
-    canvas.height = customH;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return { pixels: new Uint8ClampedArray(), width: 0, height: 0 };
-    }
-
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(source, 0, 0, customW, customH);
-    const imgData = ctx.getImageData(0, 0, customW, customH);
-
-    return { pixels: imgData.data, width: customW, height: customH };
-  }, []);
 
   const clearViewerLoadingTimer = useCallback(() => {
     if (viewerLoadingTimerRef.current !== null) {
@@ -204,68 +178,31 @@ export default function ShaderImage({ sourceImg }) {
     const bottom = sizeState.crop?.bottom || 0;
     const hasCrop = left > 0 || right > 0 || top > 0 || bottom > 0;
 
-    const hasOutput = outputReadyRef.current && outputCanvasRef.current;
-
     if (previewingOriginalRef.current) {
       syncSplitOverlay();
-      return;
     } else {
       if (splitOverlayCanvasRef.current) {
         splitOverlayCanvasRef.current.style.display = 'none';
       }
     }
 
-    const viewportCanvas = viewportCanvasRef.current;
-    if (!viewportCanvas) return;
+    const source = activeSourceRef.current;
+    if (source) {
+      const sourceW = source.naturalWidth || source.width || 1;
+      const sourceH = source.naturalHeight || source.height || 1;
 
-    if (hasOutput) {
-      const canvas = outputCanvasRef.current;
-      viewportCanvas.width = canvas.width;
-      viewportCanvas.height = canvas.height;
-      const ctx = viewportCanvas.getContext('2d');
-      if (ctx) {
-        ctx.imageSmoothingEnabled = false;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(canvas, 0, 0);
-      }
-      applyDisplaySize(canvas.width, canvas.height, watermarkEnabledRef.current);
-    } else {
-      const source = activeSourceRef.current;
-      if (source) {
-        const sourceW = source.naturalWidth || source.width || 1;
-        const sourceH = source.naturalHeight || source.height || 1;
+      const customW = sizeState.customSize.customWidth || sourceW;
+      const customH = sizeState.customSize.customHeight || sourceH;
 
-        const customW = sizeState.customSize.customWidth || sourceW;
-        const customH = sizeState.customSize.customHeight || sourceH;
+      const cropLeft = hasCrop ? left : 0;
+      const cropTop = hasCrop ? top : 0;
+      const cropRight = hasCrop ? right : 0;
+      const cropBottom = hasCrop ? bottom : 0;
 
-        const cropLeft = hasCrop ? left : 0;
-        const cropTop = hasCrop ? top : 0;
-        const cropRight = hasCrop ? right : 0;
-        const cropBottom = hasCrop ? bottom : 0;
+      const displayWidth = Math.max(1, customW - cropLeft - cropRight);
+      const displayHeight = Math.max(1, customH - cropTop - cropBottom);
 
-        const displayWidth = Math.max(1, customW - cropLeft - cropRight);
-        const displayHeight = Math.max(1, customH - cropTop - cropBottom);
-
-        viewportCanvas.width = displayWidth;
-        viewportCanvas.height = displayHeight;
-        const ctx = viewportCanvas.getContext('2d');
-        if (ctx) {
-          ctx.imageSmoothingEnabled = false;
-          ctx.clearRect(0, 0, displayWidth, displayHeight);
-          ctx.drawImage(
-            source,
-            cropLeft,
-            cropTop,
-            displayWidth,
-            displayHeight,
-            0,
-            0,
-            displayWidth,
-            displayHeight
-          );
-        }
-        applyDisplaySize(displayWidth, displayHeight, watermarkEnabledRef.current);
-      }
+      applyDisplaySize(displayWidth, displayHeight, watermarkEnabledRef.current);
     }
   }, [syncSplitOverlay, applyDisplaySize]);
 
@@ -276,17 +213,73 @@ export default function ShaderImage({ sourceImg }) {
       paletteState.colorCount,
     );
 
-    recoloredWatermarkCanvasRef.current = generateRecoloredWatermark(
+    const normalCanvas = generateRecoloredWatermark(
       watermarkImgRef.current,
       darkColor,
       lightColor
     );
-    recoloredWatermarkMiniCanvasRef.current = generateRecoloredWatermark(
+    const miniCanvas = generateRecoloredWatermark(
       watermarkMiniImgRef.current,
       darkColor,
       lightColor
     );
-  }, []);
+
+    recoloredWatermarkCanvasRef.current = normalCanvas;
+    recoloredWatermarkMiniCanvasRef.current = miniCanvas;
+
+    const worker = workerRef.current;
+    if (worker && normalCanvas && miniCanvas) {
+      Promise.all([
+        createImageBitmap(normalCanvas),
+        createImageBitmap(miniCanvas),
+      ]).then(([normalBitmap, miniBitmap]) => {
+        worker.postMessage({
+          type: 'setWatermarks',
+          normal: normalBitmap,
+          mini: miniBitmap,
+        }, [normalBitmap, miniBitmap]);
+      }).catch((e) => {
+        console.error('Failed to send watermarks to worker', e);
+      });
+    }
+  }, [workerRef]);
+
+  const recreateViewportCanvas = useCallback(() => {
+    if (!canvasHostRef.current) return;
+    const displaySize = getTargetDisplaySize();
+
+    const viewportCanvas = document.createElement('canvas');
+    viewportCanvas.width = displaySize.width;
+    viewportCanvas.height = displaySize.height;
+    viewportCanvas.style.position = 'absolute';
+    viewportCanvas.style.inset = '0';
+    viewportCanvas.style.display = 'block';
+    viewportCanvas.style.imageRendering = 'pixelated';
+
+    canvasHostRef.current.replaceChildren();
+    canvasHostRef.current.appendChild(viewportCanvas);
+    viewportCanvasRef.current = viewportCanvas;
+
+    // Also recreate the splitCompare overlay canvas
+    const overlayCanvas = document.createElement('canvas');
+    overlayCanvas.style.position = 'absolute';
+    overlayCanvas.style.inset = '0';
+    overlayCanvas.style.display = 'none';
+    overlayCanvas.style.pointerEvents = 'none';
+    overlayCanvas.style.imageRendering = 'auto';
+    canvasHostRef.current.appendChild(overlayCanvas);
+    splitOverlayCanvasRef.current = overlayCanvas;
+    splitOverlayCtxRef.current = overlayCanvas.getContext('2d');
+    syncSplitOverlay();
+
+    if (workerRef.current) {
+      const offscreen = viewportCanvas.transferControlToOffscreen();
+      workerRef.current.postMessage({ type: 'initCanvas', canvas: offscreen }, [offscreen]);
+      
+      // Force watermarks reset
+      syncWatermarkPalette();
+    }
+  }, [syncSplitOverlay, syncWatermarkPalette]);
 
   const preserveVisibleOutput = useCallback(() => {
     const ditherEnabled = useDitherStore.getState().enabled;
@@ -353,18 +346,6 @@ export default function ShaderImage({ sourceImg }) {
 
     registerOutputCanvas(outputCanvasRef.current);
 
-    const viewportCanvas = viewportCanvasRef.current;
-    if (viewportCanvas) {
-      viewportCanvas.width = safeWidth;
-      viewportCanvas.height = safeHeight;
-      const viewCtx = viewportCanvas.getContext('2d');
-      if (viewCtx) {
-        viewCtx.imageSmoothingEnabled = false;
-        viewCtx.clearRect(0, 0, safeWidth, safeHeight);
-        viewCtx.drawImage(canvas, 0, 0);
-      }
-    }
-
     return outputCanvasRef.current;
   }, []);
 
@@ -382,15 +363,14 @@ export default function ShaderImage({ sourceImg }) {
     isWebcamModeRef,
     paletteFrozenForWebcamRef,
     watermarkEnabledRef,
-    recoloredWatermarkCanvasRef,
-    recoloredWatermarkMiniCanvasRef,
     lifecycleTokenRef,
     disposedRef,
     preserveVisibleOutput,
-    extractProcessedPixels,
     updateOutputTexture,
     syncVisibleLayer,
     engineStateRef,
+    recreateViewportCanvas,
+    workerRef,
   });
 
   // Hook for Webcam
@@ -513,28 +493,9 @@ export default function ShaderImage({ sourceImg }) {
 
       setSize({ width, height }, { resetCustom: true });
 
-      const initialDisplaySize = getTargetDisplaySize();
+      setSize({ width, height }, { resetCustom: true });
 
-      const viewportCanvas = document.createElement('canvas');
-      viewportCanvas.width = initialDisplaySize.width;
-      viewportCanvas.height = initialDisplaySize.height;
-      viewportCanvas.style.position = 'absolute';
-      viewportCanvas.style.inset = '0';
-      viewportCanvas.style.display = 'block';
-      viewportCanvas.style.imageRendering = 'pixelated';
-      canvasHostRef.current.replaceChildren();
-      canvasHostRef.current.appendChild(viewportCanvas);
-      viewportCanvasRef.current = viewportCanvas;
-
-      const overlayCanvas = document.createElement('canvas');
-      overlayCanvas.style.position = 'absolute';
-      overlayCanvas.style.inset = '0';
-      overlayCanvas.style.display = 'none';
-      overlayCanvas.style.pointerEvents = 'none';
-      overlayCanvas.style.imageRendering = 'auto';
-      canvasHostRef.current.appendChild(overlayCanvas);
-      splitOverlayCanvasRef.current = overlayCanvas;
-      splitOverlayCtxRef.current = overlayCanvas.getContext('2d');
+      recreateViewportCanvas();
 
       if (!isWebcam) {
         const overlayImg = new Image();
@@ -553,6 +514,7 @@ export default function ShaderImage({ sourceImg }) {
       watermarkMiniImgRef.current = watermarkMiniTexture;
       syncWatermarkPalette();
 
+      const initialDisplaySize = getTargetDisplaySize();
       applyDisplaySize(
         initialDisplaySize.width,
         initialDisplaySize.height,
@@ -788,6 +750,7 @@ export default function ShaderImage({ sourceImg }) {
     cleanupWebcam,
     internalFrameSwapRef,
     setRenderProcessing,
+    recreateViewportCanvas,
   ]);
 
   return (

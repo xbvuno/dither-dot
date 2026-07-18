@@ -17,32 +17,28 @@ import {
 
 const DITHER_WORKER_TIMEOUT_MS = 10000;
 const PROCESSING_VISIBILITY_DELAY_MS = 100;
-const PROCESSING_DEBOUNCE_MS = 48;
 
 export default function useDitherWorker({
   activeSourceRef,
   originalUniqueColorsRef,
   previewingOriginalRef,
   outputCanvasRef,
-  outputContextRef,
   outputReadyRef,
   outputModeRef,
   isWebcamModeRef,
   paletteFrozenForWebcamRef,
   watermarkEnabledRef,
-  recoloredWatermarkCanvasRef,
-  recoloredWatermarkMiniCanvasRef,
   lifecycleTokenRef,
   disposedRef,
   preserveVisibleOutput,
-  extractProcessedPixels,
   updateOutputTexture,
   syncVisibleLayer,
   engineStateRef,
+  recreateViewportCanvas,
+  workerRef,
 }) {
   const setRenderProcessing = useProcessingStore(s => s.setRenderProcessing);
 
-  const workerRef = useRef(null);
   const latestRequestIdRef = useRef(0);
   const activeJobsRef = useRef(0);
   const ditherJobTimeoutsRef = useRef(new Map());
@@ -90,14 +86,14 @@ export default function useDitherWorker({
     setProcessingVisible(false);
   }, [setProcessingVisible]);
 
-  const dispatchProcessing = useCallback((refreshPalette = false) => {
+  const dispatchProcessing = useCallback(async (refreshPalette = false) => {
     if (engineStateRef.current !== 'READY' && engineStateRef.current !== 'STREAMING') {
       return;
     }
     const worker = workerRef.current;
     if (!worker || activeJobsRef.current > 0) return;
 
-    if (previewingOriginalRef.current) return;
+    if (!activeSourceRef.current) return;
 
     usePerformanceStore.getState().setPipelineStart();
 
@@ -113,19 +109,23 @@ export default function useDitherWorker({
 
     preserveVisibleOutput();
 
-    let extraction;
-    let extractionStartTime;
-
+    let sourceBitmap;
+    const extractionStartTime = performance.now();
     try {
-      extractionStartTime = performance.now();
-      extraction = extractProcessedPixels();
+      sourceBitmap = await createImageBitmap(activeSourceRef.current);
       const extractionDuration = performance.now() - extractionStartTime;
       usePerformanceStore.getState().recordExtractionEnd(extractionDuration);
     } catch (error) {
-      console.error(error);
+      console.error('[pipeline] failed to create ImageBitmap from active source:', error);
       preserveVisibleOutput();
       return;
     }
+
+    const sizeState = useSizeStore.getState();
+    const sourceW = activeSourceRef.current.naturalWidth || activeSourceRef.current.width || 1;
+    const sourceH = activeSourceRef.current.naturalHeight || activeSourceRef.current.height || 1;
+    const customWidth = sizeState.customSize.customWidth || sourceW;
+    const customHeight = sizeState.customSize.customHeight || sourceH;
 
     const requestId = ++latestRequestIdRef.current;
     refreshPaletteForRequestRef.current.set(requestId, refreshPalette);
@@ -150,17 +150,18 @@ export default function useDitherWorker({
       }, DITHER_WORKER_TIMEOUT_MS);
       ditherJobTimeoutsRef.current.set(requestId, timeoutId);
 
-      const sizeState = useSizeStore.getState();
       const crop = sizeState.crop || { top: 0, bottom: 0, left: 0, right: 0 };
       const paramsState = useParamsStore.getState();
 
       worker.postMessage({
         jobId: requestId,
-        processedPixels: extraction.pixels.buffer,
-        width: extraction.width,
-        height: extraction.height,
+        source: sourceBitmap,
+        previewingOriginal: previewingOriginalRef.current,
+        customWidth,
+        customHeight,
         paletteRgb,
         forceCpu: paramsState.forceCpu,
+        watermarkEnabled: watermarkEnabledRef.current,
         dither: {
           enabled: ditherEnabled,
           method: ditherState.method,
@@ -193,7 +194,7 @@ export default function useDitherWorker({
           edgeStrength: paramsState.edgeStrength,
           passes: paramsState.passes,
         },
-      }, [extraction.pixels.buffer]);
+      }, [sourceBitmap]);
     } catch (error) {
       const timeoutId = ditherJobTimeoutsRef.current.get(requestId);
       if (timeoutId != null) {
@@ -208,10 +209,10 @@ export default function useDitherWorker({
   }, [
     setProcessingDelta,
     preserveVisibleOutput,
-    extractProcessedPixels,
     previewingOriginalRef,
     disposedRef,
     engineStateRef,
+    watermarkEnabledRef,
   ]);
 
   const flushProcessingQueue = useCallback(() => {
@@ -311,6 +312,10 @@ export default function useDitherWorker({
       worker = new Worker(new URL('../workers/ditherWorker.js', import.meta.url), { type: 'module' });
       workerRef.current = worker;
       bindWorkerHandlers(worker);
+
+      // Recreate viewport canvas because old one's control was permanently transferred to crashed worker
+      recreateViewportCanvas();
+
       console.warn(`[pipeline] restarted dither worker after ${reason} (job ${jobId})`);
     };
 
@@ -540,6 +545,8 @@ export default function useDitherWorker({
     disposedRef,
     outputCanvasRef,
     queueProcessing,
+    recreateViewportCanvas,
+    workerRef,
   ]);
 
   return {
