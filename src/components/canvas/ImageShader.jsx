@@ -252,8 +252,13 @@ export default function ShaderImage({ sourceImg }) {
   }, [workerRef]);
 
   const recreateViewportCanvas = useCallback(() => {
-    if (!canvasHostRef.current) return;
+    console.log("[Pipeline] recreateViewportCanvas() entered");
+    if (!canvasHostRef.current) {
+      console.warn("[Pipeline] recreateViewportCanvas: canvasHostRef.current is null!");
+      return;
+    }
     const displaySize = getTargetDisplaySize();
+    console.log("[Pipeline] recreateViewportCanvas: target display size is:", displaySize.width, "x", displaySize.height);
 
     const viewportCanvas = document.createElement('canvas');
     viewportCanvas.width = displaySize.width;
@@ -266,6 +271,7 @@ export default function ShaderImage({ sourceImg }) {
     canvasHostRef.current.replaceChildren();
     canvasHostRef.current.appendChild(viewportCanvas);
     viewportCanvasRef.current = viewportCanvas;
+    console.log("[Pipeline] viewportCanvas created and added to DOM");
 
     // Also recreate the splitCompare overlay canvas
     const overlayCanvas = document.createElement('canvas');
@@ -280,11 +286,19 @@ export default function ShaderImage({ sourceImg }) {
     syncSplitOverlay();
 
     if (workerRef.current) {
-      const offscreen = viewportCanvas.transferControlToOffscreen();
-      workerRef.current.postMessage({ type: 'initCanvas', canvas: offscreen }, [offscreen]);
+      console.log("[Pipeline] workerRef.current is defined. Transferring control to offscreen...");
+      try {
+        const offscreen = viewportCanvas.transferControlToOffscreen();
+        workerRef.current.postMessage({ type: 'initCanvas', canvas: offscreen }, [offscreen]);
+        console.log("[Pipeline] canvas.transferControlToOffscreen() succeeded and message posted to worker");
+      } catch (err) {
+        console.error("[Pipeline] failed to transfer control to offscreen:", err);
+      }
       
       // Force watermarks reset
       syncWatermarkPalette();
+    } else {
+      console.warn("[Pipeline] workerRef.current is null! Canvas control NOT transferred.");
     }
   }, [syncSplitOverlay, syncWatermarkPalette]);
 
@@ -297,6 +311,7 @@ export default function ShaderImage({ sourceImg }) {
   }, [syncVisibleLayer]);
 
   const updateOutputTexture = useCallback((data, width, height) => {
+    console.log("[Pipeline] updateOutputTexture() called. data.length:", data?.length, "dimensions:", width, "x", height);
     const pixelCount = Math.floor(data.length / 4);
     let safeWidth = Math.max(1, Math.floor(width));
     let safeHeight = Math.max(1, Math.floor(height));
@@ -452,6 +467,7 @@ export default function ShaderImage({ sourceImg }) {
     }, VIEWER_LOADING_VISIBILITY_DELAY_MS);
 
     async function init() {
+      console.log("[Pipeline] init() entered. sourceImg length/type:", typeof sourceImg === 'string' ? sourceImg.slice(0, 50) + "..." : typeof sourceImg);
       setEngineState('LOADING');
       const isWebcam = sourceImg === WEBCAM_SOURCE;
       isWebcamModeRef.current = isWebcam;
@@ -460,17 +476,26 @@ export default function ShaderImage({ sourceImg }) {
       let texture;
 
       if (isWebcam) {
+        console.log("[Pipeline] Webcam source detected. Initializing webcam stream...");
         texture = await initWebcam(lifecycleToken);
-        if (!texture) return;
+        if (!texture) {
+          console.warn("[Pipeline] Webcam initialization returned null texture.");
+          return;
+        }
         setEngineState('STREAMING');
       } else {
+        console.log("[Pipeline] Loading texture from image source...");
         texture = await loadTexture(sourceImg);
-        if (lifecycleTokenRef.current !== lifecycleToken) return;
+        if (lifecycleTokenRef.current !== lifecycleToken) {
+          console.warn("[Pipeline] init: lifecycleToken mismatch, aborted.");
+          return;
+        }
 
         if (!texture) {
           throw new Error('Unable to create texture from source image');
         }
         activeSourceRef.current = texture;
+        console.log("[Pipeline] Texture loaded. Natural dimensions:", texture.naturalWidth, "x", texture.naturalHeight);
 
         try {
           originalUniqueColorsRef.current = await countUniqueColorsFromImageSource(sourceImg);

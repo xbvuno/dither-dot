@@ -87,13 +87,25 @@ export default function useDitherWorker({
   }, [setProcessingVisible]);
 
   const dispatchProcessing = useCallback(async (refreshPalette = false) => {
+    console.log("[Pipeline] dispatchProcessing() called. refreshPalette:", refreshPalette);
     if (engineStateRef.current !== 'READY' && engineStateRef.current !== 'STREAMING') {
+      console.warn("[Pipeline] dispatchProcessing aborted: engineState is", engineStateRef.current, "(needs READY/STREAMING)");
       return;
     }
     const worker = workerRef.current;
-    if (!worker || activeJobsRef.current > 0) return;
+    if (!worker) {
+      console.warn("[Pipeline] dispatchProcessing aborted: workerRef.current is null!");
+      return;
+    }
+    if (activeJobsRef.current > 0) {
+      console.log("[Pipeline] dispatchProcessing aborted: activeJobs is", activeJobsRef.current, "(already processing)");
+      return;
+    }
 
-    if (!activeSourceRef.current) return;
+    if (!activeSourceRef.current) {
+      console.warn("[Pipeline] dispatchProcessing aborted: activeSourceRef.current is null!");
+      return;
+    }
 
     usePerformanceStore.getState().setPipelineStart();
 
@@ -111,9 +123,11 @@ export default function useDitherWorker({
 
     let sourceBitmap;
     const extractionStartTime = performance.now();
+    console.log("[Pipeline] Creating ImageBitmap from active source:", activeSourceRef.current.tagName || activeSourceRef.current.constructor.name);
     try {
       sourceBitmap = await createImageBitmap(activeSourceRef.current);
       const extractionDuration = performance.now() - extractionStartTime;
+      console.log("[Pipeline] ImageBitmap created in", extractionDuration.toFixed(2), "ms");
       usePerformanceStore.getState().recordExtractionEnd(extractionDuration);
     } catch (error) {
       console.error('[pipeline] failed to create ImageBitmap from active source:', error);
@@ -128,6 +142,7 @@ export default function useDitherWorker({
     const customHeight = sizeState.customSize.customHeight || sourceH;
 
     const requestId = ++latestRequestIdRef.current;
+    console.log("[Pipeline] Dispatching job. requestId:", requestId, "customSize:", customWidth, "x", customHeight, "ditherEnabled:", ditherEnabled);
     refreshPaletteForRequestRef.current.set(requestId, refreshPalette);
     ditherEnabledForRequestRef.current.set(requestId, ditherEnabled);
     gifFrameForRequestRef.current.set(requestId, frameIndex);
@@ -323,7 +338,10 @@ export default function useDitherWorker({
 
     const bindWorkerHandlers = (targetWorker) => {
       targetWorker.onmessage = async (event) => {
-        if (lifecycleTokenRef.current !== lifecycleToken) return;
+        if (lifecycleTokenRef.current !== lifecycleToken) {
+          console.warn("[Pipeline] Worker message received but lifecycleToken mismatch. Ignored.");
+          return;
+        }
 
         const {
           jobId,
@@ -339,8 +357,10 @@ export default function useDitherWorker({
         } = event.data;
 
         const latestId = latestRequestIdRef.current;
+        console.log("[Pipeline] Worker message received. jobId:", jobId, "latestId:", latestId, "isImageReady:", !!isImageReady, "isStatsReady:", !!isStatsReady, "error:", error);
 
         if (jobId !== latestId) {
+          console.log("[Pipeline] Worker message discarded (not the latest request).");
           if (isImageReady) {
             setProcessingDelta(-1);
             if (processingQueuedRef.current) {
@@ -351,7 +371,8 @@ export default function useDitherWorker({
         }
 
         if (error || disposedRef.current) {
-          if (error) console.error(error);
+          if (error) console.error("[Pipeline] Worker reported error:", error);
+          if (disposedRef.current) console.warn("[Pipeline] Worker message arrived after component disposed.");
           preserveVisibleOutput();
           setProcessingDelta(-1);
           if (processingQueuedRef.current) {
@@ -365,6 +386,7 @@ export default function useDitherWorker({
         const gifFrameIndex = gifFrameForRequestRef.current.get(jobId);
 
         if (isImageReady) {
+          console.log("[Pipeline] Processing isImageReady inside onmessage. Calling updateOutputTexture...");
           clearDitherJobTimeout(jobId);
 
           const workerStartTime = workerStartTimeRef.current.get(jobId);

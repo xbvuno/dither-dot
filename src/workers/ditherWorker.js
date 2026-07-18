@@ -50,10 +50,12 @@ self.onmessage = async (event) => {
   if (type === 'initCanvas') {
     viewportCanvas = event.data.canvas;
     viewportCtx = viewportCanvas.getContext('2d');
+    console.log("[Worker] Received initCanvas. Canvas context is ready:", !!viewportCtx);
     return;
   }
 
   if (type === 'setWatermarks') {
+    console.log("[Worker] Received setWatermarks. normal:", !!event.data.normal, "mini:", !!event.data.mini);
     if (watermarkBitmap) watermarkBitmap.close();
     if (watermarkMiniBitmap) watermarkMiniBitmap.close();
     watermarkBitmap = event.data.normal;
@@ -79,6 +81,7 @@ self.onmessage = async (event) => {
   } = event.data;
 
   activeJobId = jobId;
+  console.log("[Worker] Received process job. jobId:", jobId, "previewOriginal:", previewingOriginal, "source width/height:", source?.width, "x", source?.height, "custom size requested:", customWidth, "x", customHeight);
 
   const backend = forceCpu ? Backend.CPU : Backend.AUTO;
   const startTs = self.performance?.now?.() ?? Date.now();
@@ -213,7 +216,9 @@ self.onmessage = async (event) => {
 
     // Render directly to OffscreenCanvas if available
     if (viewportCanvas && viewportCtx) {
+      console.log("[Worker] Drawing output pixels to OffscreenCanvas. dimensions:", outWidth, "x", outHeight);
       if (viewportCanvas.width !== outWidth || viewportCanvas.height !== outHeight) {
+        console.log("[Worker] Resizing OffscreenCanvas from", viewportCanvas.width, "x", viewportCanvas.height, "to", outWidth, "x", outHeight);
         viewportCanvas.width = outWidth;
         viewportCanvas.height = outHeight;
       }
@@ -229,8 +234,12 @@ self.onmessage = async (event) => {
           const x = outWidth - margin - watermark.width;
           const y = outHeight - margin - watermark.height;
           viewportCtx.drawImage(watermark, x, y);
+        } else {
+          console.warn("[Worker] Watermark requested but bitmap is not loaded!");
         }
       }
+    } else {
+      console.warn("[Worker] Cannot draw directly to OffscreenCanvas: viewportCanvas is", !!viewportCanvas, "viewportCtx is", !!viewportCtx);
     }
 
     const elapsed = (self.performance?.now?.() ?? Date.now()) - startTs;
