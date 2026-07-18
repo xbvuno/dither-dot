@@ -677,6 +677,7 @@ function GallerySection() {
   const resetToDefault = useImageStore(s => s.resetToDefault);
   const gifFramesLen = useGifStore(s => s.frames.length);
   const setGifFrames = useGifStore(s => s.setFrames);
+  const setDecoding = useGifStore(s => s.setDecoding);
   const history        = useGalleryStore(s => s.history);
   const removeHistoryItem = useGalleryStore(s => s.removeHistoryItem);
   const [presetStaticPreviews, setPresetStaticPreviews] = useState({});
