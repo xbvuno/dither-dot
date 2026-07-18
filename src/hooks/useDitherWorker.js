@@ -52,7 +52,7 @@ export default function useDitherWorker({
   const ditherEnabledForRequestRef = useRef(new Map());
   const gifFrameForRequestRef = useRef(new Map());
 
-  const processingTimerRef = useRef(null);
+  const rafIdRef = useRef(null);
   const processingVisibilityTimerRef = useRef(null);
   const processingVisibleRef = useRef(false);
   const processingQueuedRef = useRef(false);
@@ -215,9 +215,9 @@ export default function useDitherWorker({
   ]);
 
   const flushProcessingQueue = useCallback(() => {
-    if (processingTimerRef.current !== null) {
-      window.clearTimeout(processingTimerRef.current);
-      processingTimerRef.current = null;
+    if (rafIdRef.current !== null) {
+      window.cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
     }
 
     if (activeJobsRef.current > 0) {
@@ -247,13 +247,14 @@ export default function useDitherWorker({
       return;
     }
 
-    if (processingTimerRef.current !== null) {
+    if (rafIdRef.current !== null) {
       return;
     }
 
-    processingTimerRef.current = window.setTimeout(() => {
+    rafIdRef.current = window.requestAnimationFrame(() => {
+      rafIdRef.current = null;
       flushProcessingQueue();
-    }, PROCESSING_DEBOUNCE_MS);
+    });
   }, [flushProcessingQueue, previewingOriginalRef, isWebcamModeRef, engineStateRef]);
 
   // Handle worker initialization and communication
@@ -517,9 +518,9 @@ export default function useDitherWorker({
       ditherEnabledForRequestRef.current.clear();
       gifFrameForRequestRef.current.clear();
 
-      if (processingTimerRef.current !== null) {
-        window.clearTimeout(processingTimerRef.current);
-        processingTimerRef.current = null;
+      if (rafIdRef.current !== null) {
+        window.cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
       }
       if (processingVisibilityTimerRef.current !== null) {
         window.clearTimeout(processingVisibilityTimerRef.current);
