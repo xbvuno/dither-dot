@@ -131,6 +131,18 @@ class DitherEngine {
           'color: #10b981; font-weight: bold; font-family: monospace;',
           'color: inherit;'
         );
+      } else {
+        console.log(
+          '%c ',
+          `background: url(${watermarkImage}) no-repeat; background-size: contain; padding: 12px 36px; line-height: 0; font-size: 0;`
+        );
+        console.info(
+          '%c[DitherEngine]%c\u00A0Run %ctoggleDitherDebug(false)%c to disable detailed rendering logs in the console.',
+          'color: #1d4ed8; font-weight: bold;',
+          'color: inherit;',
+          'color: #ef4444; font-weight: bold; font-family: monospace;',
+          'color: inherit;'
+        );
       }
     }
   }
@@ -179,6 +191,27 @@ class DitherEngine {
       'color: #1d4ed8; font-weight: bold;',
       'color: inherit;'
     );
+    if (enabled) {
+      console.log(
+        '%c ',
+        `background: url(${watermarkImage}) no-repeat; background-size: contain; padding: 12px 36px; line-height: 0; font-size: 0;`
+      );
+      console.info(
+        '%c[DitherEngine]%c\u00A0Run %ctoggleDitherDebug(false)%c to disable detailed rendering logs in the console.',
+        'color: #1d4ed8; font-weight: bold;',
+        'color: inherit;',
+        'color: #ef4444; font-weight: bold; font-family: monospace;',
+        'color: inherit;'
+      );
+    } else {
+      console.info(
+        '%c[DitherEngine]%c\u00A0Run %ctoggleDitherDebug(true)%c to enable detailed rendering logs in the console.',
+        'color: #1d4ed8; font-weight: bold;',
+        'color: inherit;',
+        'color: #10b981; font-weight: bold; font-family: monospace;',
+        'color: inherit;'
+      );
+    }
   }
 
   setEngineState(nextState) {
