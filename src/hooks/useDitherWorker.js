@@ -38,6 +38,7 @@ export default function useDitherWorker({
   extractProcessedPixels,
   updateOutputTexture,
   syncVisibleLayer,
+  engineStateRef,
 }) {
   const setRenderProcessing = useProcessingStore(s => s.setRenderProcessing);
 
@@ -90,6 +91,9 @@ export default function useDitherWorker({
   }, [setProcessingVisible]);
 
   const dispatchProcessing = useCallback((refreshPalette = false) => {
+    if (engineStateRef.current !== 'READY' && engineStateRef.current !== 'STREAMING') {
+      return;
+    }
     const worker = workerRef.current;
     if (!worker || activeJobsRef.current > 0) return;
 
@@ -207,6 +211,7 @@ export default function useDitherWorker({
     extractProcessedPixels,
     previewingOriginalRef,
     disposedRef,
+    engineStateRef,
   ]);
 
   const flushProcessingQueue = useCallback(() => {
@@ -227,6 +232,9 @@ export default function useDitherWorker({
   }, [dispatchProcessing]);
 
   const queueProcessing = useCallback((refreshPalette = false) => {
+    if (engineStateRef.current !== 'READY' && engineStateRef.current !== 'STREAMING') {
+      return;
+    }
     pendingPaletteRefreshRef.current = pendingPaletteRefreshRef.current || refreshPalette;
     processingQueuedRef.current = true;
 
@@ -246,7 +254,7 @@ export default function useDitherWorker({
     processingTimerRef.current = window.setTimeout(() => {
       flushProcessingQueue();
     }, PROCESSING_DEBOUNCE_MS);
-  }, [flushProcessingQueue, previewingOriginalRef, isWebcamModeRef]);
+  }, [flushProcessingQueue, previewingOriginalRef, isWebcamModeRef, engineStateRef]);
 
   // Handle worker initialization and communication
   useEffect(() => {

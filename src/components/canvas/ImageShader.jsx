@@ -75,6 +75,7 @@ export default function ShaderImage({ sourceImg }) {
   // Shared hooks refs
   const pendingPaletteRefreshRef = useRef(false);
   const processingQueuedRef = useRef(false);
+  const engineStateRef = useRef('IDLE');
 
   const applyDisplaySize = useCallback((width, height) => {
     const safeWidth = Math.max(1, Math.floor(Number(width) || 1));
@@ -389,6 +390,7 @@ export default function ShaderImage({ sourceImg }) {
     extractProcessedPixels,
     updateOutputTexture,
     syncVisibleLayer,
+    engineStateRef,
   });
 
   // Hook for Webcam
@@ -403,6 +405,7 @@ export default function ShaderImage({ sourceImg }) {
     lifecycleTokenRef,
     disposedRef,
     queueProcessing,
+    engineStateRef,
   });
 
   // Hook for GIF timeline
@@ -462,6 +465,7 @@ export default function ShaderImage({ sourceImg }) {
     }, VIEWER_LOADING_VISIBILITY_DELAY_MS);
 
     async function init() {
+      engineStateRef.current = 'LOADING';
       const isWebcam = sourceImg === WEBCAM_SOURCE;
       isWebcamModeRef.current = isWebcam;
       paletteFrozenForWebcamRef.current = false;
@@ -471,6 +475,7 @@ export default function ShaderImage({ sourceImg }) {
       if (isWebcam) {
         texture = await initWebcam(lifecycleToken);
         if (!texture) return;
+        engineStateRef.current = 'STREAMING';
       } else {
         texture = await loadTexture(sourceImg);
         if (lifecycleTokenRef.current !== lifecycleToken) return;
@@ -486,6 +491,7 @@ export default function ShaderImage({ sourceImg }) {
           console.error(error);
           originalUniqueColorsRef.current = 0;
         }
+        engineStateRef.current = 'READY';
       }
 
       const width = texture.naturalWidth || texture.width || 0;
@@ -573,6 +579,7 @@ export default function ShaderImage({ sourceImg }) {
     }
 
     init().catch((error) => {
+      engineStateRef.current = 'ERROR';
       clearViewerLoadingTimer();
       useImageStore.getState().setViewerLoading(false);
       console.error(error);
@@ -737,6 +744,7 @@ export default function ShaderImage({ sourceImg }) {
     });
 
     return () => {
+      engineStateRef.current = 'IDLE';
       disposedRef.current = true;
       lifecycleTokenRef.current += 1;
       registerPaletteReference(null);

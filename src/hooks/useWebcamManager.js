@@ -9,8 +9,8 @@ export default function useWebcamManager({
   isWebcamModeRef,
   paletteFrozenForWebcamRef,
   lifecycleTokenRef,
-  disposedRef,
   queueProcessing,
+  engineStateRef,
 }) {
   const webcamVideoRef = useRef(null);
   const webcamCanvasRef = useRef(null);
@@ -85,6 +85,10 @@ export default function useWebcamManager({
     // Start webcam loop
     const scheduleWebcamFrame = () => {
       if (disposedRef.current || lifecycleTokenRef.current !== lifecycleToken) return;
+      if (engineStateRef.current !== 'STREAMING') {
+        cleanupWebcam();
+        return;
+      }
       const { targetFps } = useWebcamStore.getState();
       const interval = Math.max(33, Math.round(1000 / targetFps));
 
@@ -107,7 +111,7 @@ export default function useWebcamManager({
 
     scheduleWebcamFrame();
     return webcamCanvas;
-  }, [activeSourceRef, originalUniqueColorsRef, isWebcamModeRef, paletteFrozenForWebcamRef, lifecycleTokenRef, disposedRef, queueProcessing]);
+  }, [activeSourceRef, originalUniqueColorsRef, isWebcamModeRef, paletteFrozenForWebcamRef, lifecycleTokenRef, disposedRef, queueProcessing, engineStateRef]);
 
   // Subscribe to webcam changes
   useEffect(() => {
