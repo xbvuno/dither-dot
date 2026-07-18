@@ -981,10 +981,11 @@ class DitherEngine {
 
         if (gifFrameIndex >= 0) {
           const gifState = useGifStore.getState();
-          const existingFrame = gifState.frames[gifFrameIndex];
-          if (existingFrame) {
-            useGifStore.getState().markFrameRendered(gifFrameIndex, existingFrame.thumbnailUrl, {
-              ...existingFrame.cachedFrame,
+          const existingCachedFrame = gifState.renderedFrames[gifFrameIndex];
+          const existingThumbnail = gifState.renderedThumbnails[gifFrameIndex] || '';
+          if (existingCachedFrame) {
+            useGifStore.getState().markFrameRendered(gifFrameIndex, existingThumbnail, {
+              ...existingCachedFrame,
               uniqueColors: uniqueColorCount ?? 0,
             });
           }
