@@ -630,7 +630,6 @@ class DitherEngine {
         return;
       }
       if (this.activeJobs > 0) {
-        this.log('Pipeline', 'dispatchProcessing aborted: activeJobs is %d (already processing)', this.activeJobs);
         return;
       }
       if (!this.activeSource) {
@@ -872,10 +871,8 @@ class DitherEngine {
       } = event.data;
 
       const latestId = this.latestRequestId;
-      this.log('Worker', 'Worker message received. jobId: %d, latestId: %d, isImageReady: %o, isStatsReady: %o, error: %s', jobId, latestId, !!isImageReady, !!isStatsReady, error);
 
       if (jobId !== latestId) {
-        this.log('Worker', 'Worker message discarded (not the latest request).');
         if (isImageReady) {
           this.setProcessingDelta(-1);
           if (this.processingQueued) {
@@ -901,7 +898,6 @@ class DitherEngine {
       const gifFrameIndex = this.gifFrameForRequest.get(jobId);
 
       if (isImageReady) {
-        this.log('Worker', 'Processing isImageReady inside onmessage. Calling updateOutputTexture...');
         
         // Clear timeout
         const timeoutId = this.ditherJobTimeouts.get(jobId);
@@ -1124,7 +1120,6 @@ class DitherEngine {
   }
 
   updateOutputTexture(data, width, height) {
-    this.log('Canvas', 'updateOutputTexture() called. data.length: %d, dimensions: %d x %d', data?.length, width, height);
     const pixelCount = Math.floor(data.length / 4);
     let safeWidth = Math.max(1, Math.floor(width));
     let safeHeight = Math.max(1, Math.floor(height));

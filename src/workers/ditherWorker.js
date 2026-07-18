@@ -116,9 +116,7 @@ self.onmessage = async (event) => {
   if (type === 'drawFrame') {
     const { pixels, width, height, watermarkEnabled } = event.data;
     if (viewportCanvas && viewportCtx) {
-      log('Canvas', 'Drawing cached frame to OffscreenCanvas. dimensions: %d x %d', width, height);
       if (viewportCanvas.width !== width || viewportCanvas.height !== height) {
-        log('Canvas', 'Resizing OffscreenCanvas from %d x %d to %d x %d', viewportCanvas.width, viewportCanvas.height, width, height);
         viewportCanvas.width = width;
         viewportCanvas.height = height;
       }
@@ -162,7 +160,6 @@ self.onmessage = async (event) => {
   } = event.data;
 
   activeJobId = jobId;
-  log('Worker', 'Received process job. jobId: %d, previewingOriginal: %o, size: %d x %d', jobId, previewingOriginal, source?.width, source?.height);
 
   const backend = forceCpu ? Backend.CPU : Backend.AUTO;
   const startTs = self.performance?.now?.() ?? Date.now();
@@ -297,9 +294,7 @@ self.onmessage = async (event) => {
 
     // Render directly to OffscreenCanvas if available
     if (viewportCanvas && viewportCtx) {
-      log('Canvas', 'Drawing output pixels to OffscreenCanvas. dimensions: %d x %d', outWidth, outHeight);
       if (viewportCanvas.width !== outWidth || viewportCanvas.height !== outHeight) {
-        log('Canvas', 'Resizing OffscreenCanvas from %d x %d to %d x %d', viewportCanvas.width, viewportCanvas.height, outWidth, outHeight);
         viewportCanvas.width = outWidth;
         viewportCanvas.height = outHeight;
       }
