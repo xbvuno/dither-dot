@@ -55,43 +55,7 @@ const getEngineCategoryColor = (category) => {
   }
 };
 
-const printConsoleWatermark = (watermarkBase64, appVersion, debugEnabled, scaleFactor = 4) => {
-  if (typeof Image === 'undefined') return;
-  const img = new Image();
-  img.onload = () => {
-    const width = img.width * scaleFactor;
-    const height = img.height * scaleFactor;
-    const canvas = typeof document !== 'undefined' ? document.createElement('canvas') : null;
-    if (!canvas) return;
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(img, 0, 0, width, height);
-      const scaledDataUrl = canvas.toDataURL();
-      const paddingY = Math.round(height / 2);
-      const paddingX = Math.round(width / 2);
-      
-      console.log(
-        '%c ',
-        `background: url(${scaledDataUrl}) no-repeat; background-size: contain; padding: ${paddingY}px ${paddingX}px; line-height: 0; font-size: 0;`
-      );
-      
-      console.log(
-        `%cDITHER-DOT v${appVersion}%c\n%c[GITHUB]%c\u00A0https://github.com/xbvuno/dither-dot\n%cRun %ctoggleDitherDebug(${debugEnabled ? 'false' : 'true'})%c to ${debugEnabled ? 'disable' : 'enable'} detailed rendering logs in the console.`,
-        'font-weight: bold; font-size: 1.05em; color: inherit;',
-        'color: inherit;',
-        'font-weight: bold; text-decoration: underline; color: inherit;',
-        'color: inherit;',
-        'color: inherit;',
-        'color: #ca8a04; font-weight: bold; font-family: monospace;',
-        'color: inherit;'
-      );
-    }
-  };
-  img.src = watermarkBase64;
-};
+
 
 class DitherEngine {
   constructor() {
@@ -163,7 +127,33 @@ class DitherEngine {
       window.toggleDitherDebug = (enabled) => this.setLogging(enabled);
 
       const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
-      printConsoleWatermark(watermarkImageInline, appVersion, this.debugEnabled, 4);
+      console.log(
+        '%c ',
+        'background: url(/wallpaper.jpg) no-repeat; background-size: contain; padding: 40px 80px; line-height: 0; font-size: 0;'
+      );
+      if (!this.debugEnabled) {
+        console.log(
+          `%cDITHER-DOT v${appVersion}%c\n%c[GITHUB]%c\u00A0https://github.com/xbvuno/dither-dot\n%cRun %ctoggleDitherDebug(true)%c to enable detailed rendering logs in the console.`,
+          'font-weight: bold; font-size: 1.05em; color: inherit;',
+          'color: inherit;',
+          'font-weight: bold; text-decoration: underline; color: inherit;',
+          'color: inherit;',
+          'color: inherit;',
+          'color: #ca8a04; font-weight: bold; font-family: monospace;',
+          'color: inherit;'
+        );
+      } else {
+        console.log(
+          `%cDITHER-DOT v${appVersion}%c\n%c[GITHUB]%c\u00A0https://github.com/xbvuno/dither-dot\n%cRun %ctoggleDitherDebug(false)%c to disable detailed rendering logs in the console.`,
+          'font-weight: bold; font-size: 1.05em; color: inherit;',
+          'color: inherit;',
+          'font-weight: bold; text-decoration: underline; color: inherit;',
+          'color: inherit;',
+          'color: inherit;',
+          'color: #ca8a04; font-weight: bold; font-family: monospace;',
+          'color: inherit;'
+        );
+      }
     }
   }
 
@@ -211,8 +201,34 @@ class DitherEngine {
       'color: #1d4ed8; font-weight: bold;',
       'color: inherit;'
     );
+    console.log(
+      '%c ',
+      'background: url(/wallpaper.jpg) no-repeat; background-size: contain; padding: 40px 80px; line-height: 0; font-size: 0;'
+    );
     const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
-    printConsoleWatermark(watermarkImageInline, appVersion, enabled, 4);
+    if (enabled) {
+      console.log(
+        `%cDITHER-DOT v${appVersion}%c\n%c[GITHUB]%c\u00A0https://github.com/xbvuno/dither-dot\n%cRun %ctoggleDitherDebug(false)%c to disable detailed rendering logs in the console.`,
+        'font-weight: bold; font-size: 1.05em; color: inherit;',
+        'color: inherit;',
+        'font-weight: bold; text-decoration: underline; color: inherit;',
+        'color: inherit;',
+        'color: inherit;',
+        'color: #ca8a04; font-weight: bold; font-family: monospace;',
+        'color: inherit;'
+      );
+    } else {
+      console.log(
+        `%cDITHER-DOT v${appVersion}%c\n%c[GITHUB]%c\u00A0https://github.com/xbvuno/dither-dot\n%cRun %ctoggleDitherDebug(true)%c to enable detailed rendering logs in the console.`,
+        'font-weight: bold; font-size: 1.05em; color: inherit;',
+        'color: inherit;',
+        'font-weight: bold; text-decoration: underline; color: inherit;',
+        'color: inherit;',
+        'color: inherit;',
+        'color: #ca8a04; font-weight: bold; font-family: monospace;',
+        'color: inherit;'
+      );
+    }
   }
 
   setEngineState(nextState) {
