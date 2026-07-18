@@ -749,7 +749,7 @@ const action = this.debugEnabled ? "disable" : "enable";
             noiseCoverage: paramsState.noiseCoverage,
             noiseIntensity: paramsState.noiseIntensity,
             noiseSaturation: paramsState.noiseSaturation,
-            noisePhase: this.noiseFrame,
+            noisePhase: this.noiseFrame % 100,
           },
           blur: {
             blurStrength: paramsState.blurStrength,
