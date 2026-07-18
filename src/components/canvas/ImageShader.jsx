@@ -75,6 +75,13 @@ export default function ShaderImage({ sourceImg }) {
   const pendingPaletteRefreshRef = useRef(false);
   const processingQueuedRef = useRef(false);
   const engineStateRef = useRef('IDLE');
+  const setEngineState = useCallback((nextState) => {
+    const prevState = engineStateRef.current;
+    if (prevState !== nextState) {
+      engineStateRef.current = nextState;
+      console.log(`[FSM] State transitioned: ${prevState} -> ${nextState}`);
+    }
+  }, []);
   const workerRef = useRef(null);
 
   const applyDisplaySize = useCallback((width, height) => {
@@ -445,7 +452,7 @@ export default function ShaderImage({ sourceImg }) {
     }, VIEWER_LOADING_VISIBILITY_DELAY_MS);
 
     async function init() {
-      engineStateRef.current = 'LOADING';
+      setEngineState('LOADING');
       const isWebcam = sourceImg === WEBCAM_SOURCE;
       isWebcamModeRef.current = isWebcam;
       paletteFrozenForWebcamRef.current = false;
@@ -455,7 +462,7 @@ export default function ShaderImage({ sourceImg }) {
       if (isWebcam) {
         texture = await initWebcam(lifecycleToken);
         if (!texture) return;
-        engineStateRef.current = 'STREAMING';
+        setEngineState('STREAMING');
       } else {
         texture = await loadTexture(sourceImg);
         if (lifecycleTokenRef.current !== lifecycleToken) return;
@@ -471,7 +478,7 @@ export default function ShaderImage({ sourceImg }) {
           console.error(error);
           originalUniqueColorsRef.current = 0;
         }
-        engineStateRef.current = 'READY';
+        setEngineState('READY');
       }
 
       const width = texture.naturalWidth || texture.width || 0;
@@ -539,7 +546,7 @@ export default function ShaderImage({ sourceImg }) {
     }
 
     init().catch((error) => {
-      engineStateRef.current = 'ERROR';
+      setEngineState('ERROR');
       clearViewerLoadingTimer();
       useImageStore.getState().setViewerLoading(false);
       console.error(error);
@@ -704,7 +711,7 @@ export default function ShaderImage({ sourceImg }) {
     });
 
     return () => {
-      engineStateRef.current = 'IDLE';
+      setEngineState('IDLE');
       disposedRef.current = true;
       lifecycleTokenRef.current += 1;
       registerPaletteReference(null);
@@ -749,6 +756,7 @@ export default function ShaderImage({ sourceImg }) {
     internalFrameSwapRef,
     setRenderProcessing,
     recreateViewportCanvas,
+    setEngineState,
   ]);
 
   return (
