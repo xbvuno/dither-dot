@@ -13,7 +13,6 @@ function colorToHex({ r, g, b }) {
 self.onmessage = async (event) => {
   const { jobId, pixels, width, height, method, count } = event.data || {};
 
-
   try {
     if (!wasmInitialized) {
       await init({ module_or_path: wasmUrl });
