@@ -88,138 +88,142 @@ export default function useDitherWorker({
 
   const dispatchProcessing = useCallback(async (refreshPalette = false) => {
     console.log("[Pipeline] dispatchProcessing() called. refreshPalette:", refreshPalette);
-    if (engineStateRef.current !== 'READY' && engineStateRef.current !== 'STREAMING') {
-      console.warn("[Pipeline] dispatchProcessing aborted: engineState is", engineStateRef.current, "(needs READY/STREAMING)");
-      return;
-    }
-    const worker = workerRef.current;
-    if (!worker) {
-      console.warn("[Pipeline] dispatchProcessing aborted: workerRef.current is null!");
-      return;
-    }
-    if (activeJobsRef.current > 0) {
-      console.log("[Pipeline] dispatchProcessing aborted: activeJobs is", activeJobsRef.current, "(already processing)");
-      return;
-    }
-
-    if (!activeSourceRef.current) {
-      console.warn("[Pipeline] dispatchProcessing aborted: activeSourceRef.current is null!");
-      return;
-    }
-
-    usePerformanceStore.getState().setPipelineStart();
-
-    const paletteState = usePaletteStore.getState();
-    const paletteColors = normalizePalette(paletteState.colors, paletteState.colorCount);
-    const paletteRgb = paletteColors.map(color => hexToRgbUnit(color.hex));
-    const ditherState = useDitherStore.getState();
-    const ditherEnabled = Boolean(ditherState.enabled);
-    const gifState = useGifStore.getState();
-    const frameIndex = gifState.frames.length > 1 ? gifState.currentFrameIndex : -1;
-
-    noiseFrameRef.current += 1;
-
-    preserveVisibleOutput();
-
-    let sourceBitmap;
-    const extractionStartTime = performance.now();
-    console.log("[Pipeline] Creating ImageBitmap from active source:", activeSourceRef.current.tagName || activeSourceRef.current.constructor.name);
     try {
-      sourceBitmap = await createImageBitmap(activeSourceRef.current);
-      const extractionDuration = performance.now() - extractionStartTime;
-      console.log("[Pipeline] ImageBitmap created in", extractionDuration.toFixed(2), "ms");
-      usePerformanceStore.getState().recordExtractionEnd(extractionDuration);
-    } catch (error) {
-      console.error('[pipeline] failed to create ImageBitmap from active source:', error);
-      preserveVisibleOutput();
-      return;
-    }
-
-    const sizeState = useSizeStore.getState();
-    const sourceW = activeSourceRef.current.naturalWidth || activeSourceRef.current.width || 1;
-    const sourceH = activeSourceRef.current.naturalHeight || activeSourceRef.current.height || 1;
-    const customWidth = sizeState.customSize.customWidth || sourceW;
-    const customHeight = sizeState.customSize.customHeight || sourceH;
-
-    const requestId = ++latestRequestIdRef.current;
-    console.log("[Pipeline] Dispatching job. requestId:", requestId, "customSize:", customWidth, "x", customHeight, "ditherEnabled:", ditherEnabled);
-    refreshPaletteForRequestRef.current.set(requestId, refreshPalette);
-    ditherEnabledForRequestRef.current.set(requestId, ditherEnabled);
-    gifFrameForRequestRef.current.set(requestId, frameIndex);
-    if (frameIndex >= 0) {
-      gifState.markFrameRendering(frameIndex);
-    }
-    setProcessingDelta(1);
-    usePerformanceStore.getState().setCurrentPhase('dithering');
-
-    const workerStartTime = performance.now();
-    workerStartTimeRef.current.set(requestId, workerStartTime);
-
-    try {
-      const timeoutId = window.setTimeout(() => {
-        if (disposedRef.current) return;
-        if (workerStartTimeRef.current.has(requestId)) {
-          console.error(`[pipeline] dither worker timeout on job ${requestId} after ${DITHER_WORKER_TIMEOUT_MS}ms`);
-          restartDitherWorkerRef.current?.(requestId, 'timeout', new Error('Timed out waiting dither worker response'));
-        }
-      }, DITHER_WORKER_TIMEOUT_MS);
-      ditherJobTimeoutsRef.current.set(requestId, timeoutId);
-
-      const crop = sizeState.crop || { top: 0, bottom: 0, left: 0, right: 0 };
-      const paramsState = useParamsStore.getState();
-
-      worker.postMessage({
-        jobId: requestId,
-        source: sourceBitmap,
-        previewingOriginal: previewingOriginalRef.current,
-        customWidth,
-        customHeight,
-        paletteRgb,
-        forceCpu: paramsState.forceCpu,
-        watermarkEnabled: watermarkEnabledRef.current,
-        dither: {
-          enabled: ditherEnabled,
-          method: ditherState.method,
-          amount: ditherState.amount,
-          seed: ditherState.seed,
-          matrixScale: ditherState.matrixScale,
-        },
-        crop: {
-          top: crop.top || 0,
-          bottom: crop.bottom || 0,
-          left: crop.left || 0,
-          right: crop.right || 0,
-        },
-        adjustments: {
-          gamma: paramsState.gamma,
-          blacks: paramsState.blacks,
-          whites: paramsState.whites,
-          contrast: paramsState.contrast,
-          saturation: paramsState.saturation,
-          hue: paramsState.hue,
-        },
-        noise: {
-          noiseCoverage: paramsState.noiseCoverage,
-          noiseIntensity: paramsState.noiseIntensity,
-          noiseSaturation: paramsState.noiseSaturation,
-          noisePhase: noiseFrameRef.current,
-        },
-        blur: {
-          blurStrength: paramsState.blurStrength,
-          edgeStrength: paramsState.edgeStrength,
-          passes: paramsState.passes,
-        },
-      }, [sourceBitmap]);
-    } catch (error) {
-      const timeoutId = ditherJobTimeoutsRef.current.get(requestId);
-      if (timeoutId != null) {
-        window.clearTimeout(timeoutId);
-        ditherJobTimeoutsRef.current.delete(requestId);
+      if (engineStateRef.current !== 'READY' && engineStateRef.current !== 'STREAMING') {
+        console.warn("[Pipeline] dispatchProcessing aborted: engineState is", engineStateRef.current, "(needs READY/STREAMING)");
+        return;
       }
-      console.error(error);
-      gifFrameForRequestRef.current.delete(requestId);
-      setProcessingDelta(-1);
+      const worker = workerRef.current;
+      if (!worker) {
+        console.warn("[Pipeline] dispatchProcessing aborted: workerRef.current is null!");
+        return;
+      }
+      if (activeJobsRef.current > 0) {
+        console.log("[Pipeline] dispatchProcessing aborted: activeJobs is", activeJobsRef.current, "(already processing)");
+        return;
+      }
+
+      if (!activeSourceRef.current) {
+        console.warn("[Pipeline] dispatchProcessing aborted: activeSourceRef.current is null!");
+        return;
+      }
+
+      usePerformanceStore.getState().setPipelineStart();
+
+      const paletteState = usePaletteStore.getState();
+      const paletteColors = normalizePalette(paletteState.colors, paletteState.colorCount);
+      const paletteRgb = paletteColors.map(color => hexToRgbUnit(color.hex));
+      const ditherState = useDitherStore.getState();
+      const ditherEnabled = Boolean(ditherState.enabled);
+      const gifState = useGifStore.getState();
+      const frameIndex = gifState.frames.length > 1 ? gifState.currentFrameIndex : -1;
+
+      noiseFrameRef.current += 1;
+
       preserveVisibleOutput();
+
+      let sourceBitmap;
+      const extractionStartTime = performance.now();
+      console.log("[Pipeline] Creating ImageBitmap from active source:", activeSourceRef.current.tagName || activeSourceRef.current.constructor.name);
+      try {
+        sourceBitmap = await createImageBitmap(activeSourceRef.current);
+        const extractionDuration = performance.now() - extractionStartTime;
+        console.log("[Pipeline] ImageBitmap created in", extractionDuration.toFixed(2), "ms");
+        usePerformanceStore.getState().recordExtractionEnd(extractionDuration);
+      } catch (error) {
+        console.error('[pipeline] failed to create ImageBitmap from active source:', error);
+        preserveVisibleOutput();
+        return;
+      }
+
+      const sizeState = useSizeStore.getState();
+      const sourceW = activeSourceRef.current.naturalWidth || activeSourceRef.current.width || 1;
+      const sourceH = activeSourceRef.current.naturalHeight || activeSourceRef.current.height || 1;
+      const customWidth = sizeState.customSize.customWidth || sourceW;
+      const customHeight = sizeState.customSize.customHeight || sourceH;
+
+      const requestId = ++latestRequestIdRef.current;
+      console.log("[Pipeline] Dispatching job. requestId:", requestId, "customSize:", customWidth, "x", customHeight, "ditherEnabled:", ditherEnabled);
+      refreshPaletteForRequestRef.current.set(requestId, refreshPalette);
+      ditherEnabledForRequestRef.current.set(requestId, ditherEnabled);
+      gifFrameForRequestRef.current.set(requestId, frameIndex);
+      if (frameIndex >= 0) {
+        gifState.markFrameRendering(frameIndex);
+      }
+      setProcessingDelta(1);
+      usePerformanceStore.getState().setCurrentPhase('dithering');
+
+      const workerStartTime = performance.now();
+      workerStartTimeRef.current.set(requestId, workerStartTime);
+
+      try {
+        const timeoutId = window.setTimeout(() => {
+          if (disposedRef.current) return;
+          if (workerStartTimeRef.current.has(requestId)) {
+            console.error(`[pipeline] dither worker timeout on job ${requestId} after ${DITHER_WORKER_TIMEOUT_MS}ms`);
+            restartDitherWorkerRef.current?.(requestId, 'timeout', new Error('Timed out waiting dither worker response'));
+          }
+        }, DITHER_WORKER_TIMEOUT_MS);
+        ditherJobTimeoutsRef.current.set(requestId, timeoutId);
+
+        const crop = sizeState.crop || { top: 0, bottom: 0, left: 0, right: 0 };
+        const paramsState = useParamsStore.getState();
+
+        worker.postMessage({
+          jobId: requestId,
+          source: sourceBitmap,
+          previewingOriginal: previewingOriginalRef.current,
+          customWidth,
+          customHeight,
+          paletteRgb,
+          forceCpu: paramsState.forceCpu,
+          watermarkEnabled: watermarkEnabledRef.current,
+          dither: {
+            enabled: ditherEnabled,
+            method: ditherState.method,
+            amount: ditherState.amount,
+            seed: ditherState.seed,
+            matrixScale: ditherState.matrixScale,
+          },
+          crop: {
+            top: crop.top || 0,
+            bottom: crop.bottom || 0,
+            left: crop.left || 0,
+            right: crop.right || 0,
+          },
+          adjustments: {
+            gamma: paramsState.gamma,
+            blacks: paramsState.blacks,
+            whites: paramsState.whites,
+            contrast: paramsState.contrast,
+            saturation: paramsState.saturation,
+            hue: paramsState.hue,
+          },
+          noise: {
+            noiseCoverage: paramsState.noiseCoverage,
+            noiseIntensity: paramsState.noiseIntensity,
+            noiseSaturation: paramsState.noiseSaturation,
+            noisePhase: noiseFrameRef.current,
+          },
+          blur: {
+            blurStrength: paramsState.blurStrength,
+            edgeStrength: paramsState.edgeStrength,
+            passes: paramsState.passes,
+          },
+        }, [sourceBitmap]);
+      } catch (error) {
+        const timeoutId = ditherJobTimeoutsRef.current.get(requestId);
+        if (timeoutId != null) {
+          window.clearTimeout(timeoutId);
+          ditherJobTimeoutsRef.current.delete(requestId);
+        }
+        console.error(error);
+        gifFrameForRequestRef.current.delete(requestId);
+        setProcessingDelta(-1);
+        preserveVisibleOutput();
+      }
+    } catch (err) {
+      console.error("[Pipeline] CRITICAL ERROR inside dispatchProcessing:", err);
     }
   }, [
     setProcessingDelta,
