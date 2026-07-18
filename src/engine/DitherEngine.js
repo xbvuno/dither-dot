@@ -131,27 +131,21 @@ class DitherEngine {
       );
       console.log(
         `%cDITHER-DOT v${appVersion}%c\n%c[GITHUB]%c\u00A0https://github.com/xbvuno/dither-dot`,
-        'font-weight: bold; color: #1d4ed8; font-size: 1.05em;',
+        'font-weight: bold; font-size: 1.05em; color: inherit;',
         'color: inherit;',
-        'font-weight: bold; color: #0284c7; text-decoration: underline;',
+        'font-weight: bold; text-decoration: underline; color: inherit;',
         'color: inherit;'
       );
 
       if (!this.debugEnabled) {
         console.info(
-          '%c[DitherEngine]%c\u00A0Run %ctoggleDitherDebug(true)%c to enable detailed rendering logs in the console.',
-          'color: #1d4ed8; font-weight: bold;',
-          'color: inherit;',
-          'color: #10b981; font-weight: bold; font-family: monospace;',
-          'color: inherit;'
+          '%cRun toggleDitherDebug(true) to enable detailed rendering logs in the console.',
+          'color: #ca8a04; font-weight: bold;'
         );
       } else {
         console.info(
-          '%c[DitherEngine]%c\u00A0Run %ctoggleDitherDebug(false)%c to disable detailed rendering logs in the console.',
-          'color: #1d4ed8; font-weight: bold;',
-          'color: inherit;',
-          'color: #ef4444; font-weight: bold; font-family: monospace;',
-          'color: inherit;'
+          '%cRun toggleDitherDebug(false) to disable detailed rendering logs in the console.',
+          'color: #ca8a04; font-weight: bold;'
         );
       }
     }
@@ -207,19 +201,13 @@ class DitherEngine {
         `background: url(${watermarkImage}) no-repeat; background-size: contain; padding: 12px 36px; line-height: 0; font-size: 0;`
       );
       console.info(
-        '%c[DitherEngine]%c\u00A0Run %ctoggleDitherDebug(false)%c to disable detailed rendering logs in the console.',
-        'color: #1d4ed8; font-weight: bold;',
-        'color: inherit;',
-        'color: #ef4444; font-weight: bold; font-family: monospace;',
-        'color: inherit;'
+        '%cRun toggleDitherDebug(false) to disable detailed rendering logs in the console.',
+        'color: #ca8a04; font-weight: bold;'
       );
     } else {
       console.info(
-        '%c[DitherEngine]%c\u00A0Run %ctoggleDitherDebug(true)%c to enable detailed rendering logs in the console.',
-        'color: #1d4ed8; font-weight: bold;',
-        'color: inherit;',
-        'color: #10b981; font-weight: bold; font-family: monospace;',
-        'color: inherit;'
+        '%cRun toggleDitherDebug(true) to enable detailed rendering logs in the console.',
+        'color: #ca8a04; font-weight: bold;'
       );
     }
   }
