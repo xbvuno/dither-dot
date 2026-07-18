@@ -128,25 +128,30 @@ class DitherEngine {
       const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
       console.log(
         '%c ',
-        `background: url(${watermarkImageInline}) no-repeat; background-size: contain; padding: 12px 36px; line-height: 0; font-size: 0;`
-      );
-      console.log(
-        `%cDITHER-DOT v${appVersion}%c\n%c[GITHUB]%c\u00A0https://github.com/xbvuno/dither-dot`,
-        'font-weight: bold; font-size: 1.05em; color: inherit;',
-        'color: inherit;',
-        'font-weight: bold; text-decoration: underline; color: inherit;',
-        'color: inherit;'
+        `background: url(${watermarkImageInline}) no-repeat; background-size: contain; padding: 24px 72px; line-height: 0; font-size: 0; image-rendering: pixelated; image-rendering: crisp-edges;`
       );
 
       if (!this.debugEnabled) {
-        console.info(
-          '%cRun toggleDitherDebug(true) to enable detailed rendering logs in the console.',
-          'color: #ca8a04; font-weight: bold;'
+        console.log(
+          `%cDITHER-DOT v${appVersion}%c\n%c[GITHUB]%c\u00A0https://github.com/xbvuno/dither-dot\n%cRun %ctoggleDitherDebug(true)%c to enable detailed rendering logs in the console.`,
+          'font-weight: bold; font-size: 1.05em; color: inherit;',
+          'color: inherit;',
+          'font-weight: bold; text-decoration: underline; color: inherit;',
+          'color: inherit;',
+          'color: inherit;',
+          'color: #ca8a04; font-weight: bold; font-family: monospace;',
+          'color: inherit;'
         );
       } else {
-        console.info(
-          '%cRun toggleDitherDebug(false) to disable detailed rendering logs in the console.',
-          'color: #ca8a04; font-weight: bold;'
+        console.log(
+          `%cDITHER-DOT v${appVersion}%c\n%c[GITHUB]%c\u00A0https://github.com/xbvuno/dither-dot\n%cRun %ctoggleDitherDebug(false)%c to disable detailed rendering logs in the console.`,
+          'font-weight: bold; font-size: 1.05em; color: inherit;',
+          'color: inherit;',
+          'font-weight: bold; text-decoration: underline; color: inherit;',
+          'color: inherit;',
+          'color: inherit;',
+          'color: #ca8a04; font-weight: bold; font-family: monospace;',
+          'color: inherit;'
         );
       }
     }
@@ -196,19 +201,34 @@ class DitherEngine {
       'color: #1d4ed8; font-weight: bold;',
       'color: inherit;'
     );
+    
+    console.log(
+      '%c ',
+      `background: url(${watermarkImageInline}) no-repeat; background-size: contain; padding: 24px 72px; line-height: 0; font-size: 0; image-rendering: pixelated; image-rendering: crisp-edges;`
+    );
+
+    const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
     if (enabled) {
       console.log(
-        '%c ',
-        `background: url(${watermarkImageInline}) no-repeat; background-size: contain; padding: 12px 36px; line-height: 0; font-size: 0;`
-      );
-      console.info(
-        '%cRun toggleDitherDebug(false) to disable detailed rendering logs in the console.',
-        'color: #ca8a04; font-weight: bold;'
+        `%cDITHER-DOT v${appVersion}%c\n%c[GITHUB]%c\u00A0https://github.com/xbvuno/dither-dot\n%cRun %ctoggleDitherDebug(false)%c to disable detailed rendering logs in the console.`,
+        'font-weight: bold; font-size: 1.05em; color: inherit;',
+        'color: inherit;',
+        'font-weight: bold; text-decoration: underline; color: inherit;',
+        'color: inherit;',
+        'color: inherit;',
+        'color: #ca8a04; font-weight: bold; font-family: monospace;',
+        'color: inherit;'
       );
     } else {
-      console.info(
-        '%cRun toggleDitherDebug(true) to enable detailed rendering logs in the console.',
-        'color: #ca8a04; font-weight: bold;'
+      console.log(
+        `%cDITHER-DOT v${appVersion}%c\n%c[GITHUB]%c\u00A0https://github.com/xbvuno/dither-dot\n%cRun %ctoggleDitherDebug(true)%c to enable detailed rendering logs in the console.`,
+        'font-weight: bold; font-size: 1.05em; color: inherit;',
+        'color: inherit;',
+        'font-weight: bold; text-decoration: underline; color: inherit;',
+        'color: inherit;',
+        'color: inherit;',
+        'color: #ca8a04; font-weight: bold; font-family: monospace;',
+        'color: inherit;'
       );
     }
   }
