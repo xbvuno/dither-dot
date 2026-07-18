@@ -454,7 +454,7 @@ export default function ShaderImage({ sourceImg }) {
 
   // Initialize and load texture
   useEffect(() => {
-    if (!sourceImg || !canvasHostRef.current || viewportCanvasRef.current) return;
+    if (!sourceImg || !canvasHostRef.current) return;
 
     disposedRef.current = false;
     const lifecycleToken = ++lifecycleTokenRef.current;
