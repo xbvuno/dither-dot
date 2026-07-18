@@ -72,6 +72,14 @@ export default function Footer() {
   const activePhaseLabel = getPhaseLabel(currentPhase);
   const showBusyState = isProcessing || Boolean(activePhaseLabel);
 
+  const [lastTotalTime, setLastTotalTime] = useState(0);
+
+  useEffect(() => {
+    if (timing.pipelineTotal > 0) {
+      setLastTotalTime(timing.pipelineTotal);
+    }
+  }, [timing.pipelineTotal]);
+
   useEffect(() => {
     return subscribeRenderSnapshot((snapshot) => {
       setUniqueColors(snapshot?.uniqueColors ?? 0);
@@ -170,13 +178,10 @@ export default function Footer() {
     }
   }, [pipelineVisible, timing.pipelineTotal, currentPhase]);
 
-  const lastRenderTime = timing.pipelineTotal > 0 ? formatMs(timing.pipelineTotal) : '—';
+  const formattedTime = lastTotalTime > 0 ? formatMs(lastTotalTime) : '—';
   const statusSuffix = activePhaseLabel 
     ? `${activePhaseLabel}...` 
     : (isProcessing ? (processingLabel || 'PROCESSING...') : '');
-  const displayText = statusSuffix 
-    ? `${lastRenderTime} | ${statusSuffix}` 
-    : lastRenderTime;
 
   return (
     <footer className="app-footer">
@@ -192,12 +197,20 @@ export default function Footer() {
 
         <div
           ref={timingRef}
-          className={`pipeline-timing${showBusyState ? ' pipeline-timing--busy' : ''}${activePhaseLabel ? ' pipeline-timing--active' : ''}`}
+          className={`pipeline-timing${showBusyState ? ' pipeline-timing--busy' : ''}`}
           onMouseEnter={handleTimingHover}
           onMouseLeave={handleTimingLeave}
         >
           <span title="Hover for pipeline breakdown">
-            {displayText}
+            {formattedTime}
+            {statusSuffix && (
+              <>
+                {' | '}
+                <span className={activePhaseLabel ? 'pipeline-timing-active-phase' : ''}>
+                  {statusSuffix}
+                </span>
+              </>
+            )}
           </span>
         </div>
       </div>
