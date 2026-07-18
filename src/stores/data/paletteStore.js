@@ -66,7 +66,7 @@ function logPaletteTime(method, count, duration) {
   if (!isDebugEnabled) return;
 
   console.log(
-    `%c[DitherEngine][Palette]%c\u00A0Palette generated in ${duration.toFixed(2)}ms (Method: ${method}, Colors: ${count})`,
+    `%c[PaletteWorker]%c\u00A0Palette generated in ${duration.toFixed(2)}ms (Method: ${method}, Colors: ${count})`,
     'color: #4f46e5; font-weight: bold;',
     'color: inherit;'
   );
