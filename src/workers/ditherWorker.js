@@ -21,7 +21,7 @@ function log(category, message, ...args) {
   if (!debugEnabled) return;
   console.log(
     `%c[DitherWorker][${category}]%c ${message}`,
-    'color: #0d9488; font-weight: bold; padding: 2px 4px; background: #ccfbf1; border: 1px solid #99f6e4; border-radius: 4px;',
+    'color: #0d9488; font-weight: bold;',
     'color: inherit;',
     ...args
   );
@@ -30,7 +30,7 @@ function log(category, message, ...args) {
 function warn(category, message, ...args) {
   console.warn(
     `%c[DitherWorker][${category}]%c ${message}`,
-    'color: #b45309; font-weight: bold; padding: 2px 4px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 4px;',
+    'color: #b45309; font-weight: bold;',
     'color: inherit;',
     ...args
   );
@@ -39,7 +39,7 @@ function warn(category, message, ...args) {
 function error(category, message, ...args) {
   console.error(
     `%c[DitherWorker][${category}]%c ${message}`,
-    'color: #b91c1c; font-weight: bold; padding: 2px 4px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 4px;',
+    'color: #b91c1c; font-weight: bold;',
     'color: inherit;',
     ...args
   );

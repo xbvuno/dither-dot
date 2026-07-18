@@ -110,7 +110,7 @@ class DitherEngine {
       if (!this.debugEnabled) {
         console.info(
           '%c[DitherEngine]%c Run %ctoggleDitherDebug(true)%c to enable detailed rendering logs in the console.',
-          'color: #1d4ed8; font-weight: bold; padding: 2px 4px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 4px;',
+          'color: #1d4ed8; font-weight: bold;',
           'color: inherit;',
           'color: #10b981; font-weight: bold; font-family: monospace;',
           'color: inherit;'
@@ -123,7 +123,7 @@ class DitherEngine {
     if (!this.debugEnabled) return;
     console.log(
       `%c[DitherEngine][${category}]%c ${message}`,
-      'color: #1d4ed8; font-weight: bold; padding: 2px 4px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 4px;',
+      'color: #1d4ed8; font-weight: bold;',
       'color: inherit;',
       ...args
     );
@@ -132,7 +132,7 @@ class DitherEngine {
   warn(category, message, ...args) {
     console.warn(
       `%c[DitherEngine][${category}]%c ${message}`,
-      'color: #b45309; font-weight: bold; padding: 2px 4px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 4px;',
+      'color: #b45309; font-weight: bold;',
       'color: inherit;',
       ...args
     );
@@ -141,7 +141,7 @@ class DitherEngine {
   error(category, message, ...args) {
     console.error(
       `%c[DitherEngine][${category}]%c ${message}`,
-      'color: #b91c1c; font-weight: bold; padding: 2px 4px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 4px;',
+      'color: #b91c1c; font-weight: bold;',
       'color: inherit;',
       ...args
     );
