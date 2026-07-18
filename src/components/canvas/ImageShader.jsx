@@ -385,7 +385,6 @@ export default function ShaderImage({ sourceImg }) {
     isWebcamModeRef,
     paletteFrozenForWebcamRef,
     watermarkEnabledRef,
-    lifecycleTokenRef,
     disposedRef,
     preserveVisibleOutput,
     updateOutputTexture,
@@ -785,14 +784,29 @@ export default function ShaderImage({ sourceImg }) {
   ]);
 
   return (
+    <div ref={renderRef} style={{ position: 'relative' }} id='render'>
+      <div
+        ref={canvasHostRef}
+        className="render-canvas-layer"
+        style={{
+          visibility: 'visible',
+          opacity: 1,
+          position: 'absolute',
+          inset: '0',
+        }}
+      />
+    </div>
+  );
+}
+
+/*
+  return (
     <div
       ref={renderRef}
-      className="relative flex items-center justify-center overflow-hidden bg-[#0a0a0a]"
       style={{ width: '100%', height: '100%' }}
     >
       <div
         ref={canvasHostRef}
-        className="relative shadow-2xl"
         style={{
           width: '100%',
           height: '100%',
@@ -805,4 +819,4 @@ export default function ShaderImage({ sourceImg }) {
       />
     </div>
   );
-}
+*/

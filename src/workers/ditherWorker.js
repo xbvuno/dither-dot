@@ -19,7 +19,7 @@ const WATERMARK_MARGIN_MINI = 2;
 function getScratchContext(width, height) {
   if (!scratchCanvas) {
     scratchCanvas = new OffscreenCanvas(width, height);
-    scratchCtx = scratchCanvas.getContext('2d');
+    scratchCtx = scratchCanvas.getContext('2d', { willReadFrequently: true });
   } else {
     if (scratchCanvas.width !== width || scratchCanvas.height !== height) {
       scratchCanvas.width = width;

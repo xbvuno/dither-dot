@@ -28,7 +28,6 @@ export default function useDitherWorker({
   isWebcamModeRef,
   paletteFrozenForWebcamRef,
   watermarkEnabledRef,
-  lifecycleTokenRef,
   disposedRef,
   preserveVisibleOutput,
   updateOutputTexture,
@@ -291,10 +290,6 @@ export default function useDitherWorker({
 
   // Handle worker initialization and communication
   useEffect(() => {
-    if (disposedRef.current) return;
-
-    const lifecycleToken = lifecycleTokenRef.current;
-
     const clearDitherJobTimeout = (jobId) => {
       const timeoutId = ditherJobTimeoutsRef.current.get(jobId);
       if (timeoutId != null) {
@@ -354,8 +349,8 @@ export default function useDitherWorker({
 
     const bindWorkerHandlers = (targetWorker) => {
       targetWorker.onmessage = async (event) => {
-        if (lifecycleTokenRef.current !== lifecycleToken) {
-          console.warn("[Pipeline] Worker message received but lifecycleToken mismatch. Ignored.");
+        if (targetWorker !== workerRef.current) {
+          console.warn("[Pipeline] Worker message received from an inactive worker. Ignored.");
           return;
         }
 
@@ -576,7 +571,6 @@ export default function useDitherWorker({
       pendingPaletteRefreshRef.current = false;
     };
   }, [
-    lifecycleTokenRef,
     updateOutputTexture,
     syncVisibleLayer,
     preserveVisibleOutput,
