@@ -89,39 +89,51 @@ export default function useDitherWorker({
   const dispatchProcessing = useCallback(async (refreshPalette = false) => {
     console.log("[Pipeline] dispatchProcessing() called. refreshPalette:", refreshPalette);
     try {
+      console.log("[Pipeline] CP 1");
       if (engineStateRef.current !== 'READY' && engineStateRef.current !== 'STREAMING') {
         console.warn("[Pipeline] dispatchProcessing aborted: engineState is", engineStateRef.current, "(needs READY/STREAMING)");
         return;
       }
+      console.log("[Pipeline] CP 2");
       const worker = workerRef.current;
       if (!worker) {
         console.warn("[Pipeline] dispatchProcessing aborted: workerRef.current is null!");
         return;
       }
+      console.log("[Pipeline] CP 3");
       if (activeJobsRef.current > 0) {
         console.log("[Pipeline] dispatchProcessing aborted: activeJobs is", activeJobsRef.current, "(already processing)");
         return;
       }
 
+      console.log("[Pipeline] CP 4");
       if (!activeSourceRef.current) {
         console.warn("[Pipeline] dispatchProcessing aborted: activeSourceRef.current is null!");
         return;
       }
 
+      console.log("[Pipeline] CP 5");
       usePerformanceStore.getState().setPipelineStart();
 
+      console.log("[Pipeline] CP 6");
       const paletteState = usePaletteStore.getState();
+      console.log("[Pipeline] CP 7");
       const paletteColors = normalizePalette(paletteState.colors, paletteState.colorCount);
+      console.log("[Pipeline] CP 8");
       const paletteRgb = paletteColors.map(color => hexToRgbUnit(color.hex));
+      console.log("[Pipeline] CP 9");
       const ditherState = useDitherStore.getState();
       const ditherEnabled = Boolean(ditherState.enabled);
       const gifState = useGifStore.getState();
       const frameIndex = gifState.frames.length > 1 ? gifState.currentFrameIndex : -1;
 
+      console.log("[Pipeline] CP 10");
       noiseFrameRef.current += 1;
 
+      console.log("[Pipeline] CP 11");
       preserveVisibleOutput();
 
+      console.log("[Pipeline] CP 12");
       let sourceBitmap;
       const extractionStartTime = performance.now();
       console.log("[Pipeline] Creating ImageBitmap from active source:", activeSourceRef.current.tagName || activeSourceRef.current.constructor.name);
