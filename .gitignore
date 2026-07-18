@@ -25,4 +25,5 @@ dist-ssr
 *.sw?
 
 # Graphify
+.agents
 graphify-out
