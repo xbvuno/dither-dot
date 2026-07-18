@@ -32,6 +32,7 @@ import {
 import watermarkImage from "../assets/watermark/watermark.png";
 import watermarkImageInline from "../assets/watermark/watermark.png?inline";
 import watermarkMiniImage from "../assets/watermark/watermark-mini.png";
+import wallpaperImageInline from "../../public/wallpaper.jpg?inline";
 
 const DITHER_WORKER_TIMEOUT_MS = 10000;
 const PROCESSING_VISIBILITY_DELAY_MS = 100;
@@ -127,10 +128,9 @@ class DitherEngine {
       window.toggleDitherDebug = (enabled) => this.setLogging(enabled);
 
       const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
-      const origin = typeof window !== 'undefined' ? window.location.origin : '';
       console.log(
         '%c ',
-        `background: url(${origin}/wallpaper.jpg) no-repeat; background-size: contain; padding: 40px 80px; line-height: 0; font-size: 0;`
+        `background: url(${wallpaperImageInline}) no-repeat; background-size: contain; padding: 40px 80px; line-height: 0; font-size: 0;`
       );
       if (!this.debugEnabled) {
         console.log(
@@ -202,10 +202,9 @@ class DitherEngine {
       'color: #1d4ed8; font-weight: bold;',
       'color: inherit;'
     );
-    const origin = typeof window !== 'undefined' ? window.location.origin : '';
     console.log(
       '%c ',
-      `background: url(${origin}/wallpaper.jpg) no-repeat; background-size: contain; padding: 40px 80px; line-height: 0; font-size: 0;`
+      `background: url(${wallpaperImageInline}) no-repeat; background-size: contain; padding: 40px 80px; line-height: 0; font-size: 0;`
     );
     const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
     if (enabled) {
