@@ -382,7 +382,7 @@ export default function GifTimeline() {
             <SkipForward size={14} strokeWidth={2} />
           </button>
 
-          <span className='gif-timeline-label gif-frame-counter'>
+          <span className={`gif-timeline-label gif-frame-counter${decoding ? ' gif-decoding-label' : ''}`}>
             {decoding ? 'DECODING...' : `${currentFrameIndex + 1} / ${totalFrames} | R: ${totalFrames > 0 ? Math.round((frameStates.filter((s) => s === 'done').length / totalFrames) * 100) : 0}%`}
           </span>
 
@@ -401,11 +401,7 @@ export default function GifTimeline() {
           </label>
         </div>
 
-        {decoding ? (
-          <div className="gif-decoding-placeholder">
-            <span className="gif-decoding-label">DECODING GIF...</span>
-          </div>
-        ) : (
+        {decoding ? null : (
           <div ref={stripRef} className='gif-frame-strip'>
             {frames.map((_, index) => {
               const isLoaded = Boolean(frames[index]);
