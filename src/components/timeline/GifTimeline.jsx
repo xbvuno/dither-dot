@@ -255,17 +255,25 @@ export default function GifTimeline() {
     if (!playing || frames.length <= 1) return;
     if (frameStates[currentFrameIndex] !== 'done') return;
 
+    const nextIndex = (currentFrameIndex + 1) % frames.length;
+    if (!frames[nextIndex]) {
+      // Pause playing if the next frame hasn't loaded yet
+      setPlaying(false);
+      return;
+    }
+
     const activeFrameDelay = frames[currentFrameIndex]?.delay;
     const delay = Math.max(20, Number(activeFrameDelay) || 100);
     const timer = window.setTimeout(() => {
-      setCurrentFrameIndex((currentFrameIndex + 1) % frames.length);
+      setCurrentFrameIndex(nextIndex);
     }, delay);
 
     return () => window.clearTimeout(timer);
-  }, [currentFrameIndex, frameStates, frames, playing, setCurrentFrameIndex]);
+  }, [currentFrameIndex, frameStates, frames, playing, setCurrentFrameIndex, setPlaying]);
 
   useEffect(() => {
     const activeFrameDelay = frames[currentFrameIndex]?.delay;
+    if (!activeFrameDelay) return;
     const normalized = Math.max(20, Number(activeFrameDelay) || 100);
     if (Number(playbackDelay) === normalized) return;
     setPlaybackDelay(normalized);
@@ -293,7 +301,7 @@ export default function GifTimeline() {
 
   const rawThumbnails = useMemo(() => {
     if (frames.length <= 1) return [];
-    return frames.map((frame) => toThumbnailDataUrl(frame));
+    return frames.map((frame) => frame ? toThumbnailDataUrl(frame) : '');
   }, [frames]);
 
   if (frames.length <= 1) return null;
@@ -388,6 +396,7 @@ export default function GifTimeline() {
 
         <div ref={stripRef} className='gif-frame-strip'>
           {frames.map((_, index) => {
+            const isLoaded = Boolean(frames[index]);
             const state = frameStates[index] || 'pending';
             const thumb = renderedThumbnails[index] || rawThumbnails[index] || '';
             const isActive = index === currentFrameIndex;
@@ -397,8 +406,10 @@ export default function GifTimeline() {
               <button
                 key={`gif-frame-${index}`}
                 type='button'
-                className={`gif-frame-btn${isActive ? ' active' : ''}${state === 'pending' ? ' gif-frame-btn--pending' : ''}`}
+                className={`gif-frame-btn${isActive ? ' active' : ''}${state === 'pending' ? ' gif-frame-btn--pending' : ''}${!isLoaded ? ' gif-frame-btn--unloaded' : ''}`}
+                disabled={!isLoaded}
                 onClick={() => {
+                  if (!isLoaded) return;
                   setPlaying(false);
                   setCurrentFrameIndex(index);
                 }}

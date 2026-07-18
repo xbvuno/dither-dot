@@ -152,13 +152,58 @@ async function rgbaFrameToPngBlob(frame) {
   });
 }
 
-async function decodeGifWithWorker(blob) {
+async function decodeGifWithWorker(blob, callbacks = {}) {
   const worker = new Worker(new URL('../workers/gifDecodeWorker.js', import.meta.url), { type: 'module' });
   const gifBuffer = await blob.arrayBuffer();
   const jobId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
+  const { onFirstFrame, onFrame, onComplete } = callbacks;
+  const isProgressive = typeof onFirstFrame === 'function';
+
+  if (isProgressive) {
+    worker.onmessage = (event) => {
+      const payload = event.data || {};
+      if (payload.jobId !== jobId) return;
+
+      if (payload.error) {
+        worker.terminate();
+        onComplete?.(new Error(payload.error));
+        return;
+      }
+
+      if (payload.type === 'frame') {
+        const reconstructedFrame = {
+          width: payload.frame.width,
+          height: payload.frame.height,
+          delay: payload.frame.delay,
+          pixels: new Uint8ClampedArray(payload.frame.pixels),
+        };
+        if (payload.frameIndex === 0) {
+          onFirstFrame(reconstructedFrame, payload.totalFrames, payload.loop);
+        } else {
+          onFrame?.(payload.frameIndex, reconstructedFrame);
+        }
+      } else if (payload.type === 'complete') {
+        worker.terminate();
+        onComplete?.(null);
+      }
+    };
+
+    worker.onerror = () => {
+      worker.terminate();
+      onComplete?.(new Error('GIF decoding worker crashed.'));
+    };
+
+    worker.postMessage({ jobId, gifBuffer }, [gifBuffer]);
+    return worker;
+  }
+
+  // Fallback to promise-based decoding
   try {
     const result = await new Promise((resolve, reject) => {
+      const frames = [];
+      let loopCount = 0;
+
       worker.onmessage = (event) => {
         const payload = event.data || {};
         if (payload.jobId !== jobId) return;
@@ -168,7 +213,17 @@ async function decodeGifWithWorker(blob) {
           return;
         }
 
-        resolve(payload);
+        if (payload.type === 'frame') {
+          frames[payload.frameIndex] = {
+            width: payload.frame.width,
+            height: payload.frame.height,
+            delay: payload.frame.delay,
+            pixels: new Uint8ClampedArray(payload.frame.pixels),
+          };
+          loopCount = payload.loop;
+        } else if (payload.type === 'complete') {
+          resolve({ frames, loop: loopCount });
+        }
       };
 
       worker.onerror = () => {
@@ -178,21 +233,9 @@ async function decodeGifWithWorker(blob) {
       worker.postMessage({ jobId, gifBuffer }, [gifBuffer]);
     });
 
-    const frames = Array.isArray(result.frames)
-      ? result.frames.map((frame) => ({
-          width: frame.width,
-          height: frame.height,
-          delay: frame.delay,
-          pixels: new Uint8ClampedArray(frame.pixels),
-        }))
-      : [];
-
-    return {
-      loop: Number.isFinite(result.loop) ? result.loop : 0,
-      frames,
-    };
+    return result;
   } finally {
-    worker.terminate();
+    try { worker.terminate(); } catch {}
   }
 }
 
@@ -837,6 +880,8 @@ export default function ImportPage() {
   const setSourceFromBlob = useImageStore(s => s.setSourceFromBlob);
   const pushGifHistory = useGalleryStore(s => s.pushGifHistory);
   const setGifFrames = useGifStore(s => s.setFrames);
+  const startProgressiveGif = useGifStore(s => s.startProgressiveGif);
+  const addProgressiveFrame = useGifStore(s => s.addProgressiveFrame);
   const clearGifFrames = useGifStore(s => s.clearFrames);
   const setSourceDirect = useImageStore(s => s.setSourceDirect);
   const resetToDefault = useImageStore(s => s.resetToDefault);
@@ -851,19 +896,26 @@ export default function ImportPage() {
 
   const doImport = useCallback(async (blob, name) => {
     if (isGifFile({ type: blob?.type, name })) {
-      const decoded = await decodeGifWithWorker(blob);
-      if (!decoded.frames.length) {
-        throw new Error('GIF decode returned no frames.');
-      }
+      decodeGifWithWorker(blob, {
+        onFirstFrame: async (firstFrame, totalFrames, loop) => {
+          startProgressiveGif(firstFrame, totalFrames, loop);
 
-      setGifFrames(decoded.frames, decoded.loop);
+          const firstFrameBlob = await rgbaFrameToPngBlob(firstFrame);
+          await setSourceFromBlob(firstFrameBlob, name, { skipHistory: true });
 
-      const firstFrameBlob = await rgbaFrameToPngBlob(decoded.frames[0]);
-      await setSourceFromBlob(firstFrameBlob, name, { skipHistory: true });
-
-      const previewSrc = await blobToDataUrl(firstFrameBlob);
-      const gifDataUrl = await blobToDataUrl(blob);
-      pushGifHistory(previewSrc, name, gifDataUrl);
+          const previewSrc = await blobToDataUrl(firstFrameBlob);
+          const gifDataUrl = await blobToDataUrl(blob);
+          pushGifHistory(previewSrc, name, gifDataUrl);
+        },
+        onFrame: (index, frame) => {
+          addProgressiveFrame(index, frame);
+        },
+        onComplete: (err) => {
+          if (err) {
+            console.error('Progressive GIF decode failed:', err);
+          }
+        }
+      });
       return;
     }
 

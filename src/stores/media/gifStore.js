@@ -137,6 +137,34 @@ const useGifStore = create((set) => ({
       renderedFrames: {},
     }));
   },
+
+  startProgressiveGif: (firstFrame, totalFramesCount, loopCount = 0) => {
+    const framesPlaceholder = new Array(totalFramesCount).fill(null);
+    framesPlaceholder[0] = firstFrame;
+
+    const nextStates = new Array(totalFramesCount).fill('pending');
+
+    set({
+      frames: framesPlaceholder,
+      currentFrameIndex: 0,
+      playing: false,
+      playbackDelay: clampDelay(firstFrame.delay),
+      frameStates: nextStates,
+      renderedThumbnails: {},
+      renderedFrames: {},
+      loopCount: Number.isFinite(loopCount) ? loopCount : 0,
+    });
+  },
+
+  addProgressiveFrame: (index, frame) => {
+    set((state) => {
+      const nextFrames = [...state.frames];
+      nextFrames[index] = frame;
+      return {
+        frames: nextFrames,
+      };
+    });
+  },
 }));
 
 export default useGifStore;

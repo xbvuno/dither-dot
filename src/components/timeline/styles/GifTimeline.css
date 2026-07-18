@@ -141,6 +141,12 @@
   filter: grayscale(100%) blur(0.8px) brightness(0.6);
 }
 
+.gif-frame-btn--unloaded {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
 .gif-timeline-icon-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
