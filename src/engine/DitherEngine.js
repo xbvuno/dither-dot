@@ -106,6 +106,16 @@ class DitherEngine {
     if (typeof window !== 'undefined') {
       window.ditherEngine = this;
       window.toggleDitherDebug = (enabled) => this.setLogging(enabled);
+
+      if (!this.debugEnabled) {
+        console.info(
+          '%c[DitherEngine]%c Run %ctoggleDitherDebug(true)%c to enable detailed rendering logs in the console.',
+          'color: #1d4ed8; font-weight: bold; padding: 2px 4px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 4px;',
+          'color: inherit;',
+          'color: #10b981; font-weight: bold; font-family: monospace;',
+          'color: inherit;'
+        );
+      }
     }
   }
 
