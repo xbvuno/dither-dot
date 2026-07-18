@@ -34,7 +34,7 @@ function log(category, message, ...args) {
   if (!debugEnabled) return;
   const color = getWorkerCategoryColor(category);
   console.log(
-    `%c[DitherWorker][${category}]%c ${message}`,
+    `%c[DitherWorker][${category}]%c\u00A0${message}`,
     `color: ${color}; font-weight: bold;`,
     'color: inherit;',
     ...args
@@ -44,7 +44,7 @@ function log(category, message, ...args) {
 function warn(category, message, ...args) {
   const color = getWorkerCategoryColor(category);
   console.warn(
-    `%c[DitherWorker][${category}]%c ${message}`,
+    `%c[DitherWorker][${category}]%c\u00A0${message}`,
     `color: ${color}; font-weight: bold;`,
     'color: inherit;',
     ...args
@@ -54,7 +54,7 @@ function warn(category, message, ...args) {
 function error(category, message, ...args) {
   const color = getWorkerCategoryColor(category);
   console.error(
-    `%c[DitherWorker][${category}]%c ${message}`,
+    `%c[DitherWorker][${category}]%c\u00A0${message}`,
     `color: ${color}; font-weight: bold;`,
     'color: inherit;',
     ...args

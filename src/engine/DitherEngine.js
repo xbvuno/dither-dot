@@ -125,7 +125,7 @@ class DitherEngine {
 
       if (!this.debugEnabled) {
         console.info(
-          '%c[DitherEngine]%c Run %ctoggleDitherDebug(true)%c to enable detailed rendering logs in the console.',
+          '%c[DitherEngine]%c\u00A0Run %ctoggleDitherDebug(true)%c to enable detailed rendering logs in the console.',
           'color: #1d4ed8; font-weight: bold;',
           'color: inherit;',
           'color: #10b981; font-weight: bold; font-family: monospace;',
@@ -139,7 +139,7 @@ class DitherEngine {
     if (!this.debugEnabled) return;
     const color = getEngineCategoryColor(category);
     console.log(
-      `%c[DitherEngine][${category}]%c ${message}`,
+      `%c[DitherEngine][${category}]%c\u00A0${message}`,
       `color: ${color}; font-weight: bold;`,
       'color: inherit;',
       ...args
@@ -149,7 +149,7 @@ class DitherEngine {
   warn(category, message, ...args) {
     const color = getEngineCategoryColor(category);
     console.warn(
-      `%c[DitherEngine][${category}]%c ${message}`,
+      `%c[DitherEngine][${category}]%c\u00A0${message}`,
       `color: ${color}; font-weight: bold;`,
       'color: inherit;',
       ...args
@@ -159,7 +159,7 @@ class DitherEngine {
   error(category, message, ...args) {
     const color = getEngineCategoryColor(category);
     console.error(
-      `%c[DitherEngine][${category}]%c ${message}`,
+      `%c[DitherEngine][${category}]%c\u00A0${message}`,
       `color: ${color}; font-weight: bold;`,
       'color: inherit;',
       ...args
@@ -175,7 +175,7 @@ class DitherEngine {
       this.worker.postMessage({ type: 'setLogging', enabled: this.debugEnabled });
     }
     console.log(
-      `%c[DitherEngine]%c Debug logging has been ${enabled ? 'ENABLED' : 'DISABLED'}.`,
+      `%c[DitherEngine]%c\u00A0Debug logging has been ${enabled ? 'ENABLED' : 'DISABLED'}.`,
       'color: #1d4ed8; font-weight: bold;',
       'color: inherit;'
     );
