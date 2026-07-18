@@ -1452,6 +1452,17 @@ class DitherEngine {
 
         this.syncVisibleLayer();
 
+        if (this.worker) {
+          const pixelsCopy = new Uint8ClampedArray(cachedPixels);
+          this.worker.postMessage({
+            type: 'drawFrame',
+            pixels: pixelsCopy.buffer,
+            width: cachedFrame.width,
+            height: cachedFrame.height,
+            watermarkEnabled: this.watermarkEnabled,
+          }, [pixelsCopy.buffer]);
+        }
+
         if (shouldForceRefresh) {
           this.queueProcessing(true);
         }

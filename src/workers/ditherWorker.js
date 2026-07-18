@@ -97,6 +97,37 @@ self.onmessage = async (event) => {
     return;
   }
 
+  if (type === 'drawFrame') {
+    const { pixels, width, height, watermarkEnabled } = event.data;
+    if (viewportCanvas && viewportCtx) {
+      log('Canvas', 'Drawing cached frame to OffscreenCanvas. dimensions: %d x %d', width, height);
+      if (viewportCanvas.width !== width || viewportCanvas.height !== height) {
+        log('Canvas', 'Resizing OffscreenCanvas from %d x %d to %d x %d', viewportCanvas.width, viewportCanvas.height, width, height);
+        viewportCanvas.width = width;
+        viewportCanvas.height = height;
+      }
+      viewportCtx.imageSmoothingEnabled = false;
+      const imgDataOut = new ImageData(new Uint8ClampedArray(pixels), width, height);
+      viewportCtx.putImageData(imgDataOut, 0, 0);
+
+      if (watermarkEnabled) {
+        const useMini = width < 64 || height < 64;
+        const watermark = useMini ? watermarkMiniBitmap : watermarkBitmap;
+        if (watermark) {
+          const margin = useMini ? WATERMARK_MARGIN_MINI : WATERMARK_MARGIN_NORMAL;
+          const x = width - margin - watermark.width;
+          const y = height - margin - watermark.height;
+          viewportCtx.drawImage(watermark, x, y);
+        } else {
+          warn('Watermark', 'Watermark requested but bitmap is not loaded!');
+        }
+      }
+    } else {
+      warn('Canvas', 'Cannot draw directly to OffscreenCanvas: viewportCanvas is %o, viewportCtx is %o', !!viewportCanvas, !!viewportCtx);
+    }
+    return;
+  }
+
   // Otherwise, it is a processing job
   const {
     jobId,
