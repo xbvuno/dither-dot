@@ -61,11 +61,23 @@ function makeColor(hex, locked = false) {
   return { id: _uid++, hex, locked, hidden: false };
 }
 
+function logPaletteTime(method, count, duration) {
+  const isDebugEnabled = typeof window !== 'undefined' && window.ditherEngine?.debugEnabled;
+  if (!isDebugEnabled) return;
+
+  console.log(
+    `%c[DitherEngine][Palette]%c\u00A0Palette generated in ${duration.toFixed(2)}ms (Method: ${method}, Colors: ${count})`,
+    'color: #4f46e5; font-weight: bold;',
+    'color: inherit;'
+  );
+}
+
 function runExtractionAsync(pixels, method, count, options = {}) {
   if (!paletteWorker) {
     return Promise.resolve([]);
   }
 
+  const startTs = performance.now();
   const bufferCopy = new Uint8ClampedArray(pixels);
   const jobId = ++paletteWorkerJobId;
 
@@ -84,6 +96,10 @@ function runExtractionAsync(pixels, method, count, options = {}) {
       if (settled) return;
       settled = true;
       clearTimeout(timeout);
+      
+      const duration = performance.now() - startTs;
+      logPaletteTime(method, count, duration);
+
       resolve(result);
     };
 
