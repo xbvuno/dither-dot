@@ -123,6 +123,20 @@ class DitherEngine {
       window.ditherEngine = this;
       window.toggleDitherDebug = (enabled) => this.setLogging(enabled);
 
+      // Print watermark image and version ALWAYS on startup
+      const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
+      console.log(
+        '%c ',
+        `background: url(${watermarkImage}) no-repeat; background-size: contain; padding: 12px 36px; line-height: 0; font-size: 0;`
+      );
+      console.log(
+        `%cDITHER-DOT v${appVersion}%c\n%c[GITHUB]%c\u00A0https://github.com/xbvuno/dither-dot`,
+        'font-weight: bold; color: #1d4ed8; font-size: 1.05em;',
+        'color: inherit;',
+        'font-weight: bold; color: #0284c7; text-decoration: underline;',
+        'color: inherit;'
+      );
+
       if (!this.debugEnabled) {
         console.info(
           '%c[DitherEngine]%c\u00A0Run %ctoggleDitherDebug(true)%c to enable detailed rendering logs in the console.',
@@ -132,10 +146,6 @@ class DitherEngine {
           'color: inherit;'
         );
       } else {
-        console.log(
-          '%c ',
-          `background: url(${watermarkImage}) no-repeat; background-size: contain; padding: 12px 36px; line-height: 0; font-size: 0;`
-        );
         console.info(
           '%c[DitherEngine]%c\u00A0Run %ctoggleDitherDebug(false)%c to disable detailed rendering logs in the console.',
           'color: #1d4ed8; font-weight: bold;',
