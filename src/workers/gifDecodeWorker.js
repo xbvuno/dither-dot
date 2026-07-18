@@ -52,20 +52,19 @@ function parseLoopCount(parsedGif) {
   }
 }
 
-function decodeGifFramesProgressively(arrayBuffer, onFrameDecoded) {
+function decodeGifFrames(arrayBuffer) {
   const parsed = parseGIF(arrayBuffer);
   const decoded = decompressFrames(parsed, true);
   const width = Math.max(1, Number(parsed?.lsd?.width) || 1);
   const height = Math.max(1, Number(parsed?.lsd?.height) || 1);
-  const loop = parseLoopCount(parsed);
 
   const composite = new Uint8ClampedArray(width * height * 4);
+  const frames = [];
 
   let previousDecodedFrame = null;
   let restoreSnapshot = null;
 
-  for (let index = 0; index < decoded.length; index += 1) {
-    const decodedFrame = decoded[index];
+  for (const decodedFrame of decoded) {
     if (previousDecodedFrame?.disposalType === 2) {
       clearFrameRect(composite, width, previousDecodedFrame.dims);
     } else if (previousDecodedFrame?.disposalType === 3 && restoreSnapshot) {
@@ -79,23 +78,21 @@ function decodeGifFramesProgressively(arrayBuffer, onFrameDecoded) {
     applyPatch(composite, width, height, decodedFrame.patch, decodedFrame.dims);
 
     const delay = Math.max(20, Number(decodedFrame.delay) || 100);
-    const framePixels = composite.slice();
-
-    onFrameDecoded({
-      frameIndex: index,
-      totalFrames: decoded.length,
-      loop,
-      frame: {
-        width,
-        height,
-        delay,
-        pixels: framePixels.buffer,
-      }
-    }, [framePixels.buffer]);
+    frames.push({
+      width,
+      height,
+      delay,
+      pixels: composite.slice(),
+    });
 
     previousDecodedFrame = decodedFrame;
     restoreSnapshot = snapshotBeforeDraw;
   }
+
+  return {
+    loop: parseLoopCount(parsed),
+    frames,
+  };
 }
 
 self.onmessage = (event) => {
@@ -110,21 +107,22 @@ self.onmessage = (event) => {
       throw new Error('Invalid GIF buffer payload.');
     }
 
-    decodeGifFramesProgressively(buffer, (frameData, transferables) => {
-      self.postMessage(
-        {
-          type: 'frame',
-          jobId,
-          ...frameData,
-        },
-        transferables,
-      );
-    });
+    const decoded = decodeGifFrames(buffer);
+    const transferableFrames = decoded.frames.map((frame) => ({
+      width: frame.width,
+      height: frame.height,
+      delay: frame.delay,
+      pixels: frame.pixels.buffer,
+    }));
 
-    self.postMessage({
-      type: 'complete',
-      jobId,
-    });
+    self.postMessage(
+      {
+        jobId,
+        loop: decoded.loop,
+        frames: transferableFrames,
+      },
+      transferableFrames.map((frame) => frame.pixels),
+    );
   } catch (error) {
     console.error(`[gif-worker] ERROR GIF DECODE (job: ${jobId})`, error);
     self.postMessage({

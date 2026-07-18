@@ -198,3 +198,29 @@
 .gif-frame-state--done {
   color: var(--color-success);
 }
+
+.gif-decoding-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  background: var(--color-bg-subtle);
+  border: 1px dashed var(--color-border);
+  color: var(--color-text-subtle);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  width: 100%;
+}
+
+.gif-decoding-label {
+  animation: gif-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes gif-pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}

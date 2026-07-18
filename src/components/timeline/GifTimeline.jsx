@@ -51,6 +51,7 @@ export default function GifTimeline() {
   const playbackDelay = useGifStore((s) => s.playbackDelay);
   const frameStates = useGifStore((s) => s.frameStates);
   const renderedThumbnails = useGifStore((s) => s.renderedThumbnails);
+  const decoding = useGifStore((s) => s.decoding);
 
   const setCurrentFrameIndex = useGifStore((s) => s.setCurrentFrameIndex);
   const setPlaying = useGifStore((s) => s.setPlaying);
@@ -304,7 +305,7 @@ export default function GifTimeline() {
     return frames.map((frame) => frame ? toThumbnailDataUrl(frame) : '');
   }, [frames]);
 
-  if (frames.length <= 1) return null;
+  if (frames.length <= 1 && !decoding) return null;
 
   const totalFrames = frames.length;
   const stopDisabled = !playing && currentFrameIndex === 0;
@@ -343,6 +344,7 @@ export default function GifTimeline() {
             onClick={goToPreviousFrame}
             aria-label='Previous frame'
             title='PREVIOUS FRAME'
+            disabled={decoding}
           >
             <SkipBack size={14} strokeWidth={2} />
           </button>
@@ -353,7 +355,7 @@ export default function GifTimeline() {
             onClick={stopAndReset}
             aria-label='Stop and go to first frame'
             title='STOP AND RESET'
-            disabled={stopDisabled}
+            disabled={decoding || stopDisabled}
           >
             <Square size={12} strokeWidth={2.4} />
           </button>
@@ -364,6 +366,7 @@ export default function GifTimeline() {
             onClick={() => setPlaying(!playing)}
             aria-label={playing ? 'Pause GIF playback' : 'Play GIF playback'}
             title={playing ? 'PAUSE' : 'PLAY'}
+            disabled={decoding}
           >
             {playing ? <Pause size={14} strokeWidth={2} /> : <Play size={14} strokeWidth={2} />}
           </button>
@@ -374,13 +377,16 @@ export default function GifTimeline() {
             onClick={goToNextFrame}
             aria-label='Next frame'
             title='NEXT FRAME'
+            disabled={decoding}
           >
             <SkipForward size={14} strokeWidth={2} />
           </button>
 
-          <span className='gif-timeline-label gif-frame-counter'>{currentFrameIndex + 1} / {totalFrames} | R: {totalFrames > 0 ? Math.round((frameStates.filter((s) => s === 'done').length / totalFrames) * 100) : 0}%</span>
+          <span className='gif-timeline-label gif-frame-counter'>
+            {decoding ? 'DECODING...' : `${currentFrameIndex + 1} / ${totalFrames} | R: ${totalFrames > 0 ? Math.round((frameStates.filter((s) => s === 'done').length / totalFrames) * 100) : 0}%`}
+          </span>
 
-          <label className='gif-delay-wrap gif-delay-wrap--right'>
+          <label className={`gif-delay-wrap gif-delay-wrap--right${decoding ? ' disabled' : ''}`}>
             <span className='gif-timeline-label'>DELAY (MS)</span>
             <input
               className='gif-delay-input'
@@ -390,41 +396,48 @@ export default function GifTimeline() {
               step='10'
               value={playbackDelay}
               onChange={(event) => setPlaybackDelay(event.target.value)}
+              disabled={decoding}
             />
           </label>
         </div>
 
-        <div ref={stripRef} className='gif-frame-strip'>
-          {frames.map((_, index) => {
-            const isLoaded = Boolean(frames[index]);
-            const state = frameStates[index] || 'pending';
-            const thumb = renderedThumbnails[index] || rawThumbnails[index] || '';
-            const isActive = index === currentFrameIndex;
-            const stateLabel = state === 'pending' ? 'P' : state === 'done' ? 'DONE' : 'R';
+        {decoding ? (
+          <div className="gif-decoding-placeholder">
+            <span className="gif-decoding-label">DECODING GIF...</span>
+          </div>
+        ) : (
+          <div ref={stripRef} className='gif-frame-strip'>
+            {frames.map((_, index) => {
+              const isLoaded = Boolean(frames[index]);
+              const state = frameStates[index] || 'pending';
+              const thumb = renderedThumbnails[index] || rawThumbnails[index] || '';
+              const isActive = index === currentFrameIndex;
+              const stateLabel = state === 'pending' ? 'P' : state === 'done' ? 'DONE' : 'R';
 
-            return (
-              <button
-                key={`gif-frame-${index}`}
-                type='button'
-                className={`gif-frame-btn${isActive ? ' active' : ''}${state === 'pending' ? ' gif-frame-btn--pending' : ''}${!isLoaded ? ' gif-frame-btn--unloaded' : ''}`}
-                disabled={!isLoaded}
-                onClick={() => {
-                  if (!isLoaded) return;
-                  setPlaying(false);
-                  setCurrentFrameIndex(index);
-                }}
-                title={`FRAME ${index + 1}`}
-                aria-label={`FRAME ${index + 1}`}
-              >
-                {thumb && <img src={thumb} alt='' draggable={false} />}
-                <span className='gif-frame-index'>{index + 1}</span>
-                <span className={`gif-frame-state gif-frame-state--${state}`} aria-label={stateLabel}>
-                  {state === 'done' ? <Check size={9} strokeWidth={3} /> : state === 'pending' ? 'P' : 'R'}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+              return (
+                <button
+                  key={`gif-frame-${index}`}
+                  type='button'
+                  className={`gif-frame-btn${isActive ? ' active' : ''}${state === 'pending' ? ' gif-frame-btn--pending' : ''}${!isLoaded ? ' gif-frame-btn--unloaded' : ''}`}
+                  disabled={!isLoaded}
+                  onClick={() => {
+                    if (!isLoaded) return;
+                    setPlaying(false);
+                    setCurrentFrameIndex(index);
+                  }}
+                  title={`FRAME ${index + 1}`}
+                  aria-label={`FRAME ${index + 1}`}
+                >
+                  {thumb && <img src={thumb} alt='' draggable={false} />}
+                  <span className='gif-frame-index'>{index + 1}</span>
+                  <span className={`gif-frame-state gif-frame-state--${state}`} aria-label={stateLabel}>
+                    {state === 'done' ? <Check size={9} strokeWidth={3} /> : state === 'pending' ? 'P' : 'R'}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </section>
     </div>
   );

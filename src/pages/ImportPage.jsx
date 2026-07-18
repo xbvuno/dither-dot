@@ -735,6 +735,7 @@ function GallerySection() {
     }
 
     if (item.kind === 'gif' && item.gifDataUrl) {
+      setDecoding(true);
       try {
         const response = await fetch(item.gifDataUrl);
         if (!response.ok) {
@@ -751,6 +752,7 @@ function GallerySection() {
         const firstFrameBlob = await rgbaFrameToPngBlob(decoded.frames[0]);
         await setSourceFromBlob(firstFrameBlob, item.name, { skipHistory: true });
       } catch (error) {
+        setDecoding(false);
         alert(error instanceof Error ? error.message : 'FAILED TO LOAD GIF FROM GALLERY.');
       }
       return;
@@ -788,9 +790,17 @@ function GallerySection() {
       setSourceDirect(staticPreview, item.name, 'default');
 
       if (getSourceExtension(item.src) === 'gif') {
-        const decoded = await decodeGifWithWorker(animatedBlob);
-        if (decoded.frames.length) {
-          setGifFrames(decoded.frames, decoded.loop);
+        setDecoding(true);
+        try {
+          const decoded = await decodeGifWithWorker(animatedBlob);
+          if (decoded.frames.length) {
+            setGifFrames(decoded.frames, decoded.loop);
+          } else {
+            setDecoding(false);
+          }
+        } catch (error) {
+          setDecoding(false);
+          throw error;
         }
       }
     } catch (error) {
@@ -880,8 +890,7 @@ export default function ImportPage() {
   const setSourceFromBlob = useImageStore(s => s.setSourceFromBlob);
   const pushGifHistory = useGalleryStore(s => s.pushGifHistory);
   const setGifFrames = useGifStore(s => s.setFrames);
-  const startProgressiveGif = useGifStore(s => s.startProgressiveGif);
-  const addProgressiveFrame = useGifStore(s => s.addProgressiveFrame);
+  const setDecoding = useGifStore(s => s.setDecoding);
   const clearGifFrames = useGifStore(s => s.clearFrames);
   const setSourceDirect = useImageStore(s => s.setSourceDirect);
   const resetToDefault = useImageStore(s => s.resetToDefault);
@@ -896,26 +905,25 @@ export default function ImportPage() {
 
   const doImport = useCallback(async (blob, name) => {
     if (isGifFile({ type: blob?.type, name })) {
-      decodeGifWithWorker(blob, {
-        onFirstFrame: async (firstFrame, totalFrames, loop) => {
-          startProgressiveGif(firstFrame, totalFrames, loop);
-
-          const firstFrameBlob = await rgbaFrameToPngBlob(firstFrame);
-          await setSourceFromBlob(firstFrameBlob, name, { skipHistory: true });
-
-          const previewSrc = await blobToDataUrl(firstFrameBlob);
-          const gifDataUrl = await blobToDataUrl(blob);
-          pushGifHistory(previewSrc, name, gifDataUrl);
-        },
-        onFrame: (index, frame) => {
-          addProgressiveFrame(index, frame);
-        },
-        onComplete: (err) => {
-          if (err) {
-            console.error('Progressive GIF decode failed:', err);
-          }
+      setDecoding(true);
+      try {
+        const decoded = await decodeGifWithWorker(blob);
+        if (!decoded.frames.length) {
+          throw new Error('GIF decode returned no frames.');
         }
-      });
+
+        setGifFrames(decoded.frames, decoded.loop);
+
+        const firstFrameBlob = await rgbaFrameToPngBlob(decoded.frames[0]);
+        await setSourceFromBlob(firstFrameBlob, name, { skipHistory: true });
+
+        const previewSrc = await blobToDataUrl(firstFrameBlob);
+        const gifDataUrl = await blobToDataUrl(blob);
+        pushGifHistory(previewSrc, name, gifDataUrl);
+      } catch (error) {
+        setDecoding(false);
+        throw error;
+      }
       return;
     }
 
