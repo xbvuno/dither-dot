@@ -844,6 +844,7 @@ export default function ImportPage() {
   const [isDropActive, setIsDropActive] = useState(false);
   const [pendingImport, setPendingImport] = useState(null);
   const [isRandomLoading, setIsRandomLoading] = useState(false);
+  const [isRandomGifLoading, setIsRandomGifLoading] = useState(false);
 
   const setSourceFromBlob = useImageStore(s => s.setSourceFromBlob);
   const pushGifHistory = useGalleryStore(s => s.pushGifHistory);
@@ -1047,6 +1048,37 @@ export default function ImportPage() {
     }
   };
 
+  const handleRandomGif = async () => {
+    if (isRandomGifLoading) return;
+    setIsRandomGifLoading(true);
+    try {
+      const response = await fetch('https://api.thecatapi.com/v1/images/search?mime_types=gif');
+      if (!response.ok) {
+        throw new Error('Failed to fetch GIF from Cat API.');
+      }
+      
+      const data = await response.json();
+      const url = data?.[0]?.url;
+      if (!url) {
+        throw new Error('No GIF URL found in response.');
+      }
+
+      const gifResponse = await fetch(url);
+      if (!gifResponse.ok) {
+        throw new Error('Failed to download the random GIF.');
+      }
+
+      const blob = await gifResponse.blob();
+      const id = data[0].id || `cat-${Date.now()}`;
+      const name = `random-cat-${id}`;
+      await importWithSizeCheck(blob, name);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Random GIF import failed.');
+    } finally {
+      setIsRandomGifLoading(false);
+    }
+  };
+
   useEffect(() => {
     const onPaste = (event) => handlePaste(event);
     window.addEventListener('paste', onPaste);
@@ -1098,6 +1130,15 @@ export default function ImportPage() {
           >
             <Dices size={13} strokeWidth={1.5} />
             {isRandomLoading ? 'LOADING...' : 'RANDOM IMAGE'}
+          </button>
+          <button
+            type='button'
+            className='bv-option-btn import-btn'
+            onClick={handleRandomGif}
+            disabled={isRandomGifLoading}
+          >
+            <Film size={13} strokeWidth={1.5} />
+            {isRandomGifLoading ? 'LOADING...' : 'RANDOM GIF'}
           </button>
           <button
             type='button'
