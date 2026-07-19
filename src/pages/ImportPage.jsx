@@ -1027,7 +1027,7 @@ export default function ImportPage() {
     if (isRandomLoading) return;
     setIsRandomLoading(true);
     try {
-      const w = Math.floor(Math.random() * (1920 - 400 + 1)) + 400;
+      const w = Math.floor(Math.random() * (1980 - 400 + 1)) + 400;
       const h = Math.floor(Math.random() * (1080 - 300 + 1)) + 300;
       const url = `https://picsum.photos/${w}/${h}?random=${Date.now()}`;
       
