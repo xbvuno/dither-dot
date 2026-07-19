@@ -203,6 +203,7 @@ export function generateRecoloredWatermark(watermarkImg, darkColor, lightColor) 
   canvas.width = watermarkImg.width;
   canvas.height = watermarkImg.height;
   const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
   ctx.drawImage(watermarkImg, 0, 0);
 
   const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);

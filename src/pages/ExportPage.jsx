@@ -185,11 +185,32 @@ export default function ExportPage() {
       setGifExporting(true);
       setStatus('SAVING...');
       const anchor = document.createElement('a');
-      anchor.href = previewUrl;
       anchor.download = `${exportBaseName}.${isGifSource ? 'gif' : 'png'}`;
+
+      let objectUrl = null;
+      if (isGifSource) {
+        anchor.href = previewUrl;
+      } else {
+        const upscaledCanvas = createUpscaledCanvas(getExportCanvasOrThrow(), upscale);
+        const blob = await new Promise((resolve, reject) => {
+          upscaledCanvas.toBlob((nextBlob) => {
+            if (!nextBlob) {
+              reject(new Error('Canvas export failed.'));
+              return;
+            }
+            resolve(nextBlob);
+          }, 'image/png');
+        });
+        objectUrl = URL.createObjectURL(blob);
+        anchor.href = objectUrl;
+      }
+
       document.body.appendChild(anchor);
       anchor.click();
       document.body.removeChild(anchor);
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
       setStatus(isGifSource ? 'GIF EXPORTED.' : 'PNG EXPORTED.');
       setTimeout(() => setStatus(null), 2500);
     } catch (error) {
@@ -288,4 +309,3 @@ export default function ExportPage() {
     </div>
   );
 }
-

@@ -66,12 +66,20 @@ function getScratchContext(width, height) {
   if (!scratchCanvas) {
     scratchCanvas = new OffscreenCanvas(width, height);
     scratchCtx = scratchCanvas.getContext('2d', { willReadFrequently: true });
+    if (!scratchCtx) {
+      error('Canvas', 'Failed to acquire 2D context for scratch canvas.');
+      throw new Error('Scratch canvas 2D context is unavailable');
+    }
   } else if (scratchCanvas.width !== width || scratchCanvas.height !== height) {
     // Assigning .width or .height resets the canvas bitmap and can invalidate
     // the previously-acquired 2D context, causing drawImage to silently do nothing
     // and getImageData to return all-zero (black) pixels. Recreate the canvas entirely.
     scratchCanvas = new OffscreenCanvas(width, height);
     scratchCtx = scratchCanvas.getContext('2d', { willReadFrequently: true });
+    if (!scratchCtx) {
+      error('Canvas', 'Failed to acquire 2D context when recreating scratch canvas.');
+      throw new Error('Scratch canvas 2D context is unavailable');
+    }
   }
   return scratchCtx;
 }

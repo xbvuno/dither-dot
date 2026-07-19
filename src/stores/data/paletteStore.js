@@ -74,7 +74,7 @@ function logPaletteTime(method, count, duration) {
 
 function runExtractionAsync(pixels, method, count, options = {}) {
   if (!paletteWorker) {
-    return Promise.resolve([]);
+    return Promise.reject(new Error('Palette worker is unavailable'));
   }
 
   const startTs = performance.now();
