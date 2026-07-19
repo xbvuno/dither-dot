@@ -523,10 +523,17 @@ const action = this.debugEnabled ? "disable" : "enable";
     );
 
     // Register window layout listener
+    let isLayoutChanging = false;
     const handleLayoutChange = () => {
+      if (isLayoutChanging) return;
       if (!this.previewingOriginal) return;
-      this.syncVisibleLayer();
-      this.syncSplitOverlay();
+      isLayoutChanging = true;
+      try {
+        this.syncVisibleLayer();
+        this.syncSplitOverlay();
+      } finally {
+        isLayoutChanging = false;
+      }
     };
     window.addEventListener('split-compare-layout-changed', handleLayoutChange);
     this.subscriptions.push(() => {
@@ -724,6 +731,7 @@ const action = this.debugEnabled ? "disable" : "enable";
           paletteRgb,
           forceCpu: paramsState.forceCpu,
           watermarkEnabled: this.watermarkEnabled,
+          skipStats: frameIndex >= 0 && (gifState.playing || gifState.exporting || frameIndex !== gifState.currentFrameIndex),
           dither: {
             enabled: ditherEnabled,
             method: ditherState.method,
@@ -974,6 +982,7 @@ const action = this.debugEnabled ? "disable" : "enable";
         usePerformanceStore.getState().recordLayerSync(syncDuration);
 
         usePerformanceStore.getState().recordPipelineComplete();
+        useImageStore.setState({ lastRenderJobId: jobId });
 
         if (this.isWebcamMode) {
           useWebcamStore.getState().recordRenderedFrame();
@@ -1162,7 +1171,7 @@ const action = this.debugEnabled ? "disable" : "enable";
       canvas = document.createElement('canvas');
       canvas.width = safeWidth;
       canvas.height = safeHeight;
-      context = canvas.getContext('2d');
+      context = canvas.getContext('2d', { willReadFrequently: true });
 
       if (!context) {
         throw new Error('Unable to initialize CPU dither output canvas context');

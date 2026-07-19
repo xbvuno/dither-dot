@@ -11,6 +11,7 @@ const DEFAULT_GIF_STATE = {
   renderedFrames: {},
   loopCount: 0,
   decoding: false,
+  exporting: false,
 };
 
 const clampFrameIndex = (index, max) => {
@@ -57,6 +58,10 @@ const useGifStore = create((set) => ({
 
   setDecoding: (decoding) => {
     set({ decoding: Boolean(decoding) });
+  },
+
+  setExporting: (exporting) => {
+    set({ exporting: Boolean(exporting) });
   },
 
   setCurrentFrameIndex: (index) => {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import "./styles/GifTimeline.css";
 import { Check, Pause, Play, SkipBack, SkipForward, Square } from 'lucide-react';
 import useGifStore from '../../stores/media/gifStore';
@@ -300,9 +300,34 @@ export default function GifTimeline() {
     return () => window.cancelAnimationFrame(frameId);
   }, [currentFrameIndex, playing, frames.length, frameStates]);
 
-  const rawThumbnails = useMemo(() => {
-    if (frames.length <= 1) return [];
-    return frames.map((frame) => frame ? toThumbnailDataUrl(frame) : '');
+  const [rawThumbnails, setRawThumbnails] = useState({});
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRawThumbnails({});
+    if (frames.length <= 1) return;
+
+    let active = true;
+    let index = 0;
+
+    const generateNext = () => {
+      if (!active || index >= frames.length) return;
+
+      const frame = frames[index];
+      if (frame) {
+        const url = toThumbnailDataUrl(frame);
+        setRawThumbnails((prev) => ({ ...prev, [index]: url }));
+      }
+
+      index += 1;
+      setTimeout(generateNext, 0);
+    };
+
+    generateNext();
+
+    return () => {
+      active = false;
+    };
   }, [frames]);
 
   if (frames.length <= 1 && !decoding) return null;

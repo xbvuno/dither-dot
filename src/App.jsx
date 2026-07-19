@@ -166,14 +166,6 @@ function App() {
             <span className='app-header-title-name'>DITHER-DOT</span>
           </span>
           <div className='app-header-links'>
-            <button type='button' className='header-link-btn' onClick={() => setModalType('about')}>
-              <Info size={13} strokeWidth={2} />
-              ABOUT
-            </button>
-            <button type='button' className='header-link-btn' onClick={() => setModalType('changelog')}>
-              <ScrollText size={13} strokeWidth={2} />
-              CHANGELOG
-            </button>
             <button type='button' className='header-link-btn' onClick={() => setModalType('support')}>
               <Heart size={13} strokeWidth={2} />
               SUPPORT

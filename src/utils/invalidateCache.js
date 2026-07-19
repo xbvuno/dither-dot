@@ -1,4 +1,3 @@
-/* global __APP_VERSION__ */
 const CURRENT_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
 const VERSION_KEY = 'dither-dot:app-version';
 

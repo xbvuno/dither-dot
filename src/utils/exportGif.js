@@ -1,5 +1,5 @@
 import { encode } from 'modern-gif';
-import gifWorkerUrl from 'modern-gif/worker?url';
+import gifWorkerUrl from '../workers/modernGifWorker?url';
 import useGifStore from '../stores/media/gifStore';
 import { getOutputCanvas } from './canvasRegistry';
 
@@ -132,6 +132,7 @@ export async function exportCurrentGif(sourceName, { onProgress, timeoutMs = 200
 
   try {
     gifState.setPlaying(false);
+    gifState.setExporting(true);
 
     const encodedFrames = [];
     let exportWidth = 0;
@@ -186,5 +187,6 @@ export async function exportCurrentGif(sourceName, { onProgress, timeoutMs = 200
     const currentState = useGifStore.getState();
     currentState.setCurrentFrameIndex(previousIndex);
     currentState.setPlaying(previousPlaying);
+    currentState.setExporting(false);
   }
 }

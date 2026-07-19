@@ -76,6 +76,7 @@ export default function Footer() {
 
   useEffect(() => {
     if (timing.pipelineTotal > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLastTotalTime(timing.pipelineTotal);
     }
   }, [timing.pipelineTotal]);

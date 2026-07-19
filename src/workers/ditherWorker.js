@@ -2,6 +2,7 @@ import init, { Image as WasmImage, Filters, Dithering, Palette as WasmPalette, T
 import wasmUrl from 'ddot-wasm/ddot_wasm_bg.wasm?url';
 
 let wasmInitialized = false;
+let filtersCache = null;
 let activeJobId = null;
 let debugEnabled = false;
 
@@ -158,6 +159,7 @@ self.onmessage = async (event) => {
     blur,
     forceCpu,
     watermarkEnabled,
+    skipStats,
   } = event.data;
 
   activeJobId = jobId;
@@ -165,6 +167,10 @@ self.onmessage = async (event) => {
   const backend = forceCpu ? Backend.CPU : Backend.AUTO;
   const startTs = self.performance?.now?.() ?? Date.now();
   const phaseLabel = dither?.enabled ? 'DITHERING' : 'COPY SOURCE';
+
+  let image = null;
+  let croppedImage = null;
+  let wasmPalette = null;
 
   try {
     let tWasmInit = 0;
@@ -189,26 +195,30 @@ self.onmessage = async (event) => {
     sCtx.drawImage(source, 0, 0, customWidth, customHeight);
     const imgData = sCtx.getImageData(0, 0, customWidth, customHeight);
 
-    let image = new WasmImage(imgData);
+    image = new WasmImage(imgData);
 
     // Apply crop if settings are provided
     if (crop && (crop.top > 0 || crop.bottom > 0 || crop.left > 0 || crop.right > 0)) {
-      image = Transform.Crop(image, {
+      croppedImage = Transform.Crop(image, {
         top: crop.top,
         left: crop.left,
         right: crop.right,
         bottom: crop.bottom
       });
     }
+    const activeImage = croppedImage || image;
     tSetup = performance.now() - tSetupStart;
 
-    const filters = Filters.getFilters();
+    if (!filtersCache) {
+      filtersCache = Filters.getFilters();
+    }
+    const filters = filtersCache;
 
     const tNoiseStart = performance.now();
     if (noise && noise.noiseCoverage > 0 && noise.noiseIntensity > 0) {
       const noiseFilter = filters.noise;
       if (noiseFilter) {
-        await noiseFilter.apply(image, {
+        await noiseFilter.apply(activeImage, {
           coverage: noise.noiseCoverage,
           intensity: noise.noiseIntensity,
           saturation: noise.noiseSaturation,
@@ -222,7 +232,7 @@ self.onmessage = async (event) => {
     if (adjustments) {
       const adjustmentFilter = filters.adjustment;
       if (adjustmentFilter) {
-        await adjustmentFilter.apply(image, {
+        await adjustmentFilter.apply(activeImage, {
           gamma: adjustments.gamma,
           blacks: adjustments.blacks,
           whites: adjustments.whites,
@@ -238,7 +248,7 @@ self.onmessage = async (event) => {
     if (blur && blur.blurStrength > 0 && blur.passes > 0) {
       const blurFilter = filters.kawase_blur;
       if (blurFilter) {
-        await blurFilter.apply(image, {
+        await blurFilter.apply(activeImage, {
           blurStrength: blur.blurStrength,
           edgeStrength: blur.edgeStrength,
           passes: blur.passes,
@@ -247,9 +257,9 @@ self.onmessage = async (event) => {
     }
     tBlur = performance.now() - tBlurStart;
 
-    const croppedBuffer = image.pixels;
-    const outWidth = image.width;
-    const outHeight = image.height;
+    const croppedBuffer = activeImage.pixels;
+    const outWidth = activeImage.width;
+    const outHeight = activeImage.height;
 
     // Clone the pre-dither pixels immediately — dithering mutates image.pixels in-place,
     // so reading croppedBuffer later would yield quantized (post-dither) pixel data instead
@@ -260,7 +270,7 @@ self.onmessage = async (event) => {
 
     if (previewingOriginal) {
       // Just retrieve the filtered original image
-      const outputBuffer = image.pixels;
+      const outputBuffer = activeImage.pixels;
       outputPixels = new Uint8ClampedArray(outputBuffer.buffer);
     } else {
       const tDitherStart = performance.now();
@@ -273,13 +283,13 @@ self.onmessage = async (event) => {
             a: 255
           };
         });
-        const wasmPalette = new WasmPalette(colors);
+        wasmPalette = new WasmPalette(colors);
 
         const algs = Dithering.getAlgorithms();
         const methodName = dither.method === 'ordered_bayer' ? 'bayer' : dither.method;
         const alg = algs.find(a => a.name === methodName);
         if (alg) {
-          await alg.apply(image, wasmPalette, {
+          await alg.apply(activeImage, wasmPalette, {
             amount: dither.amount,
             matrixScale: dither.matrixScale,
             seed: dither.seed,
@@ -289,7 +299,7 @@ self.onmessage = async (event) => {
       tDither = performance.now() - tDitherStart;
 
       const tFinalStart = performance.now();
-      const outputBuffer = image.pixels;
+      const outputBuffer = activeImage.pixels;
       outputPixels = new Uint8ClampedArray(outputBuffer.buffer);
 
       if (dither.enabled) {
@@ -359,55 +369,57 @@ self.onmessage = async (event) => {
     );
 
     // Run stats calculations when browser event loop is idle
-    setTimeout(() => {
-      if (activeJobId !== jobId) return;
+    if (!skipStats) {
+      setTimeout(() => {
+        if (activeJobId !== jobId) return;
 
-      const tStatsStart = performance.now();
-      
-      // Use the pre-dither snapshot — croppedBuffer was already mutated by dithering
-      const referenceCopy = new Uint8Array(croppedSnapshot);
-      const croppedPixels = new Uint8ClampedArray(referenceCopy.buffer);
+        const tStatsStart = performance.now();
+        
+        // Use the pre-dither snapshot — croppedBuffer was already mutated by dithering
+        const referenceCopy = new Uint8Array(croppedSnapshot);
+        const croppedPixels = new Uint8ClampedArray(referenceCopy.buffer);
 
-      const tHistogramStart = performance.now();
-      const rCounts = new Uint32Array(256);
-      const gCounts = new Uint32Array(256);
-      const bCounts = new Uint32Array(256);
-      for (let i = 0; i < croppedPixels.length; i += 4) {
-        rCounts[croppedPixels[i]]++;
-        gCounts[croppedPixels[i + 1]]++;
-        bCounts[croppedPixels[i + 2]]++;
-      }
-      const tHistogram = performance.now() - tHistogramStart;
+        const tHistogramStart = performance.now();
+        const rCounts = new Uint32Array(256);
+        const gCounts = new Uint32Array(256);
+        const bCounts = new Uint32Array(256);
+        for (let i = 0; i < croppedPixels.length; i += 4) {
+          rCounts[croppedPixels[i]]++;
+          gCounts[croppedPixels[i + 1]]++;
+          bCounts[croppedPixels[i + 2]]++;
+        }
+        const tHistogram = performance.now() - tHistogramStart;
 
-      const tColorsStart = performance.now();
-      const uniqueColorCount = countUniqueColors(outputPixels);
-      const tColors = performance.now() - tColorsStart;
+        const tColorsStart = performance.now();
+        const uniqueColorCount = countUniqueColors(outputPixels);
+        const tColors = performance.now() - tColorsStart;
 
-      const statsElapsed = performance.now() - tStatsStart;
+        const statsElapsed = performance.now() - tStatsStart;
 
-      log(
-        'Worker',
-        `Job ${jobId} stats computed (async):\n` +
-        `  - Histogram:       ${tHistogram.toFixed(2)}ms\n` +
-        `  - Color Count:     ${tColors.toFixed(2)}ms\n` +
-        `  => Stats Total:    ${statsElapsed.toFixed(2)}ms`
-      );
+        log(
+          'Worker',
+          `Job ${jobId} stats computed (async):\n` +
+          `  - Histogram:       ${tHistogram.toFixed(2)}ms\n` +
+          `  - Color Count:     ${tColors.toFixed(2)}ms\n` +
+          `  => Stats Total:    ${statsElapsed.toFixed(2)}ms`
+        );
 
-      if (activeJobId !== jobId) return;
+        if (activeJobId !== jobId) return;
 
-      self.postMessage(
-        {
-          jobId,
-          referencePixels: referenceCopy.buffer,
-          uniqueColorCount,
-          histogram: [rCounts, gCounts, bCounts],
-          width: outWidth,
-          height: outHeight,
-          isStatsReady: true,
-        },
-        [referenceCopy.buffer, rCounts.buffer, gCounts.buffer, bCounts.buffer],
-      );
-    }, 10);
+        self.postMessage(
+          {
+            jobId,
+            referencePixels: referenceCopy.buffer,
+            uniqueColorCount,
+            histogram: [rCounts, gCounts, bCounts],
+            width: outWidth,
+            height: outHeight,
+            isStatsReady: true,
+          },
+          [referenceCopy.buffer, rCounts.buffer, gCounts.buffer, bCounts.buffer],
+        );
+      }, 10);
+    }
 
   } catch (errorObj) {
     error('Worker', 'ERROR %s (job: %d): %o', phaseLabel, jobId, errorObj);
@@ -418,6 +430,14 @@ self.onmessage = async (event) => {
   } finally {
     if (source) {
       source.close();
+    }
+    if (croppedImage) {
+      try { croppedImage.free(); } catch { /* ignore */ }
+    } else if (image) {
+      try { image.free(); } catch { /* ignore */ }
+    }
+    if (wasmPalette) {
+      try { wasmPalette.free(); } catch { /* ignore */ }
     }
   }
 };
