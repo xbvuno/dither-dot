@@ -15,6 +15,7 @@ try {
     keysToRemove.forEach((key) => localStorage.removeItem(key));
     localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
     console.log(`[cache] localStorage cleared for version update to ${CURRENT_VERSION}`);
+  }
 } catch (error) {
   console.warn('[cache] localstorage invalidator failed', error);
 }
