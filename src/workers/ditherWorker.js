@@ -35,10 +35,11 @@ function log(category, message, ...args) {
   if (!debugEnabled) return;
   const color = getWorkerCategoryColor(category);
   console.log(
-    `%c[DitherWorker][%s]%c\u00A0${message}`,
+    '%c[DitherWorker][%s]%c\u00A0%s',
     `color: ${color}; font-weight: bold;`,
     category,
     'color: inherit;',
+    message,
     ...args
   );
 }
@@ -46,10 +47,11 @@ function log(category, message, ...args) {
 function warn(category, message, ...args) {
   const color = getWorkerCategoryColor(category);
   console.warn(
-    `%c[DitherWorker][%s]%c\u00A0${message}`,
+    '%c[DitherWorker][%s]%c\u00A0%s',
     `color: ${color}; font-weight: bold;`,
     category,
     'color: inherit;',
+    message,
     ...args
   );
 }
@@ -57,10 +59,11 @@ function warn(category, message, ...args) {
 function error(category, message, ...args) {
   const color = getWorkerCategoryColor(category);
   console.error(
-    `%c[DitherWorker][%s]%c\u00A0${message}`,
+    '%c[DitherWorker][%s]%c\u00A0%s',
     `color: ${color}; font-weight: bold;`,
     category,
     'color: inherit;',
+    message,
     ...args
   );
 }
