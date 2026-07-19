@@ -6,43 +6,65 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to Cloudflare Pages
     runs-on: ubuntu-latest
+
     permissions:
       contents: read
       deployments: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: 'npm'
+          cache: npm
+
+      - name: Debug Git
+        run: |
+          echo "GitHub SHA: ${{ github.sha }}"
+          git rev-parse HEAD
+          git log --oneline -5
+          git status
+
+      - name: Debug Node
+        run: |
+          node -v
+          npm -v
+
+      - name: Debug package
+        run: |
+          node -p "require('./package.json').version"
+          node -p "require('./package-lock.json').lockfileVersion"
+
+      - name: Search emnapi
+        run: |
+          grep -n "@emnapi/core" package-lock.json || true
+          grep -n "@emnapi/runtime" package-lock.json || true
 
       - name: Verify version matches release tag
         run: |
-          TAG_VERSION="${{ github.ref_name }}"
-          CLEAN_TAG="${TAG_VERSION#v}"
-          PKG_VERSION=$(node -p "require('./package.json').version")
-          echo "Release tag: $TAG_VERSION (clean: $CLEAN_TAG)"
-          echo "package.json version: $PKG_VERSION"
-          if [ "$CLEAN_TAG" != "$PKG_VERSION" ]; then
-            echo "::error::Release tag version ($CLEAN_TAG) does not match package.json version ($PKG_VERSION)!"
-            exit 1
-          fi
+          TAG="${{ github.ref_name }}"
+          CLEAN="${TAG#v}"
+          PKG=$(node -p "require('./package.json').version")
 
-      - name: Install dependencies
+          echo "Tag: $TAG"
+          echo "Package: $PKG"
+
+          test "$CLEAN" = "$PKG"
+
+      - name: Install
         run: npm ci
 
-      - name: Build project
+      - name: Build
         run: npm run build
 
-      - name: Deploy to Cloudflare
+      - name: Deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: latest
           command: deploy
-          wranglerVersion: 'latest'
