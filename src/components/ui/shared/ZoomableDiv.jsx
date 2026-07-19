@@ -163,6 +163,7 @@ export default function ZoomableDiv({ content }) {
     mutation_observer.observe(inner, {
       childList: true,
       subtree: true,
+      attributeFilter: ["height", "width"],
     });
 
     return () => {

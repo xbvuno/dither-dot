@@ -72,6 +72,15 @@ export default function Footer() {
   const activePhaseLabel = getPhaseLabel(currentPhase);
   const showBusyState = isProcessing || Boolean(activePhaseLabel);
 
+  const [lastTotalTime, setLastTotalTime] = useState(0);
+
+  useEffect(() => {
+    if (timing.pipelineTotal > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLastTotalTime(timing.pipelineTotal);
+    }
+  }, [timing.pipelineTotal]);
+
   useEffect(() => {
     return subscribeRenderSnapshot((snapshot) => {
       setUniqueColors(snapshot?.uniqueColors ?? 0);
@@ -170,6 +179,11 @@ export default function Footer() {
     }
   }, [pipelineVisible, timing.pipelineTotal, currentPhase]);
 
+  const formattedTime = lastTotalTime > 0 ? formatMs(lastTotalTime) : '—';
+  const statusSuffix = activePhaseLabel 
+    ? `${activePhaseLabel}...` 
+    : (isProcessing ? (processingLabel || 'PROCESSING...') : '');
+
   return (
     <footer className="app-footer">
       <div className="app-footer-left">
@@ -184,19 +198,21 @@ export default function Footer() {
 
         <div
           ref={timingRef}
-          className={`pipeline-timing${showBusyState ? ' pipeline-timing--busy' : ''}${activePhaseLabel ? ' pipeline-timing--active' : ''}`}
+          className={`pipeline-timing${showBusyState ? ' pipeline-timing--busy' : ''}`}
           onMouseEnter={handleTimingHover}
           onMouseLeave={handleTimingLeave}
         >
-          {showBusyState ? (
-            <span>
-              {activePhaseLabel ? `${activePhaseLabel}...` : (processingLabel || 'PROCESSING...')}
-            </span>
-          ) : (
-            <span title="Hover for pipeline breakdown">
-              {timing.pipelineTotal > 0 ? formatMs(timing.pipelineTotal) : '—'}
-            </span>
-          )}
+          <span title="Hover for pipeline breakdown">
+            {formattedTime}
+            {statusSuffix && (
+              <>
+                {' | '}
+                <span className={activePhaseLabel ? 'pipeline-timing-active-phase' : ''}>
+                  {statusSuffix}
+                </span>
+              </>
+            )}
+          </span>
         </div>
       </div>
 

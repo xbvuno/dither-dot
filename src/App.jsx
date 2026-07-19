@@ -8,6 +8,7 @@ import ImageShader from './components/canvas/ImageShader'
 import AsideRouter from './components/layout/AsideRouter'
 import GifTimeline from './components/timeline/GifTimeline'
 import Footer from './components/layout/Footer'
+import WaveGridSpinner from './components/ui/shared/WaveGridSpinner'
 import usePageStore, { PAGE } from './stores/ui/pageStore'
 import useImageStore from './stores/media/imageStore'
 import useProcessingStore from './stores/engine/processingStore'
@@ -165,14 +166,6 @@ function App() {
             <span className='app-header-title-name'>DITHER-DOT</span>
           </span>
           <div className='app-header-links'>
-            <button type='button' className='header-link-btn' onClick={() => setModalType('about')}>
-              <Info size={13} strokeWidth={2} />
-              ABOUT
-            </button>
-            <button type='button' className='header-link-btn' onClick={() => setModalType('changelog')}>
-              <ScrollText size={13} strokeWidth={2} />
-              CHANGELOG
-            </button>
             <button type='button' className='header-link-btn' onClick={() => setModalType('support')}>
               <Heart size={13} strokeWidth={2} />
               SUPPORT
@@ -197,7 +190,7 @@ function App() {
               <ZoomableDiv content={<ImageShader sourceImg={sourceImg} />} />
               {(viewerLoading || renderProcessing) && (
                 <div className='zoomable-loading-overlay' role='status' aria-live='polite' aria-label='Loading media'>
-                  <span className='zoomable-loading-label'>LOADING</span>
+                  <WaveGridSpinner />
                 </div>
               )}
             </div>
