@@ -149,7 +149,6 @@ const DEFAULT_PALETTE = [
 
 const DEFAULT_PALETTE_SETTINGS = {
   colorCount: 8,
-  samplingAccuracy: 0.5,
   autoFit: false,
   autoFitMethod: AUTOFIT_METHOD.MEDIAN_CUT,
   method: EXTRACT_METHOD.OCTREE,
@@ -330,12 +329,6 @@ const usePaletteStore = create(persist((set, get) => ({
     });
   },
 
-  setSamplingAccuracy: (value) => set(() => {
-    const next = Number(value);
-    return {
-      samplingAccuracy: Math.max(0.1, Math.min(1, Number.isFinite(next) ? next : 0.5)),
-    };
-  }),
 
   setAutoFit:       (v) => set({ autoFit: v }),
   setAutoFitMethod: (m) => set({ autoFitMethod: m }),
@@ -729,7 +722,6 @@ const usePaletteStore = create(persist((set, get) => ({
   },
   partialize: (state) => ({
     colorCount: state.colorCount,
-    samplingAccuracy: state.samplingAccuracy,
     autoFit: state.autoFit,
     autoFitMethod: state.autoFitMethod,
     method: state.method,
