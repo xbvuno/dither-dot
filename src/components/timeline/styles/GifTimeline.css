@@ -68,7 +68,7 @@
   height: 2rem;
   display: inline-grid;
   place-items: center;
-  padding: 0;
+  padding: 0 !important;
 }
 
 .gif-timeline-label {
@@ -141,6 +141,12 @@
   filter: grayscale(100%) blur(0.8px) brightness(0.6);
 }
 
+.gif-frame-btn--unloaded {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
 .gif-timeline-icon-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -191,4 +197,27 @@
 
 .gif-frame-state--done {
   color: var(--color-success);
+}
+
+.gif-decoding-label {
+  animation: gif-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes gif-pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.gif-timeline-shell--decoding {
+  height: 3.2rem !important;
+  min-height: 3.2rem !important;
+  max-height: 3.2rem !important;
+}
+
+.gif-timeline-shell--decoding .gif-timeline-resize-handle {
+  display: none !important;
 }

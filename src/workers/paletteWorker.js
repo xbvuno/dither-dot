@@ -13,6 +13,8 @@ function colorToHex({ r, g, b }) {
 self.onmessage = async (event) => {
   const { jobId, pixels, width, height, method, count } = event.data || {};
 
+  let image = null;
+  let wasmPalette = null;
 
   try {
     if (!wasmInitialized) {
@@ -22,10 +24,9 @@ self.onmessage = async (event) => {
 
     const pixelsArray = new Uint8ClampedArray(pixels);
     const imageData = new ImageData(pixelsArray, width, height);
-    const image = new WasmImage(imageData);
+    image = new WasmImage(imageData);
 
     const generators = Palettes.Generators;
-    let wasmPalette;
 
     if (method === 'octree') {
       wasmPalette = generators.Octree.calculate(image, count);
@@ -47,5 +48,12 @@ self.onmessage = async (event) => {
       jobId,
       error: error instanceof Error ? error.message : 'Palette worker processing failed',
     });
+  } finally {
+    if (image) {
+      try { image.free(); } catch { /* ignore */ }
+    }
+    if (wasmPalette) {
+      try { wasmPalette.free(); } catch { /* ignore */ }
+    }
   }
 };

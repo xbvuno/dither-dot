@@ -1,12 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import {
-  medianCut,
-  kMeans,
-  octree,
-  blendHex,
-} from '../../utils/colorAlgorithms';
-import { resolvePaletteSampleStride } from '../../utils/palette/sampling';
+import { blendHex } from '../../utils/colorMath';
 import { getPaletteReference } from '../../utils/canvasRegistry';
 import useProcessingStore from '../engine/processingStore';
 import usePerformanceStore from '../engine/performanceStore';
@@ -67,41 +61,45 @@ function makeColor(hex, locked = false) {
   return { id: _uid++, hex, locked, hidden: false };
 }
 
-function runExtraction(pixels, method, count, options = {}) {
-  if (method === EXTRACT_METHOD.OCTREE) return octree(pixels, count, options);
-  if (method === EXTRACT_METHOD.KMEANS) return kMeans(pixels, count, 8, options);
-  return medianCut(pixels, count, options);
+function logPaletteTime(method, count, duration) {
+  const isDebugEnabled = typeof window !== 'undefined' && window.ditherEngine?.debugEnabled;
+  if (!isDebugEnabled) return;
+
+  console.log(
+    `%c[PaletteWorker]%c\u00A0Palette generated in ${duration.toFixed(2)}ms (Method: ${method}, Colors: ${count})`,
+    'color: #4f46e5; font-weight: bold;',
+    'color: inherit;'
+  );
 }
 
 function runExtractionAsync(pixels, method, count, options = {}) {
   if (!paletteWorker) {
-    return Promise.resolve(runExtraction(pixels, method, count, options));
+    return Promise.reject(new Error('Palette worker is unavailable'));
   }
 
+  const startTs = performance.now();
   const bufferCopy = new Uint8ClampedArray(pixels);
   const jobId = ++paletteWorkerJobId;
 
   return new Promise((resolve, reject) => {
     let settled = false;
 
-    // Safety timeout: if the worker hangs, fall back to main-thread extraction
     const timeout = setTimeout(() => {
       if (settled) return;
       settled = true;
       paletteWorkerJobs.delete(jobId);
-      console.warn('[palette] Worker timed out, falling back to main thread');
-      try {
-        const fallback = runExtraction(new Uint8ClampedArray(pixels), method, count, options);
-        resolve(fallback);
-      } catch (e) {
-        reject(e);
-      }
+      console.warn('[palette] Worker timed out');
+      reject(new Error('Palette extraction timed out'));
     }, 15000);
 
     const wrappedResolve = (result) => {
       if (settled) return;
       settled = true;
       clearTimeout(timeout);
+      
+      const duration = performance.now() - startTs;
+      logPaletteTime(method, count, duration);
+
       resolve(result);
     };
 
@@ -123,7 +121,6 @@ function runExtractionAsync(pixels, method, count, options = {}) {
           height: options.height,
           method,
           count,
-          sampleStride: options.sampleStride,
         },
         [bufferCopy.buffer],
       );
@@ -382,7 +379,7 @@ const usePaletteStore = create(persist((set, get) => ({
     const generationToken = ++latestGenerationToken;
     set({ isGeneratingPalette: true });
 
-    const { method, colorCount, colors, samplingAccuracy } = get();
+    const { method, colorCount, colors } = get();
 
     // In CUSTOM mode the palette is user-authored and must never be regenerated.
     if (method === EXTRACT_METHOD.CUSTOM) {
@@ -419,9 +416,7 @@ const usePaletteStore = create(persist((set, get) => ({
     }
 
     try {
-      const sampleStride = resolvePaletteSampleStride(samplingAccuracy, pixels.length);
       const extracted = await runExtractionAsync(pixels, algoMethod, slots, {
-        sampleStride,
         width: reference.width || 1,
         height: reference.height || 1,
       });

@@ -1,0 +1,24 @@
+.spinner {
+  width: 48px;
+  height: 48px;
+  color: white;
+}
+
+.spinner rect {
+  fill: currentColor;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: wave 1.35s cubic-bezier(.4, 0, .2, 1) infinite;
+}
+
+@keyframes wave {
+  0%, 100% {
+    opacity: .2;
+    transform: scale(.55);
+  }
+
+  45% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

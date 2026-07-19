@@ -98,7 +98,6 @@ function decodeGifFrames(arrayBuffer) {
 self.onmessage = (event) => {
   const { jobId, gifBuffer } = event.data || {};
 
-
   try {
     const buffer = gifBuffer instanceof ArrayBuffer
       ? gifBuffer
