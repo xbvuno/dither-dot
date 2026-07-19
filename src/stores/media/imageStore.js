@@ -38,6 +38,7 @@ const useImageStore = create((set, get) => ({
   ...DEFAULT_IMAGE_STATE,
   viewerLoading: false,
   exportPreviewUrl: null,
+  lastRenderJobId: null,
 
   setSourceFromBlob: async (blob, fileName = 'clipboard-image.png', options = {}) => {
     useWebcamStore.getState().stopWebcam?.();

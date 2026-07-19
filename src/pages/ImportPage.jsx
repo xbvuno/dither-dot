@@ -4,7 +4,6 @@ import { Save, Copy, X, FileUp, Clipboard, Camera, CameraOff, FlipHorizontal, Tr
 import useImageStore from '../stores/media/imageStore';
 import useGalleryStore, { GALLERY_PRESETS } from '../stores/data/galleryStore';
 import { getOutputCanvas } from '../utils/canvasRegistry';
-import { clearGalleryHistory } from '../stores/engine/resetAll';
 import useParamsStore from '../stores/data/paramsStore';
 import useGifStore from '../stores/media/gifStore';
 import useWebcamStore, { WEBCAM_SOURCE } from '../stores/media/webcamStore';
@@ -43,7 +42,7 @@ function isLikelyImageFile(file) {
   return SUPPORTED_EXTENSIONS.has(getExtension(file.name));
 }
 
-const LARGE_IMAGE_THRESHOLD = 1_000_000;
+const LARGE_IMAGE_THRESHOLD = 1920 * 1080;
 
 function isGifFile(file) {
   if (!file) return false;
@@ -635,6 +634,7 @@ function GallerySection() {
   const resetToDefault = useImageStore(s => s.resetToDefault);
   const gifFramesLen = useGifStore(s => s.frames.length);
   const setGifFrames = useGifStore(s => s.setFrames);
+  const setDecoding = useGifStore(s => s.setDecoding);
   const history        = useGalleryStore(s => s.history);
   const removeHistoryItem = useGalleryStore(s => s.removeHistoryItem);
   const [presetStaticPreviews, setPresetStaticPreviews] = useState({});
@@ -671,7 +671,7 @@ function GallerySection() {
   }, [presetItems]);
 
   const handleClear = () => {
-    clearGalleryHistory();
+    useGalleryStore.getState().clearHistory();
     if (sourceImg && history.some((item) => item.src === sourceImg)) {
       resetToDefault();
     }
@@ -693,6 +693,7 @@ function GallerySection() {
     }
 
     if (item.kind === 'gif' && item.gifDataUrl) {
+      setDecoding(true);
       try {
         const response = await fetch(item.gifDataUrl);
         if (!response.ok) {
@@ -709,6 +710,7 @@ function GallerySection() {
         const firstFrameBlob = await rgbaFrameToPngBlob(decoded.frames[0]);
         await setSourceFromBlob(firstFrameBlob, item.name, { skipHistory: true });
       } catch (error) {
+        setDecoding(false);
         alert(error instanceof Error ? error.message : 'FAILED TO LOAD GIF FROM GALLERY.');
       }
       return;
@@ -746,9 +748,17 @@ function GallerySection() {
       setSourceDirect(staticPreview, item.name, 'default');
 
       if (getSourceExtension(item.src) === 'gif') {
-        const decoded = await decodeGifWithWorker(animatedBlob);
-        if (decoded.frames.length) {
-          setGifFrames(decoded.frames, decoded.loop);
+        setDecoding(true);
+        try {
+          const decoded = await decodeGifWithWorker(animatedBlob);
+          if (decoded.frames.length) {
+            setGifFrames(decoded.frames, decoded.loop);
+          } else {
+            setDecoding(false);
+          }
+        } catch (error) {
+          setDecoding(false);
+          throw error;
         }
       }
     } catch (error) {
@@ -838,6 +848,7 @@ export default function ImportPage() {
   const setSourceFromBlob = useImageStore(s => s.setSourceFromBlob);
   const pushGifHistory = useGalleryStore(s => s.pushGifHistory);
   const setGifFrames = useGifStore(s => s.setFrames);
+  const setDecoding = useGifStore(s => s.setDecoding);
   const clearGifFrames = useGifStore(s => s.clearFrames);
   const setSourceDirect = useImageStore(s => s.setSourceDirect);
   const resetToDefault = useImageStore(s => s.resetToDefault);
@@ -852,19 +863,25 @@ export default function ImportPage() {
 
   const doImport = useCallback(async (blob, name) => {
     if (isGifFile({ type: blob?.type, name })) {
-      const decoded = await decodeGifWithWorker(blob);
-      if (!decoded.frames.length) {
-        throw new Error('GIF decode returned no frames.');
+      setDecoding(true);
+      try {
+        const decoded = await decodeGifWithWorker(blob);
+        if (!decoded.frames.length) {
+          throw new Error('GIF decode returned no frames.');
+        }
+
+        setGifFrames(decoded.frames, decoded.loop);
+
+        const firstFrameBlob = await rgbaFrameToPngBlob(decoded.frames[0]);
+        await setSourceFromBlob(firstFrameBlob, name, { skipHistory: true });
+
+        const previewSrc = await blobToDataUrl(firstFrameBlob);
+        const gifDataUrl = await blobToDataUrl(blob);
+        pushGifHistory(previewSrc, name, gifDataUrl);
+      } catch (error) {
+        setDecoding(false);
+        throw error;
       }
-
-      setGifFrames(decoded.frames, decoded.loop);
-
-      const firstFrameBlob = await rgbaFrameToPngBlob(decoded.frames[0]);
-      await setSourceFromBlob(firstFrameBlob, name, { skipHistory: true });
-
-      const previewSrc = await blobToDataUrl(firstFrameBlob);
-      const gifDataUrl = await blobToDataUrl(blob);
-      pushGifHistory(previewSrc, name, gifDataUrl);
       return;
     }
 
@@ -879,7 +896,7 @@ export default function ImportPage() {
     }
 
     await setSourceFromBlob(blob, name);
-  }, [clearGifFrames, pushGifHistory, setGifFrames, setSourceFromBlob]);
+  }, [clearGifFrames, pushGifHistory, setGifFrames, setSourceFromBlob, setDecoding]);
 
   const importWithSizeCheck = useCallback(async (blob, name) => {
     const dims = await getImageDimensions(blob);
@@ -1010,7 +1027,7 @@ export default function ImportPage() {
     if (isRandomLoading) return;
     setIsRandomLoading(true);
     try {
-      const w = Math.floor(Math.random() * (1920 - 400 + 1)) + 400;
+      const w = Math.floor(Math.random() * (1980 - 400 + 1)) + 400;
       const h = Math.floor(Math.random() * (1080 - 300 + 1)) + 300;
       const url = `https://picsum.photos/${w}/${h}?random=${Date.now()}`;
       
@@ -1050,7 +1067,7 @@ export default function ImportPage() {
           onDragLeave={(event) => { event.preventDefault(); setIsDropActive(false); }}
           onDrop={handleDrop}
         >
-          DROP IMAGE HERE OR PRESS CTRL+V
+          DROP HERE OR PRESS CTRL+V
         </div>
       </div>
 
@@ -1080,7 +1097,7 @@ export default function ImportPage() {
             disabled={isRandomLoading}
           >
             <Dices size={13} strokeWidth={1.5} />
-            {isRandomLoading ? 'LOADING...' : 'RANDOM IMG'}
+            {isRandomLoading ? 'LOADING...' : 'RANDOM IMAGE'}
           </button>
           <button
             type='button'

@@ -34,7 +34,7 @@
   color: var(--color-text);
 }
 
-.pipeline-timing--active {
+.pipeline-timing-active-phase {
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2rem;
