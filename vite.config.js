@@ -63,6 +63,7 @@ export default defineConfig({
   build: {
     target: 'esnext',
     chunkSizeWarningLimit: 600,
+    assetsInlineLimit: 100000,
     rollupOptions: {
       output: {
         manualChunks: (id) => {
