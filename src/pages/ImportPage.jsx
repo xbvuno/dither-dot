@@ -558,19 +558,22 @@ function SourceSection() {
 
   return (
     <div className='bv-section'>
-      <p className='bv-label'>SOURCE</p>
+      <label htmlFor='source-name-input' className='bv-label' style={{ display: 'block' }}>SOURCE</label>
       {isDefault
         ? <p className='import-current-file'>{label}</p>
         : (
           <input
             type='text'
             className='import-name-input'
+            name='sourceName'
+            id='source-name-input'
             value={editValue}
             onFocus={handleFocus}
             onChange={handleChange}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             spellCheck={false}
+            aria-label='Source Name'
           />
         )
       }
@@ -1112,9 +1115,12 @@ export default function ImportPage() {
         <input
           ref={inputRef}
           type='file'
+          name='imageFileInput'
+          id='image-file-input'
           accept={INPUT_ACCEPT}
           onChange={handleFilePickerChange}
           style={{ display: 'none' }}
+          aria-label='Select image file'
         />
       </div>
 

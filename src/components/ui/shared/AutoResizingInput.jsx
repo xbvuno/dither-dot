@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react"
 
-export default function AutoResizingInput({ min, max, step, value: externalValue, onChange, label, 'aria-label': ariaLabelProp }) {
-    const ariaLabel = ariaLabelProp || label || 'Numeric input'
+export default function AutoResizingInput({ min, max, step, value: externalValue, onChange, label, 'aria-label': ariaLabelProp, name, id }) {
+    const ariaLabel = ariaLabelProp || label || name || 'Numeric input'
+    const inputName = name || (label ? label.toLowerCase().replace(/\s+/g, '-') : 'numeric-input')
+    const inputId = id || `input-${inputName}`
     const [draftValue, setDraftValue] = useState(String(externalValue ?? ''))
     const [isValid, setIsValid] = useState(true)
     const [isEditing, setIsEditing] = useState(false)
@@ -137,6 +139,8 @@ export default function AutoResizingInput({ min, max, step, value: externalValue
         <input
             ref={inputRef}
             type="number"
+            name={inputName}
+            id={inputId}
             min={min}
             max={max}
             step={step}

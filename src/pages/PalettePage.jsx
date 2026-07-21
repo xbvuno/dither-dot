@@ -240,15 +240,18 @@ function ColorsSection({ selectedId, setSelectedId }) {
             </>
           )}
 
-          <p className="bv-label">CUSTOM PALETTE</p>
+          <label htmlFor="custom-palette-name-input" className="bv-label" style={{ display: 'block' }}>CUSTOM PALETTE</label>
           <div className="bv-option-group palette-save-row">
             <input
               type="text"
+              name="customPaletteName"
+              id="custom-palette-name-input"
               className="palette-name-input"
               value={customPaletteName}
               onChange={(event) => setCustomPaletteName(event.target.value)}
               spellCheck={false}
               maxLength={64}
+              aria-label="Custom Palette Name"
             />
             <button
               type="button"
@@ -337,9 +340,12 @@ function PaletteLibrarySection() {
       <input
         ref={fileInputRef}
         type="file"
+        name="paletteFileInput"
+        id="palette-file-input"
         accept="application/json,.json,.txt"
         onChange={importPalette}
         style={{ display: 'none' }}
+        aria-label="Select palette JSON or text file"
       />
 
       <div className="palette-library-list">
@@ -419,17 +425,23 @@ function FloatingColorEditor({ hostElement, color, onSetColor }) {
       <label className="palette-editor-preview" style={{ backgroundColor: color.hex }}>
         <input
           type="color"
+          name="colorPickerInput"
+          id="color-picker-input"
           value={color.hex}
           onChange={(event) => onSetColor(color.id, event.target.value)}
+          aria-label="Choose color hex"
         />
       </label>
       <input
         className="palette-name-input"
         type="text"
+        name="colorHexInput"
+        id="color-hex-input"
         value={color.hex}
         onChange={(event) => onSetColor(color.id, event.target.value)}
         spellCheck={false}
         maxLength={7}
+        aria-label="Color Hex Code"
       />
     </div>,
     hostElement,
