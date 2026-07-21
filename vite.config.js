@@ -14,23 +14,18 @@ function generateServiceWorker() {
       await workboxBuild.generateSW({
         globDirectory: 'dist',
         globPatterns: [
-          '**/*.{js,css,html,png,svg,ico,json}'
+          '**/*.{js,css,html,png,svg,jpg,jpeg,gif,ico,json,wasm}'
         ],
         swDest: 'dist/sw.js',
         clientsClaim: true,
         skipWaiting: true,
+        navigateFallback: '/index.html',
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/.*\/api\/.*$/,
-            handler: 'NetworkFirst',
+            urlPattern: ({ request }) => request.destination === 'document' || request.destination === 'script' || request.destination === 'style',
+            handler: 'StaleWhileRevalidate',
             options: {
-              cacheName: 'api-cache',
-              networkTimeoutSeconds: 5,
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 86400
-              },
-              cacheableResponse: { statuses: [0, 200] }
+              cacheName: 'static-resources',
             }
           },
           {
@@ -63,7 +58,6 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] }),
     wasm(),
-    // topLevelAwait(),
     generateServiceWorker()
   ],
   build: {
@@ -72,8 +66,10 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) return 'react'
-          if (id.includes('node_modules/zustand')) return 'zustand'
+          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) return 'vendor-react'
+          if (id.includes('node_modules/zustand/')) return 'vendor-zustand'
+          if (id.includes('node_modules/lucide-react/')) return 'vendor-icons'
+          if (id.includes('node_modules/gifuct-js/') || id.includes('node_modules/modern-gif/')) return 'vendor-gif'
         }
       }
     }
