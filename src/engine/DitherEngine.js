@@ -930,6 +930,27 @@ const action = this.debugEnabled ? "disable" : "enable";
       } = event.data;
 
       const latestId = this.latestRequestId;
+      const shouldRefreshPalette = Boolean(this.refreshPaletteForRequest.get(jobId));
+
+      if (shouldRefreshPalette) {
+        this.refreshPaletteForRequest.delete(jobId);
+        if (referencePixels && referencePixels.byteLength > 0) {
+          const reference = new Uint8ClampedArray(referencePixels);
+          registerPaletteReference({
+            width: outWidth,
+            height: outHeight,
+            pixels: reference,
+          });
+        }
+        try {
+          const paletteState = usePaletteStore.getState();
+          paletteState.generatePalette().catch((err) => {
+            this.error('Palette', 'palette generation failed: %o', err);
+          });
+        } catch (err) {
+          this.error('Palette', 'palette generation failed: %o', err);
+        }
+      }
 
       if (jobId !== latestId) {
         if (isImageReady || error) {
@@ -952,7 +973,6 @@ const action = this.debugEnabled ? "disable" : "enable";
         return;
       }
 
-      const shouldRefreshPalette = this.refreshPaletteForRequest.get(jobId);
       const wasDitherEnabled = Boolean(this.ditherEnabledForRequest.get(jobId));
       const gifFrameIndex = this.gifFrameForRequest.get(jobId);
 
