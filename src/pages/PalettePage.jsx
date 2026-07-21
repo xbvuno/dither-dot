@@ -422,7 +422,7 @@ function FloatingColorEditor({ hostElement, color, onSetColor }) {
   return createPortal(
     <div className="palette-floating-editor">
       <p className="bv-label">COLOR EDITOR</p>
-      <label className="palette-editor-preview" style={{ backgroundColor: color.hex }}>
+      <label htmlFor="color-picker-input" className="palette-editor-preview" style={{ backgroundColor: color.hex }}>
         <input
           type="color"
           name="colorPickerInput"

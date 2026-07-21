@@ -89,6 +89,7 @@ class DitherEngine {
     this.refreshPaletteForRequest = new Map();
     this.ditherEnabledForRequest = new Map();
     this.gifFrameForRequest = new Map();
+    this.skipStatsForRequest = new Map();
     
     this.rafId = null;
     this.processingVisibilityTimer = null;
@@ -607,6 +608,7 @@ const action = this.debugEnabled ? "disable" : "enable";
     this.refreshPaletteForRequest.clear();
     this.ditherEnabledForRequest.clear();
     this.gifFrameForRequest.clear();
+    this.skipStatsForRequest.clear();
   }
 
   setProcessingVisible(visible) {
@@ -684,6 +686,7 @@ const action = this.debugEnabled ? "disable" : "enable";
       } catch (error) {
         this.error('Pipeline', 'Failed to create ImageBitmap from active source: %o', error);
         this.preserveVisibleOutput();
+        this.processingQueued = false;
         return;
       }
 
@@ -696,9 +699,12 @@ const action = this.debugEnabled ? "disable" : "enable";
       const requestId = ++this.latestRequestId;
       this.log('Worker', 'Dispatching job %d. customSize: %d x %d, ditherEnabled: %o', requestId, customWidth, customHeight, ditherEnabled);
       
+      const skipStats = frameIndex >= 0 && (gifState.playing || gifState.exporting || frameIndex !== gifState.currentFrameIndex);
+
       this.refreshPaletteForRequest.set(requestId, refreshPalette);
       this.ditherEnabledForRequest.set(requestId, ditherEnabled);
       this.gifFrameForRequest.set(requestId, frameIndex);
+      this.skipStatsForRequest.set(requestId, skipStats);
       
       if (frameIndex >= 0) {
         gifState.markFrameRendering(frameIndex);
@@ -838,6 +844,7 @@ const action = this.debugEnabled ? "disable" : "enable";
     this.refreshPaletteForRequest.delete(jobId);
     this.ditherEnabledForRequest.delete(jobId);
     this.gifFrameForRequest.delete(jobId);
+    this.skipStatsForRequest.delete(jobId);
 
     usePerformanceStore.getState().setCurrentPhase(null);
     usePerformanceStore.getState().recordPipelineComplete();
@@ -895,7 +902,7 @@ const action = this.debugEnabled ? "disable" : "enable";
       const latestId = this.latestRequestId;
 
       if (jobId !== latestId) {
-        if (isImageReady) {
+        if (isImageReady || error) {
           this.setProcessingDelta(-1);
           if (this.processingQueued) {
             this.queueProcessing(false);
@@ -1005,12 +1012,17 @@ const action = this.debugEnabled ? "disable" : "enable";
         }
 
         this.ditherEnabledForRequest.delete(jobId);
+        const skipStats = Boolean(this.skipStatsForRequest.get(jobId));
 
-        if (!shouldRefreshPalette) {
-          this.setProcessingDelta(-1);
-          if (this.processingQueued) {
-            this.queueProcessing(false);
-          }
+        if (skipStats) {
+          this.refreshPaletteForRequest.delete(jobId);
+          this.gifFrameForRequest.delete(jobId);
+          this.skipStatsForRequest.delete(jobId);
+        }
+
+        this.setProcessingDelta(-1);
+        if (this.processingQueued) {
+          this.queueProcessing(false);
         }
       }
 
@@ -1039,19 +1051,17 @@ const action = this.debugEnabled ? "disable" : "enable";
           }
         }
 
+        const shouldRefresh = this.refreshPaletteForRequest.get(jobId);
         this.refreshPaletteForRequest.delete(jobId);
         this.gifFrameForRequest.delete(jobId);
+        this.skipStatsForRequest.delete(jobId);
 
-        if (shouldRefreshPalette) {
+        if (shouldRefresh) {
           try {
             const paletteState = usePaletteStore.getState();
             await paletteState.generatePalette();
           } catch (err) {
             this.error('Palette', 'palette generation failed: %o', err);
-          }
-          this.setProcessingDelta(-1);
-          if (this.processingQueued) {
-            this.queueProcessing(false);
           }
         }
       }

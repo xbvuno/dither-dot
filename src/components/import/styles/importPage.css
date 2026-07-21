@@ -1,0 +1,7 @@
+/* Component-level styles for Import components */
+
+.import-component-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+}

@@ -16,6 +16,14 @@ try {
     localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
     console.log(`[cache] localStorage cleared for version update to ${CURRENT_VERSION}`);
   }
+
+  if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      for (const registration of registrations) {
+        registration.unregister();
+      }
+    }).catch(() => {});
+  }
 } catch (error) {
   console.warn('[cache] localstorage invalidator failed', error);
 }

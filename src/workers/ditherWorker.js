@@ -443,11 +443,12 @@ self.onmessage = async (event) => {
     });
   } finally {
     if (source) {
-      source.close();
+      try { source.close(); } catch { /* ignore */ }
     }
     if (croppedImage) {
       try { croppedImage.free(); } catch { /* ignore */ }
-    } else if (image) {
+    }
+    if (image) {
       try { image.free(); } catch { /* ignore */ }
     }
     if (wasmPalette) {
