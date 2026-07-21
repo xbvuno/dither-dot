@@ -729,7 +729,7 @@ const action = this.debugEnabled ? "disable" : "enable";
       const requestId = ++this.latestRequestId;
       this.log('Worker', 'Dispatching job %d. customSize: %d x %d, ditherEnabled: %o', requestId, customWidth, customHeight, ditherEnabled);
       
-      const skipStats = frameIndex >= 0 && (gifState.playing || gifState.exporting || frameIndex !== gifState.currentFrameIndex);
+      const skipStats = !refreshPalette && frameIndex >= 0 && (gifState.playing || gifState.exporting || frameIndex !== gifState.currentFrameIndex);
 
       this.refreshPaletteForRequest.set(requestId, refreshPalette);
       this.ditherEnabledForRequest.set(requestId, ditherEnabled);
