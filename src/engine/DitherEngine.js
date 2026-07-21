@@ -382,14 +382,23 @@ const action = this.debugEnabled ? "disable" : "enable";
     );
 
     this.subscriptions.push(
-      usePaletteStore.subscribe((state, previousState) => {
+      usePaletteStore.subscribe((state) => {
         this.syncWatermarkPalette();
         this.syncVisibleLayer();
 
-        const methodChanged = state.method !== previousState.method;
-        const colorCountChanged = state.colorCount !== previousState.colorCount;
-        const samplingAccuracyChanged = state.samplingAccuracy !== previousState.samplingAccuracy;
-        const colorsChanged = state.colors !== previousState.colors;
+        const prevState = this.previousPaletteState;
+        const methodChanged = !prevState || state.method !== prevState.method;
+        const colorCountChanged = !prevState || state.colorCount !== prevState.colorCount;
+        const samplingAccuracyChanged = !prevState || state.samplingAccuracy !== prevState.samplingAccuracy;
+        const colorsChanged = !prevState || state.colors !== prevState.colors;
+
+        this.previousPaletteState = {
+          method: state.method,
+          colorCount: state.colorCount,
+          samplingAccuracy: state.samplingAccuracy,
+          colors: state.colors,
+        };
+
         const shouldRefreshPalette =
           state.method !== EXTRACT_METHOD.CUSTOM && (methodChanged || colorCountChanged || samplingAccuracyChanged);
         const shouldInvalidateFrames = methodChanged || colorCountChanged || samplingAccuracyChanged || colorsChanged;
@@ -410,27 +419,29 @@ const action = this.debugEnabled ? "disable" : "enable";
     );
 
     this.subscriptions.push(
-      useSizeStore.subscribe((state, previousState) => {
+      useSizeStore.subscribe((state) => {
         const source = this.activeSource;
         if (!source) return;
+
+        const prevState = this.previousSizeState || {};
 
         const sourceW = source.naturalWidth || source.width || 1;
         const sourceH = source.naturalHeight || source.height || 1;
 
         const w = Math.max(
           1,
-          Math.floor(Number(state.customSize.customWidth) || Number(state.size.width) || sourceW || 1),
+          Math.floor(Number(state.customSize?.customWidth) || Number(state.size?.width) || sourceW || 1),
         );
         const h = Math.max(
           1,
-          Math.floor(Number(state.customSize.customHeight) || Number(state.size.height) || sourceH || 1),
+          Math.floor(Number(state.customSize?.customHeight) || Number(state.size?.height) || sourceH || 1),
         );
 
         const prevW = Math.max(
           1,
           Math.floor(
-            Number(previousState?.customSize?.customWidth) ||
-            Number(previousState?.size?.width) ||
+            Number(prevState.customSize?.customWidth) ||
+            Number(prevState.size?.width) ||
             sourceW ||
             1,
           ),
@@ -438,8 +449,8 @@ const action = this.debugEnabled ? "disable" : "enable";
         const prevH = Math.max(
           1,
           Math.floor(
-            Number(previousState?.customSize?.customHeight) ||
-            Number(previousState?.size?.height) ||
+            Number(prevState.customSize?.customHeight) ||
+            Number(prevState.size?.height) ||
             sourceH ||
             1,
           ),
@@ -450,10 +461,16 @@ const action = this.debugEnabled ? "disable" : "enable";
         const top = state.crop?.top || 0;
         const bottom = state.crop?.bottom || 0;
 
-        const prevLeft = previousState?.crop?.left || 0;
-        const prevRight = previousState?.crop?.right || 0;
-        const prevTop = previousState?.crop?.top || 0;
-        const prevBottom = previousState?.crop?.bottom || 0;
+        const prevLeft = prevState.crop?.left || 0;
+        const prevRight = prevState.crop?.right || 0;
+        const prevTop = prevState.crop?.top || 0;
+        const prevBottom = prevState.crop?.bottom || 0;
+
+        this.previousSizeState = {
+          size: state.size ? { ...state.size } : null,
+          customSize: state.customSize ? { ...state.customSize } : null,
+          crop: state.crop ? { ...state.crop } : null,
+        };
 
         if (w === prevW && h === prevH && left === prevLeft && right === prevRight && top === prevTop && bottom === prevBottom) {
           return;
@@ -481,8 +498,14 @@ const action = this.debugEnabled ? "disable" : "enable";
     );
 
     this.subscriptions.push(
-      useWebcamStore.subscribe((state, previousState) => {
-        if (state.mirrored !== previousState.mirrored) {
+      useWebcamStore.subscribe((state) => {
+        const prevState = this.previousWebcamState || {};
+        const mirroredChanged = state.mirrored !== prevState.mirrored;
+        const becameInactive = prevState.active && !state.active;
+
+        this.previousWebcamState = { mirrored: state.mirrored, active: state.active };
+
+        if (mirroredChanged) {
           this.webcamMirror = Boolean(state.mirrored);
           const video = this.webcamVideo;
           const canvas = this.webcamCanvas;
@@ -497,7 +520,7 @@ const action = this.debugEnabled ? "disable" : "enable";
           }
         }
 
-        if (previousState.active && !state.active && this.isWebcamMode) {
+        if (becameInactive && this.isWebcamMode) {
           this.cleanupWebcam();
           Promise.resolve().then(() => {
             useImageStore.getState().resetToDefault();
@@ -507,9 +530,16 @@ const action = this.debugEnabled ? "disable" : "enable";
     );
 
     this.subscriptions.push(
-      useGifStore.subscribe((state, previousState) => {
-        const hadFrames = (previousState?.frames?.length || 0) > 1;
+      useGifStore.subscribe((state) => {
+        const prevState = this.previousGifState || {};
+        const hadFrames = (prevState.frames?.length || 0) > 1;
         const hasFrames = (state?.frames?.length || 0) > 1;
+
+        this.previousGifState = {
+          frames: state.frames,
+          currentFrameIndex: state.currentFrameIndex,
+        };
+
         if (!hasFrames && !hadFrames) return;
 
         if (!hadFrames && hasFrames) {
@@ -517,7 +547,7 @@ const action = this.debugEnabled ? "disable" : "enable";
           return;
         }
 
-        if (state.currentFrameIndex !== previousState.currentFrameIndex) {
+        if (state.currentFrameIndex !== prevState.currentFrameIndex) {
           this.swapSourceFrame(state.currentFrameIndex);
         }
       })
