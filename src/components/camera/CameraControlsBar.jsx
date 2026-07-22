@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Aperture } from 'lucide-react';
 import useWebcamStore from '../../stores/media/webcamStore';
 import { compositeWithWatermark, getExportCanvasOrThrow } from '../../utils/importUtils';
+import { notify } from '../../stores/ui/popupStore';
 import snapSound from '../../assets/sounds/snap.mp3';
 import './styles/CameraControlsBar.css';
 
@@ -42,6 +43,7 @@ export default function CameraControlsBar() {
         timestamp,
         name,
       });
+      notify('PHOTO CAPTURED', 'success');
     } catch (err) {
       console.error('[CAMERA SHOOT ERROR]', err);
     } finally {

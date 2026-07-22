@@ -10,6 +10,7 @@ import GifTimeline from './components/timeline/GifTimeline'
 import CameraControlsBar from './components/camera/CameraControlsBar'
 import Footer from './components/layout/Footer'
 import WaveGridSpinner from './components/ui/shared/WaveGridSpinner'
+import PopupMessage from './components/ui/shared/PopupMessage'
 import usePageStore, { PAGE } from './stores/ui/pageStore'
 import useImageStore from './stores/media/imageStore'
 import useProcessingStore from './stores/engine/processingStore'
@@ -267,6 +268,7 @@ function App() {
           </Aside>
           <div className='flex-v'>
             <div className='zoomable-wrap'>
+              <PopupMessage />
               <ZoomableDiv content={<ImageShader sourceImg={sourceImg} />} />
               {(viewerLoading || renderProcessing) && (
                 <div className='zoomable-loading-overlay' role='status' aria-live='polite' aria-label='Loading media'>
