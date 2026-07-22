@@ -26,6 +26,33 @@
   cursor: grab;
 }
 
+@media (max-width: 768px) {
+  .zoomable-outer {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+  }
+
+  .zoomable-outer::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .zoomable-outer::-webkit-scrollbar-track {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+
+  .zoomable-outer::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.35) !important;
+    border-radius: 3px;
+  }
+
+  .zoomable-outer::-webkit-scrollbar-corner {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+}
+
 .zoomable-inner {
   transform-origin: top left;
 }

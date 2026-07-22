@@ -15,7 +15,8 @@ export default function ZoomableDiv({ content }) {
     startScrollLeft: 0,
     startScrollTop: 0,
     width: 0,
-    height: 0
+    height: 0,
+    isUpdatingProgrammatically: false
   });
 
   const ZOOM_MIN = 1;
@@ -36,13 +37,12 @@ export default function ZoomableDiv({ content }) {
       const contentElem = getContentElem();
       if (!contentElem) return;
 
+      state.current.isUpdatingProgrammatically = true;
+
       const outerWidth = outer.clientWidth;
       const outerHeight = outer.clientHeight;
       const contentWidth = contentElem.scrollWidth || contentElem.offsetWidth;
       const contentHeight = contentElem.scrollHeight || contentElem.offsetHeight;
-
-      if (!contentWidth || !contentHeight || !outerWidth || !outerHeight) return;
-
       const fitScale = Math.min(outerWidth / contentWidth, outerHeight / contentHeight);
       const prevScale = state.current.scale;
       const clampedScale = clamp(targetScale, ZOOM_MIN, ZOOM_MAX);
@@ -62,18 +62,26 @@ export default function ZoomableDiv({ content }) {
       state.current.height = contentHeight;
 
       const newRenderScale = fitScale * clampedScale;
-      const newRenderWidth = contentWidth * newRenderScale;
-      const newRenderHeight = contentHeight * newRenderScale;
+      const newRenderWidth = Math.floor(contentWidth * newRenderScale);
+      const newRenderHeight = Math.floor(contentHeight * newRenderScale);
       const newPadX = Math.max(0, (outerWidth - newRenderWidth) / 2);
       const newPadY = Math.max(0, (outerHeight - newRenderHeight) / 2);
 
       inner.style.width = `${newRenderWidth}px`;
       inner.style.height = `${newRenderHeight}px`;
-      inner.style.marginLeft = `${newPadX}px`;
-      inner.style.marginTop = `${newPadY}px`;
+      inner.style.marginLeft = `${Math.floor(newPadX)}px`;
+      inner.style.marginTop = `${Math.floor(newPadY)}px`;
+      inner.style.paddingLeft = '0px';
+      inner.style.paddingTop = '0px';
+      inner.style.boxSizing = 'content-box';
 
       contentElem.style.transformOrigin = 'top left';
       contentElem.style.scale = newRenderScale;
+
+      if (window.innerWidth <= 768) {
+        const isZoomed = clampedScale > (ZOOM_MIN + SCALE_EPSILON);
+        outer.style.overflow = isZoomed ? 'auto' : 'hidden';
+      }
 
       const targetScrollLeft = newPadX + xF * newRenderScale - focalX;
       const targetScrollTop = newPadY + yF * newRenderScale - focalY;
@@ -81,16 +89,24 @@ export default function ZoomableDiv({ content }) {
       outer.scrollLeft = Math.max(0, targetScrollLeft);
       outer.scrollTop = Math.max(0, targetScrollTop);
 
+      setTimeout(() => {
+        state.current.isUpdatingProgrammatically = false;
+      }, 0);
+
       window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
     };
 
     const updateScale = () => {
+      const atBaseZoom = Math.abs(state.current.scale - ZOOM_MIN) < SCALE_EPSILON;
+      if (atBaseZoom) {
+        state.current.scale = ZOOM_MIN;
+        outer.scrollLeft = 0;
+        outer.scrollTop = 0;
+      }
       const outerWidth = outer.clientWidth;
       const outerHeight = outer.clientHeight;
       zoomTo(state.current.scale, outerWidth / 2, outerHeight / 2);
     };
-
-    updateScale();
 
     const handleWheel = (e) => {
       e.preventDefault();
@@ -216,16 +232,12 @@ export default function ZoomableDiv({ content }) {
     outer.addEventListener('touchcancel', handleTouchEnd);
 
     const mutationObserver = new MutationObserver(() => {
+      if (state.current.isUpdatingProgrammatically) return;
       updateScale();
     });
 
     const resizeObserver = new ResizeObserver(() => {
-      const atBaseZoom = Math.abs(state.current.scale - ZOOM_MIN) < SCALE_EPSILON;
-      if (atBaseZoom) {
-        state.current.scale = ZOOM_MIN;
-        outer.scrollLeft = 0;
-        outer.scrollTop = 0;
-      }
+      if (state.current.isUpdatingProgrammatically) return;
       updateScale();
     });
 
