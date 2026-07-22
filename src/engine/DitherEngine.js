@@ -841,10 +841,6 @@ const action = this.debugEnabled ? "disable" : "enable";
     this.pendingPaletteRefresh = this.pendingPaletteRefresh || refreshPalette;
     this.processingQueued = true;
 
-    if (this.previewingOriginal) {
-      return;
-    }
-
     if (this.isWebcamMode) {
       this.flushProcessingQueue();
       return;
