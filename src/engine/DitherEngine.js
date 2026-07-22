@@ -500,10 +500,16 @@ const action = this.debugEnabled ? "disable" : "enable";
     this.subscriptions.push(
       useWebcamStore.subscribe((state) => {
         const prevState = this.previousWebcamState || {};
+        const streamChanged = state.stream !== prevState.stream && state.active && Boolean(state.stream);
         const mirroredChanged = state.mirrored !== prevState.mirrored;
         const becameInactive = prevState.active && !state.active;
 
-        this.previousWebcamState = { mirrored: state.mirrored, active: state.active };
+        this.previousWebcamState = { mirrored: state.mirrored, active: state.active, stream: state.stream };
+
+        if (streamChanged && this.isWebcamMode && this.webcamVideo && state.stream) {
+          this.webcamVideo.srcObject = state.stream;
+          this.webcamVideo.play().catch(() => {});
+        }
 
         if (mirroredChanged) {
           this.webcamMirror = Boolean(state.mirrored);

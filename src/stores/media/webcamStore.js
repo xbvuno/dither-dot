@@ -10,48 +10,63 @@ let startToken = 0;
 
 const useWebcamStore = create((set, get) => ({
   active: false,
-  // True while getUserMedia() is pending, so the UI can show a loading state
-  // and prevent concurrent start calls.
   starting: false,
   stream: null,
   fps: 0,
   targetFps: 15,
   error: '',
   mirrored: false,
-  // Becomes true after the very first processed frame is rendered live,
-  // used to gate screenshot actions.
+  facingMode: 'user', // 'user' (front) or 'environment' (back/rear)
   frameReady: false,
   paletteFrozen: false,
 
-  startWebcam: async () => {
-    if (get().active || get().starting) return;
-    set({ error: '', starting: true });
+  startWebcam: async (requestedFacingMode) => {
+    if (get().starting) return;
+    const mode = requestedFacingMode || get().facingMode || 'user';
+    set({ error: '', starting: true, facingMode: mode });
 
     const token = ++startToken;
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'user',
-          width: { ideal: 640 },
-          height: { ideal: 480 },
-          frameRate: { ideal: 30, max: 30 },
-        },
-        audio: false,
+    // Stop existing stream if any
+    const existingStream = get().stream;
+    if (existingStream) {
+      existingStream.oninactive = null;
+      existingStream.getTracks().forEach((track) => {
+        track.onended = null;
+        track.stop();
       });
+    }
 
-      // stopWebcam() was called (or a newer startWebcam() superseded this one)
-      // while getUserMedia was pending — discard the acquired stream immediately.
+    try {
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: mode },
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            frameRate: { ideal: 30, max: 30 },
+          },
+          audio: false,
+        });
+      } catch {
+        // Fallback for devices without ideal constraints support
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: mode,
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+          },
+          audio: false,
+        });
+      }
+
       if (token !== startToken) {
         stream.getTracks().forEach((track) => track.stop());
         return;
       }
 
-      // Attach disconnect listeners so an external camera loss (USB unplug,
-      // permission revocation, OS kill) is detected and the app transitions to
-      // a clean stopped state.
       const handleTrackEnded = () => {
-        // Guard: only react if this is still the active stream.
         if (get().stream === stream) {
           get().stopWebcam();
         }
@@ -62,7 +77,18 @@ const useWebcamStore = create((set, get) => ({
       stream.oninactive = handleTrackEnded;
 
       frameTimestamps = [];
-      set({ active: true, starting: false, stream, fps: 0, frameReady: false, paletteFrozen: false, error: '' });
+      const isFront = mode === 'user';
+      set({
+        active: true,
+        starting: false,
+        stream,
+        fps: 0,
+        frameReady: false,
+        paletteFrozen: false,
+        error: '',
+        facingMode: mode,
+        mirrored: isFront,
+      });
     } catch (err) {
       if (token === startToken) {
         const msg = err instanceof Error ? err.message : 'WEBCAM ACCESS DENIED.';
@@ -72,13 +98,10 @@ const useWebcamStore = create((set, get) => ({
   },
 
   stopWebcam: () => {
-    // Bumping the token invalidates any getUserMedia still in-flight.
     startToken++;
 
     const { stream } = get();
     if (stream) {
-      // Remove listeners *before* stopping tracks so that track.stop()
-      // doesn't re-trigger this handler recursively.
       stream.oninactive = null;
       stream.getTracks().forEach((track) => {
         track.onended = null;
@@ -87,6 +110,17 @@ const useWebcamStore = create((set, get) => ({
     }
     frameTimestamps = [];
     set({ active: false, starting: false, stream: null, fps: 0, error: '', frameReady: false, paletteFrozen: false });
+  },
+
+  toggleFacingMode: async () => {
+    const currentMode = get().facingMode || 'user';
+    const nextMode = currentMode === 'user' ? 'environment' : 'user';
+    
+    if (get().active) {
+      await get().startWebcam(nextMode);
+    } else {
+      set({ facingMode: nextMode, mirrored: nextMode === 'user' });
+    }
   },
 
   setTargetFps: (value) => {
@@ -100,22 +134,17 @@ const useWebcamStore = create((set, get) => ({
   recordRenderedFrame: () => {
     const now = performance.now();
     frameTimestamps.push(now);
-    const cutoff = now - 1000;
-    frameTimestamps = frameTimestamps.filter((t) => t >= cutoff);
-    const update = { fps: frameTimestamps.length };
-    // Only fire a state update for frameReady once per session, not every frame.
-    if (!get().frameReady) update.frameReady = true;
-    set(update);
+
+    const windowStart = now - 1000;
+    while (frameTimestamps.length > 0 && frameTimestamps[0] < windowStart) {
+      frameTimestamps.shift();
+    }
+
+    set({ fps: frameTimestamps.length });
   },
 
-  setPaletteFrozen: (frozen) => {
-    set({ paletteFrozen: Boolean(frozen) });
-  },
-
-  resetFps: () => {
-    frameTimestamps = [];
-    set({ fps: 0 });
-  },
+  setFrameReady: (frameReady) => set({ frameReady }),
+  setPaletteFrozen: (paletteFrozen) => set({ paletteFrozen }),
 }));
 
 export default useWebcamStore;
