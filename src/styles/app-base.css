@@ -811,9 +811,9 @@ h3 {
     }
 
     .flex-v {
-        flex: 1;
+        flex: 1 1 0%;
         min-height: 0;
-        height: 58vh;
+        height: auto !important;
     }
 
     .zoomable-outer {

@@ -17,7 +17,6 @@ export function setupMobileResize(handleEl, getShellEl) {
     const shell = getShell();
     if (shell) {
       shell.style.setProperty('height', `${pendingHeight}px`, 'important');
-      shell.style.setProperty('max-height', '65vh', 'important');
     }
     pendingHeight = null;
   };
@@ -27,8 +26,8 @@ export function setupMobileResize(handleEl, getShellEl) {
     const deltaY = startY - clientY; // Dragging UP increases height
     let newHeight = startHeight + deltaY;
 
-    const minH = 120; // 120px min height
-    const maxH = window.innerHeight * 0.65; // 65% of viewport max
+    const minH = 100; // 100px min height
+    const maxH = Math.floor(window.innerHeight * 0.70); // 70% of viewport max
     newHeight = Math.max(minH, Math.min(maxH, newHeight));
 
     pendingHeight = newHeight;
@@ -45,22 +44,25 @@ export function setupMobileResize(handleEl, getShellEl) {
   const onTouchMove = (e) => {
     if (!isDragging) return;
     if (e.touches && e.touches.length > 0) {
+      if (e.cancelable) e.preventDefault();
       onMove(e.touches[0].clientY);
     }
   };
 
-  const onPointerUp = () => {
+  const stopDrag = () => {
     if (!isDragging) return;
     isDragging = false;
     handleEl.classList.remove('dragging');
     document.body.classList.remove('is-resizing-mobile-aside');
 
     window.removeEventListener('pointermove', onPointerMove);
-    window.removeEventListener('pointerup', onPointerUp);
-    window.removeEventListener('pointercancel', onPointerUp);
+    window.removeEventListener('pointerup', stopDrag);
+    window.removeEventListener('pointercancel', stopDrag);
+    window.removeEventListener('mousemove', onPointerMove);
+    window.removeEventListener('mouseup', stopDrag);
     window.removeEventListener('touchmove', onTouchMove);
-    window.removeEventListener('touchend', onPointerUp);
-    window.removeEventListener('touchcancel', onPointerUp);
+    window.removeEventListener('touchend', stopDrag);
+    window.removeEventListener('touchcancel', stopDrag);
 
     if (rafId !== null) {
       window.cancelAnimationFrame(rafId);
@@ -82,28 +84,41 @@ export function setupMobileResize(handleEl, getShellEl) {
     }
   };
 
-  const onPointerDown = (e) => {
+  const startDrag = (e) => {
     if (window.innerWidth > 768) return;
 
     const shell = getShell();
     if (!shell) return;
 
-    e.preventDefault();
+    if (e.cancelable) e.preventDefault();
     isDragging = true;
-    startY = e.clientY || e.touches?.[0]?.clientY || 0;
+
+    if (e.pointerId !== undefined && handleEl.setPointerCapture) {
+      try {
+        handleEl.setPointerCapture(e.pointerId);
+      } catch {
+        // Pointer capture fallback
+      }
+    }
+
+    startY = e.touches ? e.touches[0].clientY : e.clientY;
     startHeight = shell.getBoundingClientRect().height;
     handleEl.classList.add('dragging');
     document.body.classList.add('is-resizing-mobile-aside');
 
     window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
-    window.addEventListener('pointercancel', onPointerUp);
+    window.addEventListener('pointerup', stopDrag);
+    window.addEventListener('pointercancel', stopDrag);
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', stopDrag);
     window.addEventListener('touchmove', onTouchMove, { passive: false });
-    window.addEventListener('touchend', onPointerUp);
-    window.addEventListener('touchcancel', onPointerUp);
+    window.addEventListener('touchend', stopDrag);
+    window.addEventListener('touchcancel', stopDrag);
   };
 
-  handleEl.addEventListener('pointerdown', onPointerDown);
+  handleEl.addEventListener('pointerdown', startDrag);
+  handleEl.addEventListener('touchstart', startDrag, { passive: false });
+  handleEl.addEventListener('mousedown', startDrag);
 
   // Restore stored height on initialization if available
   try {
@@ -111,8 +126,8 @@ export function setupMobileResize(handleEl, getShellEl) {
     if (Number.isFinite(stored) && stored > 0 && window.innerWidth <= 768) {
       const shell = getShell();
       if (shell) {
-        const minH = 120;
-        const maxH = window.innerHeight * 0.65;
+        const minH = 100;
+        const maxH = Math.floor(window.innerHeight * 0.70);
         const clamped = Math.max(minH, Math.min(maxH, stored));
         shell.style.setProperty('height', `${clamped}px`, 'important');
       }
@@ -122,7 +137,9 @@ export function setupMobileResize(handleEl, getShellEl) {
   }
 
   return () => {
-    handleEl.removeEventListener('pointerdown', onPointerDown);
-    onPointerUp();
+    handleEl.removeEventListener('pointerdown', startDrag);
+    handleEl.removeEventListener('touchstart', startDrag);
+    handleEl.removeEventListener('mousedown', startDrag);
+    stopDrag();
   };
 }
