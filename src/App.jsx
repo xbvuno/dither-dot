@@ -139,6 +139,7 @@ function App() {
       <h1 className='sr-only'>DITHER-DOT - Browser Image &amp; GIF Dithering Studio</h1>
       <div className='app-layout'>
         <nav ref={navRef} className='app-nav' aria-label='Main Navigation'>
+        <img src={watermarkMini} alt='DITHER-DOT Logo' className='nav-logo-img' />
         <div className='nav-links-wrap'>
           {ICONS.map((item) => {
             const Icon = item.Icon
@@ -191,7 +192,7 @@ function App() {
             </a>
             <button
               type='button'
-              className='header-link-btn'
+              className='header-link-btn header-btn--mobile-only'
               onClick={toggleFullscreen}
               aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
               title={isFullscreen ? 'EXIT FULLSCREEN' : 'FULLSCREEN'}
