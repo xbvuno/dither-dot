@@ -72,6 +72,7 @@ export default function ZoomableDiv({ content }) {
       inner.style.marginLeft = `${newPadX}px`;
       inner.style.marginTop = `${newPadY}px`;
 
+      contentElem.style.transformOrigin = 'top left';
       contentElem.style.scale = newRenderScale;
 
       const targetScrollLeft = newPadX + xF * newRenderScale - focalX;
@@ -90,28 +91,6 @@ export default function ZoomableDiv({ content }) {
     };
 
     updateScale();
-
-    let containerObserver = null;
-    if (typeof ResizeObserver !== 'undefined') {
-      containerObserver = new ResizeObserver(() => {
-        const atBaseZoom = Math.abs(state.current.scale - ZOOM_MIN) < SCALE_EPSILON;
-
-        if (atBaseZoom) {
-          state.current.scale = ZOOM_MIN;
-          outer.scrollLeft = 0;
-          outer.scrollTop = 0;
-        }
-
-        updateScale();
-      });
-
-      containerObserver.observe(outer);
-
-      const renderElem = getRenderElem();
-      if (renderElem) {
-        containerObserver.observe(renderElem);
-      }
-    }
 
     const handleWheel = (e) => {
       e.preventDefault();
@@ -147,6 +126,12 @@ export default function ZoomableDiv({ content }) {
       if (e.button === 0) {
         state.current.dragging = false;
       }
+    };
+
+    const handleDoubleClick = () => {
+      const outerWidth = outer.clientWidth;
+      const outerHeight = outer.clientHeight;
+      zoomTo(1, outerWidth / 2, outerHeight / 2);
     };
 
     let initialPinchDist = null;
@@ -222,6 +207,7 @@ export default function ZoomableDiv({ content }) {
 
     outer.addEventListener('wheel', handleWheel, { passive: false });
     outer.addEventListener('mousedown', handleMouseDown);
+    outer.addEventListener('dblclick', handleDoubleClick);
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
     outer.addEventListener('touchstart', handleTouchStart, { passive: false });
@@ -229,16 +215,44 @@ export default function ZoomableDiv({ content }) {
     outer.addEventListener('touchend', handleTouchEnd);
     outer.addEventListener('touchcancel', handleTouchEnd);
 
+    const mutationObserver = new MutationObserver(() => {
+      updateScale();
+    });
+
+    const resizeObserver = new ResizeObserver(() => {
+      const atBaseZoom = Math.abs(state.current.scale - ZOOM_MIN) < SCALE_EPSILON;
+      if (atBaseZoom) {
+        state.current.scale = ZOOM_MIN;
+        outer.scrollLeft = 0;
+        outer.scrollTop = 0;
+      }
+      updateScale();
+    });
+
+    resizeObserver.observe(outer);
+    mutationObserver.observe(inner, {
+      childList: true,
+      subtree: true,
+      attributeFilter: ["height", "width"],
+    });
+
+    const renderElem = getRenderElem();
+    if (renderElem) {
+      resizeObserver.observe(renderElem);
+    }
+
     return () => {
       outer.removeEventListener('wheel', handleWheel);
       outer.removeEventListener('mousedown', handleMouseDown);
+      outer.removeEventListener('dblclick', handleDoubleClick);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
       outer.removeEventListener('touchstart', handleTouchStart);
       outer.removeEventListener('touchmove', handleTouchMove);
       outer.removeEventListener('touchend', handleTouchEnd);
       outer.removeEventListener('touchcancel', handleTouchEnd);
-      containerObserver?.disconnect();
+      mutationObserver.disconnect();
+      resizeObserver.disconnect();
     };
   }, [content]);
 
