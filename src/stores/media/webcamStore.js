@@ -147,20 +147,9 @@ const useWebcamStore = create((set, get) => ({
       // Compute native sensor aspect ratio
       const nativeRatio = (detectedMaxW && detectedMaxH) ? (detectedMaxW / detectedMaxH) : (16 / 9);
 
-      // Reference 480px initial sizing:
-      // Desktop (> 768px): fixed 480px width, height = Math.round(480 / nativeRatio)
-      // Mobile (<= 768px): fixed 480px height, width = Math.round(480 * nativeRatio)
-      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
-      let defaultW = 480;
-      let defaultH = 360;
-
-      if (isMobile) {
-        defaultH = 480;
-        defaultW = Math.max(1, Math.round(480 * nativeRatio));
-      } else {
-        defaultW = 480;
-        defaultH = Math.max(1, Math.round(480 / nativeRatio));
-      }
+      // Reference 480px initial height for both Desktop and Mobile:
+      const defaultH = 480;
+      const defaultW = Math.max(1, Math.round(480 * nativeRatio));
 
       if (vTrack && typeof vTrack.applyConstraints === 'function') {
         try {
