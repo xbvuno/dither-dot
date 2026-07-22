@@ -152,7 +152,6 @@ export default function ZoomableDiv({ content }) {
 
     let initialPinchDist = null;
     let initialPinchScale = 1;
-    let prevPinchCenter = null;
 
     const getTouchDist = (t1, t2) => {
       const dx = t1.clientX - t2.clientX;
@@ -171,10 +170,11 @@ export default function ZoomableDiv({ content }) {
     const handleTouchStart = (e) => {
       if (e.touches.length === 2) {
         e.preventDefault();
+        state.current.dragging = false;
         initialPinchDist = getTouchDist(e.touches[0], e.touches[1]);
         initialPinchScale = state.current.scale;
-        prevPinchCenter = getTouchCenter(e.touches[0], e.touches[1]);
       } else if (e.touches.length === 1) {
+        initialPinchDist = null;
         state.current.dragging = true;
         state.current.startX = e.touches[0].clientX;
         state.current.startY = e.touches[0].clientY;
@@ -186,23 +186,26 @@ export default function ZoomableDiv({ content }) {
     const handleTouchMove = (e) => {
       if (e.touches.length === 2 && initialPinchDist) {
         e.preventDefault();
+        state.current.dragging = false;
         const currentDist = getTouchDist(e.touches[0], e.touches[1]);
         const center = getTouchCenter(e.touches[0], e.touches[1]);
+
         if (currentDist > 0) {
           const factor = currentDist / initialPinchDist;
           const targetScale = initialPinchScale * factor;
-
-          if (prevPinchCenter) {
-            const dx = center.x - prevPinchCenter.x;
-            const dy = center.y - prevPinchCenter.y;
-            outer.scrollLeft -= dx;
-            outer.scrollTop -= dy;
-          }
-
           zoomTo(targetScale, center.x, center.y);
-          prevPinchCenter = center;
         }
-      } else if (e.touches.length === 1 && state.current.dragging) {
+      } else if (e.touches.length === 1) {
+        if (!state.current.dragging || initialPinchDist !== null) {
+          initialPinchDist = null;
+          state.current.dragging = true;
+          state.current.startX = e.touches[0].clientX;
+          state.current.startY = e.touches[0].clientY;
+          state.current.startScrollLeft = outer.scrollLeft;
+          state.current.startScrollTop = outer.scrollTop;
+          return;
+        }
+
         const dx = e.touches[0].clientX - state.current.startX;
         const dy = e.touches[0].clientY - state.current.startY;
         outer.scrollLeft = state.current.startScrollLeft - dx;
@@ -212,11 +215,15 @@ export default function ZoomableDiv({ content }) {
     };
 
     const handleTouchEnd = (e) => {
-      if (e.touches.length < 2) {
+      if (e.touches.length === 1) {
         initialPinchDist = null;
-        prevPinchCenter = null;
-      }
-      if (e.touches.length === 0) {
+        state.current.dragging = true;
+        state.current.startX = e.touches[0].clientX;
+        state.current.startY = e.touches[0].clientY;
+        state.current.startScrollLeft = outer.scrollLeft;
+        state.current.startScrollTop = outer.scrollTop;
+      } else if (e.touches.length === 0) {
+        initialPinchDist = null;
         state.current.dragging = false;
       }
     };
