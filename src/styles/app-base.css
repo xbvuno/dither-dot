@@ -105,7 +105,10 @@ h2 {
     letter-spacing: 0.15rem;
 }
 
-html,
+html {
+    background-color: #000000;
+}
+
 body,
 #root {
     width: 100%;
