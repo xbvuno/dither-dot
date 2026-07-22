@@ -652,7 +652,10 @@ h3 {
 @media (max-width: 768px) {
     .app-layout {
         flex-direction: column;
-        padding-bottom: calc(3.6rem + env(safe-area-inset-bottom, 0px));
+        height: 100dvh;
+        max-height: 100dvh;
+        overflow: hidden;
+        padding-bottom: 0 !important;
     }
 
     .app-header {
@@ -736,12 +739,22 @@ h3 {
         display: none;
     }
 
+    .app-body-container {
+        flex: 1 1 0%;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        height: calc(100dvh - 2.8rem - 3.6rem - env(safe-area-inset-bottom, 0px));
+    }
+
     .app-body-container > main {
         flex-direction: column-reverse;
         position: relative;
-        flex: 1;
+        flex: 1 1 0%;
         min-height: 0;
-        height: calc(100vh - 2.8rem - 3.6rem);
+        height: 100% !important;
+        overflow: hidden;
     }
 
     .mobile-resize-handle {

@@ -124,20 +124,27 @@ export function setupMobileResize(handleEl, getShellEl) {
   handleEl.addEventListener('touchstart', startDrag, { passive: false });
   handleEl.addEventListener('mousedown', startDrag, { passive: false });
 
-  // Restore stored height on initialization if available
-  try {
-    const stored = Number(window.localStorage.getItem(MOBILE_ASIDE_HEIGHT_KEY));
-    if (Number.isFinite(stored) && stored > 0 && window.innerWidth <= 768) {
-      const shell = getShell();
-      if (shell) {
-        const minH = 100;
-        const maxH = Math.floor(window.innerHeight * 0.70);
-        const clamped = Math.max(minH, Math.min(maxH, stored));
-        shell.style.setProperty('height', `${clamped}px`, 'important');
-      }
+  // Synchronously compute initial height on setup
+  const initShell = () => {
+    if (window.innerWidth > 768) return;
+    const shell = getShell();
+    if (!shell) return;
+    try {
+      const stored = Number(window.localStorage.getItem(MOBILE_ASIDE_HEIGHT_KEY));
+      const minH = 100;
+      const maxH = Math.floor(window.innerHeight * 0.70);
+      const defaultH = Math.floor(window.innerHeight * 0.42);
+      const targetH = (Number.isFinite(stored) && stored > 0) ? stored : defaultH;
+      const clamped = Math.max(minH, Math.min(maxH, targetH));
+      shell.style.setProperty('height', `${clamped}px`, 'important');
+    } catch {
+      // Ignore storage read errors.
     }
-  } catch {
-    // Ignore storage read errors.
+  };
+
+  initShell();
+  if (typeof window !== 'undefined' && window.requestAnimationFrame) {
+    window.requestAnimationFrame(initShell);
   }
 
   return () => {
