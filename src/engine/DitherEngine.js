@@ -1439,8 +1439,12 @@ const action = this.debugEnabled ? "disable" : "enable";
     this.isWebcamMode = true;
     this.paletteFrozenForWebcam = false;
 
+    console.log('[WEBCAM ENGINE] Initializing webcam in DitherEngine...');
     const webcamStream = useWebcamStore.getState().stream;
-    if (!webcamStream) throw new Error('Webcam stream is not available');
+    if (!webcamStream) {
+      console.error('[WEBCAM ENGINE ERROR] Stream is null in useWebcamStore!');
+      throw new Error('Webcam stream is not available');
+    }
 
     const video = document.createElement('video');
     video.srcObject = webcamStream;
@@ -1449,22 +1453,31 @@ const action = this.debugEnabled ? "disable" : "enable";
     video.autoplay = true;
 
     if (video.readyState < 1) {
+      console.log('[WEBCAM ENGINE] Waiting for video metadata...');
       await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => resolve(), 3000);
+        const timeout = setTimeout(() => {
+          console.warn('[WEBCAM ENGINE] Timeout waiting for metadata, resolving fallback.');
+          resolve();
+        }, 3000);
         video.onloadedmetadata = () => {
           clearTimeout(timeout);
+          console.log('[WEBCAM ENGINE] video onloadedmetadata fired!');
           resolve();
         };
-        video.onerror = () => {
+        video.onerror = (e) => {
           clearTimeout(timeout);
+          console.error('[WEBCAM ENGINE ERROR] video.onerror:', e);
           reject(new Error('Failed to initialize webcam video'));
         };
       });
     }
 
     try {
+      console.log('[WEBCAM ENGINE] Calling video.play()...');
       await video.play();
+      console.log('[WEBCAM ENGINE] video.play() succeeded. video dimensions:', video.videoWidth, 'x', video.videoHeight);
     } catch (err) {
+      console.error('[WEBCAM ENGINE ERROR] video.play() failed:', err);
       throw new Error(`Webcam play failed: ${err?.message ?? err}`);
     }
 

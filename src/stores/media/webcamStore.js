@@ -38,14 +38,17 @@ const useWebcamStore = create((set, get) => ({
     }
 
     if (!navigator?.mediaDevices?.getUserMedia) {
+      const errorMsg = 'WEBCAM REQUIRES A SECURE CONNECTION (HTTPS) OR LOCALHOST.';
+      console.error('[WEBCAM STORE ERROR]', errorMsg);
       set({
-        error: 'WEBCAM REQUIRES A SECURE CONNECTION (HTTPS) OR LOCALHOST.',
+        error: errorMsg,
         starting: false,
         active: false,
       });
       return;
     }
 
+    console.log('[WEBCAM STORE] Attempting getUserMedia with facingMode:', mode);
     try {
       let stream;
       try {
@@ -58,7 +61,9 @@ const useWebcamStore = create((set, get) => ({
           },
           audio: false,
         });
-      } catch {
+        console.log('[WEBCAM STORE] Level 1 getUserMedia succeeded.');
+      } catch (err1) {
+        console.warn('[WEBCAM STORE] Level 1 getUserMedia failed:', err1);
         try {
           stream = await navigator.mediaDevices.getUserMedia({
             video: {
@@ -66,28 +71,35 @@ const useWebcamStore = create((set, get) => ({
             },
             audio: false,
           });
-        } catch {
+          console.log('[WEBCAM STORE] Level 2 getUserMedia succeeded.');
+        } catch (err2) {
+          console.warn('[WEBCAM STORE] Level 2 getUserMedia failed:', err2);
           try {
             stream = await navigator.mediaDevices.getUserMedia({
               video: { facingMode: mode },
               audio: false,
             });
-          } catch {
+            console.log('[WEBCAM STORE] Level 3 getUserMedia succeeded.');
+          } catch (err3) {
+            console.warn('[WEBCAM STORE] Level 3 getUserMedia failed:', err3);
             stream = await navigator.mediaDevices.getUserMedia({
               video: true,
               audio: false,
             });
+            console.log('[WEBCAM STORE] Level 4 fallback getUserMedia succeeded.');
           }
         }
       }
 
       if (token !== startToken) {
+        console.warn('[WEBCAM STORE] Start token changed, stopping acquired stream.');
         stream.getTracks().forEach((track) => track.stop());
         return;
       }
 
       const handleTrackEnded = () => {
         if (get().stream === stream) {
+          console.warn('[WEBCAM STORE] Camera track ended externally.');
           get().stopWebcam();
         }
       };
@@ -98,6 +110,7 @@ const useWebcamStore = create((set, get) => ({
 
       frameTimestamps = [];
       const isFront = mode === 'user';
+      console.log('[WEBCAM STORE] Webcam active set to TRUE. Stream tracks count:', stream.getTracks().length);
       set({
         active: true,
         starting: false,
@@ -112,6 +125,7 @@ const useWebcamStore = create((set, get) => ({
     } catch (err) {
       if (token === startToken) {
         const msg = err instanceof Error ? err.message : 'WEBCAM ACCESS DENIED.';
+        console.error('[WEBCAM STORE FATAL ERROR]', err);
         set({ error: msg.toUpperCase(), active: false, starting: false, stream: null });
       }
     }
