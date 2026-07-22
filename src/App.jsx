@@ -7,6 +7,7 @@ import ZoomableDiv from './components/ui/shared/ZoomableDiv'
 import ImageShader from './components/canvas/ImageShader'
 import AsideRouter from './components/layout/AsideRouter'
 import GifTimeline from './components/timeline/GifTimeline'
+import CameraControlsBar from './components/camera/CameraControlsBar'
 import Footer from './components/layout/Footer'
 import WaveGridSpinner from './components/ui/shared/WaveGridSpinner'
 import usePageStore, { PAGE } from './stores/ui/pageStore'
@@ -274,6 +275,7 @@ function App() {
               )}
             </div>
             <GifTimeline />
+            <CameraControlsBar />
             <Footer />
           </div>
         </main>

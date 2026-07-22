@@ -330,7 +330,7 @@ export default function ImportPage() {
               disabled={webcamStarting}
             >
               {webcamActive ? <CameraOff size={13} strokeWidth={1.5} /> : <Camera size={13} strokeWidth={1.5} />}
-              {webcamStarting ? 'STARTING...' : webcamActive ? 'STOP WEBCAM' : 'START WEBCAM'}
+              {webcamStarting ? 'STARTING...' : webcamActive ? 'STOP CAMERA' : 'START CAMERA'}
             </button>
           </div>
           {useWebcamStore.getState().error && (

@@ -19,6 +19,11 @@ const useWebcamStore = create((set, get) => ({
   facingMode: 'user', // 'user' (front) or 'environment' (back/rear)
   frameReady: false,
   paletteFrozen: false,
+  shoots: [],
+
+  addShoot: (shoot) => set((s) => ({ shoots: [shoot, ...s.shoots] })),
+  deleteShoot: (id) => set((s) => ({ shoots: s.shoots.filter((item) => item.id !== id) })),
+  clearShoots: () => set({ shoots: [] }),
 
   startWebcam: async (requestedFacingMode) => {
     if (get().starting) return;

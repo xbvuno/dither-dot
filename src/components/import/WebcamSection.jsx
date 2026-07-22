@@ -50,7 +50,7 @@ export default function WebcamSection() {
   return (
     <>
       <div className='bv-section'>
-        <p className='bv-label'>WEBCAM CONTROLS</p>
+        <p className='bv-label'>CAMERA CONTROLS</p>
         <div className='bv-option-group'>
           <button
             type='button'

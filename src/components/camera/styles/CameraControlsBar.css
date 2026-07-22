@@ -1,0 +1,68 @@
+.camera-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1.25rem;
+  padding: 0 0.75rem;
+  height: 3.2rem;
+  background-color: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.camera-snap-btn {
+  height: 2.0rem;
+  padding: 0 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  background-color: var(--color-bg-alt, #181818);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-main, #ffffff);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.camera-snap-btn:hover:not(:disabled) {
+  background-color: var(--color-bg-hover, #222222);
+  border-color: var(--color-border-hover, #444444);
+}
+
+.camera-snap-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.camera-shoots-counter {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  color: var(--color-text-subtle, #888888);
+  letter-spacing: 0.05em;
+  user-select: none;
+}
+
+.camera-shoots-count-num {
+  color: var(--color-text-main, #ffffff);
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .camera-controls-bar {
+    justify-content: space-between;
+    padding: 0 0.75rem;
+  }
+
+  .camera-shoots-counter {
+    order: 1;
+  }
+
+  .camera-snap-btn {
+    order: 2;
+    margin-left: auto;
+  }
+}
