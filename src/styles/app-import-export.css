@@ -148,7 +148,8 @@
 }
 
 @media (max-width: 768px) {
-  .import-dropzone-section {
+  .import-dropzone-section,
+  .pipeline-section {
     display: none;
   }
 }

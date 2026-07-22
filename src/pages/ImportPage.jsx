@@ -344,7 +344,7 @@ export default function ImportPage() {
         <GallerySection />
       </div>
 
-      <div className='bv-section'>
+      <div className='bv-section pipeline-section'>
         <div className='bv-controls-row'>
           <span className='bv-label'>PIPELINE</span>
           <div className='bv-option-group histogram-toggle-group'>
