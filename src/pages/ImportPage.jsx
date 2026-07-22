@@ -5,6 +5,7 @@ import useGalleryStore from '../stores/data/galleryStore';
 import useGifStore from '../stores/media/gifStore';
 import useWebcamStore, { WEBCAM_SOURCE } from '../stores/media/webcamStore';
 import useParamsStore from '../stores/data/paramsStore';
+import { notify } from '../stores/ui/popupStore';
 
 import {
   INPUT_ACCEPT,
@@ -227,6 +228,7 @@ export default function ImportPage() {
     if (!state.active) return;
     clearGifFrames();
     setSourceDirect(WEBCAM_SOURCE, 'CAMERA', 'webcam');
+    notify('CAPTURED PHOTOS WILL BE SAVED IN THE EXPORT TAB', 'info');
   };
 
   const handleRandomImage = async () => {
