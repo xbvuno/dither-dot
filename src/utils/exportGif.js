@@ -1,5 +1,5 @@
 import { encode } from 'modern-gif';
-import gifWorkerUrl from '../workers/modernGifWorker?url';
+import gifWorkerUrl from 'modern-gif/dist/worker.js?url';
 import useGifStore from '../stores/media/gifStore';
 import { getOutputCanvas } from './canvasRegistry';
 
