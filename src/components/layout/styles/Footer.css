@@ -60,10 +60,15 @@
 
 @media (max-width: 768px) {
   .app-footer {
-    overflow-x: auto;
-    white-space: nowrap;
+    max-height: 2.5rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 0.35rem;
+    padding: 0.35rem 0.6rem;
     scrollbar-width: none;
-    flex-wrap: nowrap;
   }
 
   .app-footer::-webkit-scrollbar {
@@ -71,11 +76,16 @@
   }
 
   .app-footer-left {
-    flex-shrink: 0;
+    width: 100%;
+    flex: 0 0 auto;
+    justify-content: space-between;
   }
 
   .app-footer-status {
-    flex-shrink: 0;
+    width: 100%;
+    flex: 0 0 auto;
+    font-size: 0.74rem;
+    padding-bottom: 0.2rem;
   }
 
   .footer-preview-btn {
