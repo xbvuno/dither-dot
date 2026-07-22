@@ -129,10 +129,50 @@ const useWebcamStore = create((set, get) => ({
       let detectedMaxW = 1280;
       let detectedMaxH = 720;
       const vTrack = stream.getVideoTracks()[0];
-      if (vTrack && typeof vTrack.getCapabilities === 'function') {
-        const caps = vTrack.getCapabilities();
-        if (caps?.width?.max) detectedMaxW = caps.width.max;
-        if (caps?.height?.max) detectedMaxH = caps.height.max;
+      if (vTrack) {
+        if (typeof vTrack.getCapabilities === 'function') {
+          const caps = vTrack.getCapabilities();
+          if (caps?.width?.max) detectedMaxW = caps.width.max;
+          if (caps?.height?.max) detectedMaxH = caps.height.max;
+        }
+        if (typeof vTrack.getSettings === 'function') {
+          const settings = vTrack.getSettings();
+          if (settings.width && settings.height) {
+            if (!detectedMaxW) detectedMaxW = settings.width;
+            if (!detectedMaxH) detectedMaxH = settings.height;
+          }
+        }
+      }
+
+      // Compute native sensor aspect ratio
+      const nativeRatio = (detectedMaxW && detectedMaxH) ? (detectedMaxW / detectedMaxH) : (16 / 9);
+
+      // Reference 480px initial sizing:
+      // Desktop (> 768px): fixed 480px width, height = Math.round(480 / nativeRatio)
+      // Mobile (<= 768px): fixed 480px height, width = Math.round(480 * nativeRatio)
+      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+      let defaultW = 480;
+      let defaultH = 360;
+
+      if (isMobile) {
+        defaultH = 480;
+        defaultW = Math.max(1, Math.round(480 * nativeRatio));
+      } else {
+        defaultW = 480;
+        defaultH = Math.max(1, Math.round(480 / nativeRatio));
+      }
+
+      if (vTrack && typeof vTrack.applyConstraints === 'function') {
+        try {
+          await vTrack.applyConstraints({
+            width: { ideal: defaultW, max: detectedMaxW },
+            height: { ideal: defaultH, max: detectedMaxH },
+            facingMode: { ideal: mode },
+            frameRate: { ideal: 30, max: 30 },
+          });
+        } catch {
+          // Ignore
+        }
       }
 
       frameTimestamps = [];

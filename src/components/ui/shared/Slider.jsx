@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from "react";
+import { triggerHapticPulse } from "../../../utils/haptics";
 import "./styles/Slider.css";
 
 /* ---------------- utils ---------------- */
@@ -95,6 +96,7 @@ export default function Slider({
 
     // notify only if changed
     if (typeof s.onChange === "function" && clamped !== s.value) {
+      triggerHapticPulse(5);
       s.onChange(clamped);
     }
   };

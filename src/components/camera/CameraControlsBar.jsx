@@ -3,6 +3,7 @@ import { Aperture } from 'lucide-react';
 import useWebcamStore from '../../stores/media/webcamStore';
 import { compositeWithWatermark, getExportCanvasOrThrow } from '../../utils/importUtils';
 import { notify } from '../../stores/ui/popupStore';
+import { triggerHapticPulse } from '../../utils/haptics';
 import snapSound from '../../assets/sounds/snap.mp3';
 import './styles/CameraControlsBar.css';
 
@@ -25,6 +26,7 @@ export default function CameraControlsBar() {
   const handleTakeShoot = useCallback(async () => {
     if (capturing) return;
     setCapturing(true);
+    triggerHapticPulse(25);
     playSnapSound();
 
     try {
