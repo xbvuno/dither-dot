@@ -149,6 +149,10 @@ export default function Slider({
     if (!track || !container) return;
 
     let dragging = false;
+    let touchPending = false;
+    let startX = 0;
+    let startY = 0;
+    let activePointerId = null;
 
     const getPercent = (clientX) => {
       const rect = track.getBoundingClientRect();
@@ -157,27 +161,59 @@ export default function Slider({
     };
 
     const onPointerDown = (e) => {
-      if (e.button !== 0) return;
-      dragging = true;
-      track.setPointerCapture?.(e.pointerId);
+      if (e.pointerType === "mouse") {
+        if (e.button !== 0) return;
+        dragging = true;
+        touchPending = false;
+        activePointerId = e.pointerId;
+        try {
+          track.setPointerCapture?.(e.pointerId);
+        } catch (_) {}
 
-      const s = stateRef.current;
-      const pct = getPercent(e.clientX);
-
-      setInternalValue(
-        percentToValue(pct, s.min, s.max, s.step)
-      );
+        const s = stateRef.current;
+        const pct = getPercent(e.clientX);
+        setInternalValue(percentToValue(pct, s.min, s.max, s.step));
+      } else {
+        // Touch pointer: wait for gesture direction to avoid accidental slider edits during vertical page scroll
+        touchPending = true;
+        dragging = false;
+        startX = e.clientX;
+        startY = e.clientY;
+        activePointerId = e.pointerId;
+      }
     };
 
     const onPointerMove = (e) => {
+      if (touchPending) {
+        const dx = Math.abs(e.clientX - startX);
+        const dy = Math.abs(e.clientY - startY);
+
+        if (dy > dx && dy > 5) {
+          // Vertical scroll detected: release touch slider drag
+          touchPending = false;
+          dragging = false;
+          return;
+        }
+
+        if (dx > dy && dx > 5) {
+          // Horizontal slider drag detected!
+          touchPending = false;
+          dragging = true;
+          try {
+            track.setPointerCapture?.(e.pointerId);
+          } catch (_) {}
+        }
+      }
+
       if (!dragging) return;
       if (rafRef.current) return;
 
+      const clientX = e.clientX;
       rafRef.current = requestAnimationFrame(() => {
         rafRef.current = null;
 
         const s = stateRef.current;
-        const pct = getPercent(e.clientX);
+        const pct = getPercent(clientX);
 
         setInternalValue(
           percentToValue(pct, s.min, s.max, s.step)
@@ -186,8 +222,32 @@ export default function Slider({
     };
 
     const onPointerUp = (e) => {
+      if (touchPending) {
+        // Tap action without vertical scrolling
+        const s = stateRef.current;
+        const pct = getPercent(e.clientX);
+        setInternalValue(percentToValue(pct, s.min, s.max, s.step));
+      }
+
+      touchPending = false;
       dragging = false;
-      track.releasePointerCapture?.(e.pointerId);
+      if (activePointerId !== null) {
+        try {
+          track.releasePointerCapture?.(activePointerId);
+        } catch (_) {}
+        activePointerId = null;
+      }
+    };
+
+    const onPointerCancel = () => {
+      touchPending = false;
+      dragging = false;
+      if (activePointerId !== null) {
+        try {
+          track.releasePointerCapture?.(activePointerId);
+        } catch (_) {}
+        activePointerId = null;
+      }
     };
 
     const onWheel = (e) => {
@@ -203,12 +263,14 @@ export default function Slider({
     track.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerCancel);
     container.addEventListener("wheel", onWheel, { passive: false });
 
     return () => {
       track.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerCancel);
       container.removeEventListener("wheel", onWheel);
     };
   }, []);

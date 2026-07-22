@@ -30,7 +30,6 @@ function getPhaseLabel(currentPhase) {
     case 'sync':
       return 'LAYER SYNC';
     default:
-      // Surface unknown phases directly so stuck states are visible in the footer.
       return String(currentPhase).replace(/[_-]+/g, ' ').trim().toUpperCase() || 'PROCESSING';
   }
 }
@@ -74,7 +73,7 @@ export default function Footer() {
   const [tooltipPosition, setTooltipPosition] = useState({});
   const timingRef = useRef(null);
   const activePhaseLabel = getPhaseLabel(currentPhase);
-  const showBusyState = isProcessing || Boolean(activePhaseLabel);
+  const showBusyState = !webcamActive && (isProcessing || Boolean(activePhaseLabel));
 
   const displayColorCount = previewingOriginal
     ? (originalUniqueColors > 0 ? originalUniqueColors : '—')
@@ -84,7 +83,6 @@ export default function Footer() {
 
   useEffect(() => {
     if (timing.pipelineTotal > 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLastTotalTime(timing.pipelineTotal);
     }
   }, [timing.pipelineTotal]);
@@ -188,18 +186,34 @@ export default function Footer() {
   }, [pipelineVisible, timing.pipelineTotal, currentPhase]);
 
   const formattedTime = lastTotalTime > 0 ? formatMs(lastTotalTime) : '—';
-  const statusSuffix = activePhaseLabel 
-    ? `${activePhaseLabel}...` 
-    : (isProcessing ? (processingLabel || 'PROCESSING...') : '');
+  const statusSuffix = webcamActive
+    ? ''
+    : (activePhaseLabel 
+      ? `${activePhaseLabel}...` 
+      : (isProcessing ? (processingLabel || 'PROCESSING...') : ''));
 
   return (
-    <footer className="app-footer">
+    <footer className={`app-footer${webcamActive ? ' is-camera-active' : ''}`}>
       <div className="app-footer-left">
         <button
+          type="button"
           className={`footer-preview-btn${previewingOriginal ? ' footer-preview-btn--active' : ''}`}
           onMouseDown={() => setPreviewingOriginal(true)}
           onMouseUp={() => setPreviewingOriginal(false)}
           onMouseLeave={() => setPreviewingOriginal(false)}
+          onPointerDown={(e) => {
+            e.preventDefault();
+            setPreviewingOriginal(true);
+          }}
+          onPointerUp={() => setPreviewingOriginal(false)}
+          onPointerLeave={() => setPreviewingOriginal(false)}
+          onPointerCancel={() => setPreviewingOriginal(false)}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            setPreviewingOriginal(true);
+          }}
+          onTouchEnd={() => setPreviewingOriginal(false)}
+          onTouchCancel={() => setPreviewingOriginal(false)}
         >
           COMPARE
         </button>
@@ -216,7 +230,8 @@ export default function Footer() {
               <>
                 {' | '}
                 <span className={activePhaseLabel ? 'pipeline-timing-active-phase' : ''}>
-                  {statusSuffix}
+                  <span className="phase-label-desktop">{statusSuffix}</span>
+                  <span className="phase-label-mobile">{statusSuffix.replace('DITHERING', 'D')}</span>
                 </span>
               </>
             )}

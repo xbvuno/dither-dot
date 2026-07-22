@@ -65,7 +65,7 @@ export default function AdjustmentsPage() {
             <div ref={setRootNode}>
                 <div className="bv-macro-section">
                     <h2>ADJUSTMENTS</h2>
-                    <div className="bv-section">
+                    <div className="bv-section histogram-section">
                         <div className="bv-controls-row">
                             <span className="bv-label">HISTOGRAM</span>
                             <div className="bv-option-group histogram-toggle-group">

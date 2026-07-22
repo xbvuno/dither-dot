@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Smartphone, MonitorSmartphone, TriangleAlert, ArrowRight, Info, Heart, ScrollText, Cat, FileUp, ImageUpscale, SlidersHorizontal, Palette, SprayCan, Download } from 'lucide-react'
+import { Smartphone, MonitorSmartphone, TriangleAlert, ArrowRight, Info, Heart, ScrollText, Cat, FileUp, ImageUpscale, SlidersHorizontal, Palette, SprayCan, Download, Maximize, Minimize } from 'lucide-react'
 import Aside from './components/layout/Aside'
 
 import watermarkMini from './assets/watermark/watermark-mini.png'
@@ -7,12 +7,15 @@ import ZoomableDiv from './components/ui/shared/ZoomableDiv'
 import ImageShader from './components/canvas/ImageShader'
 import AsideRouter from './components/layout/AsideRouter'
 import GifTimeline from './components/timeline/GifTimeline'
+import CameraControlsBar from './components/camera/CameraControlsBar'
 import Footer from './components/layout/Footer'
 import WaveGridSpinner from './components/ui/shared/WaveGridSpinner'
+import PopupMessage from './components/ui/shared/PopupMessage'
 import usePageStore, { PAGE } from './stores/ui/pageStore'
 import useImageStore from './stores/media/imageStore'
 import useProcessingStore from './stores/engine/processingStore'
 import useWatermarkStore from './stores/media/watermarkStore'
+import useViewStore from './stores/ui/viewStore'
 
 const ICONS = [
   { id: PAGE.IMPORT, label: 'Import', Icon: FileUp },
@@ -35,6 +38,7 @@ const IS_MOBILE = (() => {
 function App() {
   const [modalType, setModalType] = useState(null)
   const [continueOnMobile, setContinueOnMobile] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const currentPage = usePageStore(s => s.currentPage)
   const setPage = usePageStore(s => s.setPage)
   const sourceImg = useImageStore(s => s.sourceImg)
@@ -46,6 +50,79 @@ function App() {
   const navRef = useRef(null)
   const lastScrollTimeRef = useRef(0)
   const currentPageRef = useRef(currentPage)
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement))
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const target = e.target
+      const tagName = target?.tagName?.toUpperCase()
+      if (
+        tagName === 'INPUT' ||
+        tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' ||
+        target?.isContentEditable
+      ) {
+        return
+      }
+
+      const keyNum = parseInt(e.key, 10)
+      if (!isNaN(keyNum) && keyNum >= 1 && keyNum <= ICONS.length) {
+        e.preventDefault()
+        setPage(ICONS[keyNum - 1].id)
+        return
+      }
+
+      if (e.key === 'c' || e.key === 'C') {
+        if (!e.repeat) {
+          useViewStore.getState().setPreviewingOriginal(true)
+        }
+      }
+    }
+
+    const handleKeyUp = (e) => {
+      const target = e.target
+      const tagName = target?.tagName?.toUpperCase()
+      if (
+        tagName === 'INPUT' ||
+        tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' ||
+        target?.isContentEditable
+      ) {
+        return
+      }
+
+      if (e.key === 'c' || e.key === 'C') {
+        useViewStore.getState().setPreviewingOriginal(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
+  }, [setPage])
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {})
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {})
+      }
+    }
+  }
 
   useEffect(() => {
     currentPageRef.current = currentPage
@@ -110,30 +187,7 @@ function App() {
 
   const activeModal = modalType ? modalConfig[modalType] : null
 
-  if (IS_MOBILE && !continueOnMobile) {
-    return (
-      <div className='fullscreen-blocker'>
-        <div>
-          <h1>MOBILE NOT SUPPORTED YET</h1>
-          <p>
-            DITHER-DOT is currently optimized for desktop workflows.
-          </p>
-          <p>
-            Open the app from a desktop browser for the full editing experience.
-          </p>
-          <br/>
-          <button
-            type='button'
-            className='fullscreen-blocker-btn'
-            onClick={() => setContinueOnMobile(true)}
-          >
-            <ArrowRight size={14} strokeWidth={1.8} />
-            CONTINUE ANYWAY
-          </button>
-        </div>
-      </div>
-    )
-  }
+
 
   return (
     <>
@@ -142,9 +196,10 @@ function App() {
         <nav ref={navRef} className='app-nav' aria-label='Main Navigation'>
         <img src={watermarkMini} alt='DITHER-DOT Logo' className='nav-logo-img' />
         <div className='nav-links-wrap'>
-          {ICONS.map((item) => {
+          {ICONS.map((item, index) => {
             const Icon = item.Icon
             const isSelected = currentPage === item.id
+            const tooltipText = `${item.label.toUpperCase()} [${index + 1}]`
             return (
               <button
                 key={item.id}
@@ -153,8 +208,8 @@ function App() {
                 onClick={() => setPage(item.id)}
                 onDragEnter={(event) => handleNavDragOver(event, item.id)}
                 onDragOver={(event) => handleNavDragOver(event, item.id)}
-                data-tooltip={item.label}
-                aria-label={item.label}
+                data-tooltip={tooltipText}
+                aria-label={tooltipText}
                 aria-current={isSelected ? 'page' : undefined}
               >
                 <Icon size={24} strokeWidth={2} aria-hidden='true' className='nav-icon-img' />
@@ -166,12 +221,19 @@ function App() {
       <div className='app-body-container'>
         <header className='app-header'>
           <span className='app-header-title'>
+            <img src={watermarkMini} alt='DITHER-DOT Logo' className='header-logo-img' />
             <span className='app-header-title-name'>DITHER-DOT</span>
           </span>
           <div className='app-header-links'>
-            <button type='button' className='header-link-btn' onClick={() => setModalType('support')} aria-label='Support project'>
-              <Heart size={13} strokeWidth={2} aria-hidden='true' />
-              SUPPORT
+            <button
+              type='button'
+              className='header-link-btn'
+              onClick={() => setModalType('support')}
+              aria-label='Support project'
+              title='SUPPORT'
+            >
+              <Heart size={14} strokeWidth={2} aria-hidden='true' />
+              <span className='header-link-label'>SUPPORT</span>
             </button>
             <a
               href='https://github.com/xbvuno/dither-dot'
@@ -179,10 +241,25 @@ function App() {
               rel='noopener noreferrer'
               className='header-link-btn'
               aria-label='GitHub Repository (opens in new tab)'
+              title='GITHUB'
             >
-              <Cat size={13} strokeWidth={2} aria-hidden='true' />
-              GITHUB
+              <Cat size={14} strokeWidth={2} aria-hidden='true' />
+              <span className='header-link-label'>GITHUB</span>
             </a>
+            <button
+              type='button'
+              className='header-link-btn header-btn--mobile-only'
+              onClick={toggleFullscreen}
+              aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+              title={isFullscreen ? 'EXIT FULLSCREEN' : 'FULLSCREEN'}
+            >
+              {isFullscreen ? (
+                <Minimize size={14} strokeWidth={2} aria-hidden='true' />
+              ) : (
+                <Maximize size={14} strokeWidth={2} aria-hidden='true' />
+              )}
+              <span className='header-link-label'>FULLSCREEN</span>
+            </button>
           </div>
         </header>
         <main>
@@ -191,6 +268,7 @@ function App() {
           </Aside>
           <div className='flex-v'>
             <div className='zoomable-wrap'>
+              <PopupMessage />
               <ZoomableDiv content={<ImageShader sourceImg={sourceImg} />} />
               {(viewerLoading || renderProcessing) && (
                 <div className='zoomable-loading-overlay' role='status' aria-live='polite' aria-label='Loading media'>
@@ -199,6 +277,7 @@ function App() {
               )}
             </div>
             <GifTimeline />
+            <CameraControlsBar />
             <Footer />
           </div>
         </main>

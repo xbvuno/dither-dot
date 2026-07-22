@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronDown, RotateCcw } from "lucide-react";
 import SliderBundle from "../ui/shared/SliderBundle";
 import useSizeStore from "../../stores/media/sizeStore";
+import useWebcamStore from "../../stores/media/webcamStore";
 
 function gcd(a, b) {
   a = Math.abs(Math.round(a));
@@ -62,6 +63,12 @@ export default function SizeControls() {
     });
   };
 
+  const webcamActive = useWebcamStore(s => s.active);
+  const cameraMaxW = useWebcamStore(s => s.maxWidth) || 1280;
+  const cameraMaxH = useWebcamStore(s => s.maxHeight) || 720;
+  const maxSliderWidth = webcamActive ? cameraMaxW : width;
+  const maxSliderHeight = webcamActive ? cameraMaxH : height;
+
   if (width == null || height == null) return null;
 
   const ratioLabel = formatRatio(customWidth, customHeight);
@@ -121,7 +128,7 @@ export default function SizeControls() {
             <p className="bv-label">SIZE</p>
             <SliderBundle
               min={1}
-              max={width}
+              max={maxSliderWidth}
               defaultValue={width}
               step={1}
               label="WIDTH"
@@ -130,7 +137,7 @@ export default function SizeControls() {
             />
             <SliderBundle
               min={1}
-              max={height}
+              max={maxSliderHeight}
               defaultValue={height}
               step={1}
               label="HEIGHT"

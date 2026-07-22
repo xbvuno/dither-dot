@@ -29,6 +29,12 @@
     cursor: grab;
     margin-top: 0.2rem;
     overflow: hidden;
+    touch-action: pan-y;
+    user-select: none;
+}
+
+.bv.slider sub {
+    margin-top: 4px;
 }
 
 .bv.slider.selected:focus {
@@ -51,6 +57,7 @@
     cursor: pointer;
     font-weight: 100;
     font-size: smaller;
+    touch-action: manipulation;
 }
 
 .bv [role="button"][disabled] {
@@ -70,16 +77,16 @@
     position: absolute;
     opacity: 0.5;
     translate: 0 100%;
-    top: 2.2rem;
-    --distance: 0.2rem;
+    top: calc(2.2rem + 4px);
+    --distance: 0rem;
 }
 
 .bv.slider-bundle sub.min {
-    left: var(--distance)
+    left: var(--distance);
 }
 
 .bv.slider-bundle sub.max {
-    right: var(--distance)
+    right: var(--distance);
 }
 
 .bv.slider-bundle .slider-bundle-label {
@@ -122,4 +129,30 @@
 
 .bv.slider-bundle input[aria-invalid="true"] {
     border: 1px solid var(--color-danger);
-}
+}
+
+@media (max-width: 768px) {
+    .bv.slider {
+        height: 1.6rem;
+        align-items: center;
+        touch-action: pan-y;
+    }
+
+    .bv.slider .track {
+        height: 1.3rem;
+        touch-action: pan-y;
+    }
+
+    .bv.slider .thumb {
+        height: 1.5rem;
+        width: 3px;
+        top: -0.1rem;
+    }
+
+    .bv.slider > [role=button] {
+        display: none;
+    }
+}
+
+
+

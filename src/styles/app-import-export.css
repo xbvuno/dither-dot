@@ -147,3 +147,13 @@
   letter-spacing: 0.03em;
 }
 
+@media (max-width: 768px) {
+  .import-dropzone-section,
+  .pipeline-section,
+  .force-cpu-section {
+    display: none;
+  }
+}
+
+
+

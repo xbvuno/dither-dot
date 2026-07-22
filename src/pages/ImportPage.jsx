@@ -5,6 +5,7 @@ import useGalleryStore from '../stores/data/galleryStore';
 import useGifStore from '../stores/media/gifStore';
 import useWebcamStore, { WEBCAM_SOURCE } from '../stores/media/webcamStore';
 import useParamsStore from '../stores/data/paramsStore';
+import { notify } from '../stores/ui/popupStore';
 
 import {
   INPUT_ACCEPT,
@@ -46,6 +47,7 @@ export default function ImportPage() {
 
   const webcamActive = useWebcamStore((s) => s.active);
   const webcamStarting = useWebcamStore((s) => s.starting);
+  const webcamError = useWebcamStore((s) => s.error);
   const startWebcam = useWebcamStore((s) => s.startWebcam);
   const stopWebcam = useWebcamStore((s) => s.stopWebcam);
 
@@ -225,7 +227,8 @@ export default function ImportPage() {
     const state = useWebcamStore.getState();
     if (!state.active) return;
     clearGifFrames();
-    setSourceDirect(WEBCAM_SOURCE, 'WEBCAM', 'webcam');
+    setSourceDirect(WEBCAM_SOURCE, 'CAMERA', 'webcam');
+    notify('CAPTURED PHOTOS WILL BE SAVED IN THE EXPORT TAB', 'info');
   };
 
   const handleRandomImage = async () => {
@@ -263,7 +266,7 @@ export default function ImportPage() {
       <div className='bv-macro-section'>
         <h2>IMPORT</h2>
 
-        <div className='bv-section'>
+        <div className='bv-section import-dropzone-section'>
           <p className='bv-label'>DROP OR PASTE</p>
           <div
             className={`import-dropzone${isDropActive ? ' active' : ''}`}
@@ -320,9 +323,12 @@ export default function ImportPage() {
               disabled={webcamStarting}
             >
               {webcamActive ? <CameraOff size={13} strokeWidth={1.5} /> : <Camera size={13} strokeWidth={1.5} />}
-              {webcamStarting ? 'STARTING...' : webcamActive ? 'STOP WEBCAM' : 'START WEBCAM'}
+              {webcamStarting ? 'STARTING...' : webcamActive ? 'STOP CAMERA' : 'START CAMERA'}
             </button>
           </div>
+          {webcamError && (
+            <p className='import-export-status'>{webcamError}</p>
+          )}
           <input
             ref={inputRef}
             type='file'
@@ -344,7 +350,7 @@ export default function ImportPage() {
         <GallerySection />
       </div>
 
-      <div className='bv-section'>
+      <div className='bv-section pipeline-section'>
         <div className='bv-controls-row'>
           <span className='bv-label'>PIPELINE</span>
           <div className='bv-option-group histogram-toggle-group'>
@@ -366,7 +372,7 @@ export default function ImportPage() {
         </div>
       </div>
 
-      <div className='bv-section'>
+      <div className='bv-section force-cpu-section'>
         <div className='bv-controls-row'>
           <span className='bv-label'>FORCE CPU</span>
           <div className='bv-option-group histogram-toggle-group'>

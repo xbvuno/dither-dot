@@ -437,6 +437,10 @@ const action = this.debugEnabled ? "disable" : "enable";
           Math.floor(Number(state.customSize?.customHeight) || Number(state.size?.height) || sourceH || 1),
         );
 
+        if (this.isWebcamMode) {
+          useWebcamStore.getState().applyResolutionConstraints(w, h);
+        }
+
         const prevW = Math.max(
           1,
           Math.floor(
@@ -500,10 +504,16 @@ const action = this.debugEnabled ? "disable" : "enable";
     this.subscriptions.push(
       useWebcamStore.subscribe((state) => {
         const prevState = this.previousWebcamState || {};
+        const streamChanged = state.stream !== prevState.stream && state.active && Boolean(state.stream);
         const mirroredChanged = state.mirrored !== prevState.mirrored;
         const becameInactive = prevState.active && !state.active;
 
-        this.previousWebcamState = { mirrored: state.mirrored, active: state.active };
+        this.previousWebcamState = { mirrored: state.mirrored, active: state.active, stream: state.stream };
+
+        if (streamChanged && this.isWebcamMode && this.webcamVideo && state.stream) {
+          this.webcamVideo.srcObject = state.stream;
+          this.webcamVideo.play().catch(() => {});
+        }
 
         if (mirroredChanged) {
           this.webcamMirror = Boolean(state.mirrored);
@@ -1434,7 +1444,9 @@ const action = this.debugEnabled ? "disable" : "enable";
     this.paletteFrozenForWebcam = false;
 
     const webcamStream = useWebcamStore.getState().stream;
-    if (!webcamStream) throw new Error('Webcam stream is not available');
+    if (!webcamStream) {
+      throw new Error('Camera stream is not available');
+    }
 
     const video = document.createElement('video');
     video.srcObject = webcamStream;
@@ -1442,15 +1454,26 @@ const action = this.debugEnabled ? "disable" : "enable";
     video.playsInline = true;
     video.autoplay = true;
 
-    await new Promise((resolve, reject) => {
-      video.onloadedmetadata = () => resolve();
-      video.onerror = () => reject(new Error('Failed to initialize webcam video'));
-    });
+    if (video.readyState < 1) {
+      await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          resolve();
+        }, 3000);
+        video.onloadedmetadata = () => {
+          clearTimeout(timeout);
+          resolve();
+        };
+        video.onerror = () => {
+          clearTimeout(timeout);
+          reject(new Error('Failed to initialize camera video'));
+        };
+      });
+    }
 
     try {
       await video.play();
     } catch (err) {
-      throw new Error(`Webcam play failed: ${err?.message ?? err}`);
+      throw new Error(`Camera play failed: ${err?.message ?? err}`);
     }
 
     if (this.lifecycleToken !== lifecycleToken || this.disposed) {
@@ -1496,6 +1519,9 @@ const action = this.debugEnabled ? "disable" : "enable";
 
         if (v && c && ctx && v.readyState >= 2) {
           drawWebcamFrameToCanvas(v, c, ctx, this.webcamMirror);
+          if (!useWebcamStore.getState().frameReady) {
+            useWebcamStore.getState().setFrameReady(true);
+          }
         }
 
         if (this.previewingOriginal) {

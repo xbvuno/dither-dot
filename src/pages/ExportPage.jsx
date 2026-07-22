@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Save, Copy, Eye } from 'lucide-react';
+import { Save, Copy, Eye, Trash2 } from 'lucide-react';
 import useImageStore from '../stores/media/imageStore';
 import useGifStore from '../stores/media/gifStore';
+import useWebcamStore from '../stores/media/webcamStore';
 import { getOutputCanvas } from '../utils/canvasRegistry';
 import { exportCurrentGif } from '../utils/exportGif';
 import SliderBundle from '../components/ui/shared/SliderBundle';
@@ -77,6 +78,10 @@ export default function ExportPage() {
   const setExportPreviewUrl = useImageStore(s => s.setExportPreviewUrl);
   const lastRenderJobId = useImageStore(s => s.lastRenderJobId);
   const gifFrames = useGifStore(s => s.frames);
+  const shoots = useWebcamStore((s) => s.shoots) || [];
+  const deleteShoot = useWebcamStore((s) => s.deleteShoot);
+  const clearShoots = useWebcamStore((s) => s.clearShoots);
+
   const [exportName, setExportName] = useState(getDefaultExportName(sourceName));
   const [upscale, setUpscale] = useState(1);
   const [status, setStatus] = useState(null);
@@ -222,6 +227,48 @@ export default function ExportPage() {
     }
   };
 
+  const handleSaveShoot = async (shoot) => {
+    try {
+      if (shoot.canvas) {
+        const upCanvas = createUpscaledCanvas(shoot.canvas, upscale);
+        const link = document.createElement('a');
+        link.download = `${shoot.name}.png`;
+        link.href = upCanvas.toDataURL('image/png');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        const link = document.createElement('a');
+        link.download = `${shoot.name}.png`;
+        link.href = shoot.dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      setStatus('PHOTO SAVED.');
+      setTimeout(() => setStatus(null), 2500);
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'Save photo failed.');
+    }
+  };
+
+  const handleCopyShoot = async (shoot) => {
+    try {
+      if (shoot.canvas) {
+        const upCanvas = createUpscaledCanvas(shoot.canvas, upscale);
+        await copyCanvasToClipboard(upCanvas);
+      } else {
+        const response = await fetch(shoot.dataUrl);
+        const blob = await response.blob();
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      }
+      setStatus('PHOTO COPIED TO CLIPBOARD.');
+      setTimeout(() => setStatus(null), 2500);
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : 'Copy photo failed.');
+    }
+  };
+
   return (
     <div>
       <div className='bv-macro-section'>
@@ -297,16 +344,78 @@ export default function ExportPage() {
           {status && <p className='import-export-status'>{status}</p>}
         </div>
 
-        {previewUrl && (
-          <div className='bv-section'>
-            <p className='bv-label'>PREVIEW ({finalWidth} x {finalHeight})</p>
-            <img
-              src={previewUrl}
-              className='export-preview-floating'
-              alt='preview'
-            />
-            <p className='export-preview-hint'>DRAG AND DROP IT EVERYWHERE</p>
+        {shoots.length > 0 ? (
+          <div className='bv-section' style={{ marginTop: '1.5rem' }}>
+            <div className='bv-controls-row' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <span className='bv-label' style={{ margin: 0 }}>CAMERA SHOOTS ({shoots.length})</span>
+              <button
+                type='button'
+                className='bv-option-btn export-btn danger-btn'
+                onClick={clearShoots}
+              >
+                <Trash2 size={13} strokeWidth={1.5} />
+                CLEAR ALL
+              </button>
+            </div>
+
+            <div className='camera-shoots-vertical-list' style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {shoots.map((shoot, index) => (
+                <div key={shoot.id} className='camera-shoot-card' style={{ border: '1px solid var(--color-border)', padding: '0.85rem', borderRadius: 0, background: 'var(--color-bg-alt, #141414)' }}>
+                  <div className='camera-shoot-card-top' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <span className='bv-label' style={{ fontSize: '0.7rem', color: '#aaaaaa' }}>
+                      SHOT #{shoots.length - index} • {new Date(shoot.timestamp).toLocaleTimeString()}
+                    </span>
+                    <button
+                      type='button'
+                      className='bv-option-btn export-btn'
+                      onClick={() => deleteShoot(shoot.id)}
+                      title='Delete photo'
+                    >
+                      <Trash2 size={13} strokeWidth={1.5} />
+                    </button>
+                  </div>
+
+                  <img
+                    src={shoot.dataUrl}
+                    className='export-preview-floating'
+                    alt={`camera shoot ${index + 1}`}
+                    style={{ width: '100%', display: 'block', marginBottom: '0.75rem', borderRadius: 0 }}
+                  />
+
+                  <div className='bv-option-group'>
+                    <button
+                      type='button'
+                      className='bv-option-btn export-btn'
+                      onClick={() => handleSaveShoot(shoot)}
+                    >
+                      <Save size={13} strokeWidth={1.5} />
+                      SAVE
+                    </button>
+                    <button
+                      type='button'
+                      className='bv-option-btn export-btn'
+                      onClick={() => handleCopyShoot(shoot)}
+                    >
+                      <Copy size={13} strokeWidth={1.5} />
+                      COPY
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+        ) : (
+          previewUrl && (
+            <div className='bv-section'>
+              <p className='bv-label'>PREVIEW ({finalWidth} x {finalHeight})</p>
+              <img
+                src={previewUrl}
+                className='export-preview-floating'
+                alt='preview'
+              />
+              <p className='export-preview-hint'>DRAG AND DROP IT EVERYWHERE</p>
+            </div>
+          )
         )}
       </div>
     </div>
