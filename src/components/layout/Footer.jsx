@@ -73,7 +73,7 @@ export default function Footer() {
   const [tooltipPosition, setTooltipPosition] = useState({});
   const timingRef = useRef(null);
   const activePhaseLabel = getPhaseLabel(currentPhase);
-  const showBusyState = isProcessing || Boolean(activePhaseLabel);
+  const showBusyState = !webcamActive && (isProcessing || Boolean(activePhaseLabel));
 
   const displayColorCount = previewingOriginal
     ? (originalUniqueColors > 0 ? originalUniqueColors : '—')
@@ -186,9 +186,11 @@ export default function Footer() {
   }, [pipelineVisible, timing.pipelineTotal, currentPhase]);
 
   const formattedTime = lastTotalTime > 0 ? formatMs(lastTotalTime) : '—';
-  const statusSuffix = activePhaseLabel 
-    ? `${activePhaseLabel}...` 
-    : (isProcessing ? (processingLabel || 'PROCESSING...') : '');
+  const statusSuffix = webcamActive
+    ? ''
+    : (activePhaseLabel 
+      ? `${activePhaseLabel}...` 
+      : (isProcessing ? (processingLabel || 'PROCESSING...') : ''));
 
   return (
     <footer className="app-footer">

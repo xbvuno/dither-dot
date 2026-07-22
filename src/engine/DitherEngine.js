@@ -1515,6 +1515,9 @@ const action = this.debugEnabled ? "disable" : "enable";
 
         if (v && c && ctx && v.readyState >= 2) {
           drawWebcamFrameToCanvas(v, c, ctx, this.webcamMirror);
+          if (!useWebcamStore.getState().frameReady) {
+            useWebcamStore.getState().setFrameReady(true);
+          }
         }
 
         if (this.previewingOriginal) {

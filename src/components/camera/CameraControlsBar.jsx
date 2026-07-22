@@ -7,7 +7,6 @@ import './styles/CameraControlsBar.css';
 
 export default function CameraControlsBar() {
   const active = useWebcamStore((s) => s.active);
-  const frameReady = useWebcamStore((s) => s.frameReady);
   const shoots = useWebcamStore((s) => s.shoots);
   const addShoot = useWebcamStore((s) => s.addShoot);
   const [capturing, setCapturing] = useState(false);
@@ -23,7 +22,7 @@ export default function CameraControlsBar() {
   };
 
   const handleTakeShoot = useCallback(async () => {
-    if (capturing || !frameReady) return;
+    if (capturing) return;
     setCapturing(true);
     playSnapSound();
 
@@ -48,7 +47,7 @@ export default function CameraControlsBar() {
     } finally {
       setCapturing(false);
     }
-  }, [capturing, frameReady, addShoot]);
+  }, [capturing, addShoot]);
 
   useEffect(() => {
     if (!active) return undefined;
@@ -81,16 +80,15 @@ export default function CameraControlsBar() {
         type='button'
         className='bv-option-btn camera-snap-btn'
         onClick={handleTakeShoot}
-        disabled={!frameReady || capturing}
-        title={!frameReady ? 'Waiting for camera frame...' : 'Take Photo (Space)'}
+        disabled={capturing}
+        title='Snap photo (Space)'
       >
-        <Aperture size={13} strokeWidth={1.5} className={capturing ? 'animate-spin' : ''} />
-        {capturing ? 'CAPTURING...' : 'SNAP'}
+        <Aperture size={14} strokeWidth={1.5} className={capturing ? 'animate-spin' : ''} />
       </button>
 
-      <div className='camera-shoots-counter'>
-        SHOOTS: <span className='camera-shoots-count-num'>{shoots.length}</span>
-      </div>
+      <span className='bv-label camera-shoots-label'>
+        SHOOTS: {shoots.length}
+      </span>
     </div>
   );
 }

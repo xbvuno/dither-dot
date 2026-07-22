@@ -15,15 +15,14 @@
 
 .camera-snap-btn {
   height: 2.0rem;
-  padding: 0 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  width: 2.0rem;
+  padding: 0;
+  justify-content: center;
   background-color: var(--color-bg-alt, #181818);
   border: 1px solid var(--color-border);
   color: var(--color-text-main, #ffffff);
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
@@ -38,17 +37,9 @@
   cursor: not-allowed;
 }
 
-.camera-shoots-counter {
-  font-family: var(--font-mono, monospace);
-  font-size: 0.75rem;
-  color: var(--color-text-subtle, #888888);
-  letter-spacing: 0.05em;
+.camera-shoots-label {
+  margin: 0;
   user-select: none;
-}
-
-.camera-shoots-count-num {
-  color: var(--color-text-main, #ffffff);
-  font-weight: 700;
 }
 
 @media (max-width: 768px) {
@@ -57,7 +48,7 @@
     padding: 0 0.75rem;
   }
 
-  .camera-shoots-counter {
+  .camera-shoots-label {
     order: 1;
   }
 
