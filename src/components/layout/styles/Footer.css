@@ -40,6 +40,14 @@
   text-underline-offset: 0.2rem;
 }
 
+.phase-label-mobile {
+  display: none !important;
+}
+
+.phase-label-desktop {
+  display: inline !important;
+}
+
 .app-footer-status {
   font-size: 0.76rem;
   letter-spacing: 0.08em;
@@ -87,6 +95,14 @@
     opacity: 0.65;
     margin-left: 0.35rem;
     pointer-events: none;
+  }
+
+  .phase-label-desktop {
+    display: none !important;
+  }
+
+  .phase-label-mobile {
+    display: inline !important;
   }
 
   .app-footer-status {

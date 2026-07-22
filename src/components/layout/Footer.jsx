@@ -228,7 +228,8 @@ export default function Footer() {
               <>
                 {' | '}
                 <span className={activePhaseLabel ? 'pipeline-timing-active-phase' : ''}>
-                  {statusSuffix}
+                  <span className="phase-label-desktop">{statusSuffix}</span>
+                  <span className="phase-label-mobile">{statusSuffix.replace('DITHERING', 'D')}</span>
                 </span>
               </>
             )}
