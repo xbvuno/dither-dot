@@ -13,6 +13,7 @@ import usePageStore, { PAGE } from './stores/ui/pageStore'
 import useImageStore from './stores/media/imageStore'
 import useProcessingStore from './stores/engine/processingStore'
 import useWatermarkStore from './stores/media/watermarkStore'
+import useViewStore from './stores/ui/viewStore'
 
 const ICONS = [
   { id: PAGE.IMPORT, label: 'Import', Icon: FileUp },
@@ -58,6 +59,58 @@ function App() {
       document.removeEventListener('fullscreenchange', handleFullscreenChange)
     }
   }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const target = e.target
+      const tagName = target?.tagName?.toUpperCase()
+      if (
+        tagName === 'INPUT' ||
+        tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' ||
+        target?.isContentEditable
+      ) {
+        return
+      }
+
+      const keyNum = parseInt(e.key, 10)
+      if (!isNaN(keyNum) && keyNum >= 1 && keyNum <= ICONS.length) {
+        e.preventDefault()
+        setPage(ICONS[keyNum - 1].id)
+        return
+      }
+
+      if (e.key === 'c' || e.key === 'C') {
+        if (!e.repeat) {
+          useViewStore.getState().setPreviewingOriginal(true)
+        }
+      }
+    }
+
+    const handleKeyUp = (e) => {
+      const target = e.target
+      const tagName = target?.tagName?.toUpperCase()
+      if (
+        tagName === 'INPUT' ||
+        tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' ||
+        target?.isContentEditable
+      ) {
+        return
+      }
+
+      if (e.key === 'c' || e.key === 'C') {
+        useViewStore.getState().setPreviewingOriginal(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
+  }, [setPage])
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -141,9 +194,10 @@ function App() {
         <nav ref={navRef} className='app-nav' aria-label='Main Navigation'>
         <img src={watermarkMini} alt='DITHER-DOT Logo' className='nav-logo-img' />
         <div className='nav-links-wrap'>
-          {ICONS.map((item) => {
+          {ICONS.map((item, index) => {
             const Icon = item.Icon
             const isSelected = currentPage === item.id
+            const tooltipText = `${item.label.toUpperCase()} [${index + 1}]`
             return (
               <button
                 key={item.id}
@@ -152,8 +206,8 @@ function App() {
                 onClick={() => setPage(item.id)}
                 onDragEnter={(event) => handleNavDragOver(event, item.id)}
                 onDragOver={(event) => handleNavDragOver(event, item.id)}
-                data-tooltip={item.label}
-                aria-label={item.label}
+                data-tooltip={tooltipText}
+                aria-label={tooltipText}
                 aria-current={isSelected ? 'page' : undefined}
               >
                 <Icon size={24} strokeWidth={2} aria-hidden='true' className='nav-icon-img' />
