@@ -203,7 +203,7 @@ export default function GallerySection() {
             return (
               <GalleryThumbItem
                 key={item.id}
-                item={item}
+                item={presetThumbItem}
                 isActive={isActive}
                 onSelect={() => {
                   void handleSelectPresetItem(item, isAnimatedPreset, staticPreviewSrc);
