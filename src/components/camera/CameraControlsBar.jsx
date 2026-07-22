@@ -26,7 +26,7 @@ export default function CameraControlsBar() {
   const handleTakeShoot = useCallback(async () => {
     if (capturing) return;
     setCapturing(true);
-    triggerHapticPulse([40, 20, 40]);
+    triggerHapticPulse([70, 30, 70]);
     playSnapSound();
 
     try {
