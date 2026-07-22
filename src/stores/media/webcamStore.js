@@ -31,13 +31,13 @@ const useWebcamStore = create((set, get) => ({
     const videoTrack = stream.getVideoTracks()[0];
     if (!videoTrack) return;
 
-    const clampedW = Math.min(1720, Math.max(1, Math.round(Number(width) || 640)));
-    const clampedH = Math.min(1280, Math.max(1, Math.round(Number(height) || 480)));
+    const clampedW = Math.min(1280, Math.max(1, Math.round(Number(width) || 640)));
+    const clampedH = Math.min(720, Math.max(1, Math.round(Number(height) || 480)));
 
     try {
       await videoTrack.applyConstraints({
-        width: { ideal: clampedW, max: 1720 },
-        height: { ideal: clampedH, max: 1280 },
+        width: { ideal: clampedW, max: 1280 },
+        height: { ideal: clampedH, max: 720 },
         facingMode: { ideal: get().facingMode || 'user' },
         frameRate: { ideal: 30, max: 30 },
       });
@@ -79,8 +79,8 @@ const useWebcamStore = create((set, get) => ({
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: { ideal: mode },
-            width: { ideal: 640 },
-            height: { ideal: 480 },
+            width: { ideal: 640, max: 1280 },
+            height: { ideal: 480, max: 720 },
             frameRate: { ideal: 30, max: 30 },
           },
           audio: false,
