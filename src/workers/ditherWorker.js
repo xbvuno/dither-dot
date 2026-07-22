@@ -162,7 +162,6 @@ self.onmessage = async (event) => {
   const {
     jobId,
     source,
-    previewingOriginal,
     customWidth,
     customHeight,
     paletteRgb,
@@ -282,45 +281,39 @@ self.onmessage = async (event) => {
 
     let outputPixels;
 
-    if (previewingOriginal) {
-      // Just retrieve the filtered original image
-      const outputBuffer = activeImage.pixels;
-      outputPixels = new Uint8ClampedArray(outputBuffer.buffer);
-    } else {
-      const tDitherStart = performance.now();
-      if (dither.enabled) {
-        const colors = paletteRgb.map(color => {
-          return {
-            r: Math.round(color[0] * 255) & 255,
-            g: Math.round(color[1] * 255) & 255,
-            b: Math.round(color[2] * 255) & 255,
-            a: 255
-          };
+    const tDitherStart = performance.now();
+    if (dither.enabled) {
+      const colors = paletteRgb.map(color => {
+        return {
+          r: Math.round(color[0] * 255) & 255,
+          g: Math.round(color[1] * 255) & 255,
+          b: Math.round(color[2] * 255) & 255,
+          a: 255
+        };
+      });
+      wasmPalette = new WasmPalette(colors);
+
+      const algs = Dithering.getAlgorithms();
+      const methodName = dither.method === 'ordered_bayer' ? 'bayer' : dither.method;
+      const alg = algs.find(a => a.name === methodName);
+      if (alg) {
+        await alg.apply(activeImage, wasmPalette, {
+          amount: dither.amount,
+          matrixScale: dither.matrixScale,
+          seed: dither.seed,
         });
-        wasmPalette = new WasmPalette(colors);
-
-        const algs = Dithering.getAlgorithms();
-        const methodName = dither.method === 'ordered_bayer' ? 'bayer' : dither.method;
-        const alg = algs.find(a => a.name === methodName);
-        if (alg) {
-          await alg.apply(activeImage, wasmPalette, {
-            amount: dither.amount,
-            matrixScale: dither.matrixScale,
-            seed: dither.seed,
-          });
-        }
       }
-      tDither = performance.now() - tDitherStart;
-
-      const tFinalStart = performance.now();
-      const outputBuffer = activeImage.pixels;
-      outputPixels = new Uint8ClampedArray(outputBuffer.buffer);
-
-      if (dither.enabled) {
-        applyBinaryAlphaThreshold(outputPixels);
-      }
-      tFinal = performance.now() - tFinalStart;
     }
+    tDither = performance.now() - tDitherStart;
+
+    const tFinalStart = performance.now();
+    const outputBuffer = activeImage.pixels;
+    outputPixels = new Uint8ClampedArray(outputBuffer.buffer);
+
+    if (dither.enabled) {
+      applyBinaryAlphaThreshold(outputPixels);
+    }
+    tFinal = performance.now() - tFinalStart;
 
     // Render directly to OffscreenCanvas if available
     if (viewportCanvas && viewportCtx) {

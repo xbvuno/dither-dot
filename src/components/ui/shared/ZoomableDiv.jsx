@@ -42,8 +42,11 @@ export default function ZoomableDiv({ content }) {
 
       if (!contentWidth || !contentHeight) return;
 
-      state.current.width = contentWidth
-      state.current.height = contentHeight
+      const prevScrollLeft = outer.scrollLeft;
+      const prevScrollTop = outer.scrollTop;
+
+      state.current.width = contentWidth;
+      state.current.height = contentHeight;
 
       const fitScale = Math.min(outerWidth / contentWidth, outerHeight / contentHeight);
       const { scale } = state.current;
@@ -60,6 +63,12 @@ export default function ZoomableDiv({ content }) {
       inner.style.marginTop = `${Math.floor(padY)}px`;
 
       contentElem.style.scale = renderScale;
+
+      if (prevScrollLeft > 0 || prevScrollTop > 0) {
+        outer.scrollLeft = prevScrollLeft;
+        outer.scrollTop = prevScrollTop;
+      }
+
       window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
     };
 
@@ -68,11 +77,9 @@ export default function ZoomableDiv({ content }) {
     let renderResizeObserver = null;
 
     const observeRenderSize = () => {
-      renderResizeObserver?.disconnect();
-      renderResizeObserver = null;
-
       const renderElem = getRenderElem();
       if (!renderElem) return;
+      if (renderResizeObserver) return;
 
       renderResizeObserver = new ResizeObserver(() => {
         const atBaseZoom = Math.abs(state.current.scale - ZOOM_MIN) < SCALE_EPSILON;
