@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import "./styles/ZoomableDiv.css";
 
+const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+
 export default function ZoomableDiv({ content }) {
   const outerRef = useRef(null);
   const innerRef = useRef(null);
@@ -30,46 +32,61 @@ export default function ZoomableDiv({ content }) {
 
     if (!getContentElem()) return;
 
-    const updateScale = () => {
+    const zoomTo = (targetScale, focalX, focalY) => {
       const contentElem = getContentElem();
       if (!contentElem) return;
 
       const outerWidth = outer.clientWidth;
       const outerHeight = outer.clientHeight;
-
       const contentWidth = contentElem.scrollWidth || contentElem.offsetWidth;
       const contentHeight = contentElem.scrollHeight || contentElem.offsetHeight;
 
-      if (!contentWidth || !contentHeight) return;
+      if (!contentWidth || !contentHeight || !outerWidth || !outerHeight) return;
 
-      const prevScrollLeft = outer.scrollLeft;
-      const prevScrollTop = outer.scrollTop;
+      const fitScale = Math.min(outerWidth / contentWidth, outerHeight / contentHeight);
+      const prevScale = state.current.scale;
+      const clampedScale = clamp(targetScale, ZOOM_MIN, ZOOM_MAX);
 
+      const prevRenderScale = fitScale * prevScale;
+      const prevRenderWidth = Math.floor(contentWidth * prevRenderScale);
+      const prevRenderHeight = Math.floor(contentHeight * prevRenderScale);
+      const prevPadX = Math.max(0, (outerWidth - prevRenderWidth) / 2);
+      const prevPadY = Math.max(0, (outerHeight - prevRenderHeight) / 2);
+
+      // Content space coordinates under current focal point (focalX, focalY)
+      const xF = (focalX - Math.floor(prevPadX) + outer.scrollLeft) / (prevRenderScale || 1);
+      const yF = (focalY - Math.floor(prevPadY) + outer.scrollTop) / (prevRenderScale || 1);
+
+      state.current.scale = clampedScale;
       state.current.width = contentWidth;
       state.current.height = contentHeight;
 
-      const fitScale = Math.min(outerWidth / contentWidth, outerHeight / contentHeight);
-      const { scale } = state.current;
-      const renderScale = fitScale * scale;
-      const renderedWidth = Math.floor(contentWidth * renderScale);
-      const renderedHeight = Math.floor(contentHeight * renderScale);
+      const newRenderScale = fitScale * clampedScale;
+      const newRenderWidth = Math.floor(contentWidth * newRenderScale);
+      const newRenderHeight = Math.floor(contentHeight * newRenderScale);
+      const newPadX = Math.max(0, (outerWidth - newRenderWidth) / 2);
+      const newPadY = Math.max(0, (outerHeight - newRenderHeight) / 2);
 
-      inner.style.width = `${renderedWidth}px`;
-      inner.style.height = `${renderedHeight}px`;
+      inner.style.width = `${newRenderWidth}px`;
+      inner.style.height = `${newRenderHeight}px`;
+      inner.style.marginLeft = `${Math.floor(newPadX)}px`;
+      inner.style.marginTop = `${Math.floor(newPadY)}px`;
 
-      const padX = Math.max(0, (outerWidth - renderedWidth) / 2);
-      const padY = Math.max(0, (outerHeight - renderedHeight) / 2);
-      inner.style.marginLeft = `${Math.floor(padX)}px`;
-      inner.style.marginTop = `${Math.floor(padY)}px`;
+      contentElem.style.scale = newRenderScale;
 
-      contentElem.style.scale = renderScale;
+      const targetScrollLeft = Math.floor(newPadX) + xF * newRenderScale - focalX;
+      const targetScrollTop = Math.floor(newPadY) + yF * newRenderScale - focalY;
 
-      if (prevScrollLeft > 0 || prevScrollTop > 0) {
-        outer.scrollLeft = prevScrollLeft;
-        outer.scrollTop = prevScrollTop;
-      }
+      outer.scrollLeft = Math.max(0, targetScrollLeft);
+      outer.scrollTop = Math.max(0, targetScrollTop);
 
       window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
+    };
+
+    const updateScale = () => {
+      const outerWidth = outer.clientWidth;
+      const outerHeight = outer.clientHeight;
+      zoomTo(state.current.scale, outerWidth / 2, outerHeight / 2);
     };
 
     updateScale();
@@ -101,25 +118,12 @@ export default function ZoomableDiv({ content }) {
     const handleWheel = (e) => {
       e.preventDefault();
 
-      const prevScale = state.current.scale;
       const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-      const newScale = Math.min(Math.max(prevScale * zoomFactor, ZOOM_MIN), ZOOM_MAX);
-      if (newScale === prevScale) return;
-      state.current.scale = newScale;
-
       const rect = outer.getBoundingClientRect();
-      const offsetX = (e.clientX - rect.left) / rect.width;
-      const offsetY = (e.clientY - rect.top) / rect.height;
+      const focalX = e.clientX - rect.left;
+      const focalY = e.clientY - rect.top;
 
-      outer.scrollLeft =
-        (outer.scrollLeft + offsetX * outer.clientWidth) * (newScale / prevScale) -
-        offsetX * outer.clientWidth;
-
-      outer.scrollTop =
-        (outer.scrollTop + offsetY * outer.clientHeight) * (newScale / prevScale) -
-        offsetY * outer.clientHeight;
-
-      updateScale();
+      zoomTo(state.current.scale * zoomFactor, focalX, focalY);
     };
 
     const handleMouseDown = (e) => {
@@ -149,6 +153,7 @@ export default function ZoomableDiv({ content }) {
 
     let initialPinchDist = null;
     let initialPinchScale = 1;
+    let prevPinchCenter = null;
 
     const getTouchDist = (t1, t2) => {
       const dx = t1.clientX - t2.clientX;
@@ -163,10 +168,16 @@ export default function ZoomableDiv({ content }) {
         state.current.startY = e.touches[0].clientY;
         state.current.startScrollLeft = outer.scrollLeft;
         state.current.startScrollTop = outer.scrollTop;
+        initialPinchDist = null;
+        prevPinchCenter = null;
       } else if (e.touches.length === 2) {
         state.current.dragging = false;
         initialPinchDist = getTouchDist(e.touches[0], e.touches[1]);
         initialPinchScale = state.current.scale;
+        prevPinchCenter = {
+          x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+          y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+        };
       }
     };
 
@@ -177,34 +188,31 @@ export default function ZoomableDiv({ content }) {
         outer.scrollLeft = state.current.startScrollLeft - dx;
         outer.scrollTop = state.current.startScrollTop - dy;
         window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
-      } else if (e.touches.length === 2 && initialPinchDist) {
+      } else if (e.touches.length === 2 && initialPinchDist && initialPinchDist > 0) {
         const currentDist = getTouchDist(e.touches[0], e.touches[1]);
         if (currentDist <= 0) return;
 
+        const currentCenter = {
+          x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+          y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+        };
+
+        const rect = outer.getBoundingClientRect();
+        const focalX = clamp(currentCenter.x - rect.left, 0, rect.width);
+        const focalY = clamp(currentCenter.y - rect.top, 0, rect.height);
+
         const scaleFactor = currentDist / initialPinchDist;
-        const prevScale = state.current.scale;
-        const newScale = Math.min(Math.max(initialPinchScale * scaleFactor, ZOOM_MIN), ZOOM_MAX);
+        const targetScale = initialPinchScale * scaleFactor;
 
-        if (Math.abs(newScale - prevScale) > SCALE_EPSILON) {
-          state.current.scale = newScale;
-
-          const rect = outer.getBoundingClientRect();
-          const touchCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-          const touchCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-
-          const focalX = clamp(touchCenterX - rect.left, 0, rect.width);
-          const focalY = clamp(touchCenterY - rect.top, 0, rect.height);
-
-          const ratio = newScale / prevScale;
-
-          const newScrollLeft = (outer.scrollLeft + focalX) * ratio - focalX;
-          const newScrollTop = (outer.scrollTop + focalY) * ratio - focalY;
-
-          updateScale();
-
-          outer.scrollLeft = newScrollLeft;
-          outer.scrollTop = newScrollTop;
+        if (prevPinchCenter) {
+          const dx = currentCenter.x - prevPinchCenter.x;
+          const dy = currentCenter.y - prevPinchCenter.y;
+          outer.scrollLeft -= dx;
+          outer.scrollTop -= dy;
         }
+        prevPinchCenter = currentCenter;
+
+        zoomTo(targetScale, focalX, focalY);
       }
     };
 
@@ -212,6 +220,7 @@ export default function ZoomableDiv({ content }) {
       if (e.touches.length === 0) {
         state.current.dragging = false;
         initialPinchDist = null;
+        prevPinchCenter = null;
       } else if (e.touches.length === 1) {
         state.current.dragging = true;
         state.current.startX = e.touches[0].clientX;
@@ -219,12 +228,14 @@ export default function ZoomableDiv({ content }) {
         state.current.startScrollLeft = outer.scrollLeft;
         state.current.startScrollTop = outer.scrollTop;
         initialPinchDist = null;
+        prevPinchCenter = null;
       }
     };
 
     const handleDoubleClick = () => {
-      state.current.scale = 1;
-      updateScale();
+      const outerWidth = outer.clientWidth;
+      const outerHeight = outer.clientHeight;
+      zoomTo(1, outerWidth / 2, outerHeight / 2);
     };
 
     outer.addEventListener("wheel", handleWheel, { passive: false });
@@ -243,8 +254,8 @@ export default function ZoomableDiv({ content }) {
 
     const resize_observer = new ResizeObserver(() => {
       updateScale();
-    })
-    resize_observer.observe(outer)
+    });
+    resize_observer.observe(outer);
     mutation_observer.observe(inner, {
       childList: true,
       subtree: true,
