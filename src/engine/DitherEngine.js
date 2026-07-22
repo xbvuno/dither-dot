@@ -1503,6 +1503,10 @@ const action = this.debugEnabled ? "disable" : "enable";
           drawWebcamFrameToCanvas(v, c, ctx, this.webcamMirror);
         }
 
+        if (this.previewingOriginal) {
+          this.syncSplitOverlay();
+        }
+
         this.queueProcessing(false);
         scheduleWebcamFrame();
       }, interval);
