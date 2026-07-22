@@ -31,7 +31,7 @@ import {
 
 import watermarkImage from "../assets/watermark/watermark.png";
 import watermarkMiniImage from "../assets/watermark/watermark-mini.png";
-import wallpaperImageInline from "../assets/wallpaper.jpg?inline";
+import wallpaperImageInline from "../assets/wallpaper.png?inline";
 
 const DITHER_WORKER_TIMEOUT_MS = 10000;
 const PROCESSING_VISIBILITY_DELAY_MS = 100;

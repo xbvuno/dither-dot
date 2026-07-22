@@ -1,6 +1,6 @@
 # 🎨 DITHER-DOT: High-Performance Browser Dithering Studio
 
-<img src="https://dither.xbvuno.dev/wallpaper.jpg" alt="DITHER-DOT preview" width="100%" />
+<img src="https://dither.xbvuno.dev/wallpaper.png" alt="DITHER-DOT preview" width="100%" />
 
 A state-of-the-art, open-source image and animated GIF dithering studio running 100% client-side in your browser.
 
