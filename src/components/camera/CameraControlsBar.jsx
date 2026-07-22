@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { Camera, Aperture } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Aperture } from 'lucide-react';
 import useWebcamStore from '../../stores/media/webcamStore';
 import { compositeWithWatermark, getExportCanvasOrThrow } from '../../utils/importUtils';
+import snapSound from '../../assets/sounds/snap.mp3';
 import './styles/CameraControlsBar.css';
 
 export default function CameraControlsBar() {
@@ -11,11 +12,20 @@ export default function CameraControlsBar() {
   const addShoot = useWebcamStore((s) => s.addShoot);
   const [capturing, setCapturing] = useState(false);
 
-  if (!active) return null;
+  const playSnapSound = () => {
+    try {
+      const audio = new Audio(snapSound);
+      audio.volume = 0.6;
+      audio.play().catch(() => {});
+    } catch {
+      // Ignore audio policy errors
+    }
+  };
 
-  const handleTakeShoot = async () => {
+  const handleTakeShoot = useCallback(async () => {
     if (capturing || !frameReady) return;
     setCapturing(true);
+    playSnapSound();
 
     try {
       const baseExportCanvas = getExportCanvasOrThrow();
@@ -38,7 +48,32 @@ export default function CameraControlsBar() {
     } finally {
       setCapturing(false);
     }
-  };
+  }, [capturing, frameReady, addShoot]);
+
+  useEffect(() => {
+    if (!active) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === ' ' || event.code === 'Space') {
+        const activeEl = document.activeElement;
+        const isInput = activeEl && (
+          activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          activeEl.isContentEditable
+        );
+
+        if (!isInput) {
+          event.preventDefault();
+          handleTakeShoot();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [active, handleTakeShoot]);
+
+  if (!active) return null;
 
   return (
     <div className='camera-controls-bar' role='toolbar' aria-label='Camera Actions'>
@@ -47,10 +82,10 @@ export default function CameraControlsBar() {
         className='bv-option-btn camera-snap-btn'
         onClick={handleTakeShoot}
         disabled={!frameReady || capturing}
-        title={!frameReady ? 'Waiting for camera frame...' : 'Take Photo'}
+        title={!frameReady ? 'Waiting for camera frame...' : 'Take Photo (Space)'}
       >
         <Aperture size={13} strokeWidth={1.5} className={capturing ? 'animate-spin' : ''} />
-        {capturing ? 'CAPTURING...' : 'SNAP PHOTO'}
+        {capturing ? 'CAPTURING...' : 'SNAP'}
       </button>
 
       <div className='camera-shoots-counter'>
