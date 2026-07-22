@@ -762,12 +762,12 @@ h3 {
         align-items: center;
         justify-content: center;
         width: 100%;
-        height: 1.6rem;
+        height: 2.0rem;
         cursor: row-resize;
         touch-action: none !important;
         user-select: none !important;
         -webkit-user-select: none !important;
-        z-index: 30;
+        z-index: 105 !important;
         background-color: var(--color-bg) !important;
         border-top: 1px solid var(--color-border) !important;
         box-sizing: border-box;
@@ -796,7 +796,7 @@ h3 {
         width: 100% !important;
         max-width: 100% !important;
         height: 42vh;
-        min-height: 1.6rem;
+        min-height: 2.0rem;
         max-height: 65vh;
         flex-shrink: 0;
         border-top: none;
