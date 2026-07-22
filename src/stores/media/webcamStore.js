@@ -37,6 +37,15 @@ const useWebcamStore = create((set, get) => ({
       });
     }
 
+    if (!navigator?.mediaDevices?.getUserMedia) {
+      set({
+        error: 'WEBCAM REQUIRES A SECURE CONNECTION (HTTPS) OR LOCALHOST.',
+        starting: false,
+        active: false,
+      });
+      return;
+    }
+
     try {
       let stream;
       try {
@@ -50,15 +59,26 @@ const useWebcamStore = create((set, get) => ({
           audio: false,
         });
       } catch {
-        // Fallback for devices without ideal constraints support
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: mode,
-            width: { ideal: 640 },
-            height: { ideal: 480 },
-          },
-          audio: false,
-        });
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: mode },
+            },
+            audio: false,
+          });
+        } catch {
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: mode },
+              audio: false,
+            });
+          } catch {
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: true,
+              audio: false,
+            });
+          }
+        }
       }
 
       if (token !== startToken) {

@@ -1448,10 +1448,19 @@ const action = this.debugEnabled ? "disable" : "enable";
     video.playsInline = true;
     video.autoplay = true;
 
-    await new Promise((resolve, reject) => {
-      video.onloadedmetadata = () => resolve();
-      video.onerror = () => reject(new Error('Failed to initialize webcam video'));
-    });
+    if (video.readyState < 1) {
+      await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => resolve(), 3000);
+        video.onloadedmetadata = () => {
+          clearTimeout(timeout);
+          resolve();
+        };
+        video.onerror = () => {
+          clearTimeout(timeout);
+          reject(new Error('Failed to initialize webcam video'));
+        };
+      });
+    }
 
     try {
       await video.play();
