@@ -83,7 +83,7 @@ export default function CameraControlsBar() {
         disabled={capturing}
         title='Snap photo (Space)'
       >
-        <Aperture size={14} strokeWidth={1.5} className={capturing ? 'animate-spin' : ''} />
+        <Aperture size={16} strokeWidth={1.5} className={capturing ? 'animate-spin' : ''} />
       </button>
 
       <span className='bv-label camera-shoots-label'>

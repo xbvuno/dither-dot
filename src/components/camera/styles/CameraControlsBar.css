@@ -15,8 +15,7 @@
 
 .camera-snap-btn {
   height: 2.0rem;
-  width: 2.0rem;
-  padding: 0;
+  padding: 0 0.85rem;
   justify-content: center;
   background-color: var(--color-bg-alt, #181818);
   border: 1px solid var(--color-border);

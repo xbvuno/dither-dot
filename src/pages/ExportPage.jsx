@@ -350,30 +350,28 @@ export default function ExportPage() {
               <span className='bv-label' style={{ margin: 0 }}>CAMERA SHOOTS ({shoots.length})</span>
               <button
                 type='button'
-                className='bv-option-btn danger-btn'
+                className='bv-option-btn export-btn danger-btn'
                 onClick={clearShoots}
-                style={{ padding: '0.25rem 0.6rem', fontSize: '0.7rem' }}
               >
-                <Trash2 size={12} strokeWidth={1.5} />
+                <Trash2 size={13} strokeWidth={1.5} />
                 CLEAR ALL
               </button>
             </div>
 
             <div className='camera-shoots-vertical-list' style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {shoots.map((shoot, index) => (
-                <div key={shoot.id} className='camera-shoot-card' style={{ border: '1px solid var(--color-border)', padding: '0.85rem', borderRadius: '4px', background: 'var(--color-bg-alt, #141414)' }}>
+                <div key={shoot.id} className='camera-shoot-card' style={{ border: '1px solid var(--color-border)', padding: '0.85rem', borderRadius: 0, background: 'var(--color-bg-alt, #141414)' }}>
                   <div className='camera-shoot-card-top' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                     <span className='bv-label' style={{ fontSize: '0.7rem', color: '#aaaaaa' }}>
                       SHOT #{shoots.length - index} • {new Date(shoot.timestamp).toLocaleTimeString()}
                     </span>
                     <button
                       type='button'
-                      className='bv-option-btn'
+                      className='bv-option-btn export-btn'
                       onClick={() => deleteShoot(shoot.id)}
                       title='Delete photo'
-                      style={{ padding: '0.2rem 0.5rem', fontSize: '0.65rem' }}
                     >
-                      <Trash2 size={11} strokeWidth={1.5} />
+                      <Trash2 size={13} strokeWidth={1.5} />
                     </button>
                   </div>
 
@@ -381,7 +379,7 @@ export default function ExportPage() {
                     src={shoot.dataUrl}
                     className='export-preview-floating'
                     alt={`camera shoot ${index + 1}`}
-                    style={{ width: '100%', display: 'block', marginBottom: '0.75rem', borderRadius: '2px' }}
+                    style={{ width: '100%', display: 'block', marginBottom: '0.75rem', borderRadius: 0 }}
                   />
 
                   <div className='bv-option-group'>
