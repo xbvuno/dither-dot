@@ -38,31 +38,34 @@ export function setupMobileResize(handleEl, getShellEl) {
 
   const onPointerMove = (e) => {
     if (!isDragging) return;
+    e.stopPropagation?.();
     onMove(e.clientY);
   };
 
   const onTouchMove = (e) => {
     if (!isDragging) return;
+    e.stopPropagation?.();
+    if (e.cancelable) e.preventDefault();
     if (e.touches && e.touches.length > 0) {
-      if (e.cancelable) e.preventDefault();
       onMove(e.touches[0].clientY);
     }
   };
 
-  const stopDrag = () => {
+  const stopDrag = (e) => {
     if (!isDragging) return;
+    e?.stopPropagation?.();
     isDragging = false;
     handleEl.classList.remove('dragging');
     document.body.classList.remove('is-resizing-mobile-aside');
 
-    window.removeEventListener('pointermove', onPointerMove);
-    window.removeEventListener('pointerup', stopDrag);
-    window.removeEventListener('pointercancel', stopDrag);
-    window.removeEventListener('mousemove', onPointerMove);
-    window.removeEventListener('mouseup', stopDrag);
-    window.removeEventListener('touchmove', onTouchMove);
-    window.removeEventListener('touchend', stopDrag);
-    window.removeEventListener('touchcancel', stopDrag);
+    window.removeEventListener('pointermove', onPointerMove, true);
+    window.removeEventListener('pointerup', stopDrag, true);
+    window.removeEventListener('pointercancel', stopDrag, true);
+    window.removeEventListener('mousemove', onPointerMove, true);
+    window.removeEventListener('mouseup', stopDrag, true);
+    window.removeEventListener('touchmove', onTouchMove, true);
+    window.removeEventListener('touchend', stopDrag, true);
+    window.removeEventListener('touchcancel', stopDrag, true);
 
     if (rafId !== null) {
       window.cancelAnimationFrame(rafId);
@@ -91,6 +94,7 @@ export function setupMobileResize(handleEl, getShellEl) {
     if (!shell) return;
 
     if (e.cancelable) e.preventDefault();
+    e.stopPropagation?.();
     isDragging = true;
 
     if (e.pointerId !== undefined && handleEl.setPointerCapture) {
@@ -106,19 +110,19 @@ export function setupMobileResize(handleEl, getShellEl) {
     handleEl.classList.add('dragging');
     document.body.classList.add('is-resizing-mobile-aside');
 
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', stopDrag);
-    window.addEventListener('pointercancel', stopDrag);
-    window.addEventListener('mousemove', onPointerMove);
-    window.addEventListener('mouseup', stopDrag);
-    window.addEventListener('touchmove', onTouchMove, { passive: false });
-    window.addEventListener('touchend', stopDrag);
-    window.addEventListener('touchcancel', stopDrag);
+    window.addEventListener('pointermove', onPointerMove, true);
+    window.addEventListener('pointerup', stopDrag, true);
+    window.addEventListener('pointercancel', stopDrag, true);
+    window.addEventListener('mousemove', onPointerMove, true);
+    window.addEventListener('mouseup', stopDrag, true);
+    window.addEventListener('touchmove', onTouchMove, { capture: true, passive: false });
+    window.addEventListener('touchend', stopDrag, true);
+    window.addEventListener('touchcancel', stopDrag, true);
   };
 
-  handleEl.addEventListener('pointerdown', startDrag);
+  handleEl.addEventListener('pointerdown', startDrag, { passive: false });
   handleEl.addEventListener('touchstart', startDrag, { passive: false });
-  handleEl.addEventListener('mousedown', startDrag);
+  handleEl.addEventListener('mousedown', startDrag, { passive: false });
 
   // Restore stored height on initialization if available
   try {
