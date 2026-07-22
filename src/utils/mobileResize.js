@@ -6,6 +6,7 @@ export function setupMobileResize(handleEl, getShellEl) {
   let isDragging = false;
   let startY = 0;
   let startHeight = 0;
+  let hasMoved = false;
   let pendingHeight = null;
   let rafId = null;
 
@@ -24,9 +25,12 @@ export function setupMobileResize(handleEl, getShellEl) {
   const onMove = (clientY) => {
     if (!isDragging) return;
     const deltaY = startY - clientY; // Dragging UP increases height
+    if (Math.abs(deltaY) > 4) {
+      hasMoved = true;
+    }
     let newHeight = startHeight + deltaY;
 
-    const minH = 100; // 100px min height
+    const minH = 24; // 24px min height (thumb only)
     const maxH = Math.floor(window.innerHeight * 0.70); // 70% of viewport max
     newHeight = Math.max(minH, Math.min(maxH, newHeight));
 
@@ -72,12 +76,28 @@ export function setupMobileResize(handleEl, getShellEl) {
       rafId = null;
     }
 
+    const shell = getShell();
+
+    // If it was a quick tap on the handle without dragging:
+    if (!hasMoved && shell) {
+      const currentH = shell.getBoundingClientRect().height;
+      const defaultH = Math.floor(window.innerHeight * 0.42);
+      // Toggle between collapsed (24px) and expanded
+      const targetH = currentH <= 40 ? defaultH : 24;
+      shell.style.setProperty('height', `${targetH}px`, 'important');
+      try {
+        window.localStorage.setItem(MOBILE_ASIDE_HEIGHT_KEY, String(targetH));
+      } catch {
+        // Ignore
+      }
+      return;
+    }
+
     if (pendingHeight !== null) {
       updateHeight();
     }
 
     try {
-      const shell = getShell();
       if (shell) {
         const finalHeight = shell.getBoundingClientRect().height;
         window.localStorage.setItem(MOBILE_ASIDE_HEIGHT_KEY, String(finalHeight));
@@ -96,6 +116,7 @@ export function setupMobileResize(handleEl, getShellEl) {
     if (e.cancelable) e.preventDefault();
     e.stopPropagation?.();
     isDragging = true;
+    hasMoved = false;
 
     if (e.pointerId !== undefined && handleEl.setPointerCapture) {
       try {
@@ -131,10 +152,10 @@ export function setupMobileResize(handleEl, getShellEl) {
     if (!shell) return;
     try {
       const stored = Number(window.localStorage.getItem(MOBILE_ASIDE_HEIGHT_KEY));
-      const minH = 100;
+      const minH = 24;
       const maxH = Math.floor(window.innerHeight * 0.70);
       const defaultH = Math.floor(window.innerHeight * 0.42);
-      const targetH = (Number.isFinite(stored) && stored > 0) ? stored : defaultH;
+      const targetH = (Number.isFinite(stored) && stored >= 24) ? stored : defaultH;
       const clamped = Math.max(minH, Math.min(maxH, targetH));
       shell.style.setProperty('height', `${clamped}px`, 'important');
     } catch {
