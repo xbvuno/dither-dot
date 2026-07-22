@@ -1,71 +1,88 @@
-# 🎨 DITHER-DOT: Your Dithering Studio, in the Browser
+# 🎨 DITHER-DOT: High-Performance Browser Dithering Studio
 
 <img src="https://dither.xbvuno.dev/wallpaper.jpg" alt="DITHER-DOT preview" width="100%" />
 
-A fast, open-source dithering studio for images and GIFs — running entirely in your browser.
+A state-of-the-art, open-source image and animated GIF dithering studio running 100% client-side in your browser.
+
+> ⚡ **Powered by [`ddot`](https://github.com/xbvuno/ddot)**: Core image processing and dithering algorithms are driven by `ddot` (`ddot-wasm`), a high-performance Rust + WebAssembly engine created by [@xbvuno](https://github.com/xbvuno).
 
 ---
 
-## Features
+## ⚡ Highlights & Key Features
 
-### Input
-- Import images via **file upload**, **drag & drop**, **paste from clipboard**, or **URL**
-- Live **webcam feed** as input source (with mirror support)
-- Supports PNG, JPEG, WebP, GIF, BMP, TIFF, AVIF, SVG
-- Animated **GIF** and **WebP** support with per-frame processing
+### 🚀 High-Performance WASM Backend
+- Driven by **[`ddot`](https://github.com/xbvuno/ddot)** — a SIMD-accelerated Rust + WebAssembly engine.
+- Offloaded to dedicated multithreaded **Web Workers** (`ditherWorker`, `paletteWorker`, `gifDecodeWorker`) to ensure 60 FPS UI responsiveness with zero main-thread blocking.
 
-### Dithering
-- **10 dithering algorithms**: Floyd-Steinberg, Jarvis Judice & Ninke, Stucki, Atkinson, Burkes, Sierra, Two-Row Sierra, Sierra Lite, Ordered (Bayer Matrix), Random
-- Configurable **diffusion amount** and **matrix scale**
-- Selectable **color space** for dithering: RGB or LAB
-- Random seed control for stochastic methods
+### 🎞️ Complete GIF & Video Timeline Studio
+- Per-frame GIF animation decoding, playback, and rendering.
+- Real-time frame caching with instant invalidation upon parameter changes.
+- Live palette extraction and recalculation during playback.
 
-### Palette
-- **Automatic palette extraction** from the image with multiple algorithms: Median Cut, Octree, K-Means
-- **Custom palette** editor: add, remove, and tweak colors manually
-- Palette size from 2 up to 64 colors
-- Adjustable sampling accuracy
+### 📷 Multimodal Input Sources
+- **Files**: PNG, JPEG, WebP, GIF, BMP, TIFF, AVIF, SVG.
+- **Drag & Drop**, Clipboard Paste, and Direct Image URL loading.
+- **Live Webcam Feed**: Real-time camera feed dithering with mirror mode and instant palette freeze.
+- **Built-in Presets**: Curated sample library for quick testing.
 
-### Adjustments
-- **Color controls**: Gamma, Blacks, Whites, Contrast, Saturation, Hue
-- **Blur** (Kawase) with edge-preserving strength and pass count
-- **Noise** overlay with independent controls
-- Live **histogram** overlay
-- One-click reset to defaults or full randomize
+### 🎨 Advanced Dithering & Palette Engine
+- **Dithering Algorithms**: Floyd-Steinberg, Jarvis-Judice-Ninke, Stucki, Atkinson, Burkes, Sierra, Two-Row Sierra, Sierra Lite, Ordered (Bayer Matrix), and Random.
+- **Color Spaces**: RGB and LAB color space quantization.
+- **Automatic Palette Extraction**: Octree, Median Cut, and K-Means.
+- **Custom Palette Editor**: Add, remove, lock, hide, and tweak individual colors with custom size limits (2 to 64 colors).
 
-### Export
-- Export processed image as **PNG**
-- Export processed GIF with adjustable quality and frame delay
-- **Copy to clipboard** with one click
-- **Upscale** output before export (pixel-perfect, no smoothing)
-- Optional **watermark** toggle
-
-### UX
-- Real-time GPU-accelerated preview via **WebGL / PixiJS**
-- **Zoomable** canvas with pan support
-- In-browser **gallery** with history (IndexedDB)
-- **PWA** installable, works fully offline
-- No server, no sign-up — everything runs client-side
+### 🎛️ Non-Destructive Adjustments & Export
+- Fine-grained controls: Contrast, Saturation, Gamma, Blacks, Whites, Hue.
+- Edge-preserving Kawase Blur & Noise overlay.
+- High-resolution pixel-perfect upscale (no anti-aliasing smoothing).
+- Export formats: PNG, animated GIF (using `modern-gif`), clipboard copy, optional custom watermark.
 
 ---
 
-## Tech Stack
+## 🛠️ Technology Stack
 
-- [React](https://react.dev/) + [Vite](https://vitejs.dev/)
-- [PixiJS](https://pixijs.com/) (WebGL rendering)
-- [Zustand](https://zustand-demo.pmnd.rs/) (state management)
-- Web Workers for palette extraction and GIF decoding
-- Cloudflare Workers / Pages for deployment
+- **Core WASM Backend**: [`ddot`](https://github.com/xbvuno/ddot) (Rust / WebAssembly)
+- **Frontend**: [React 19](https://react.dev/) + [Vite 8](https://vitejs.dev/)
+- **State Management**: [Zustand 5](https://github.com/pmndrs/zustand) (Modularized store modules)
+- **Concurrency**: Web Workers & SharedArrayBuffers
+- **Icons & UI**: Lucide React + Custom Vanilla CSS Design System
 
 ---
 
-## Getting Started
+## 📦 Getting Started
+
+### Prerequisites
+- Node.js >= 18
+- npm or pnpm
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/xbvuno/dither-dot.git
+cd dither-dot
+
+# Install dependencies
 npm install
+
+# Start local development server
 npm run dev
 ```
 
-## License
+### Production Build
 
-[LICENSE](LICENSE)
+```bash
+# Compile bundle and WASM assets
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+---
+
+## 📄 License
+
+Distributed under the MIT License. See [`LICENSE`](LICENSE) for details.
+
+Developed with ❤️ by [@xbvuno](https://github.com/xbvuno).
