@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import "./styles/GifTimeline.css";
 import { Check, Pause, Play, SkipBack, SkipForward, Square } from 'lucide-react';
 import useGifStore from '../../stores/media/gifStore';
+import { setupMobileResize } from '../../utils/mobileResize';
 
 const THUMB_WIDTH = 50;
 const THUMB_HEIGHT = 36;
@@ -56,6 +57,14 @@ export default function GifTimeline() {
   const setCurrentFrameIndex = useGifStore((s) => s.setCurrentFrameIndex);
   const setPlaying = useGifStore((s) => s.setPlaying);
   const setPlaybackDelay = useGifStore((s) => s.setPlaybackDelay);
+
+  const mobileHandleRef = useRef(null);
+
+  useEffect(() => {
+    if (!mobileHandleRef.current) return;
+    const cleanup = setupMobileResize(mobileHandleRef.current, () => document.querySelector('.resizable-shell'));
+    return () => cleanup();
+  }, []);
 
   useEffect(() => {
     const shell = timelineRef.current;
@@ -355,6 +364,14 @@ export default function GifTimeline() {
 
   return (
     <div ref={timelineRef} className={`gif-timeline-shell${decoding ? ' gif-timeline-shell--decoding' : ''}`}>
+      <div
+        ref={mobileHandleRef}
+        className="mobile-resize-handle"
+        role="separator"
+        aria-label="Resize control panel height"
+      >
+        <span className="mobile-resize-pill" />
+      </div>
       <section ref={timelineContentRef} className='gif-timeline' aria-label='GIF TIMELINE'>
         <div
           ref={resizeHandleRef}
