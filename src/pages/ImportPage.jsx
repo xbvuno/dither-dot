@@ -46,6 +46,7 @@ export default function ImportPage() {
 
   const webcamActive = useWebcamStore((s) => s.active);
   const webcamStarting = useWebcamStore((s) => s.starting);
+  const webcamError = useWebcamStore((s) => s.error);
   const startWebcam = useWebcamStore((s) => s.startWebcam);
   const stopWebcam = useWebcamStore((s) => s.stopWebcam);
 
@@ -323,8 +324,8 @@ export default function ImportPage() {
               {webcamStarting ? 'STARTING...' : webcamActive ? 'STOP CAMERA' : 'START CAMERA'}
             </button>
           </div>
-          {useWebcamStore.getState().error && (
-            <p className='import-export-status'>{useWebcamStore.getState().error}</p>
+          {webcamError && (
+            <p className='import-export-status'>{webcamError}</p>
           )}
           <input
             ref={inputRef}
