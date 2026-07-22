@@ -163,6 +163,7 @@ export default function Slider({
     };
 
     const onPointerDown = (e) => {
+      triggerHapticPulse(35);
       if (e.pointerType === "mouse") {
         if (e.button !== 0) return;
         dragging = true;
