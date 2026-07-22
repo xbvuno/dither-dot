@@ -40,14 +40,6 @@
   text-underline-offset: 0.2rem;
 }
 
-.app-footer-divider {
-  font-size: 0.76rem;
-  letter-spacing: 0.08em;
-  color: var(--color-text-muted);
-  user-select: none;
-  flex-shrink: 0;
-}
-
 .app-footer-status {
   font-size: 0.76rem;
   letter-spacing: 0.08em;
@@ -64,7 +56,6 @@
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
-  flex-shrink: 0;
 }
 
 /* MOBILE RESPONSIVE STYLES ONLY (< 768px) */
@@ -82,25 +73,32 @@
   }
 
   .app-footer-left {
-    flex: 1 1 auto;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    display: contents;
+  }
+
+  .pipeline-timing {
+    order: 1;
+    flex-shrink: 0;
+  }
+
+  .app-footer-status {
+    order: 2;
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
     scrollbar-width: none;
-    flex-wrap: nowrap;
+    flex: 1 1 auto;
     min-width: 0;
   }
 
-  .app-footer-left::-webkit-scrollbar {
+  .app-footer-status::-webkit-scrollbar {
     display: none;
   }
 
   .footer-preview-btn {
+    order: 3;
     margin-left: auto;
     flex-shrink: 0;
-    padding: 0.2rem 0.55rem; /* Padding originale ripristinato */
+    padding: 0.2rem 0.55rem;
   }
 }
