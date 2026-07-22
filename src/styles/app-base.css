@@ -199,6 +199,10 @@ footer {
     cursor: pointer;
 }
 
+.header-link-btn.header-btn--mobile-only {
+    display: none !important;
+}
+
 .header-link-btn:hover {
     border-bottom-color: var(--color-text);
 }
@@ -665,8 +669,8 @@ h3 {
         height: 1.4rem;
     }
 
-    .header-btn--mobile-only {
-        display: inline-flex;
+    .header-link-btn.header-btn--mobile-only {
+        display: inline-flex !important;
     }
 
     .header-link-label {
