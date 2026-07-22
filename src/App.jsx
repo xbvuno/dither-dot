@@ -205,6 +205,7 @@ function App() {
             </button>
           </div>
         </header>
+        <Footer />
         <main>
           <Aside>
             <AsideRouter />
@@ -219,7 +220,6 @@ function App() {
               )}
             </div>
             <GifTimeline />
-            <Footer />
           </div>
         </main>
       </div>
