@@ -653,7 +653,8 @@ h3 {
         border-top: 1px solid var(--color-border);
         background-color: #000;
         z-index: 100;
-        padding: 0 0.5rem env(safe-area-inset-bottom, 0px) 0.5rem;
+        padding: 0;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     .nav-logo-img {
@@ -662,13 +663,14 @@ h3 {
 
     .nav-links-wrap {
         flex-direction: row;
-        justify-content: space-around;
-        align-items: center;
+        justify-content: space-between;
+        align-items: stretch;
         overflow-x: auto;
         white-space: nowrap;
         row-gap: 0;
-        column-gap: 0.25rem;
+        column-gap: 0;
         width: 100%;
+        height: 100%;
         scrollbar-width: none;
     }
 
@@ -677,13 +679,13 @@ h3 {
     }
 
     .nav-icon-btn {
-        padding: 0.5rem;
+        box-sizing: border-box;
+        padding: 0;
         width: auto;
         flex: 1;
-        min-width: 3rem;
-        max-width: 5rem;
-        height: 3.2rem;
-        border-radius: 4px;
+        min-width: 3.2rem;
+        height: 100%;
+        border-radius: 0;
         flex-shrink: 0;
     }
 
