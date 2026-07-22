@@ -411,8 +411,11 @@ export default function GifTimeline() {
             {decoding ? 'DECODING...' : `${currentFrameIndex + 1} / ${totalFrames} | R: ${totalFrames > 0 ? Math.round((frameStates.filter((s) => s === 'done').length / totalFrames) * 100) : 0}%`}
           </span>
 
+          <span className='gif-timeline-divider gif-mobile-only' aria-hidden='true'>|</span>
+
           <label htmlFor='gif-playback-delay' className={`gif-delay-wrap gif-delay-wrap--right${decoding ? ' disabled' : ''}`}>
-            <span className='gif-timeline-label'>DELAY (MS)</span>
+            <span className='gif-timeline-label gif-delay-label-full'>DELAY (MS)</span>
+            <span className='gif-timeline-label gif-delay-label-short gif-mobile-only'>MS</span>
             <input
               className='gif-delay-input'
               type='number'

@@ -222,8 +222,31 @@
   display: none !important;
 }
 
+.gif-mobile-only {
+  display: none !important;
+}
+
+.gif-delay-label-full {
+  display: inline;
+}
+
 /* MOBILE ONLY STYLES (< 768px) */
 @media (max-width: 768px) {
+  .gif-mobile-only {
+    display: inline-block !important;
+  }
+
+  .gif-delay-label-full {
+    display: none !important;
+  }
+
+  .gif-timeline-divider {
+    font-size: 0.72rem;
+    color: var(--color-text-subtle);
+    user-select: none;
+    margin: 0 0.15rem;
+  }
+
   .gif-timeline-shell {
     height: 3.2rem !important;
     min-height: 3.2rem !important;
