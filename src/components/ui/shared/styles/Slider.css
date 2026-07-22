@@ -29,8 +29,12 @@
     cursor: grab;
     margin-top: 0.2rem;
     overflow: hidden;
-    touch-action: none;
+    touch-action: pan-y;
     user-select: none;
+}
+
+.bv.slider sub {
+    margin-top: 2px;
 }
 
 .bv.slider.selected:focus {
@@ -73,7 +77,7 @@
     position: absolute;
     opacity: 0.5;
     translate: 0 100%;
-    top: 2.2rem;
+    top: calc(2.2rem + 2px);
     --distance: 0.2rem;
 }
 
@@ -131,12 +135,12 @@
     .bv.slider {
         height: 1.6rem;
         align-items: center;
-        touch-action: none;
+        touch-action: pan-y;
     }
 
     .bv.slider .track {
         height: 1.3rem;
-        touch-action: none;
+        touch-action: pan-y;
     }
 
     .bv.slider .thumb {
@@ -149,5 +153,6 @@
         display: none;
     }
 }
+
 
 
