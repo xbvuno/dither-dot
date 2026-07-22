@@ -142,7 +142,7 @@ const initialValues = Object.fromEntries(
 );
 
 const UI_DEFAULTS = {
-  histogramVisible: true,
+  histogramVisible: false,
   pipelineVisible: false,
   forceCpu: false,
 };

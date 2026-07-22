@@ -20,3 +20,9 @@
   image-rendering: pixelated;
 }
 
+@media (max-width: 768px) {
+  .histogram-section,
+  .histogram-floating-panel {
+    display: none !important;
+  }
+}
