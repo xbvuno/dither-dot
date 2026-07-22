@@ -248,12 +248,9 @@
   }
 
   .gif-timeline-shell {
-    display: flex !important;
-    flex-direction: column !important;
-    height: 4.0rem !important;
-    min-height: 4.0rem !important;
-    max-height: 4.0rem !important;
-    box-sizing: border-box !important;
+    height: 3.2rem !important;
+    min-height: 3.2rem !important;
+    max-height: 3.2rem !important;
   }
 
   .gif-timeline-resize-handle {
@@ -267,10 +264,8 @@
   .gif-timeline {
     display: flex;
     align-items: center;
-    padding: 0.2rem 0.6rem;
-    height: 3.0rem;
-    flex: 1;
-    box-sizing: border-box;
+    padding: 0.35rem 0.6rem;
+    height: 100%;
     gap: 0;
   }
 

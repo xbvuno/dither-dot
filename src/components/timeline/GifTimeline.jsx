@@ -58,14 +58,6 @@ export default function GifTimeline() {
   const setPlaying = useGifStore((s) => s.setPlaying);
   const setPlaybackDelay = useGifStore((s) => s.setPlaybackDelay);
 
-  const mobileHandleRef = useRef(null);
-
-  useEffect(() => {
-    if (!mobileHandleRef.current) return;
-    const cleanup = setupMobileResize(mobileHandleRef.current, () => document.querySelector('.resizable-shell'));
-    return () => cleanup();
-  }, []);
-
   useEffect(() => {
     const shell = timelineRef.current;
     const handle = resizeHandleRef.current;
@@ -364,14 +356,6 @@ export default function GifTimeline() {
 
   return (
     <div ref={timelineRef} className={`gif-timeline-shell${decoding ? ' gif-timeline-shell--decoding' : ''}`}>
-      <div
-        ref={mobileHandleRef}
-        className="mobile-resize-handle"
-        role="separator"
-        aria-label="Resize control panel height"
-      >
-        <span className="mobile-resize-pill" />
-      </div>
       <section ref={timelineContentRef} className='gif-timeline' aria-label='GIF TIMELINE'>
         <div
           ref={resizeHandleRef}
