@@ -791,6 +791,8 @@ h3 {
     }
 
     .resizable-shell {
+        display: flex !important;
+        flex-direction: column !important;
         width: 100% !important;
         max-width: 100% !important;
         height: 42vh;
@@ -798,6 +800,7 @@ h3 {
         max-height: 65vh;
         flex-shrink: 0;
         border-top: none;
+        box-sizing: border-box !important;
     }
 
     .resize-handle {
@@ -810,7 +813,10 @@ h3 {
         border-top: none !important;
         background: var(--color-bg);
         padding: 0.75rem;
-        height: 100%;
+        flex: 1 1 0% !important;
+        min-height: 0 !important;
+        height: auto !important;
+        box-sizing: border-box !important;
     }
 
     .flex-v {
