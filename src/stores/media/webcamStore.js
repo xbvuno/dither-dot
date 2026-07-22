@@ -32,7 +32,7 @@ const useWebcamStore = create((set, get) => ({
     if (!videoTrack) return;
 
     const clampedW = Math.min(1280, Math.max(1, Math.round(Number(width) || 640)));
-    const clampedH = Math.min(720, Math.max(1, Math.round(Number(height) || 480)));
+    const clampedH = Math.min(720, Math.max(1, Math.round(Number(height) || 360)));
 
     try {
       await videoTrack.applyConstraints({
@@ -80,7 +80,7 @@ const useWebcamStore = create((set, get) => ({
           video: {
             facingMode: { ideal: mode },
             width: { ideal: 640, max: 1280 },
-            height: { ideal: 480, max: 720 },
+            height: { ideal: 360, max: 720 },
             frameRate: { ideal: 30, max: 30 },
           },
           audio: false,
