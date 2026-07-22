@@ -678,7 +678,10 @@ h3 {
 
     .nav-icon-btn {
         padding: 0.5rem;
-        min-width: 3.2rem;
+        width: auto;
+        flex: 1;
+        min-width: 3rem;
+        max-width: 5rem;
         height: 3.2rem;
         border-radius: 4px;
         flex-shrink: 0;
