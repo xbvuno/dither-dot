@@ -31,7 +31,7 @@ import {
 
 import watermarkImage from "../assets/watermark/watermark.png";
 import watermarkMiniImage from "../assets/watermark/watermark-mini.png";
-import wallpaperImageInline from "/wallpaper.jpg?inline";
+import wallpaperImageInline from "../assets/wallpaper.jpg?inline";
 
 const DITHER_WORKER_TIMEOUT_MS = 10000;
 const PROCESSING_VISIBILITY_DELAY_MS = 100;
@@ -89,6 +89,7 @@ class DitherEngine {
     this.refreshPaletteForRequest = new Map();
     this.ditherEnabledForRequest = new Map();
     this.gifFrameForRequest = new Map();
+    this.skipStatsForRequest = new Map();
     
     this.rafId = null;
     this.processingVisibilityTimer = null;
@@ -381,14 +382,23 @@ const action = this.debugEnabled ? "disable" : "enable";
     );
 
     this.subscriptions.push(
-      usePaletteStore.subscribe((state, previousState) => {
+      usePaletteStore.subscribe((state) => {
         this.syncWatermarkPalette();
         this.syncVisibleLayer();
 
-        const methodChanged = state.method !== previousState.method;
-        const colorCountChanged = state.colorCount !== previousState.colorCount;
-        const samplingAccuracyChanged = state.samplingAccuracy !== previousState.samplingAccuracy;
-        const colorsChanged = state.colors !== previousState.colors;
+        const prevState = this.previousPaletteState;
+        const methodChanged = !prevState || state.method !== prevState.method;
+        const colorCountChanged = !prevState || state.colorCount !== prevState.colorCount;
+        const samplingAccuracyChanged = !prevState || state.samplingAccuracy !== prevState.samplingAccuracy;
+        const colorsChanged = !prevState || state.colors !== prevState.colors;
+
+        this.previousPaletteState = {
+          method: state.method,
+          colorCount: state.colorCount,
+          samplingAccuracy: state.samplingAccuracy,
+          colors: state.colors,
+        };
+
         const shouldRefreshPalette =
           state.method !== EXTRACT_METHOD.CUSTOM && (methodChanged || colorCountChanged || samplingAccuracyChanged);
         const shouldInvalidateFrames = methodChanged || colorCountChanged || samplingAccuracyChanged || colorsChanged;
@@ -409,27 +419,29 @@ const action = this.debugEnabled ? "disable" : "enable";
     );
 
     this.subscriptions.push(
-      useSizeStore.subscribe((state, previousState) => {
+      useSizeStore.subscribe((state) => {
         const source = this.activeSource;
         if (!source) return;
+
+        const prevState = this.previousSizeState || {};
 
         const sourceW = source.naturalWidth || source.width || 1;
         const sourceH = source.naturalHeight || source.height || 1;
 
         const w = Math.max(
           1,
-          Math.floor(Number(state.customSize.customWidth) || Number(state.size.width) || sourceW || 1),
+          Math.floor(Number(state.customSize?.customWidth) || Number(state.size?.width) || sourceW || 1),
         );
         const h = Math.max(
           1,
-          Math.floor(Number(state.customSize.customHeight) || Number(state.size.height) || sourceH || 1),
+          Math.floor(Number(state.customSize?.customHeight) || Number(state.size?.height) || sourceH || 1),
         );
 
         const prevW = Math.max(
           1,
           Math.floor(
-            Number(previousState?.customSize?.customWidth) ||
-            Number(previousState?.size?.width) ||
+            Number(prevState.customSize?.customWidth) ||
+            Number(prevState.size?.width) ||
             sourceW ||
             1,
           ),
@@ -437,8 +449,8 @@ const action = this.debugEnabled ? "disable" : "enable";
         const prevH = Math.max(
           1,
           Math.floor(
-            Number(previousState?.customSize?.customHeight) ||
-            Number(previousState?.size?.height) ||
+            Number(prevState.customSize?.customHeight) ||
+            Number(prevState.size?.height) ||
             sourceH ||
             1,
           ),
@@ -449,10 +461,16 @@ const action = this.debugEnabled ? "disable" : "enable";
         const top = state.crop?.top || 0;
         const bottom = state.crop?.bottom || 0;
 
-        const prevLeft = previousState?.crop?.left || 0;
-        const prevRight = previousState?.crop?.right || 0;
-        const prevTop = previousState?.crop?.top || 0;
-        const prevBottom = previousState?.crop?.bottom || 0;
+        const prevLeft = prevState.crop?.left || 0;
+        const prevRight = prevState.crop?.right || 0;
+        const prevTop = prevState.crop?.top || 0;
+        const prevBottom = prevState.crop?.bottom || 0;
+
+        this.previousSizeState = {
+          size: state.size ? { ...state.size } : null,
+          customSize: state.customSize ? { ...state.customSize } : null,
+          crop: state.crop ? { ...state.crop } : null,
+        };
 
         if (w === prevW && h === prevH && left === prevLeft && right === prevRight && top === prevTop && bottom === prevBottom) {
           return;
@@ -480,8 +498,14 @@ const action = this.debugEnabled ? "disable" : "enable";
     );
 
     this.subscriptions.push(
-      useWebcamStore.subscribe((state, previousState) => {
-        if (state.mirrored !== previousState.mirrored) {
+      useWebcamStore.subscribe((state) => {
+        const prevState = this.previousWebcamState || {};
+        const mirroredChanged = state.mirrored !== prevState.mirrored;
+        const becameInactive = prevState.active && !state.active;
+
+        this.previousWebcamState = { mirrored: state.mirrored, active: state.active };
+
+        if (mirroredChanged) {
           this.webcamMirror = Boolean(state.mirrored);
           const video = this.webcamVideo;
           const canvas = this.webcamCanvas;
@@ -496,7 +520,7 @@ const action = this.debugEnabled ? "disable" : "enable";
           }
         }
 
-        if (previousState.active && !state.active && this.isWebcamMode) {
+        if (becameInactive && this.isWebcamMode) {
           this.cleanupWebcam();
           Promise.resolve().then(() => {
             useImageStore.getState().resetToDefault();
@@ -506,9 +530,16 @@ const action = this.debugEnabled ? "disable" : "enable";
     );
 
     this.subscriptions.push(
-      useGifStore.subscribe((state, previousState) => {
-        const hadFrames = (previousState?.frames?.length || 0) > 1;
+      useGifStore.subscribe((state) => {
+        const prevState = this.previousGifState || {};
+        const hadFrames = (prevState.frames?.length || 0) > 1;
         const hasFrames = (state?.frames?.length || 0) > 1;
+
+        this.previousGifState = {
+          frames: state.frames,
+          currentFrameIndex: state.currentFrameIndex,
+        };
+
         if (!hasFrames && !hadFrames) return;
 
         if (!hadFrames && hasFrames) {
@@ -516,7 +547,7 @@ const action = this.debugEnabled ? "disable" : "enable";
           return;
         }
 
-        if (state.currentFrameIndex !== previousState.currentFrameIndex) {
+        if (state.currentFrameIndex !== prevState.currentFrameIndex) {
           this.swapSourceFrame(state.currentFrameIndex);
         }
       })
@@ -607,6 +638,7 @@ const action = this.debugEnabled ? "disable" : "enable";
     this.refreshPaletteForRequest.clear();
     this.ditherEnabledForRequest.clear();
     this.gifFrameForRequest.clear();
+    this.skipStatsForRequest.clear();
   }
 
   setProcessingVisible(visible) {
@@ -684,6 +716,7 @@ const action = this.debugEnabled ? "disable" : "enable";
       } catch (error) {
         this.error('Pipeline', 'Failed to create ImageBitmap from active source: %o', error);
         this.preserveVisibleOutput();
+        this.processingQueued = false;
         return;
       }
 
@@ -696,9 +729,12 @@ const action = this.debugEnabled ? "disable" : "enable";
       const requestId = ++this.latestRequestId;
       this.log('Worker', 'Dispatching job %d. customSize: %d x %d, ditherEnabled: %o', requestId, customWidth, customHeight, ditherEnabled);
       
+      const skipStats = !refreshPalette && frameIndex >= 0 && (gifState.playing || gifState.exporting || frameIndex !== gifState.currentFrameIndex);
+
       this.refreshPaletteForRequest.set(requestId, refreshPalette);
       this.ditherEnabledForRequest.set(requestId, ditherEnabled);
       this.gifFrameForRequest.set(requestId, frameIndex);
+      this.skipStatsForRequest.set(requestId, skipStats);
       
       if (frameIndex >= 0) {
         gifState.markFrameRendering(frameIndex);
@@ -838,6 +874,7 @@ const action = this.debugEnabled ? "disable" : "enable";
     this.refreshPaletteForRequest.delete(jobId);
     this.ditherEnabledForRequest.delete(jobId);
     this.gifFrameForRequest.delete(jobId);
+    this.skipStatsForRequest.delete(jobId);
 
     usePerformanceStore.getState().setCurrentPhase(null);
     usePerformanceStore.getState().recordPipelineComplete();
@@ -893,9 +930,30 @@ const action = this.debugEnabled ? "disable" : "enable";
       } = event.data;
 
       const latestId = this.latestRequestId;
+      const shouldRefreshPalette = Boolean(this.refreshPaletteForRequest.get(jobId));
+
+      if (shouldRefreshPalette) {
+        this.refreshPaletteForRequest.delete(jobId);
+        if (referencePixels && referencePixels.byteLength > 0) {
+          const reference = new Uint8ClampedArray(referencePixels);
+          registerPaletteReference({
+            width: outWidth,
+            height: outHeight,
+            pixels: reference,
+          });
+        }
+        try {
+          const paletteState = usePaletteStore.getState();
+          paletteState.generatePalette().catch((err) => {
+            this.error('Palette', 'palette generation failed: %o', err);
+          });
+        } catch (err) {
+          this.error('Palette', 'palette generation failed: %o', err);
+        }
+      }
 
       if (jobId !== latestId) {
-        if (isImageReady) {
+        if (isImageReady || error) {
           this.setProcessingDelta(-1);
           if (this.processingQueued) {
             this.queueProcessing(false);
@@ -915,7 +973,6 @@ const action = this.debugEnabled ? "disable" : "enable";
         return;
       }
 
-      const shouldRefreshPalette = this.refreshPaletteForRequest.get(jobId);
       const wasDitherEnabled = Boolean(this.ditherEnabledForRequest.get(jobId));
       const gifFrameIndex = this.gifFrameForRequest.get(jobId);
 
@@ -1005,12 +1062,17 @@ const action = this.debugEnabled ? "disable" : "enable";
         }
 
         this.ditherEnabledForRequest.delete(jobId);
+        const skipStats = Boolean(this.skipStatsForRequest.get(jobId));
 
-        if (!shouldRefreshPalette) {
-          this.setProcessingDelta(-1);
-          if (this.processingQueued) {
-            this.queueProcessing(false);
-          }
+        if (skipStats) {
+          this.refreshPaletteForRequest.delete(jobId);
+          this.gifFrameForRequest.delete(jobId);
+          this.skipStatsForRequest.delete(jobId);
+        }
+
+        this.setProcessingDelta(-1);
+        if (this.processingQueued) {
+          this.queueProcessing(false);
         }
       }
 
@@ -1039,19 +1101,17 @@ const action = this.debugEnabled ? "disable" : "enable";
           }
         }
 
+        const shouldRefresh = this.refreshPaletteForRequest.get(jobId);
         this.refreshPaletteForRequest.delete(jobId);
         this.gifFrameForRequest.delete(jobId);
+        this.skipStatsForRequest.delete(jobId);
 
-        if (shouldRefreshPalette) {
+        if (shouldRefresh) {
           try {
             const paletteState = usePaletteStore.getState();
             await paletteState.generatePalette();
           } catch (err) {
             this.error('Palette', 'palette generation failed: %o', err);
-          }
-          this.setProcessingDelta(-1);
-          if (this.processingQueued) {
-            this.queueProcessing(false);
           }
         }
       }

@@ -32,7 +32,10 @@ export default function Slider({
   value: controlledValue,
   defaultValue = 0,
   onChange,
+  label,
+  'aria-label': ariaLabelProp,
 }) {
+  const ariaLabel = ariaLabelProp || label || 'Slider';
   const trackRef = useRef(null);
   const containerRef = useRef(null);
   const thumbRef = useRef(null);
@@ -251,6 +254,7 @@ export default function Slider({
       ref={containerRef}
       className={`bv slider${isSelected ? ' selected' : ''}`}
       role="slider"
+      aria-label={ariaLabel}
       aria-valuemin={min}
       aria-valuemax={max}
       aria-valuenow={displayValue}
@@ -259,7 +263,7 @@ export default function Slider({
       onBlur={handleDeselect}
       onPointerDown={handleSelect}
     >
-      <span ref={decRef} onPointerDown={() => stepDown()} role="button" disabled={value === min}>
+      <span ref={decRef} onPointerDown={() => stepDown()} role="button" aria-label={`Decrease ${ariaLabel}`} disabled={value === min}>
         [-]
       </span>
 
@@ -278,7 +282,7 @@ export default function Slider({
 
       <sub className="max">{max.toString().slice(0,5)}</sub>
 
-      <span ref={incRef} onPointerDown={() => stepUp()} role="button" disabled={value === max}>
+      <span ref={incRef} onPointerDown={() => stepUp()} role="button" aria-label={`Increase ${ariaLabel}`} disabled={value === max}>
         [+]
       </span>
     </div>

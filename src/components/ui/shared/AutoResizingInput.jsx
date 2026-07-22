@@ -1,6 +1,10 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useId } from "react"
 
-export default function AutoResizingInput({ min, max, step, value: externalValue, onChange }) {
+export default function AutoResizingInput({ min, max, step, value: externalValue, onChange, label, 'aria-label': ariaLabelProp, name, id }) {
+    const generatedId = useId()
+    const ariaLabel = ariaLabelProp || label || name || 'Numeric input'
+    const inputName = name || (label ? label.toLowerCase().replace(/\s+/g, '-') : 'numeric-input')
+    const inputId = id || `input-${inputName}-${generatedId.replace(/:/g, '')}`
     const [draftValue, setDraftValue] = useState(String(externalValue ?? ''))
     const [isValid, setIsValid] = useState(true)
     const [isEditing, setIsEditing] = useState(false)
@@ -136,6 +140,8 @@ export default function AutoResizingInput({ min, max, step, value: externalValue
         <input
             ref={inputRef}
             type="number"
+            name={inputName}
+            id={inputId}
             min={min}
             max={max}
             step={step}
@@ -144,6 +150,7 @@ export default function AutoResizingInput({ min, max, step, value: externalValue
             onFocus={handleFocus}
             onBlur={handleBlur}
             aria-invalid={!isValid}
+            aria-label={ariaLabel}
         />
     )
 }

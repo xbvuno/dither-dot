@@ -227,15 +227,18 @@ export default function ExportPage() {
       <div className='bv-macro-section'>
         <h2>EXPORT</h2>
         <div className='bv-section'>
-          <p className='bv-label'>EXPORT NAME</p>
+          <label htmlFor='export-name-input' className='bv-label' style={{ display: 'block' }}>EXPORT NAME</label>
           <div className='export-name-input-row'>
             <input
               type='text'
               className='import-name-input'
+              name='exportName'
+              id='export-name-input'
               value={exportName}
               onChange={(event) => setExportName(event.target.value)}
               spellCheck={false}
               disabled={gifExporting}
+              aria-label='Export Name'
             />
             <span className='export-name-format'>{exportFormat}</span>
           </div>

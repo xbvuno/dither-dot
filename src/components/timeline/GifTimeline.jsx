@@ -411,17 +411,20 @@ export default function GifTimeline() {
             {decoding ? 'DECODING...' : `${currentFrameIndex + 1} / ${totalFrames} | R: ${totalFrames > 0 ? Math.round((frameStates.filter((s) => s === 'done').length / totalFrames) * 100) : 0}%`}
           </span>
 
-          <label className={`gif-delay-wrap gif-delay-wrap--right${decoding ? ' disabled' : ''}`}>
+          <label htmlFor='gif-playback-delay' className={`gif-delay-wrap gif-delay-wrap--right${decoding ? ' disabled' : ''}`}>
             <span className='gif-timeline-label'>DELAY (MS)</span>
             <input
               className='gif-delay-input'
               type='number'
+              name='playbackDelay'
+              id='gif-playback-delay'
               min='20'
               max='5000'
               step='10'
               value={playbackDelay}
               onChange={(event) => setPlaybackDelay(event.target.value)}
               disabled={decoding}
+              aria-label='Playback Delay (MS)'
             />
           </label>
         </div>

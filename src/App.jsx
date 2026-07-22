@@ -137,22 +137,25 @@ function App() {
 
   return (
     <>
+      <h1 className='sr-only'>DITHER-DOT - Browser Image &amp; GIF Dithering Studio</h1>
       <div className='app-layout'>
-        <nav ref={navRef} className='app-nav'>
-        <img src={watermarkMini} alt='' aria-hidden='true' className='nav-logo-img' />
+        <nav ref={navRef} className='app-nav' aria-label='Main Navigation'>
+        <img src={watermarkMini} alt='DITHER-DOT Logo' className='nav-logo-img' />
         <div className='nav-links-wrap'>
           {ICONS.map((item) => {
             const Icon = item.Icon
+            const isSelected = currentPage === item.id
             return (
               <button
                 key={item.id}
                 type='button'
-                className={`nav-icon-btn${currentPage === item.id ? ' selected' : ''}`}
+                className={`nav-icon-btn${isSelected ? ' selected' : ''}`}
                 onClick={() => setPage(item.id)}
                 onDragEnter={(event) => handleNavDragOver(event, item.id)}
                 onDragOver={(event) => handleNavDragOver(event, item.id)}
                 data-tooltip={item.label}
                 aria-label={item.label}
+                aria-current={isSelected ? 'page' : undefined}
               >
                 <Icon size={24} strokeWidth={2} aria-hidden='true' className='nav-icon-img' />
               </button>
@@ -166,8 +169,8 @@ function App() {
             <span className='app-header-title-name'>DITHER-DOT</span>
           </span>
           <div className='app-header-links'>
-            <button type='button' className='header-link-btn' onClick={() => setModalType('support')}>
-              <Heart size={13} strokeWidth={2} />
+            <button type='button' className='header-link-btn' onClick={() => setModalType('support')} aria-label='Support project'>
+              <Heart size={13} strokeWidth={2} aria-hidden='true' />
               SUPPORT
             </button>
             <a
@@ -175,8 +178,9 @@ function App() {
               target='_blank'
               rel='noopener noreferrer'
               className='header-link-btn'
+              aria-label='GitHub Repository (opens in new tab)'
             >
-              <Cat size={13} strokeWidth={2} />
+              <Cat size={13} strokeWidth={2} aria-hidden='true' />
               GITHUB
             </a>
           </div>

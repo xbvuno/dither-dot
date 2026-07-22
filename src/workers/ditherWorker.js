@@ -365,10 +365,12 @@ self.onmessage = async (event) => {
 
     // Send the rendered output back to the main thread (for export cache)
     const clonedOutput = new Uint8ClampedArray(outputPixels);
+    const referenceCopy = new Uint8Array(croppedSnapshot);
     self.postMessage(
       {
         jobId,
         outputPixels: clonedOutput.buffer,
+        referencePixels: referenceCopy.buffer,
         width: outWidth,
         height: outHeight,
         isImageReady: true,
@@ -379,7 +381,7 @@ self.onmessage = async (event) => {
           dithering: tDither,
         }
       },
-      [clonedOutput.buffer],
+      [clonedOutput.buffer, referenceCopy.buffer],
     );
 
     // Run stats calculations when browser event loop is idle
@@ -443,11 +445,12 @@ self.onmessage = async (event) => {
     });
   } finally {
     if (source) {
-      source.close();
+      try { source.close(); } catch { /* ignore */ }
     }
     if (croppedImage) {
       try { croppedImage.free(); } catch { /* ignore */ }
-    } else if (image) {
+    }
+    if (image) {
       try { image.free(); } catch { /* ignore */ }
     }
     if (wasmPalette) {

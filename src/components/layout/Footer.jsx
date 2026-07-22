@@ -6,6 +6,7 @@ import useViewStore from "../../stores/ui/viewStore";
 import usePerformanceStore from "../../stores/engine/performanceStore";
 import useParamsStore from "../../stores/data/paramsStore";
 import useWebcamStore from "../../stores/media/webcamStore";
+import usePaletteStore from "../../stores/data/paletteStore";
 import { getRenderSnapshot, subscribeRenderSnapshot } from "../../utils/canvasRegistry";
 import PipelineTimingTooltip from "../analytics/PipelineTimingTooltip";
 
@@ -63,6 +64,9 @@ export default function Footer() {
   const pipelineVisible = useParamsStore(s => s.pipelineVisible);
   const webcamActive = useWebcamStore(s => s.active);
   const webcamFps = useWebcamStore(s => s.fps);
+  const colors = usePaletteStore(s => s.colors);
+  const colorCount = usePaletteStore(s => s.colorCount);
+  const activePaletteCount = (colors || []).filter(c => !c.hidden).slice(0, Math.max(2, Math.min(64, Number(colorCount) || 2))).length;
 
   const [uniqueColors, setUniqueColors] = useState(() => getRenderSnapshot().uniqueColors ?? 0);
   const [originalUniqueColors, setOriginalUniqueColors] = useState(() => getRenderSnapshot().originalUniqueColors ?? 0);
@@ -71,6 +75,10 @@ export default function Footer() {
   const timingRef = useRef(null);
   const activePhaseLabel = getPhaseLabel(currentPhase);
   const showBusyState = isProcessing || Boolean(activePhaseLabel);
+
+  const displayColorCount = previewingOriginal
+    ? (originalUniqueColors > 0 ? originalUniqueColors : '—')
+    : (uniqueColors > 0 ? uniqueColors : activePaletteCount);
 
   const [lastTotalTime, setLastTotalTime] = useState(0);
 
@@ -218,8 +226,8 @@ export default function Footer() {
 
       <span className="app-footer-status">
         {previewingOriginal
-          ? `${displayOriginalWidth} x ${displayOriginalHeight} | COLORS: ${originalUniqueColors}`
-          : `${displayWidth} x ${displayHeight} | COLORS: ${uniqueColors}${webcamActive ? ` | FPS: ${webcamFps}` : ''}`}
+          ? `${displayOriginalWidth} x ${displayOriginalHeight} | COLORS: ${displayColorCount}`
+          : `${displayWidth} x ${displayHeight} | COLORS: ${displayColorCount}${webcamActive ? ` | FPS: ${webcamFps}` : ''}`}
       </span>
 
       <PipelineTimingTooltip
