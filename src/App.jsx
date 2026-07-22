@@ -139,7 +139,6 @@ function App() {
       <h1 className='sr-only'>DITHER-DOT - Browser Image &amp; GIF Dithering Studio</h1>
       <div className='app-layout'>
         <nav ref={navRef} className='app-nav' aria-label='Main Navigation'>
-        <img src={watermarkMini} alt='DITHER-DOT Logo' className='nav-logo-img' />
         <div className='nav-links-wrap'>
           {ICONS.map((item) => {
             const Icon = item.Icon
@@ -165,6 +164,7 @@ function App() {
       <div className='app-body-container'>
         <header className='app-header'>
           <span className='app-header-title'>
+            <img src={watermarkMini} alt='DITHER-DOT Logo' className='header-logo-img' />
             <span className='app-header-title-name'>DITHER-DOT</span>
           </span>
           <div className='app-header-links'>

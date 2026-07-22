@@ -156,6 +156,13 @@ footer {
     white-space: nowrap;
 }
 
+.header-logo-img {
+    height: 1.8rem;
+    width: auto;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+}
+
 .app-header-title-name {
     font-family: 'Bitcount Grid Single', sans-serif;
     margin-left: 0;
@@ -646,6 +653,10 @@ h3 {
 
     .app-header-title-name {
         font-size: 1.2rem;
+    }
+
+    .header-logo-img {
+        height: 1.4rem;
     }
 
     .header-link-label {
