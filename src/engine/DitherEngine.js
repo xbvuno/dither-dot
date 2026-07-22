@@ -31,7 +31,7 @@ import {
 
 import watermarkImage from "../assets/watermark/watermark.png";
 import watermarkMiniImage from "../assets/watermark/watermark-mini.png";
-import wallpaperImageInline from "../assets/wallpaper.jpg?inline";
+import wallpaperImageInline from "../assets/wallpaper-mini.png?inline";
 
 const DITHER_WORKER_TIMEOUT_MS = 10000;
 const PROCESSING_VISIBILITY_DELAY_MS = 100;
@@ -130,7 +130,7 @@ class DitherEngine {
       const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0';
       console.log(
         '%c ',
-        `background: url(${wallpaperImageInline}) no-repeat; background-size: cover; padding: 64px 50%; background-position: 50% 50%; line-height: 0; font-size: 0;`
+        `background: url(${wallpaperImageInline}) no-repeat; background-size: cover; padding: 64px 50%; background-position: 50% 50%; line-height: 0; font-size: 0; image-rendering: pixelated;`
       );
 const action = this.debugEnabled ? "disable" : "enable";
 
