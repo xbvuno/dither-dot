@@ -48,34 +48,34 @@ export default function ZoomableDiv({ content }) {
       const clampedScale = clamp(targetScale, ZOOM_MIN, ZOOM_MAX);
 
       const prevRenderScale = fitScale * prevScale;
-      const prevRenderWidth = Math.floor(contentWidth * prevRenderScale);
-      const prevRenderHeight = Math.floor(contentHeight * prevRenderScale);
+      const prevRenderWidth = contentWidth * prevRenderScale;
+      const prevRenderHeight = contentHeight * prevRenderScale;
       const prevPadX = Math.max(0, (outerWidth - prevRenderWidth) / 2);
       const prevPadY = Math.max(0, (outerHeight - prevRenderHeight) / 2);
 
       // Content space coordinates under current focal point (focalX, focalY)
-      const xF = (focalX - Math.floor(prevPadX) + outer.scrollLeft) / (prevRenderScale || 1);
-      const yF = (focalY - Math.floor(prevPadY) + outer.scrollTop) / (prevRenderScale || 1);
+      const xF = (focalX - prevPadX + outer.scrollLeft) / (prevRenderScale || 1);
+      const yF = (focalY - prevPadY + outer.scrollTop) / (prevRenderScale || 1);
 
       state.current.scale = clampedScale;
       state.current.width = contentWidth;
       state.current.height = contentHeight;
 
       const newRenderScale = fitScale * clampedScale;
-      const newRenderWidth = Math.floor(contentWidth * newRenderScale);
-      const newRenderHeight = Math.floor(contentHeight * newRenderScale);
+      const newRenderWidth = contentWidth * newRenderScale;
+      const newRenderHeight = contentHeight * newRenderScale;
       const newPadX = Math.max(0, (outerWidth - newRenderWidth) / 2);
       const newPadY = Math.max(0, (outerHeight - newRenderHeight) / 2);
 
       inner.style.width = `${newRenderWidth}px`;
       inner.style.height = `${newRenderHeight}px`;
-      inner.style.marginLeft = `${Math.floor(newPadX)}px`;
-      inner.style.marginTop = `${Math.floor(newPadY)}px`;
+      inner.style.marginLeft = `${newPadX}px`;
+      inner.style.marginTop = `${newPadY}px`;
 
       contentElem.style.scale = newRenderScale;
 
-      const targetScrollLeft = Math.floor(newPadX) + xF * newRenderScale - focalX;
-      const targetScrollTop = Math.floor(newPadY) + yF * newRenderScale - focalY;
+      const targetScrollLeft = newPadX + xF * newRenderScale - focalX;
+      const targetScrollTop = newPadY + yF * newRenderScale - focalY;
 
       outer.scrollLeft = Math.max(0, targetScrollLeft);
       outer.scrollTop = Math.max(0, targetScrollTop);
@@ -91,14 +91,9 @@ export default function ZoomableDiv({ content }) {
 
     updateScale();
 
-    let renderResizeObserver = null;
-
-    const observeRenderSize = () => {
-      const renderElem = getRenderElem();
-      if (!renderElem) return;
-      if (renderResizeObserver) return;
-
-      renderResizeObserver = new ResizeObserver(() => {
+    let containerObserver = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      containerObserver = new ResizeObserver(() => {
         const atBaseZoom = Math.abs(state.current.scale - ZOOM_MIN) < SCALE_EPSILON;
 
         if (atBaseZoom) {
@@ -110,10 +105,13 @@ export default function ZoomableDiv({ content }) {
         updateScale();
       });
 
-      renderResizeObserver.observe(renderElem);
-    };
+      containerObserver.observe(outer);
 
-    observeRenderSize();
+      const renderElem = getRenderElem();
+      if (renderElem) {
+        containerObserver.observe(renderElem);
+      }
+    }
 
     const handleWheel = (e) => {
       e.preventDefault();
@@ -161,119 +159,86 @@ export default function ZoomableDiv({ content }) {
       return Math.hypot(dx, dy);
     };
 
+    const getTouchCenter = (t1, t2) => {
+      const rect = outer.getBoundingClientRect();
+      return {
+        x: (t1.clientX + t2.clientX) / 2 - rect.left,
+        y: (t1.clientY + t2.clientY) / 2 - rect.top,
+      };
+    };
+
     const handleTouchStart = (e) => {
-      if (e.touches.length === 1) {
-        state.current.dragging = true;
-        state.current.startX = e.touches[0].clientX;
-        state.current.startY = e.touches[0].clientY;
-        state.current.startScrollLeft = outer.scrollLeft;
-        state.current.startScrollTop = outer.scrollTop;
-        initialPinchDist = null;
-        prevPinchCenter = null;
-      } else if (e.touches.length === 2) {
-        state.current.dragging = false;
+      if (e.touches.length === 2) {
+        e.preventDefault();
         initialPinchDist = getTouchDist(e.touches[0], e.touches[1]);
         initialPinchScale = state.current.scale;
-        prevPinchCenter = {
-          x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
-          y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
-        };
-      }
-    };
-
-    const handleTouchMove = (e) => {
-      if (e.touches.length === 1 && state.current.dragging) {
-        const dx = e.touches[0].clientX - state.current.startX;
-        const dy = e.touches[0].clientY - state.current.startY;
-        outer.scrollLeft = state.current.startScrollLeft - dx;
-        outer.scrollTop = state.current.startScrollTop - dy;
-        window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
-      } else if (e.touches.length === 2 && initialPinchDist && initialPinchDist > 0) {
-        const currentDist = getTouchDist(e.touches[0], e.touches[1]);
-        if (currentDist <= 0) return;
-
-        const currentCenter = {
-          x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
-          y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
-        };
-
-        const rect = outer.getBoundingClientRect();
-        const focalX = clamp(currentCenter.x - rect.left, 0, rect.width);
-        const focalY = clamp(currentCenter.y - rect.top, 0, rect.height);
-
-        const scaleFactor = currentDist / initialPinchDist;
-        const targetScale = initialPinchScale * scaleFactor;
-
-        if (prevPinchCenter) {
-          const dx = currentCenter.x - prevPinchCenter.x;
-          const dy = currentCenter.y - prevPinchCenter.y;
-          outer.scrollLeft -= dx;
-          outer.scrollTop -= dy;
-        }
-        prevPinchCenter = currentCenter;
-
-        zoomTo(targetScale, focalX, focalY);
-      }
-    };
-
-    const handleTouchEnd = (e) => {
-      if (e.touches.length === 0) {
-        state.current.dragging = false;
-        initialPinchDist = null;
-        prevPinchCenter = null;
+        prevPinchCenter = getTouchCenter(e.touches[0], e.touches[1]);
       } else if (e.touches.length === 1) {
         state.current.dragging = true;
         state.current.startX = e.touches[0].clientX;
         state.current.startY = e.touches[0].clientY;
         state.current.startScrollLeft = outer.scrollLeft;
         state.current.startScrollTop = outer.scrollTop;
-        initialPinchDist = null;
-        prevPinchCenter = null;
       }
     };
 
-    const handleDoubleClick = () => {
-      const outerWidth = outer.clientWidth;
-      const outerHeight = outer.clientHeight;
-      zoomTo(1, outerWidth / 2, outerHeight / 2);
+    const handleTouchMove = (e) => {
+      if (e.touches.length === 2 && initialPinchDist) {
+        e.preventDefault();
+        const currentDist = getTouchDist(e.touches[0], e.touches[1]);
+        const center = getTouchCenter(e.touches[0], e.touches[1]);
+        if (currentDist > 0) {
+          const factor = currentDist / initialPinchDist;
+          const targetScale = initialPinchScale * factor;
+
+          if (prevPinchCenter) {
+            const dx = center.x - prevPinchCenter.x;
+            const dy = center.y - prevPinchCenter.y;
+            outer.scrollLeft -= dx;
+            outer.scrollTop -= dy;
+          }
+
+          zoomTo(targetScale, center.x, center.y);
+          prevPinchCenter = center;
+        }
+      } else if (e.touches.length === 1 && state.current.dragging) {
+        const dx = e.touches[0].clientX - state.current.startX;
+        const dy = e.touches[0].clientY - state.current.startY;
+        outer.scrollLeft = state.current.startScrollLeft - dx;
+        outer.scrollTop = state.current.startScrollTop - dy;
+        window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
+      }
     };
 
-    outer.addEventListener("wheel", handleWheel, { passive: false });
-    outer.addEventListener("mousedown", handleMouseDown);
-    outer.addEventListener("dblclick", handleDoubleClick);
-    outer.addEventListener("touchstart", handleTouchStart, { passive: true });
-    outer.addEventListener("touchmove", handleTouchMove, { passive: true });
-    outer.addEventListener("touchend", handleTouchEnd, { passive: true });
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+    const handleTouchEnd = (e) => {
+      if (e.touches.length < 2) {
+        initialPinchDist = null;
+        prevPinchCenter = null;
+      }
+      if (e.touches.length === 0) {
+        state.current.dragging = false;
+      }
+    };
 
-    const mutation_observer = new MutationObserver(() => {
-      observeRenderSize();
-      updateScale();
-    });
-
-    const resize_observer = new ResizeObserver(() => {
-      updateScale();
-    });
-    resize_observer.observe(outer);
-    mutation_observer.observe(inner, {
-      childList: true,
-      subtree: true,
-      attributeFilter: ["height", "width"],
-    });
+    outer.addEventListener('wheel', handleWheel, { passive: false });
+    outer.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    outer.addEventListener('touchstart', handleTouchStart, { passive: false });
+    outer.addEventListener('touchmove', handleTouchMove, { passive: false });
+    outer.addEventListener('touchend', handleTouchEnd);
+    outer.addEventListener('touchcancel', handleTouchEnd);
 
     return () => {
-      outer.removeEventListener("wheel", handleWheel);
-      outer.removeEventListener("mousedown", handleMouseDown);
-      outer.removeEventListener("dblclick", handleDoubleClick);
-      outer.removeEventListener("touchstart", handleTouchStart);
-      outer.removeEventListener("touchmove", handleTouchMove);
-      outer.removeEventListener("touchend", handleTouchEnd);
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-      mutation_observer.disconnect();
-      resize_observer.disconnect();
-      renderResizeObserver?.disconnect();
+      outer.removeEventListener('wheel', handleWheel);
+      outer.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      outer.removeEventListener('touchstart', handleTouchStart);
+      outer.removeEventListener('touchmove', handleTouchMove);
+      outer.removeEventListener('touchend', handleTouchEnd);
+      outer.removeEventListener('touchcancel', handleTouchEnd);
+      containerObserver?.disconnect();
     };
   }, [content]);
 
