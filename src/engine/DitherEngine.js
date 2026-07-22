@@ -1154,11 +1154,9 @@ const action = this.debugEnabled ? "disable" : "enable";
     const overlayCanvas = document.createElement('canvas');
     overlayCanvas.style.position = 'absolute';
     overlayCanvas.style.inset = '0';
-    overlayCanvas.style.width = '100%';
-    overlayCanvas.style.height = '100%';
     overlayCanvas.style.display = 'none';
     overlayCanvas.style.pointerEvents = 'none';
-    overlayCanvas.style.imageRendering = 'auto';
+    overlayCanvas.style.imageRendering = 'pixelated';
     this.canvasHost.appendChild(overlayCanvas);
     this.splitOverlayCanvas = overlayCanvas;
     this.splitOverlayCtx = overlayCanvas.getContext('2d');
@@ -1185,11 +1183,23 @@ const action = this.debugEnabled ? "disable" : "enable";
     const safeWidth = Math.max(1, Math.floor(Number(width) || 1));
     const safeHeight = Math.max(1, Math.floor(Number(height) || 1));
 
+    if (this.canvasHost) {
+      this.canvasHost.style.width = `${safeWidth}px`;
+      this.canvasHost.style.height = `${safeHeight}px`;
+    }
+
     const viewportCanvas = this.viewportCanvas;
     if (viewportCanvas) {
       viewportCanvas.style.width = `${safeWidth}px`;
       viewportCanvas.style.height = `${safeHeight}px`;
       viewportCanvas.style.imageRendering = 'pixelated';
+    }
+
+    const overlayCanvas = this.splitOverlayCanvas;
+    if (overlayCanvas) {
+      overlayCanvas.style.width = `${safeWidth}px`;
+      overlayCanvas.style.height = `${safeHeight}px`;
+      overlayCanvas.style.imageRendering = 'pixelated';
     }
 
     window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));

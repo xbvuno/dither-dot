@@ -183,7 +183,7 @@ export default function ZoomableDiv({ content }) {
       resize_observer.disconnect();
       renderResizeObserver?.disconnect();
     };
-  }, []);
+  }, [content]);
 
   return (
     <div ref={outerRef} className="zoomable-outer">
