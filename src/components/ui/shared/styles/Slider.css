@@ -34,7 +34,7 @@
 }
 
 .bv.slider sub {
-    margin-top: 2px;
+    margin-top: 4px;
 }
 
 .bv.slider.selected:focus {
@@ -77,16 +77,16 @@
     position: absolute;
     opacity: 0.5;
     translate: 0 100%;
-    top: calc(2.2rem + 2px);
-    --distance: 0.2rem;
+    top: calc(2.2rem + 4px);
+    --distance: 0rem;
 }
 
 .bv.slider-bundle sub.min {
-    left: var(--distance)
+    left: var(--distance);
 }
 
 .bv.slider-bundle sub.max {
-    right: var(--distance)
+    right: var(--distance);
 }
 
 .bv.slider-bundle .slider-bundle-label {

@@ -105,10 +105,9 @@ h2 {
     letter-spacing: 0.15rem;
 }
 
-html {
-    background-color: #000000;
-}
 
+
+html,
 body,
 #root {
     width: 100%;
@@ -116,6 +115,10 @@ body,
     background-color: var(--color-bg);
     color: var(--color-text);
     user-select: none;
+}
+
+html {
+    background-color: #000000;
 }
 
 #root {
@@ -736,4 +739,4 @@ h3 {
     .zoomable-outer {
         touch-action: none;
     }
-}
+}
