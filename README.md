@@ -83,6 +83,6 @@ npm run preview
 
 ## 📄 License
 
-Distributed under the MIT License. See [`LICENSE`](LICENSE) for details.
+Distributed under the **PolyForm Noncommercial License 1.0.0** (with Output Exception for unrestricted commercial use of generated media). See [`LICENSE`](LICENSE) for details.
 
 Developed with ❤️ by [@xbvuno](https://github.com/xbvuno).
