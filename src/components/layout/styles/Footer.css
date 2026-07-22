@@ -104,7 +104,7 @@
   }
 
   .phase-label-mobile {
-    display: inline !important;
+    display: none !important;
   }
 
   .app-footer-status {

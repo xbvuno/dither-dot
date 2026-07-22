@@ -30,7 +30,7 @@ export function setupMobileResize(handleEl, getShellEl) {
     }
     let newHeight = startHeight + deltaY;
 
-    const minH = 24; // 24px min height (thumb only)
+    const minH = 26; // 26px min height (thumb handle 1.6rem only)
     const maxH = Math.floor(window.innerHeight * 0.70); // 70% of viewport max
     newHeight = Math.max(minH, Math.min(maxH, newHeight));
 
@@ -152,10 +152,10 @@ export function setupMobileResize(handleEl, getShellEl) {
     if (!shell) return;
     try {
       const stored = Number(window.localStorage.getItem(MOBILE_ASIDE_HEIGHT_KEY));
-      const minH = 24;
+      const minH = 26;
       const maxH = Math.floor(window.innerHeight * 0.70);
       const defaultH = Math.floor(window.innerHeight * 0.42);
-      const targetH = (Number.isFinite(stored) && stored >= 24) ? stored : defaultH;
+      const targetH = (Number.isFinite(stored) && stored >= 26) ? stored : defaultH;
       const clamped = Math.max(minH, Math.min(maxH, targetH));
       shell.style.setProperty('height', `${clamped}px`, 'important');
     } catch {

@@ -762,7 +762,7 @@ h3 {
         align-items: center;
         justify-content: center;
         width: 100%;
-        height: 1.0rem;
+        height: 1.6rem;
         cursor: row-resize;
         touch-action: none !important;
         user-select: none !important;
@@ -796,7 +796,7 @@ h3 {
         width: 100% !important;
         max-width: 100% !important;
         height: 42vh;
-        min-height: 1.5rem;
+        min-height: 1.6rem;
         max-height: 65vh;
         flex-shrink: 0;
         border-top: none;
