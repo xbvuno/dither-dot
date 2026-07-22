@@ -193,6 +193,26 @@ export default function Footer() {
   return (
     <footer className="app-footer">
       <div className="app-footer-left">
+        <button
+          type="button"
+          className={`footer-preview-btn${previewingOriginal ? ' footer-preview-btn--active' : ''}`}
+          onPointerDown={(e) => {
+            e.preventDefault();
+            setPreviewingOriginal(true);
+          }}
+          onPointerUp={() => setPreviewingOriginal(false)}
+          onPointerLeave={() => setPreviewingOriginal(false)}
+          onPointerCancel={() => setPreviewingOriginal(false)}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            setPreviewingOriginal(true);
+          }}
+          onTouchEnd={() => setPreviewingOriginal(false)}
+          onTouchCancel={() => setPreviewingOriginal(false)}
+        >
+          COMPARE
+        </button>
+
         <div
           ref={timingRef}
           className={`pipeline-timing${showBusyState ? ' pipeline-timing--busy' : ''}`}
@@ -211,35 +231,15 @@ export default function Footer() {
             )}
           </span>
         </div>
-
-        <span className="app-footer-divider" aria-hidden="true">|</span>
-
-        <span className="app-footer-status">
-          {previewingOriginal
-            ? `${displayOriginalWidth} x ${displayOriginalHeight} | COLORS: ${displayColorCount}`
-            : `${displayWidth} x ${displayHeight} | COLORS: ${displayColorCount}${webcamActive ? ` | FPS: ${webcamFps}` : ''}`}
-        </span>
       </div>
 
-      <button
-        type="button"
-        className={`footer-preview-btn${previewingOriginal ? ' footer-preview-btn--active' : ''}`}
-        onPointerDown={(e) => {
-          e.preventDefault();
-          setPreviewingOriginal(true);
-        }}
-        onPointerUp={() => setPreviewingOriginal(false)}
-        onPointerLeave={() => setPreviewingOriginal(false)}
-        onPointerCancel={() => setPreviewingOriginal(false)}
-        onTouchStart={(e) => {
-          e.preventDefault();
-          setPreviewingOriginal(true);
-        }}
-        onTouchEnd={() => setPreviewingOriginal(false)}
-        onTouchCancel={() => setPreviewingOriginal(false)}
-      >
-        COMPARE
-      </button>
+      <span className="app-footer-divider" aria-hidden="true">|</span>
+
+      <span className="app-footer-status">
+        {previewingOriginal
+          ? `${displayOriginalWidth} x ${displayOriginalHeight} | COLORS: ${displayColorCount}`
+          : `${displayWidth} x ${displayHeight} | COLORS: ${displayColorCount}${webcamActive ? ` | FPS: ${webcamFps}` : ''}`}
+      </span>
 
       <PipelineTimingTooltip
         isVisible={showTimingTooltip || pipelineVisible}
