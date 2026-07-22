@@ -761,7 +761,6 @@ const action = this.debugEnabled ? "disable" : "enable";
         worker.postMessage({
           jobId: requestId,
           source: sourceBitmap,
-          previewingOriginal: this.previewingOriginal,
           customWidth,
           customHeight,
           paletteRgb,
