@@ -179,11 +179,31 @@ export default function ZoomableDiv({ content }) {
         window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
       } else if (e.touches.length === 2 && initialPinchDist) {
         const currentDist = getTouchDist(e.touches[0], e.touches[1]);
+        if (currentDist <= 0) return;
+
         const scaleFactor = currentDist / initialPinchDist;
+        const prevScale = state.current.scale;
         const newScale = Math.min(Math.max(initialPinchScale * scaleFactor, ZOOM_MIN), ZOOM_MAX);
-        if (newScale !== state.current.scale) {
+
+        if (Math.abs(newScale - prevScale) > SCALE_EPSILON) {
           state.current.scale = newScale;
+
+          const rect = outer.getBoundingClientRect();
+          const touchCenterX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+          const touchCenterY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+
+          const focalX = clamp(touchCenterX - rect.left, 0, rect.width);
+          const focalY = clamp(touchCenterY - rect.top, 0, rect.height);
+
+          const ratio = newScale / prevScale;
+
+          const newScrollLeft = (outer.scrollLeft + focalX) * ratio - focalX;
+          const newScrollTop = (outer.scrollTop + focalY) * ratio - focalY;
+
           updateScale();
+
+          outer.scrollLeft = newScrollLeft;
+          outer.scrollTop = newScrollTop;
         }
       }
     };
