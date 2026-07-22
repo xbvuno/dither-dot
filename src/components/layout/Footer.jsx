@@ -193,7 +193,7 @@ export default function Footer() {
       : (isProcessing ? (processingLabel || 'PROCESSING...') : ''));
 
   return (
-    <footer className="app-footer">
+    <footer className={`app-footer${webcamActive ? ' is-camera-active' : ''}`}>
       <div className="app-footer-left">
         <button
           type="button"

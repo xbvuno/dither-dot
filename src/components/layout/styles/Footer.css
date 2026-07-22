@@ -91,6 +91,10 @@
     flex-shrink: 0;
   }
 
+  .app-footer.is-camera-active .pipeline-timing {
+    display: none !important;
+  }
+
   .pipeline-timing::after {
     content: ' |';
     color: var(--color-text-muted);
