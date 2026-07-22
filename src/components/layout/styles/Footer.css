@@ -81,6 +81,14 @@
     flex-shrink: 0;
   }
 
+  .pipeline-timing::after {
+    content: ' |';
+    color: var(--color-text-muted);
+    opacity: 0.65;
+    margin-left: 0.35rem;
+    pointer-events: none;
+  }
+
   .app-footer-status {
     order: 2;
     overflow-x: auto;
