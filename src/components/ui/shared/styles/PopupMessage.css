@@ -47,32 +47,3 @@
   max-width: 100%;
   word-break: break-word;
 }
-
-/* Mobile Layout: Emerges below/at footer area at the bottom */
-@media (max-width: 768px) {
-  .popup-message-overlay {
-    position: fixed;
-    top: auto;
-    bottom: 0;
-    left: 0;
-    border-bottom: none;
-    border-top: 1px solid var(--color-border);
-    transform: translateY(100%);
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4);
-  }
-
-  .popup-message-overlay.popup-message--visible,
-  .popup-message-overlay.popup-message--entering {
-    transform: translateY(0);
-    opacity: 1;
-  }
-
-  .popup-message-overlay.popup-message--exiting {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-
-  .popup-message-overlay.popup-message--error {
-    border-top-color: #ff4444;
-  }
-}
