@@ -366,7 +366,7 @@ export default function ImportPage() {
         </div>
       </div>
 
-      <div className='bv-section'>
+      <div className='bv-section force-cpu-section'>
         <div className='bv-controls-row'>
           <span className='bv-label'>FORCE CPU</span>
           <div className='bv-option-group histogram-toggle-group'>
