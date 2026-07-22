@@ -19,7 +19,8 @@ const useWebcamStore = create((set, get) => ({
   facingMode: 'user', // 'user' (front) or 'environment' (back/rear)
   frameReady: false,
   paletteFrozen: false,
-  shoots: [],
+  maxWidth: 1280,
+  maxHeight: 720,
 
   addShoot: (shoot) => set((s) => ({ shoots: [shoot, ...s.shoots] })),
   deleteShoot: (id) => set((s) => ({ shoots: s.shoots.filter((item) => item.id !== id) })),
@@ -31,13 +32,15 @@ const useWebcamStore = create((set, get) => ({
     const videoTrack = stream.getVideoTracks()[0];
     if (!videoTrack) return;
 
-    const clampedW = Math.min(1280, Math.max(1, Math.round(Number(width) || 640)));
-    const clampedH = Math.min(720, Math.max(1, Math.round(Number(height) || 360)));
+    const maxW = get().maxWidth || 1280;
+    const maxH = get().maxHeight || 720;
+    const clampedW = Math.min(maxW, Math.max(1, Math.round(Number(width) || 640)));
+    const clampedH = Math.min(maxH, Math.max(1, Math.round(Number(height) || 360)));
 
     try {
       await videoTrack.applyConstraints({
-        width: { ideal: clampedW, max: 1280 },
-        height: { ideal: clampedH, max: 720 },
+        width: { ideal: clampedW, max: maxW },
+        height: { ideal: clampedH, max: maxH },
         facingMode: { ideal: get().facingMode || 'user' },
         frameRate: { ideal: 30, max: 30 },
       });
@@ -123,12 +126,23 @@ const useWebcamStore = create((set, get) => ({
       });
       stream.oninactive = handleTrackEnded;
 
+      let detectedMaxW = 1280;
+      let detectedMaxH = 720;
+      const vTrack = stream.getVideoTracks()[0];
+      if (vTrack && typeof vTrack.getCapabilities === 'function') {
+        const caps = vTrack.getCapabilities();
+        if (caps?.width?.max) detectedMaxW = caps.width.max;
+        if (caps?.height?.max) detectedMaxH = caps.height.max;
+      }
+
       frameTimestamps = [];
       const isFront = mode === 'user';
       set({
         active: true,
         starting: false,
         stream,
+        maxWidth: detectedMaxW,
+        maxHeight: detectedMaxH,
         fps: 0,
         frameReady: false,
         paletteFrozen: false,

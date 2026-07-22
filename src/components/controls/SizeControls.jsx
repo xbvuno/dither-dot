@@ -64,8 +64,10 @@ export default function SizeControls() {
   };
 
   const webcamActive = useWebcamStore(s => s.active);
-  const maxSliderWidth = webcamActive ? 1280 : width;
-  const maxSliderHeight = webcamActive ? 720 : height;
+  const cameraMaxW = useWebcamStore(s => s.maxWidth) || 1280;
+  const cameraMaxH = useWebcamStore(s => s.maxHeight) || 720;
+  const maxSliderWidth = webcamActive ? cameraMaxW : width;
+  const maxSliderHeight = webcamActive ? cameraMaxH : height;
 
   if (width == null || height == null) return null;
 
