@@ -196,10 +196,21 @@ export default function Footer() {
     <footer className="app-footer">
       <div className="app-footer-left">
         <button
+          type="button"
           className={`footer-preview-btn${previewingOriginal ? ' footer-preview-btn--active' : ''}`}
-          onMouseDown={() => setPreviewingOriginal(true)}
-          onMouseUp={() => setPreviewingOriginal(false)}
-          onMouseLeave={() => setPreviewingOriginal(false)}
+          onPointerDown={(e) => {
+            e.preventDefault();
+            setPreviewingOriginal(true);
+          }}
+          onPointerUp={() => setPreviewingOriginal(false)}
+          onPointerLeave={() => setPreviewingOriginal(false)}
+          onPointerCancel={() => setPreviewingOriginal(false)}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            setPreviewingOriginal(true);
+          }}
+          onTouchEnd={() => setPreviewingOriginal(false)}
+          onTouchCancel={() => setPreviewingOriginal(false)}
         >
           COMPARE
         </button>

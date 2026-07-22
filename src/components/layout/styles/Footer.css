@@ -54,5 +54,16 @@
   letter-spacing: 0.06em;
   white-space: nowrap;
   user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
 }
+
+@media (max-width: 768px) {
+  .footer-preview-btn {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.78rem;
+    min-height: 2rem;
+  }
+}
+
 
