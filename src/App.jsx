@@ -110,30 +110,7 @@ function App() {
 
   const activeModal = modalType ? modalConfig[modalType] : null
 
-  if (IS_MOBILE && !continueOnMobile) {
-    return (
-      <div className='fullscreen-blocker'>
-        <div>
-          <h1>MOBILE NOT SUPPORTED YET</h1>
-          <p>
-            DITHER-DOT is currently optimized for desktop workflows.
-          </p>
-          <p>
-            Open the app from a desktop browser for the full editing experience.
-          </p>
-          <br/>
-          <button
-            type='button'
-            className='fullscreen-blocker-btn'
-            onClick={() => setContinueOnMobile(true)}
-          >
-            <ArrowRight size={14} strokeWidth={1.8} />
-            CONTINUE ANYWAY
-          </button>
-        </div>
-      </div>
-    )
-  }
+
 
   return (
     <>

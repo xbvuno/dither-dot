@@ -147,6 +147,61 @@ export default function ZoomableDiv({ content }) {
       }
     };
 
+    let initialPinchDist = null;
+    let initialPinchScale = 1;
+
+    const getTouchDist = (t1, t2) => {
+      const dx = t1.clientX - t2.clientX;
+      const dy = t1.clientY - t2.clientY;
+      return Math.hypot(dx, dy);
+    };
+
+    const handleTouchStart = (e) => {
+      if (e.touches.length === 1) {
+        state.current.dragging = true;
+        state.current.startX = e.touches[0].clientX;
+        state.current.startY = e.touches[0].clientY;
+        state.current.startScrollLeft = outer.scrollLeft;
+        state.current.startScrollTop = outer.scrollTop;
+      } else if (e.touches.length === 2) {
+        state.current.dragging = false;
+        initialPinchDist = getTouchDist(e.touches[0], e.touches[1]);
+        initialPinchScale = state.current.scale;
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      if (e.touches.length === 1 && state.current.dragging) {
+        const dx = e.touches[0].clientX - state.current.startX;
+        const dy = e.touches[0].clientY - state.current.startY;
+        outer.scrollLeft = state.current.startScrollLeft - dx;
+        outer.scrollTop = state.current.startScrollTop - dy;
+        window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
+      } else if (e.touches.length === 2 && initialPinchDist) {
+        const currentDist = getTouchDist(e.touches[0], e.touches[1]);
+        const scaleFactor = currentDist / initialPinchDist;
+        const newScale = Math.min(Math.max(initialPinchScale * scaleFactor, ZOOM_MIN), ZOOM_MAX);
+        if (newScale !== state.current.scale) {
+          state.current.scale = newScale;
+          updateScale();
+        }
+      }
+    };
+
+    const handleTouchEnd = (e) => {
+      if (e.touches.length === 0) {
+        state.current.dragging = false;
+        initialPinchDist = null;
+      } else if (e.touches.length === 1) {
+        state.current.dragging = true;
+        state.current.startX = e.touches[0].clientX;
+        state.current.startY = e.touches[0].clientY;
+        state.current.startScrollLeft = outer.scrollLeft;
+        state.current.startScrollTop = outer.scrollTop;
+        initialPinchDist = null;
+      }
+    };
+
     const handleDoubleClick = () => {
       state.current.scale = 1;
       updateScale();
@@ -155,6 +210,9 @@ export default function ZoomableDiv({ content }) {
     outer.addEventListener("wheel", handleWheel, { passive: false });
     outer.addEventListener("mousedown", handleMouseDown);
     outer.addEventListener("dblclick", handleDoubleClick);
+    outer.addEventListener("touchstart", handleTouchStart, { passive: true });
+    outer.addEventListener("touchmove", handleTouchMove, { passive: true });
+    outer.addEventListener("touchend", handleTouchEnd, { passive: true });
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
 
@@ -177,6 +235,9 @@ export default function ZoomableDiv({ content }) {
       outer.removeEventListener("wheel", handleWheel);
       outer.removeEventListener("mousedown", handleMouseDown);
       outer.removeEventListener("dblclick", handleDoubleClick);
+      outer.removeEventListener("touchstart", handleTouchStart);
+      outer.removeEventListener("touchmove", handleTouchMove);
+      outer.removeEventListener("touchend", handleTouchEnd);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
       mutation_observer.disconnect();
