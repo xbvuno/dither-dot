@@ -235,6 +235,8 @@ export default function Footer() {
         </div>
       </div>
 
+      <span className="app-footer-divider" aria-hidden="true">|</span>
+
       <span className="app-footer-status">
         {previewingOriginal
           ? `${displayOriginalWidth} x ${displayOriginalHeight} | COLORS: ${displayColorCount}`

@@ -40,6 +40,14 @@
   text-underline-offset: 0.2rem;
 }
 
+.app-footer-divider {
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  user-select: none;
+  flex-shrink: 0;
+}
+
 .app-footer-status {
   font-size: 0.76rem;
   letter-spacing: 0.08em;
@@ -67,7 +75,7 @@
     flex-wrap: nowrap;
     justify-content: flex-start;
     align-items: center;
-    max-height: none;
+    gap: 0.6rem;
   }
 
   .app-footer::-webkit-scrollbar {
