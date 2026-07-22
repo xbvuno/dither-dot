@@ -8,7 +8,7 @@ import './styles/CameraControlsBar.css';
 
 export default function CameraControlsBar() {
   const active = useWebcamStore((s) => s.active);
-  const shoots = useWebcamStore((s) => s.shoots);
+  const shoots = useWebcamStore((s) => s.shoots) || [];
   const addShoot = useWebcamStore((s) => s.addShoot);
   const [capturing, setCapturing] = useState(false);
 
@@ -89,7 +89,7 @@ export default function CameraControlsBar() {
       </button>
 
       <span className='bv-label camera-shoots-label'>
-        SHOOTS: {shoots.length}
+        SHOOTS: {shoots?.length || 0}
       </span>
     </div>
   );

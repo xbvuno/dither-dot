@@ -22,8 +22,8 @@ const useWebcamStore = create((set, get) => ({
   maxWidth: 1280,
   maxHeight: 720,
 
-  addShoot: (shoot) => set((s) => ({ shoots: [shoot, ...s.shoots] })),
-  deleteShoot: (id) => set((s) => ({ shoots: s.shoots.filter((item) => item.id !== id) })),
+  addShoot: (shoot) => set((s) => ({ shoots: [shoot, ...(s.shoots || [])] })),
+  deleteShoot: (id) => set((s) => ({ shoots: (s.shoots || []).filter((item) => item.id !== id) })),
   clearShoots: () => set({ shoots: [] }),
 
   applyResolutionConstraints: async (width, height) => {

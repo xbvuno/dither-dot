@@ -78,6 +78,10 @@ export default function ExportPage() {
   const setExportPreviewUrl = useImageStore(s => s.setExportPreviewUrl);
   const lastRenderJobId = useImageStore(s => s.lastRenderJobId);
   const gifFrames = useGifStore(s => s.frames);
+  const shoots = useWebcamStore((s) => s.shoots) || [];
+  const deleteShoot = useWebcamStore((s) => s.deleteShoot);
+  const clearShoots = useWebcamStore((s) => s.clearShoots);
+
   const [exportName, setExportName] = useState(getDefaultExportName(sourceName));
   const [upscale, setUpscale] = useState(1);
   const [status, setStatus] = useState(null);
@@ -222,10 +226,6 @@ export default function ExportPage() {
       setGifExporting(false);
     }
   };
-
-  const shoots = useWebcamStore((s) => s.shoots);
-  const clearShoots = useWebcamStore((s) => s.clearShoots);
-  const deleteShoot = useWebcamStore((s) => s.deleteShoot);
 
   const handleSaveShoot = async (shoot) => {
     try {
