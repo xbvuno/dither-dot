@@ -437,6 +437,10 @@ const action = this.debugEnabled ? "disable" : "enable";
           Math.floor(Number(state.customSize?.customHeight) || Number(state.size?.height) || sourceH || 1),
         );
 
+        if (this.isWebcamMode) {
+          useWebcamStore.getState().applyResolutionConstraints(w, h);
+        }
+
         const prevW = Math.max(
           1,
           Math.floor(

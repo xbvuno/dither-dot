@@ -25,6 +25,27 @@ const useWebcamStore = create((set, get) => ({
   deleteShoot: (id) => set((s) => ({ shoots: s.shoots.filter((item) => item.id !== id) })),
   clearShoots: () => set({ shoots: [] }),
 
+  applyResolutionConstraints: async (width, height) => {
+    const stream = get().stream;
+    if (!stream) return;
+    const videoTrack = stream.getVideoTracks()[0];
+    if (!videoTrack) return;
+
+    const clampedW = Math.min(1720, Math.max(1, Math.round(Number(width) || 640)));
+    const clampedH = Math.min(1280, Math.max(1, Math.round(Number(height) || 480)));
+
+    try {
+      await videoTrack.applyConstraints({
+        width: { ideal: clampedW, max: 1720 },
+        height: { ideal: clampedH, max: 1280 },
+        facingMode: { ideal: get().facingMode || 'user' },
+        frameRate: { ideal: 30, max: 30 },
+      });
+    } catch (err) {
+      console.warn('[WEBCAM CONSTRAINTS WARN]', err);
+    }
+  },
+
   startWebcam: async (requestedFacingMode) => {
     if (get().starting) return;
     const mode = requestedFacingMode || get().facingMode || 'user';
@@ -58,8 +79,8 @@ const useWebcamStore = create((set, get) => ({
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: { ideal: mode },
-            width: { ideal: 1720 },
-            height: { ideal: 1280 },
+            width: { ideal: 640 },
+            height: { ideal: 480 },
             frameRate: { ideal: 30, max: 30 },
           },
           audio: false,
