@@ -59,11 +59,29 @@
 }
 
 @media (max-width: 768px) {
+  .app-footer {
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+  }
+
+  .app-footer::-webkit-scrollbar {
+    display: none;
+  }
+
+  .app-footer-left {
+    flex-shrink: 0;
+  }
+
+  .app-footer-status {
+    flex-shrink: 0;
+  }
+
   .footer-preview-btn {
     padding: 0.35rem 0.7rem;
     font-size: 0.78rem;
     min-height: 2rem;
+    flex-shrink: 0;
   }
 }
-
-
