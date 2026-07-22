@@ -58,8 +58,8 @@ const useWebcamStore = create((set, get) => ({
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: { ideal: mode },
-            width: { ideal: 640 },
-            height: { ideal: 480 },
+            width: { ideal: 1720 },
+            height: { ideal: 1280 },
             frameRate: { ideal: 30, max: 30 },
           },
           audio: false,
