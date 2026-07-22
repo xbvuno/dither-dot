@@ -96,7 +96,7 @@ export default function Slider({
 
     // notify only if changed
     if (typeof s.onChange === "function" && clamped !== s.value) {
-      triggerHapticPulse(5);
+      triggerHapticPulse(15);
       s.onChange(clamped);
     }
   };
