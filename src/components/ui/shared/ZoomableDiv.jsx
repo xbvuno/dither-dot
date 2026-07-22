@@ -43,9 +43,7 @@ export default function ZoomableDiv({ content }) {
 
       if (!contentWidth || !contentHeight || !outerWidth || !outerHeight) return;
 
-      const availWidth = Math.max(10, outerWidth - 16);
-      const availHeight = Math.max(10, outerHeight - 16);
-      const fitScale = Math.min(availWidth / contentWidth, availHeight / contentHeight);
+      const fitScale = Math.min(outerWidth / contentWidth, outerHeight / contentHeight);
       const prevScale = state.current.scale;
       const clampedScale = clamp(targetScale, ZOOM_MIN, ZOOM_MAX);
 
