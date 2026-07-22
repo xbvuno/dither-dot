@@ -263,7 +263,7 @@ export default function ImportPage() {
       <div className='bv-macro-section'>
         <h2>IMPORT</h2>
 
-        <div className='bv-section'>
+        <div className='bv-section import-dropzone-section'>
           <p className='bv-label'>DROP OR PASTE</p>
           <div
             className={`import-dropzone${isDropActive ? ' active' : ''}`}

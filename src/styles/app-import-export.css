@@ -147,3 +147,11 @@
   letter-spacing: 0.03em;
 }
 
+@media (max-width: 768px) {
+  .import-dropzone-section {
+    display: none;
+  }
+}
+
+
+
