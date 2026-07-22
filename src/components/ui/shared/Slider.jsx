@@ -157,9 +157,11 @@ export default function Slider({
     };
 
     const onPointerDown = (e) => {
-      if (e.button !== 0) return;
+      if (e.pointerType === "mouse" && e.button !== 0) return;
       dragging = true;
-      track.setPointerCapture?.(e.pointerId);
+      try {
+        track.setPointerCapture?.(e.pointerId);
+      } catch (_) {}
 
       const s = stateRef.current;
       const pct = getPercent(e.clientX);
@@ -173,11 +175,12 @@ export default function Slider({
       if (!dragging) return;
       if (rafRef.current) return;
 
+      const clientX = e.clientX;
       rafRef.current = requestAnimationFrame(() => {
         rafRef.current = null;
 
         const s = stateRef.current;
-        const pct = getPercent(e.clientX);
+        const pct = getPercent(clientX);
 
         setInternalValue(
           percentToValue(pct, s.min, s.max, s.step)
@@ -186,8 +189,18 @@ export default function Slider({
     };
 
     const onPointerUp = (e) => {
+      if (!dragging) return;
       dragging = false;
-      track.releasePointerCapture?.(e.pointerId);
+      try {
+        track.releasePointerCapture?.(e.pointerId);
+      } catch (_) {}
+    };
+
+    const onPointerCancel = (e) => {
+      dragging = false;
+      try {
+        track.releasePointerCapture?.(e.pointerId);
+      } catch (_) {}
     };
 
     const onWheel = (e) => {
@@ -203,12 +216,14 @@ export default function Slider({
     track.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerCancel);
     container.addEventListener("wheel", onWheel, { passive: false });
 
     return () => {
       track.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerCancel);
       container.removeEventListener("wheel", onWheel);
     };
   }, []);
