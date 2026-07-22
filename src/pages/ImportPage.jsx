@@ -215,27 +215,17 @@ export default function ImportPage() {
   };
 
   const handleWebcamToggle = async () => {
-    console.log('[WEBCAM DEBUG] handleWebcamToggle clicked. active:', webcamActive, 'starting:', webcamStarting);
     if (webcamActive) {
-      console.log('[WEBCAM DEBUG] Stopping webcam...');
       stopWebcam();
       resetToDefault();
       return;
     }
 
-    console.log('[WEBCAM DEBUG] Invoking startWebcam()...');
     await startWebcam();
     const state = useWebcamStore.getState();
-    console.log('[WEBCAM DEBUG] startWebcam finished. State active:', state.active, 'error:', state.error);
-    
-    if (!state.active) {
-      if (state.error) {
-        alert(`Webcam error: ${state.error}`);
-      }
-      return;
-    }
+    if (!state.active) return;
     clearGifFrames();
-    setSourceDirect(WEBCAM_SOURCE, 'WEBCAM', 'webcam');
+    setSourceDirect(WEBCAM_SOURCE, 'CAMERA', 'webcam');
   };
 
   const handleRandomImage = async () => {
