@@ -6,16 +6,16 @@
   width: 100%;
   padding: 0.65rem 1rem;
   box-sizing: border-box;
-  background-color: var(--color-bg-alt, #161616);
+  background-color: #000000;
   border-bottom: 1px solid var(--color-border);
-  color: var(--color-text-main, #ffffff);
+  color: var(--color-text, #ffffff);
   font-family: var(--font-mono, monospace);
   font-size: 0.75rem;
   letter-spacing: 0.05em;
   text-align: center;
   z-index: 40;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
   transform: translateY(-100%);
   opacity: 0;
@@ -31,15 +31,6 @@
 .popup-message-overlay.popup-message--exiting {
   transform: translateY(-100%);
   opacity: 0;
-}
-
-.popup-message-overlay.popup-message--success {
-  border-bottom-color: var(--color-border-hover, #444444);
-}
-
-.popup-message-overlay.popup-message--error {
-  border-bottom-color: #ff4444;
-  color: #ff6666;
 }
 
 .popup-message-text {
