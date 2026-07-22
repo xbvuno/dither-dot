@@ -748,12 +748,13 @@ h3 {
         height: calc(100dvh - 2.8rem - 3.6rem - env(safe-area-inset-bottom, 0px));
     }
 
-    .app-body-container > main {
+    main {
         flex-direction: column-reverse;
         position: relative;
         flex: 1 1 0%;
         min-height: 0;
-        height: 100% !important;
+        margin-bottom: calc(3.6rem + env(safe-area-inset-bottom, 0px)) !important;
+        height: calc(100% - 3.6rem - env(safe-area-inset-bottom, 0px)) !important;
         overflow: hidden;
     }
 
