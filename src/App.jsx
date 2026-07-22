@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Smartphone, MonitorSmartphone, TriangleAlert, ArrowRight, Info, Heart, ScrollText, Cat, FileUp, ImageUpscale, SlidersHorizontal, Palette, SprayCan, Download } from 'lucide-react'
+import { Smartphone, MonitorSmartphone, TriangleAlert, ArrowRight, Info, Heart, ScrollText, Cat, FileUp, ImageUpscale, SlidersHorizontal, Palette, SprayCan, Download, Maximize, Minimize } from 'lucide-react'
 import Aside from './components/layout/Aside'
 
 import watermarkMini from './assets/watermark/watermark-mini.png'
@@ -35,6 +35,7 @@ const IS_MOBILE = (() => {
 function App() {
   const [modalType, setModalType] = useState(null)
   const [continueOnMobile, setContinueOnMobile] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const currentPage = usePageStore(s => s.currentPage)
   const setPage = usePageStore(s => s.setPage)
   const sourceImg = useImageStore(s => s.sourceImg)
@@ -46,6 +47,27 @@ function App() {
   const navRef = useRef(null)
   const lastScrollTimeRef = useRef(0)
   const currentPageRef = useRef(currentPage)
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement))
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+    }
+  }, [])
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {})
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {})
+      }
+    }
+  }
 
   useEffect(() => {
     currentPageRef.current = currentPage
@@ -146,9 +168,15 @@ function App() {
             <span className='app-header-title-name'>DITHER-DOT</span>
           </span>
           <div className='app-header-links'>
-            <button type='button' className='header-link-btn' onClick={() => setModalType('support')} aria-label='Support project'>
-              <Heart size={13} strokeWidth={2} aria-hidden='true' />
-              SUPPORT
+            <button
+              type='button'
+              className='header-link-btn'
+              onClick={() => setModalType('support')}
+              aria-label='Support project'
+              title='SUPPORT'
+            >
+              <Heart size={14} strokeWidth={2} aria-hidden='true' />
+              <span className='header-link-label'>SUPPORT</span>
             </button>
             <a
               href='https://github.com/xbvuno/dither-dot'
@@ -156,10 +184,25 @@ function App() {
               rel='noopener noreferrer'
               className='header-link-btn'
               aria-label='GitHub Repository (opens in new tab)'
+              title='GITHUB'
             >
-              <Cat size={13} strokeWidth={2} aria-hidden='true' />
-              GITHUB
+              <Cat size={14} strokeWidth={2} aria-hidden='true' />
+              <span className='header-link-label'>GITHUB</span>
             </a>
+            <button
+              type='button'
+              className='header-link-btn'
+              onClick={toggleFullscreen}
+              aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+              title={isFullscreen ? 'EXIT FULLSCREEN' : 'FULLSCREEN'}
+            >
+              {isFullscreen ? (
+                <Minimize size={14} strokeWidth={2} aria-hidden='true' />
+              ) : (
+                <Maximize size={14} strokeWidth={2} aria-hidden='true' />
+              )}
+              <span className='header-link-label'>FULLSCREEN</span>
+            </button>
           </div>
         </header>
         <main>

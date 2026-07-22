@@ -648,6 +648,18 @@ h3 {
         font-size: 1.2rem;
     }
 
+    .header-link-label {
+        display: none;
+    }
+
+    .header-link-btn {
+        padding: 0.4rem;
+        min-width: 2rem;
+        height: 2rem;
+        display: inline-grid;
+        place-items: center;
+    }
+
     .app-nav {
         position: fixed;
         bottom: 0;
