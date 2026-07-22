@@ -64,7 +64,7 @@
     order: -1;
     border-top: none;
     border-bottom: 1px solid var(--color-border);
-    background-color: var(--color-bg-subtle);
+    background-color: var(--color-bg);
     padding: 0.35rem 0.6rem;
     gap: 0.5rem;
     display: flex;
