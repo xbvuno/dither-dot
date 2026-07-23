@@ -32,10 +32,10 @@ const useWebcamStore = create((set, get) => ({
     const videoTrack = stream.getVideoTracks()[0];
     if (!videoTrack) return;
 
-    const maxW = get().maxWidth || 1280;
-    const maxH = get().maxHeight || 720;
-    const clampedW = Math.min(maxW, Math.max(1, Math.round(Number(width) || 640)));
-    const clampedH = Math.min(maxH, Math.max(1, Math.round(Number(height) || 360)));
+    const maxW = Math.max(1280, get().maxWidth || 1280);
+    const maxH = Math.max(720, get().maxHeight || 720);
+    const clampedW = Math.max(1, Math.round(Number(width) || 640));
+    const clampedH = Math.max(1, Math.round(Number(height) || 480));
 
     try {
       await videoTrack.applyConstraints({
@@ -82,33 +82,15 @@ const useWebcamStore = create((set, get) => ({
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: { ideal: mode },
-            width: { ideal: 640, max: 1280 },
-            height: { ideal: 360, max: 720 },
             frameRate: { ideal: 30, max: 30 },
           },
           audio: false,
         });
       } catch {
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: { ideal: mode },
-            },
-            audio: false,
-          });
-        } catch {
-          try {
-            stream = await navigator.mediaDevices.getUserMedia({
-              video: { facingMode: mode },
-              audio: false,
-            });
-          } catch {
-            stream = await navigator.mediaDevices.getUserMedia({
-              video: true,
-              audio: false,
-            });
-          }
-        }
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false,
+        });
       }
 
       if (token !== startToken) {
@@ -128,6 +110,8 @@ const useWebcamStore = create((set, get) => ({
 
       let detectedMaxW = 1280;
       let detectedMaxH = 720;
+      let actualRatio = 16 / 9;
+
       const vTrack = stream.getVideoTracks()[0];
       if (vTrack) {
         if (typeof vTrack.getCapabilities === 'function') {
@@ -135,32 +119,31 @@ const useWebcamStore = create((set, get) => ({
           if (caps?.width?.max) detectedMaxW = caps.width.max;
           if (caps?.height?.max) detectedMaxH = caps.height.max;
         }
+
         if (typeof vTrack.getSettings === 'function') {
           const settings = vTrack.getSettings();
           if (settings.width && settings.height) {
+            actualRatio = settings.width / settings.height;
             if (!detectedMaxW) detectedMaxW = settings.width;
             if (!detectedMaxH) detectedMaxH = settings.height;
           }
         }
       }
 
-      // Compute native sensor aspect ratio
-      const nativeRatio = (detectedMaxW && detectedMaxH) ? (detectedMaxW / detectedMaxH) : (16 / 9);
-
-      // Reference 480px initial height for both Desktop and Mobile:
+      // Compute initial resolution preserving 100% native hardware aspect ratio
       const defaultH = 480;
-      const defaultW = Math.max(1, Math.round(480 * nativeRatio));
+      const defaultW = Math.max(1, Math.round(480 * actualRatio));
 
       if (vTrack && typeof vTrack.applyConstraints === 'function') {
         try {
           await vTrack.applyConstraints({
-            width: { ideal: defaultW, max: detectedMaxW },
-            height: { ideal: defaultH, max: detectedMaxH },
+            width: { ideal: defaultW, max: Math.max(defaultW, detectedMaxW) },
+            height: { ideal: defaultH, max: Math.max(defaultH, detectedMaxH) },
             facingMode: { ideal: mode },
             frameRate: { ideal: 30, max: 30 },
           });
         } catch {
-          // Ignore
+          // Ignore constraint errors on unsupported devices
         }
       }
 
