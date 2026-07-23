@@ -79,18 +79,29 @@ const useWebcamStore = create((set, get) => ({
     try {
       let stream;
       try {
+        // Try exact facingMode first (ensures physical rear/front camera switch on mobile)
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            facingMode: { ideal: mode },
+            facingMode: { exact: mode },
             frameRate: { ideal: 30, max: 30 },
           },
           audio: false,
         });
       } catch {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: false,
-        });
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: mode },
+              frameRate: { ideal: 30, max: 30 },
+            },
+            audio: false,
+          });
+        } catch {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false,
+          });
+        }
       }
 
       if (token !== startToken) {
@@ -111,6 +122,7 @@ const useWebcamStore = create((set, get) => ({
       let detectedMaxW = 1280;
       let detectedMaxH = 720;
       let actualRatio = 16 / 9;
+      let actualFacingMode = mode;
 
       const vTrack = stream.getVideoTracks()[0];
       if (vTrack) {
@@ -122,6 +134,9 @@ const useWebcamStore = create((set, get) => ({
 
         if (typeof vTrack.getSettings === 'function') {
           const settings = vTrack.getSettings();
+          if (settings.facingMode) {
+            actualFacingMode = settings.facingMode;
+          }
           if (settings.width && settings.height) {
             actualRatio = settings.width / settings.height;
             if (!detectedMaxW) detectedMaxW = settings.width;
@@ -139,7 +154,7 @@ const useWebcamStore = create((set, get) => ({
           await vTrack.applyConstraints({
             width: { ideal: defaultW, max: Math.max(defaultW, detectedMaxW) },
             height: { ideal: defaultH, max: Math.max(defaultH, detectedMaxH) },
-            facingMode: { ideal: mode },
+            facingMode: { ideal: actualFacingMode },
             frameRate: { ideal: 30, max: 30 },
           });
         } catch {
@@ -148,7 +163,7 @@ const useWebcamStore = create((set, get) => ({
       }
 
       frameTimestamps = [];
-      const isFront = mode === 'user';
+      const isFront = actualFacingMode === 'user';
       set({
         active: true,
         starting: false,
@@ -159,7 +174,7 @@ const useWebcamStore = create((set, get) => ({
         frameReady: false,
         paletteFrozen: false,
         error: '',
-        facingMode: mode,
+        facingMode: actualFacingMode,
         mirrored: isFront,
       });
     } catch (err) {
