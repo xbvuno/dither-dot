@@ -171,7 +171,9 @@ export default function Slider({
         activePointerId = e.pointerId;
         try {
           track.setPointerCapture?.(e.pointerId);
-        } catch (_) {}
+        } catch {
+          /* ignore pointer capture error */
+        }
 
         const s = stateRef.current;
         const pct = getPercent(e.clientX);
@@ -204,7 +206,9 @@ export default function Slider({
           dragging = true;
           try {
             track.setPointerCapture?.(e.pointerId);
-          } catch (_) {}
+          } catch {
+            /* ignore pointer capture error */
+          }
         }
       }
 
@@ -237,7 +241,9 @@ export default function Slider({
       if (activePointerId !== null) {
         try {
           track.releasePointerCapture?.(activePointerId);
-        } catch (_) {}
+        } catch {
+          /* ignore pointer capture error */
+        }
         activePointerId = null;
       }
     };
@@ -248,7 +254,9 @@ export default function Slider({
       if (activePointerId !== null) {
         try {
           track.releasePointerCapture?.(activePointerId);
-        } catch (_) {}
+        } catch {
+          /* ignore pointer capture error */
+        }
         activePointerId = null;
       }
     };

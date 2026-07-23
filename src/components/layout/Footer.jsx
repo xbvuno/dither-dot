@@ -83,7 +83,7 @@ export default function Footer() {
 
   useEffect(() => {
     if (timing.pipelineTotal > 0) {
-      setLastTotalTime(timing.pipelineTotal);
+      queueMicrotask(() => setLastTotalTime(timing.pipelineTotal));
     }
   }, [timing.pipelineTotal]);
 

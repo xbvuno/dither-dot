@@ -38,7 +38,6 @@ const IS_MOBILE = (() => {
 
 function App() {
   const [modalType, setModalType] = useState(null)
-  const [continueOnMobile, setContinueOnMobile] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const currentPage = usePageStore(s => s.currentPage)
   const setPage = usePageStore(s => s.setPage)

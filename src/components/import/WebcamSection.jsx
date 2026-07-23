@@ -9,7 +9,6 @@ import {
 } from '../../utils/importUtils';
 
 export default function WebcamSection() {
-  const active = useWebcamStore((s) => s.active);
   const starting = useWebcamStore((s) => s.starting);
   const frameReady = useWebcamStore((s) => s.frameReady);
   const error = useWebcamStore((s) => s.error);

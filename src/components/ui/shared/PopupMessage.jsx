@@ -13,12 +13,16 @@ export default function PopupMessage() {
 
   useEffect(() => {
     if (visible) {
-      setRenderedMessage(message);
-      setAnimState('entering');
+      queueMicrotask(() => {
+        setRenderedMessage(message);
+        setAnimState('entering');
+      });
       const timer = setTimeout(() => setAnimState('visible'), 50);
       return () => clearTimeout(timer);
-    } else if (animState === 'visible' || animState === 'entering') {
-      setAnimState('exiting');
+    } else {
+      queueMicrotask(() => {
+        setAnimState((prev) => (prev === 'visible' || prev === 'entering' ? 'exiting' : prev));
+      });
       const timer = setTimeout(() => setAnimState('hidden'), 350);
       return () => clearTimeout(timer);
     }
