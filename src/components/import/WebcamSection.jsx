@@ -56,7 +56,7 @@ export default function WebcamSection() {
         <div className='bv-option-group'>
           <button
             type='button'
-            className={`bv-option-btn import-btn${facingMode === 'environment' ? ' active' : ''}`}
+            className={`bv-option-btn import-btn cam-facing-toggle-btn${facingMode === 'environment' ? ' active' : ''}`}
             onClick={toggleFacingMode}
             disabled={starting}
             title='Switch between front and back camera'

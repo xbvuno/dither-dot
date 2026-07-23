@@ -58,6 +58,12 @@
   gap: 0.4rem;
 }
 
+@media (min-width: 769px) {
+  .cam-facing-toggle-btn {
+    display: none !important;
+  }
+}
+
 .import-export-status {
   font-size: 0.76rem;
   color: var(--color-text-subtle);
