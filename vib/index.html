@@ -1,0 +1,30 @@
+<style>
+    button {padding: 2rem;}
+</style>
+<button id="btn">Vibra</button>
+
+
+<button onclick="navigator.vibrate([500, 300, 500]);">Vibra 2</button>
+
+
+<button onclick="navigator.vibrate([1000, 500, 1000]);">Vibra 3</button>
+
+<button onclick="navigator.vibrate([1200, 600, 1200]);">Vibra 4</button>
+
+<ul>
+
+</ul>
+<script>
+const vibrate = document.getElementById('btn')
+
+vibrate.addEventListener('touchend', event => {
+    [100, 200, 300, 500, 700, 900, 1000, 1100, 1200].forEach((ms, i) => {
+    setTimeout(() => {
+        const status = navigator.vibrate(ms);
+        console.log(ms, status)
+        document.querySelector('ul').innerHTML += `<li>${ms}: ${status}</li>`
+    }, i * ms);
+    });
+  navigator.vibrate([1000, 100, undefined]);
+});
+</script>

@@ -96,7 +96,7 @@ export default function Slider({
 
     // notify only if changed
     if (typeof s.onChange === "function" && clamped !== s.value) {
-      triggerHapticPulse(35);
+      triggerHapticPulse(5);
       s.onChange(clamped);
     }
   };
@@ -163,7 +163,7 @@ export default function Slider({
     };
 
     const onPointerDown = (e) => {
-      triggerHapticPulse(35);
+      triggerHapticPulse(5);
       if (e.pointerType === "mouse") {
         if (e.button !== 0) return;
         dragging = true;
