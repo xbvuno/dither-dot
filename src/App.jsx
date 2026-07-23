@@ -16,6 +16,7 @@ import useImageStore from './stores/media/imageStore'
 import useProcessingStore from './stores/engine/processingStore'
 import useWatermarkStore from './stores/media/watermarkStore'
 import useViewStore from './stores/ui/viewStore'
+import useWebcamStore from './stores/media/webcamStore'
 
 const ICONS = [
   { id: PAGE.IMPORT, label: 'Import', Icon: FileUp },
@@ -44,6 +45,7 @@ function App() {
   const sourceImg = useImageStore(s => s.sourceImg)
   const viewerLoading = useImageStore(s => s.viewerLoading)
   const renderProcessing = useProcessingStore(s => s.renderProcessing)
+  const webcamActive = useWebcamStore(s => s.active)
   const watermarkEnabled = useWatermarkStore(s => s.enabled)
   const setWatermarkEnabled = useWatermarkStore(s => s.setEnabled)
 
@@ -270,7 +272,7 @@ function App() {
             <div className='zoomable-wrap'>
               <PopupMessage />
               <ZoomableDiv content={<ImageShader sourceImg={sourceImg} />} />
-              {(viewerLoading || renderProcessing) && (
+              {(viewerLoading || renderProcessing) && !webcamActive && (
                 <div className='zoomable-loading-overlay' role='status' aria-live='polite' aria-label='Loading media'>
                   <WaveGridSpinner />
                 </div>

@@ -21,6 +21,8 @@ const useWebcamStore = create((set, get) => ({
   paletteFrozen: false,
   maxWidth: 1280,
   maxHeight: 720,
+  torchSupported: false,
+  torchOn: false,
 
   addShoot: (shoot) => set((s) => ({ shoots: [shoot, ...(s.shoots || [])] })),
   deleteShoot: (id) => set((s) => ({ shoots: (s.shoots || []).filter((item) => item.id !== id) })),
@@ -162,6 +164,14 @@ const useWebcamStore = create((set, get) => ({
         }
       }
 
+      let torchSupported = false;
+      if (vTrack && typeof vTrack.getCapabilities === 'function') {
+        const caps = vTrack.getCapabilities();
+        if (caps && ('torch' in caps) && caps.torch) {
+          torchSupported = true;
+        }
+      }
+
       frameTimestamps = [];
       const isFront = actualFacingMode === 'user';
       set({
@@ -170,6 +180,8 @@ const useWebcamStore = create((set, get) => ({
         stream,
         maxWidth: detectedMaxW,
         maxHeight: detectedMaxH,
+        torchSupported,
+        torchOn: false,
         fps: 0,
         frameReady: false,
         paletteFrozen: false,
@@ -180,7 +192,7 @@ const useWebcamStore = create((set, get) => ({
     } catch (err) {
       if (token === startToken) {
         const msg = err instanceof Error ? err.message : 'CAMERA ACCESS DENIED.';
-        set({ error: msg.toUpperCase(), active: false, starting: false, stream: null });
+        set({ error: msg.toUpperCase(), active: false, starting: false, stream: null, torchSupported: false, torchOn: false });
       }
     }
   },
@@ -197,7 +209,26 @@ const useWebcamStore = create((set, get) => ({
       });
     }
     frameTimestamps = [];
-    set({ active: false, starting: false, stream: null, fps: 0, error: '', frameReady: false, paletteFrozen: false });
+    set({ active: false, starting: false, stream: null, fps: 0, error: '', frameReady: false, paletteFrozen: false, torchSupported: false, torchOn: false });
+  },
+
+  toggleTorch: async () => {
+    const stream = get().stream;
+    if (!stream) return;
+    const vTrack = stream.getVideoTracks()[0];
+    if (!vTrack) return;
+
+    const nextTorch = !get().torchOn;
+    try {
+      if (typeof vTrack.applyConstraints === 'function') {
+        await vTrack.applyConstraints({
+          advanced: [{ torch: nextTorch }]
+        });
+        set({ torchOn: nextTorch });
+      }
+    } catch (err) {
+      console.warn('[WEBCAM TORCH WARN]', err);
+    }
   },
 
   toggleFacingMode: async () => {

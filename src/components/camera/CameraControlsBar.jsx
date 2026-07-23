@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Aperture } from 'lucide-react';
+import { Aperture, Zap } from 'lucide-react';
 import useWebcamStore from '../../stores/media/webcamStore';
 import { compositeWithWatermark, getExportCanvasOrThrow } from '../../utils/importUtils';
 import { notify } from '../../stores/ui/popupStore';
@@ -11,6 +11,9 @@ export default function CameraControlsBar() {
   const active = useWebcamStore((s) => s.active);
   const shoots = useWebcamStore((s) => s.shoots) || [];
   const addShoot = useWebcamStore((s) => s.addShoot);
+  const torchSupported = useWebcamStore((s) => s.torchSupported);
+  const torchOn = useWebcamStore((s) => s.torchOn);
+  const toggleTorch = useWebcamStore((s) => s.toggleTorch);
   const [capturing, setCapturing] = useState(false);
 
   const playSnapSound = () => {
@@ -80,6 +83,17 @@ export default function CameraControlsBar() {
 
   return (
     <div className='camera-controls-bar' role='toolbar' aria-label='Camera Actions'>
+      {torchSupported && (
+        <button
+          type='button'
+          className={`bv-option-btn camera-torch-btn${torchOn ? ' active' : ''}`}
+          onClick={toggleTorch}
+          title='Toggle camera torch / flashlight'
+        >
+          <Zap size={15} strokeWidth={1.5} className={torchOn ? 'fill-current' : ''} />
+        </button>
+      )}
+
       <button
         type='button'
         className='bv-option-btn camera-snap-btn'
