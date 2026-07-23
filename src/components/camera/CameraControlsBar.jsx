@@ -83,6 +83,16 @@ export default function CameraControlsBar() {
 
   return (
     <div className='camera-controls-bar' role='toolbar' aria-label='Camera Actions'>
+      <button
+        type='button'
+        className='bv-option-btn camera-snap-btn'
+        onClick={handleTakeShoot}
+        disabled={capturing}
+        title='Snap photo (Space)'
+      >
+        <Aperture size={16} strokeWidth={1.5} className={capturing ? 'animate-spin' : ''} />
+      </button>
+
       {torchSupported && (
         <button
           type='button'
@@ -93,16 +103,6 @@ export default function CameraControlsBar() {
           <Zap size={15} strokeWidth={1.5} className={torchOn ? 'fill-current' : ''} />
         </button>
       )}
-
-      <button
-        type='button'
-        className='bv-option-btn camera-snap-btn'
-        onClick={handleTakeShoot}
-        disabled={capturing}
-        title='Snap photo (Space)'
-      >
-        <Aperture size={16} strokeWidth={1.5} className={capturing ? 'animate-spin' : ''} />
-      </button>
 
       <span className='bv-label camera-shoots-label'>
         SHOOTS: {shoots?.length || 0}
