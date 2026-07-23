@@ -21,6 +21,8 @@ const useWebcamStore = create((set, get) => ({
   paletteFrozen: false,
   maxWidth: 1280,
   maxHeight: 720,
+  torchSupported: false,
+  torchOn: false,
 
   addShoot: (shoot) => set((s) => ({ shoots: [shoot, ...(s.shoots || [])] })),
   deleteShoot: (id) => set((s) => ({ shoots: (s.shoots || []).filter((item) => item.id !== id) })),
@@ -32,10 +34,10 @@ const useWebcamStore = create((set, get) => ({
     const videoTrack = stream.getVideoTracks()[0];
     if (!videoTrack) return;
 
-    const maxW = get().maxWidth || 1280;
-    const maxH = get().maxHeight || 720;
-    const clampedW = Math.min(maxW, Math.max(1, Math.round(Number(width) || 640)));
-    const clampedH = Math.min(maxH, Math.max(1, Math.round(Number(height) || 360)));
+    const maxW = Math.max(1280, get().maxWidth || 1280);
+    const maxH = Math.max(720, get().maxHeight || 720);
+    const clampedW = Math.max(1, Math.round(Number(width) || 640));
+    const clampedH = Math.max(1, Math.round(Number(height) || 480));
 
     try {
       await videoTrack.applyConstraints({
@@ -79,11 +81,10 @@ const useWebcamStore = create((set, get) => ({
     try {
       let stream;
       try {
+        // Try exact facingMode first (ensures physical rear/front camera switch on mobile)
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            facingMode: { ideal: mode },
-            width: { ideal: 640, max: 1280 },
-            height: { ideal: 360, max: 720 },
+            facingMode: { exact: mode },
             frameRate: { ideal: 30, max: 30 },
           },
           audio: false,
@@ -93,21 +94,15 @@ const useWebcamStore = create((set, get) => ({
           stream = await navigator.mediaDevices.getUserMedia({
             video: {
               facingMode: { ideal: mode },
+              frameRate: { ideal: 30, max: 30 },
             },
             audio: false,
           });
         } catch {
-          try {
-            stream = await navigator.mediaDevices.getUserMedia({
-              video: { facingMode: mode },
-              audio: false,
-            });
-          } catch {
-            stream = await navigator.mediaDevices.getUserMedia({
-              video: true,
-              audio: false,
-            });
-          }
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false,
+          });
         }
       }
 
@@ -128,32 +123,76 @@ const useWebcamStore = create((set, get) => ({
 
       let detectedMaxW = 1280;
       let detectedMaxH = 720;
+      let actualRatio = 16 / 9;
+      let actualFacingMode = mode;
+
       const vTrack = stream.getVideoTracks()[0];
+      if (vTrack) {
+        if (typeof vTrack.getCapabilities === 'function') {
+          const caps = vTrack.getCapabilities();
+          if (caps?.width?.max) detectedMaxW = caps.width.max;
+          if (caps?.height?.max) detectedMaxH = caps.height.max;
+        }
+
+        if (typeof vTrack.getSettings === 'function') {
+          const settings = vTrack.getSettings();
+          if (settings.facingMode) {
+            actualFacingMode = settings.facingMode;
+          }
+          if (settings.width && settings.height) {
+            actualRatio = settings.width / settings.height;
+            if (!detectedMaxW) detectedMaxW = settings.width;
+            if (!detectedMaxH) detectedMaxH = settings.height;
+          }
+        }
+      }
+
+      // Compute initial resolution preserving 100% native hardware aspect ratio
+      const defaultH = 480;
+      const defaultW = Math.max(1, Math.round(480 * actualRatio));
+
+      if (vTrack && typeof vTrack.applyConstraints === 'function') {
+        try {
+          await vTrack.applyConstraints({
+            width: { ideal: defaultW, max: Math.max(defaultW, detectedMaxW) },
+            height: { ideal: defaultH, max: Math.max(defaultH, detectedMaxH) },
+            facingMode: { ideal: actualFacingMode },
+            frameRate: { ideal: 30, max: 30 },
+          });
+        } catch {
+          // Ignore constraint errors on unsupported devices
+        }
+      }
+
+      let torchSupported = false;
       if (vTrack && typeof vTrack.getCapabilities === 'function') {
         const caps = vTrack.getCapabilities();
-        if (caps?.width?.max) detectedMaxW = caps.width.max;
-        if (caps?.height?.max) detectedMaxH = caps.height.max;
+        if (caps && ('torch' in caps) && caps.torch) {
+          torchSupported = true;
+        }
       }
 
       frameTimestamps = [];
-      const isFront = mode === 'user';
+      const isFront = actualFacingMode === 'user';
       set({
         active: true,
         starting: false,
         stream,
         maxWidth: detectedMaxW,
         maxHeight: detectedMaxH,
+        torchSupported,
+        torchOn: false,
         fps: 0,
         frameReady: false,
         paletteFrozen: false,
         error: '',
-        facingMode: mode,
+        facingMode: actualFacingMode,
         mirrored: isFront,
       });
     } catch (err) {
       if (token === startToken) {
         const msg = err instanceof Error ? err.message : 'CAMERA ACCESS DENIED.';
-        set({ error: msg.toUpperCase(), active: false, starting: false, stream: null });
+        set({ error: msg.toUpperCase(), active: false, starting: false, stream: null, torchSupported: false, torchOn: false });
       }
     }
   },
@@ -170,7 +209,26 @@ const useWebcamStore = create((set, get) => ({
       });
     }
     frameTimestamps = [];
-    set({ active: false, starting: false, stream: null, fps: 0, error: '', frameReady: false, paletteFrozen: false });
+    set({ active: false, starting: false, stream: null, fps: 0, error: '', frameReady: false, paletteFrozen: false, torchSupported: false, torchOn: false });
+  },
+
+  toggleTorch: async () => {
+    const stream = get().stream;
+    if (!stream) return;
+    const vTrack = stream.getVideoTracks()[0];
+    if (!vTrack) return;
+
+    const nextTorch = !get().torchOn;
+    try {
+      if (typeof vTrack.applyConstraints === 'function') {
+        await vTrack.applyConstraints({
+          advanced: [{ torch: nextTorch }]
+        });
+        set({ torchOn: nextTorch });
+      }
+    } catch (err) {
+      console.warn('[WEBCAM TORCH WARN]', err);
+    }
   },
 
   toggleFacingMode: async () => {

@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Aperture } from 'lucide-react';
+import { Aperture, Zap } from 'lucide-react';
 import useWebcamStore from '../../stores/media/webcamStore';
 import { compositeWithWatermark, getExportCanvasOrThrow } from '../../utils/importUtils';
 import { notify } from '../../stores/ui/popupStore';
+import { triggerHapticPulse } from '../../utils/haptics';
 import snapSound from '../../assets/sounds/snap.mp3';
 import './styles/CameraControlsBar.css';
 
@@ -10,6 +11,9 @@ export default function CameraControlsBar() {
   const active = useWebcamStore((s) => s.active);
   const shoots = useWebcamStore((s) => s.shoots) || [];
   const addShoot = useWebcamStore((s) => s.addShoot);
+  const torchSupported = useWebcamStore((s) => s.torchSupported);
+  const torchOn = useWebcamStore((s) => s.torchOn);
+  const toggleTorch = useWebcamStore((s) => s.toggleTorch);
   const [capturing, setCapturing] = useState(false);
 
   const playSnapSound = () => {
@@ -25,6 +29,7 @@ export default function CameraControlsBar() {
   const handleTakeShoot = useCallback(async () => {
     if (capturing) return;
     setCapturing(true);
+    triggerHapticPulse(25);
     playSnapSound();
 
     try {
@@ -87,6 +92,17 @@ export default function CameraControlsBar() {
       >
         <Aperture size={16} strokeWidth={1.5} className={capturing ? 'animate-spin' : ''} />
       </button>
+
+      {torchSupported && (
+        <button
+          type='button'
+          className={`bv-option-btn camera-torch-btn${torchOn ? ' active' : ''}`}
+          onClick={toggleTorch}
+          title='Toggle camera torch / flashlight'
+        >
+          <Zap size={15} strokeWidth={1.5} className={torchOn ? 'fill-current' : ''} />
+        </button>
+      )}
 
       <span className='bv-label camera-shoots-label'>
         SHOOTS: {shoots?.length || 0}

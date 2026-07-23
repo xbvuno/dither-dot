@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import "./styles/GifTimeline.css";
 import { Check, Pause, Play, SkipBack, SkipForward, Square } from 'lucide-react';
 import useGifStore from '../../stores/media/gifStore';
-import { setupMobileResize } from '../../utils/mobileResize';
 
 const THUMB_WIDTH = 50;
 const THUMB_HEIGHT = 36;
