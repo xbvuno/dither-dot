@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { blendHex } from '../../utils/colorMath';
+import { sortColors } from '../../utils/colorConversions';
 import { getPaletteReference } from '../../utils/canvasRegistry';
 import useProcessingStore from '../engine/processingStore';
 import usePerformanceStore from '../engine/performanceStore';
@@ -442,6 +443,20 @@ const usePaletteStore = create(persist((set, get) => ({
   setColor: (id, hex) => set(s => ({
     colors: s.colors.map(c => c.id === id ? { ...c, hex: normalizeHex(hex) || c.hex } : c),
   })),
+
+  updateMultipleColors: (updates) => set((s) => ({
+    colors: s.colors.map((c) => {
+      const nextHex = updates[c.id];
+      if (!nextHex) return c;
+      return { ...c, hex: normalizeHex(nextHex) || c.hex };
+    }),
+  })),
+
+  sortCustomColors: (criteria) => set((s) => {
+    const { used, unused } = splitColors(s.colors);
+    const sortedUsed = sortColors(used, criteria);
+    return { colors: [...sortedUsed, ...unused] };
+  }),
 
   setCustomPaletteName: (name) => set({
     customPaletteName: String(name || '').slice(0, 64),
