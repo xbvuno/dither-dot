@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import usePaletteStore, { EXTRACT_METHOD } from '../stores/data/paletteStore';
 import SliderBundle from '../components/ui/shared/SliderBundle';
+import PaletteImportModal from '../components/palette/PaletteImportModal';
+import PaletteExportModal from '../components/palette/PaletteExportModal';
+import PaletteEditorPanel from '../components/palette/PaletteEditorPanel';
 
 /* ---------------------------------- */
 /* COLOR COUNT                         */
@@ -61,24 +63,6 @@ function MethodSection() {
   );
 }
 
-function parsePaletteText(rawText) {
-  const text = String(rawText || '').trim();
-  if (!text) return null;
-
-  try {
-    const parsed = JSON.parse(text);
-    if (Array.isArray(parsed)) return { name: 'Imported Palette', colors: parsed };
-    if (parsed && Array.isArray(parsed.colors)) {
-      return { name: parsed.name || 'Imported Palette', colors: parsed.colors };
-    }
-  } catch {
-    // continue with plain text parsing
-  }
-
-  const colors = text.match(/#?[0-9a-fA-F]{6}\b|#?[0-9a-fA-F]{3}\b/g) || [];
-  return colors.length > 0 ? { name: 'Imported Palette', colors } : null;
-}
-
 function getHexTextColor(hex) {
   const clean = hex.replace('#', '');
   if (!/^[0-9a-fA-F]{6}$/.test(clean)) return '#12120F';
@@ -114,11 +98,11 @@ function CustomColorSwatch({ color, selected, onSelect, onRemoveColor, onDropCol
       className={`palette-custom-swatch${selected ? ' palette-custom-swatch--selected' : ''}${color.hidden ? ' palette-custom-swatch--hidden' : ''}`}
       style={{ backgroundColor: color.hex, color: textColor }}
       draggable
-      onClick={() => onSelect(color.id)}
+      onClick={(e) => onSelect(color.id, e)}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
-          onSelect(color.id);
+          onSelect(color.id, event);
         }
       }}
       onDragStart={(event) => {
@@ -155,7 +139,7 @@ function CustomColorSwatch({ color, selected, onSelect, onRemoveColor, onDropCol
   );
 }
 
-function ColorsSection({ selectedId, setSelectedId }) {
+function ColorsSection({ selectedIds, onToggleSelect, onSelectAll, onDeselectAll }) {
   const method = usePaletteStore(s => s.method);
   const customPaletteName = usePaletteStore(s => s.customPaletteName);
   const setCustomPaletteName = usePaletteStore(s => s.setCustomPaletteName);
@@ -164,11 +148,26 @@ function ColorsSection({ selectedId, setSelectedId }) {
   const addColor = usePaletteStore(s => s.addColor);
   const moveColorCustom = usePaletteStore(s => s.moveColorCustom);
   const saveCurrentPaletteToLibrary = usePaletteStore(s => s.saveCurrentPaletteToLibrary);
+  const sortCustomColors = usePaletteStore(s => s.sortCustomColors);
+
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const sortRef = useRef(null);
 
   const isCustom = method === EXTRACT_METHOD.CUSTOM;
   const active = colors.filter(c => !c.hidden);
   const hidden = colors.filter(c => c.hidden);
-  const selectedColor = selectedId != null ? colors.find((c) => c.id === selectedId) : null;
+
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (sortRef.current && !sortRef.current.contains(e.target)) {
+        setIsSortOpen(false);
+      }
+    };
+    if (isSortOpen) {
+      window.addEventListener('pointerdown', handleOutsideClick);
+    }
+    return () => window.removeEventListener('pointerdown', handleOutsideClick);
+  }, [isSortOpen]);
 
   const handleDropColor = (fromId, toId) => {
     if (!fromId || !toId) return;
@@ -177,8 +176,14 @@ function ColorsSection({ selectedId, setSelectedId }) {
 
   const handleRemove = (id) => {
     removeColor(id);
-    if (selectedId === id) setSelectedId(null);
   };
+
+  const handleSortOption = (criteria) => {
+    sortCustomColors(criteria);
+    setIsSortOpen(false);
+  };
+
+  const hasSelection = selectedIds.length > 0;
 
   return (
     <div className="bv-section">
@@ -209,13 +214,54 @@ function ColorsSection({ selectedId, setSelectedId }) {
 
       {isCustom && (
         <>
+          {/* Sort & Select Tools */}
+          <div className="palette-sort-row">
+            <div ref={sortRef} style={{ position: 'relative' }}>
+              <button
+                type="button"
+                className="palette-link-btn"
+                onClick={() => setIsSortOpen(prev => !prev)}
+              >
+                SORT ▾
+              </button>
+              {isSortOpen && (
+                <div className="palette-sort-dropdown">
+                  <button type="button" className="palette-sort-item" onClick={() => handleSortOption('hue')}>
+                    HUE
+                  </button>
+                  <button type="button" className="palette-sort-item" onClick={() => handleSortOption('luminance')}>
+                    LUMINANCE
+                  </button>
+                  <button type="button" className="palette-sort-item" onClick={() => handleSortOption('saturation')}>
+                    SATURATION
+                  </button>
+                  <button type="button" className="palette-sort-item" onClick={() => handleSortOption('brightness')}>
+                    BRIGHTNESS
+                  </button>
+                  <div className="pe-slider-divider" style={{ margin: '2px 0' }} />
+                  <button type="button" className="palette-sort-item" onClick={() => handleSortOption('reverse')}>
+                    REVERSE
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <button
+              type="button"
+              className="palette-link-btn"
+              onClick={hasSelection ? onDeselectAll : onSelectAll}
+            >
+              {hasSelection ? 'DESELECT ALL' : 'SELECT ALL'}
+            </button>
+          </div>
+
           <div className="palette-color-grid">
             {active.map((c) => (
               <CustomColorSwatch
                 key={c.id}
                 color={c}
-                selected={selectedColor?.id === c.id}
-                onSelect={setSelectedId}
+                selected={selectedIds.includes(c.id)}
+                onSelect={onToggleSelect}
                 onRemoveColor={handleRemove}
                 onDropColor={handleDropColor}
               />
@@ -230,8 +276,8 @@ function ColorsSection({ selectedId, setSelectedId }) {
                   <CustomColorSwatch
                     key={c.id}
                     color={c}
-                    selected={selectedColor?.id === c.id}
-                    onSelect={setSelectedId}
+                    selected={selectedIds.includes(c.id)}
+                    onSelect={onToggleSelect}
                     onRemoveColor={handleRemove}
                     onDropColor={handleDropColor}
                   />
@@ -240,7 +286,7 @@ function ColorsSection({ selectedId, setSelectedId }) {
             </>
           )}
 
-          <label htmlFor="custom-palette-name-input" className="bv-label" style={{ display: 'block' }}>CUSTOM PALETTE</label>
+          <label htmlFor="custom-palette-name-input" className="bv-label" style={{ display: 'block', marginTop: '0.65rem' }}>CUSTOM PALETTE</label>
           <div className="bv-option-group palette-save-row">
             <input
               type="text"
@@ -267,55 +313,14 @@ function ColorsSection({ selectedId, setSelectedId }) {
   );
 }
 
-function PaletteLibrarySection() {
+function PaletteLibrarySection({ onOpenImport, onOpenExport }) {
   const method = usePaletteStore(s => s.method);
-  const customPaletteName = usePaletteStore(s => s.customPaletteName);
-  const fileInputRef = useRef(null);
-  const colors = usePaletteStore(s => s.colors);
   const userPalettes = usePaletteStore(s => s.userPalettes);
   const builtinPalettes = usePaletteStore(s => s.builtinPalettes);
   const applyLibraryPaletteById = usePaletteStore(s => s.applyLibraryPaletteById);
-  const applyPaletteByHexes = usePaletteStore(s => s.applyPaletteByHexes);
   const removeUserPalette = usePaletteStore(s => s.removeUserPalette);
 
-  const visibleHexes = useMemo(() => colors.filter((c) => !c.hidden).map((c) => c.hex), [colors]);
   if (method !== EXTRACT_METHOD.CUSTOM) return null;
-
-  const exportPalette = () => {
-    const payload = {
-      version: 1,
-      name: customPaletteName || 'Exported Palette',
-      colors: visibleHexes,
-    };
-
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = `palette-${Date.now()}.json`;
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
-    URL.revokeObjectURL(url);
-  };
-
-  const importPalette = async (event) => {
-    const file = event.target.files?.[0];
-    event.target.value = '';
-    if (!file) return;
-
-    try {
-      const text = await file.text();
-      const parsed = parsePaletteText(text);
-      if (!parsed || !Array.isArray(parsed.colors)) {
-        alert('Invalid palette file. Use JSON with { name, colors[] } or a plain list of hex colors.');
-        return;
-      }
-      applyPaletteByHexes(parsed.colors, parsed.name || file.name, true);
-    } catch {
-      alert('Unable to import the selected palette.');
-    }
-  };
 
   return (
     <div className="bv-section">
@@ -324,29 +329,18 @@ function PaletteLibrarySection() {
         <button
           type="button"
           className="bv-option-btn"
-          onClick={() => fileInputRef.current?.click()}
+          onClick={onOpenImport}
         >
           IMPORT PALETTE
         </button>
         <button
           type="button"
           className="bv-option-btn"
-          onClick={exportPalette}
+          onClick={onOpenExport}
         >
-          EXPORT CURRENT
+          EXPORT PALETTE
         </button>
       </div>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        name="paletteFileInput"
-        id="palette-file-input"
-        accept="application/json,.json,.txt"
-        onChange={importPalette}
-        style={{ display: 'none' }}
-        aria-label="Select palette JSON or text file"
-      />
 
       <div className="palette-library-list">
         {userPalettes.length > 0 && (
@@ -416,49 +410,22 @@ function PaletteLibrarySection() {
   );
 }
 
-function FloatingColorEditor({ hostElement, color, onSetColor }) {
-  if (!hostElement || !color) return null;
-
-  return createPortal(
-    <div className="palette-floating-editor">
-      <p className="bv-label">COLOR EDITOR</p>
-      <label htmlFor="color-picker-input" className="palette-editor-preview" style={{ backgroundColor: color.hex }}>
-        <input
-          type="color"
-          name="colorPickerInput"
-          id="color-picker-input"
-          value={color.hex}
-          onChange={(event) => onSetColor(color.id, event.target.value)}
-          aria-label="Choose color hex"
-        />
-      </label>
-      <input
-        className="palette-name-input"
-        type="text"
-        name="colorHexInput"
-        id="color-hex-input"
-        value={color.hex}
-        onChange={(event) => onSetColor(color.id, event.target.value)}
-        spellCheck={false}
-        maxLength={7}
-        aria-label="Color Hex Code"
-      />
-    </div>,
-    hostElement,
-  );
-}
-
 export default function PalettePage() {
   const method = usePaletteStore(s => s.method);
   const colors = usePaletteStore(s => s.colors);
   const customPaletteName = usePaletteStore(s => s.customPaletteName);
   const setColor = usePaletteStore(s => s.setColor);
+  const updateMultipleColors = usePaletteStore(s => s.updateMultipleColors);
   const setLastAppliedPalette = usePaletteStore(s => s.setLastAppliedPalette);
+  const applyPaletteByHexes = usePaletteStore(s => s.applyPaletteByHexes);
 
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  // Snapshot of hex at the moment each color was selected (stays frozen).
+  const [originalHexSnapshot, setOriginalHexSnapshot] = useState({});
   const [shellHost, setShellHost] = useState(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
-  const selectedColor = selectedId != null ? colors.find((c) => c.id === selectedId) : null;
   const setRootNode = useCallback((node) => {
     if (!node) return;
     setShellHost(node.closest('.resizable-shell') || null);
@@ -470,6 +437,64 @@ export default function PalettePage() {
     setLastAppliedPalette(customPaletteName, visibleHexes);
   }, [method, customPaletteName, colors, setLastAppliedPalette]);
 
+  const handleToggleSelect = useCallback((id, event) => {
+    const isMultiModifier = event?.ctrlKey || event?.metaKey || event?.shiftKey;
+    const colorEntry = colors.find(c => c.id === id);
+    const currentHex = colorEntry?.hex || '#000000';
+
+    if (isMultiModifier) {
+      setSelectedIds(prev => {
+        if (prev.includes(id)) {
+          setOriginalHexSnapshot(snap => {
+            const next = { ...snap };
+            delete next[id];
+            return next;
+          });
+          return prev.filter(x => x !== id);
+        }
+        setOriginalHexSnapshot(snap => ({ ...snap, [id]: currentHex }));
+        return [...prev, id];
+      });
+    } else {
+      setSelectedIds(prev => {
+        if (prev.length === 1 && prev[0] === id) {
+          setOriginalHexSnapshot({});
+          return [];
+        }
+        setOriginalHexSnapshot({ [id]: currentHex });
+        return [id];
+      });
+    }
+  }, [colors]);
+
+  const handleSelectAll = useCallback(() => {
+    const active = colors.filter(c => !c.hidden);
+    const snap = {};
+    active.forEach(c => { snap[c.id] = c.hex; });
+    setOriginalHexSnapshot(snap);
+    setSelectedIds(active.map(c => c.id));
+  }, [colors]);
+
+  const handleDeselectAll = () => {
+    setSelectedIds([]);
+    setOriginalHexSnapshot({});
+  };
+
+  const handleImportPalette = (importedHexes, importedName) => {
+    applyPaletteByHexes(importedHexes, importedName, true);
+  };
+
+  // live hex from store + frozen originalHex from snapshot
+  const selectedColors = useMemo(() => {
+    return colors
+      .filter(c => selectedIds.includes(c.id))
+      .map(c => ({
+        id: c.id,
+        hex: c.hex,
+        originalHex: originalHexSnapshot[c.id] ?? c.hex,
+      }));
+  }, [colors, selectedIds, originalHexSnapshot]);
+
   return (
     <div ref={setRootNode}>
       <div className="bv-macro-section">
@@ -480,22 +505,51 @@ export default function PalettePage() {
 
       <div className="bv-macro-section">
         <h2>COLORS</h2>
-        <ColorsSection selectedId={selectedId} setSelectedId={setSelectedId} />
+        <ColorsSection
+          selectedIds={selectedIds}
+          onToggleSelect={handleToggleSelect}
+          onSelectAll={handleSelectAll}
+          onDeselectAll={handleDeselectAll}
+        />
       </div>
 
       {method === EXTRACT_METHOD.CUSTOM && (
         <div className="bv-macro-section">
           <h2>LIBRARY</h2>
-          <PaletteLibrarySection />
+          <PaletteLibrarySection
+            onOpenImport={() => setIsImportModalOpen(true)}
+            onOpenExport={() => setIsExportModalOpen(true)}
+          />
         </div>
       )}
 
-      <FloatingColorEditor
-        hostElement={shellHost}
-        color={method === EXTRACT_METHOD.CUSTOM ? selectedColor : null}
-        onSetColor={setColor}
-      />
+      {method === EXTRACT_METHOD.CUSTOM && selectedColors.length > 0 && (
+        <PaletteEditorPanel
+          hostElement={shellHost}
+          selectedColors={selectedColors}
+          onUpdateSingleColor={setColor}
+          onUpdateMultipleColors={updateMultipleColors}
+          onResetSelection={() => setSelectedIds([])}
+          onClose={() => setSelectedIds([])}
+        />
+      )}
+
+      {isImportModalOpen && (
+        <PaletteImportModal
+          isOpen={isImportModalOpen}
+          onClose={() => setIsImportModalOpen(false)}
+          onImport={handleImportPalette}
+        />
+      )}
+
+      {isExportModalOpen && (
+        <PaletteExportModal
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          colors={colors.filter((c) => !c.hidden).map((c) => c.hex)}
+          defaultName={customPaletteName || 'palette'}
+        />
+      )}
     </div>
   );
 }
-

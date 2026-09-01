@@ -1528,6 +1528,10 @@ const action = this.debugEnabled ? "disable" : "enable";
           this.syncSplitOverlay();
         }
 
+        if (this.previewingOriginal) {
+          this.syncSplitOverlay();
+        }
+
         this.queueProcessing(false);
         scheduleWebcamFrame();
       }, interval);

@@ -1,0 +1,278 @@
+import { useState, useCallback } from 'react';
+import PaletteColorSlider from './PaletteColorSlider';
+import ColorWheel from './ColorWheel';
+import CurveEditor from './CurveEditor';
+import {
+  cleanHex,
+  hexToRgb,
+  rgbToHex,
+  rgbToHsv,
+  hsvToRgb,
+  hsvToHex,
+  applyTonalAdjustments,
+} from '../../utils/colorConversions';
+import { DEFAULT_CURVE_POINTS, applyRgbCurves } from '../../utils/curveUtils';
+
+function initFromHex(hex) {
+  const r = hexToRgb(hex);
+  return {
+    rgb: r,
+    hsv: rgbToHsv(r.r, r.g, r.b),
+    hexInput: cleanHex(hex),
+  };
+}
+
+export default function SingleColorEditor({
+  color,
+  originalColor,
+  colorId,
+  onChangeColor,
+}) {
+  // Use colorId as the key signal: when colorId changes, reinitialise.
+  const [lastColorId, setLastColorId] = useState(colorId);
+  const [rgb, setRgb] = useState(() => hexToRgb(color));
+  const [hsv, setHsv] = useState(() => {
+    const r = hexToRgb(color);
+    return rgbToHsv(r.r, r.g, r.b);
+  });
+  const [hexInput, setHexInput] = useState(() => cleanHex(color));
+  const [gamma, setGamma] = useState(1.0);
+  const [contrast, setContrast] = useState(0);
+  const [curves, setCurves] = useState({
+    r: DEFAULT_CURVE_POINTS,
+    g: DEFAULT_CURVE_POINTS,
+    b: DEFAULT_CURVE_POINTS,
+  });
+
+  // When the selected colorId changes, reinitialise all local state from new color.
+  if (colorId !== lastColorId) {
+    setLastColorId(colorId);
+    const init = initFromHex(color);
+    setRgb(init.rgb);
+    setHsv(init.hsv);
+    setHexInput(init.hexInput);
+    setGamma(1.0);
+    setContrast(0);
+    setCurves({
+      r: DEFAULT_CURVE_POINTS,
+      g: DEFAULT_CURVE_POINTS,
+      b: DEFAULT_CURVE_POINTS,
+    });
+  }
+
+  const notify = useCallback((newHex) => {
+    if (onChangeColor && colorId !== undefined && colorId !== null) {
+      onChangeColor(colorId, newHex);
+    }
+  }, [onChangeColor, colorId]);
+
+  const handleRgbChange = (channel, value) => {
+    const nextRgb = { ...rgb, [channel]: value };
+    const nextHex = rgbToHex(nextRgb.r, nextRgb.g, nextRgb.b);
+    const nextHsv = rgbToHsv(nextRgb.r, nextRgb.g, nextRgb.b);
+    setRgb(nextRgb);
+    setHsv(nextHsv);
+    setHexInput(nextHex);
+    notify(nextHex);
+  };
+
+  const handleHsvChange = (channel, value) => {
+    const nextHsv = { ...hsv, [channel]: value };
+    const nextRgb = hsvToRgb(nextHsv.h, nextHsv.s, nextHsv.v);
+    const nextHex = rgbToHex(nextRgb.r, nextRgb.g, nextRgb.b);
+    setHsv(nextHsv);
+    setRgb(nextRgb);
+    setHexInput(nextHex);
+    notify(nextHex);
+  };
+
+  const handleWheelChange = ({ h, s }) => {
+    const nextHsv = { ...hsv, h, s };
+    const nextRgb = hsvToRgb(nextHsv.h, nextHsv.s, nextHsv.v);
+    const nextHex = rgbToHex(nextRgb.r, nextRgb.g, nextRgb.b);
+    setHsv(nextHsv);
+    setRgb(nextRgb);
+    setHexInput(nextHex);
+    notify(nextHex);
+  };
+
+  const applyTonalAndCurves = (baseHex, g, c, cur) => {
+    const adjustedHex = applyTonalAdjustments(baseHex, { gamma: g, contrast: c });
+    const uncurvedRgb = hexToRgb(adjustedHex);
+    const curvedRgb = applyRgbCurves(uncurvedRgb.r, uncurvedRgb.g, uncurvedRgb.b, cur);
+    const finalHex = rgbToHex(curvedRgb.r, curvedRgb.g, curvedRgb.b);
+    setRgb(curvedRgb);
+    setHsv(rgbToHsv(curvedRgb.r, curvedRgb.g, curvedRgb.b));
+    setHexInput(finalHex);
+    notify(finalHex);
+  };
+
+  const handleGammaChange = (val) => {
+    setGamma(val);
+    applyTonalAndCurves(originalColor || color, val, contrast, curves);
+  };
+
+  const handleContrastChange = (val) => {
+    setContrast(val);
+    applyTonalAndCurves(originalColor || color, gamma, val, curves);
+  };
+
+  const handleCurveChange = (nextCurves) => {
+    setCurves(nextCurves);
+    applyTonalAndCurves(originalColor || color, gamma, contrast, nextCurves);
+  };
+
+  const handleHexInputChange = (e) => {
+    const val = e.target.value;
+    setHexInput(val);
+    const sanitized = val.trim().replace(/^#/, '');
+    if (sanitized.length === 6 && /^[0-9a-fA-F]{6}$/.test(sanitized)) {
+      const fullHex = `#${sanitized.toUpperCase()}`;
+      const nextRgb = hexToRgb(fullHex);
+      const nextHsv = rgbToHsv(nextRgb.r, nextRgb.g, nextRgb.b);
+      setRgb(nextRgb);
+      setHsv(nextHsv);
+      notify(fullHex);
+    }
+  };
+
+  const currentHex = cleanHex(hexInput);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+      {/* Swatches & Hex input */}
+      <div className="pe-swatches-row">
+        <div
+          className="pe-editor-swatch-large"
+          style={{ backgroundColor: originalColor || color }}
+          title={`Original: ${originalColor || color}`}
+        />
+        <div
+          className="pe-editor-swatch-large"
+          style={{ backgroundColor: currentHex }}
+          title={`Modified: ${currentHex}`}
+        />
+        <div className="pe-hex-input-box">
+          <span className="pe-hex-prefix">#</span>
+          <input
+            type="text"
+            className="pe-hex-input"
+            value={hexInput.replace(/^#/, '')}
+            onChange={handleHexInputChange}
+            maxLength={6}
+            spellCheck={false}
+            aria-label="Hex color"
+          />
+        </div>
+      </div>
+
+      {/* Color Wheel */}
+      <div className="pe-wheel-section">
+        <ColorWheel
+          hue={hsv.h}
+          saturation={hsv.s}
+          value={hsv.v}
+          onChange={handleWheelChange}
+          size={154}
+        />
+      </div>
+
+      {/* HSV + RGB Sliders */}
+      <div className="pe-slider-group">
+        <PaletteColorSlider
+          label="HUE"
+          min={0}
+          max={360}
+          step={1}
+          value={hsv.h}
+          unit="°"
+          onChange={(val) => handleHsvChange('h', val)}
+          gradient="linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)"
+        />
+        <PaletteColorSlider
+          label="SATURATION"
+          min={0}
+          max={100}
+          step={1}
+          value={hsv.s}
+          unit="%"
+          onChange={(val) => handleHsvChange('s', val)}
+          gradient={`linear-gradient(to right, ${hsvToHex(hsv.h, 0, 85)}, ${hsvToHex(hsv.h, 100, 100)})`}
+        />
+        <PaletteColorSlider
+          label="VALUE / BRIGHTNESS"
+          min={0}
+          max={100}
+          step={1}
+          value={hsv.v}
+          unit="%"
+          onChange={(val) => handleHsvChange('v', val)}
+          gradient={`linear-gradient(to right, #000000, ${hsvToHex(hsv.h, hsv.s, 100)})`}
+        />
+
+        <div className="pe-slider-divider" />
+
+        <PaletteColorSlider
+          label="RED"
+          min={0}
+          max={255}
+          step={1}
+          value={rgb.r}
+          onChange={(val) => handleRgbChange('r', val)}
+          gradient={`linear-gradient(to right, rgb(0,${rgb.g},${rgb.b}), rgb(255,${rgb.g},${rgb.b}))`}
+        />
+        <PaletteColorSlider
+          label="GREEN"
+          min={0}
+          max={255}
+          step={1}
+          value={rgb.g}
+          onChange={(val) => handleRgbChange('g', val)}
+          gradient={`linear-gradient(to right, rgb(${rgb.r},0,${rgb.b}), rgb(${rgb.r},255,${rgb.b}))`}
+        />
+        <PaletteColorSlider
+          label="BLUE"
+          min={0}
+          max={255}
+          step={1}
+          value={rgb.b}
+          onChange={(val) => handleRgbChange('b', val)}
+          gradient={`linear-gradient(to right, rgb(${rgb.r},${rgb.g},0), rgb(${rgb.r},${rgb.g},255))`}
+        />
+      </div>
+
+      <div className="pe-slider-divider" />
+
+      {/* Tonal Grading */}
+      <div className="pe-slider-group">
+        <PaletteColorSlider
+          label="GAMMA"
+          min={0.2}
+          max={3.0}
+          step={0.01}
+          value={gamma}
+          onChange={handleGammaChange}
+          gradient="linear-gradient(to right, #222 0%, #888 50%, #fff 100%)"
+        />
+        <PaletteColorSlider
+          label="CONTRAST"
+          min={-100}
+          max={100}
+          step={1}
+          value={contrast}
+          unit="%"
+          onChange={handleContrastChange}
+          gradient="linear-gradient(to right, #444 0%, #888 50%, #fff 100%)"
+        />
+      </div>
+
+      <div className="pe-slider-divider" />
+
+      {/* RGB Curves */}
+      <CurveEditor
+        curves={curves}
+        onChangeCurves={handleCurveChange}
+      />
+    </div>
+  );
+}
