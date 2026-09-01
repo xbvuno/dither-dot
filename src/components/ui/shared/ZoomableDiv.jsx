@@ -43,6 +43,9 @@ export default function ZoomableDiv({ content }) {
       const outerHeight = outer.clientHeight;
       const contentWidth = contentElem.scrollWidth || contentElem.offsetWidth;
       const contentHeight = contentElem.scrollHeight || contentElem.offsetHeight;
+
+      if (!contentWidth || !contentHeight) return;
+
       const fitScale = Math.min(outerWidth / contentWidth, outerHeight / contentHeight);
       const prevScale = state.current.scale;
       const clampedScale = clamp(targetScale, ZOOM_MIN, ZOOM_MAX);
@@ -107,6 +110,8 @@ export default function ZoomableDiv({ content }) {
       const outerHeight = outer.clientHeight;
       zoomTo(state.current.scale, outerWidth / 2, outerHeight / 2);
     };
+
+    updateScale();
 
     const handleWheel = (e) => {
       e.preventDefault();
