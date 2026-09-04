@@ -127,6 +127,10 @@ html {
 #root {
     display: flex;
     flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
 }
 
 ::selection {
@@ -146,9 +150,11 @@ footer {
     justify-content: space-between;
     gap: 0.75rem;
     height: 2rem;
+    width: 100%;
     padding: 0 0.75rem 0 0;
     flex-shrink: 0;
     box-sizing: border-box;
+    z-index: 20;
 }
 
 .app-header-title {
@@ -377,9 +383,13 @@ input[type='number']::-webkit-inner-spin-button {
     margin: 0;
 }
 
-.app-body-container > main {
+.app-layout > main,
+main {
     display: flex;
     min-height: 0;
+    min-width: 0;
+    flex: 1;
+    height: 100%;
 }
 
 .resizable-shell {
@@ -446,17 +456,10 @@ aside {
 
 .app-layout {
     display: flex;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
-.app-body-container {
-    display: flex;
-    flex-direction: column;
     flex: 1;
-    min-width: 0;
-    height: 100%;
+    min-height: 0;
+    width: 100%;
+    overflow: hidden;
 }
 
 .app-nav {
@@ -667,8 +670,9 @@ h3 {
 @media (max-width: 768px) {
     .app-layout {
         flex-direction: column;
-        height: 100dvh;
-        max-height: 100dvh;
+        flex: 1 1 0%;
+        height: calc(100dvh - 2rem);
+        max-height: calc(100dvh - 2rem);
         overflow: hidden;
         padding-bottom: 0 !important;
     }
@@ -757,14 +761,6 @@ h3 {
         display: none;
     }
 
-    .app-body-container {
-        flex: 1 1 0%;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        height: calc(100dvh - 2rem - 3.6rem - env(safe-area-inset-bottom, 0px));
-    }
 
     main {
         flex-direction: column-reverse;
