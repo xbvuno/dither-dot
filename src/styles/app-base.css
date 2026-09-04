@@ -169,7 +169,7 @@ footer {
 
 .header-logo-img {
     display: block;
-    height: 2rem;
+    height: 1.3rem;
     width: auto;
     image-rendering: pixelated;
     flex-shrink: 0;
@@ -185,7 +185,7 @@ footer {
     display: inline-flex;
     align-items: center;
     font-family: var(--font-mono, 'Sono', monospace);
-    font-weight: 700;
+    font-weight: inherit;
     margin-left: 0;
     font-size: 0.88rem;
     line-height: normal;
@@ -699,7 +699,7 @@ h3 {
 
     .header-logo-img {
         display: block;
-        height: 2rem;
+        height: 1.3rem;
         padding: 0;
         margin: 0;
     }
