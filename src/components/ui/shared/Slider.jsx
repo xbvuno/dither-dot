@@ -445,8 +445,6 @@ export default function Slider({
         <Minus size={11} strokeWidth={2.5} />
       </button>
 
-      <sub className="min">{min.toString().slice(0,5)}</sub>
-
       <div
         className="track"
         ref={trackRef}
@@ -457,8 +455,6 @@ export default function Slider({
           <div className="thumb default" ref={defaultThumbRef} />
         )}
       </div>
-
-      <sub className="max">{max.toString().slice(0,5)}</sub>
 
       <button
         type="button"
