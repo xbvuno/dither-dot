@@ -24,9 +24,9 @@
     --btn-border-hover: color-mix(in srgb, var(--color-text) 42%, transparent);
     --btn-bg-hover: color-mix(in srgb, var(--color-text) 9%, transparent);
 
-    --btn-color-active: var(--color-text);
+    --btn-color-active: var(--color-bg);
     --btn-border-active: var(--color-text);
-    --btn-bg-active: color-mix(in srgb, var(--color-text) 20%, transparent);
+    --btn-bg-active: var(--color-text);
     
     /* Borders */
     --color-border: color-mix(in srgb, var(--color-text) 28%, transparent);
