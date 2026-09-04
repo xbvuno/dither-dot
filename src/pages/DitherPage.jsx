@@ -10,10 +10,19 @@ const METHODS = [
   { id: DITHER_METHOD.ATKINSON, label: 'ATKINSON' },
   { id: DITHER_METHOD.BURKES, label: 'BURKES' },
   { id: DITHER_METHOD.SIERRA, label: 'SIERRA' },
-  { id: DITHER_METHOD.TWO_ROW_SIERRA, label: '2R SIERRA' },
-  { id: DITHER_METHOD.SIERRA_LITE, label: 'SIERRA LITE' },
   { id: DITHER_METHOD.RANDOM, label: 'RANDOM' },
 ];
+
+const SIERRA_VARIANTS = [
+  { id: DITHER_METHOD.SIERRA, label: 'NORMAL' },
+  { id: DITHER_METHOD.TWO_ROW_SIERRA, label: '2 ROW' },
+  { id: DITHER_METHOD.SIERRA_LITE, label: 'LITE' },
+];
+
+const isSierraMethod = (m) =>
+  m === DITHER_METHOD.SIERRA ||
+  m === DITHER_METHOD.TWO_ROW_SIERRA ||
+  m === DITHER_METHOD.SIERRA_LITE;
 
 export default function DitherPage() {
   const enabled = useDitherStore(s => s.enabled);
@@ -33,13 +42,21 @@ export default function DitherPage() {
       setEnabled(true);
     }
 
+    if (nextMethod === DITHER_METHOD.SIERRA) {
+      if (!isSierraMethod(method)) {
+        setMethod(DITHER_METHOD.SIERRA);
+      }
+      return;
+    }
+
     setMethod(nextMethod);
   };
 
+  const showSierraVariants = isSierraMethod(method);
   const showMatrixScale = method === DITHER_METHOD.ORDERED_BAYER;
   const showSeed = method === DITHER_METHOD.RANDOM;
   const showAmount = method !== DITHER_METHOD.ONLY_PALETTE;
-  const showControls = enabled && (showAmount || showMatrixScale || showSeed);
+  const showControls = enabled && (showAmount || showMatrixScale || showSeed || showSierraVariants);
 
   return (
     <div>
@@ -58,19 +75,26 @@ export default function DitherPage() {
             >
               DISABLED
             </button>
-            {METHODS.map(item => (
-              <button
-                key={item.id}
-                type='button'
-                className={`bv-option-btn${enabled && method === item.id ? ' active' : ''}`}
-                data-dither-state={item.id}
-                data-dither-enabled='true'
-                data-selected={enabled && method === item.id ? 'true' : 'false'}
-                onClick={() => selectMethod(item.id)}
-              >
-                {item.label}
-              </button>
-            ))}
+            {METHODS.map(item => {
+              const isSelected = enabled && (
+                item.id === DITHER_METHOD.SIERRA
+                  ? isSierraMethod(method)
+                  : method === item.id
+              );
+              return (
+                <button
+                  key={item.id}
+                  type='button'
+                  className={`bv-option-btn${isSelected ? ' active' : ''}`}
+                  data-dither-state={item.id}
+                  data-dither-enabled='true'
+                  data-selected={isSelected ? 'true' : 'false'}
+                  onClick={() => selectMethod(item.id)}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -79,6 +103,24 @@ export default function DitherPage() {
         <div className='bv-macro-section'>
           <h2>CONTROLS</h2>
           <div className='bv-section'>
+            {showSierraVariants && (
+              <div className='bv-section' style={{ marginBottom: '0.6rem' }}>
+                <p className='bv-label'>SIERRA TYPE</p>
+                <div className='bv-option-group'>
+                  {SIERRA_VARIANTS.map(variant => (
+                    <button
+                      key={variant.id}
+                      type='button'
+                      className={`bv-option-btn${method === variant.id ? ' active' : ''}`}
+                      data-selected={method === variant.id ? 'true' : 'false'}
+                      onClick={() => setMethod(variant.id)}
+                    >
+                      {variant.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             {showAmount && (
               <SliderBundle
                 label='AMOUNT'
