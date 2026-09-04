@@ -64,15 +64,14 @@ export default function SizeControls() {
     });
   };
 
-  const webcamActive = useWebcamStore((s) => s.active);
-  const maxSliderWidth = Math.max(1280, width || 0);
-  const maxSliderHeight = Math.max(720, height || 0);
-
   if (width == null || height == null) return null;
 
   // Base dimensions after crop
   const croppedWidth = Math.max(1, width - (crop.left || 0) - (crop.right || 0));
   const croppedHeight = Math.max(1, height - (crop.top || 0) - (crop.bottom || 0));
+
+  const maxSliderWidth = Math.max(1280, croppedWidth * 2);
+  const maxSliderHeight = Math.max(720, croppedHeight * 2);
 
   const currentRatioLabel = formatRatio(customWidth || croppedWidth, customHeight || croppedHeight);
 
