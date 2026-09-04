@@ -61,22 +61,24 @@ function PaletteTypeAndMethodSection() {
   return (
     <>
       <div className="bv-section">
-        <p className="bv-label">TYPE</p>
-        <div className="bv-option-group">
-          <button
-            type="button"
-            className={`bv-option-btn${!isCustom ? ' active' : ''}`}
-            onClick={() => handleSelectType('generated')}
-          >
-            GENERATED
-          </button>
-          <button
-            type="button"
-            className={`bv-option-btn${isCustom ? ' active' : ''}`}
-            onClick={() => handleSelectType('custom')}
-          >
-            CUSTOM
-          </button>
+        <div className="bv-controls-row">
+          <span className="bv-label">TYPE</span>
+          <div className="bv-option-group histogram-toggle-group">
+            <button
+              type="button"
+              className={`bv-option-btn${!isCustom ? ' active' : ''}`}
+              onClick={() => handleSelectType('generated')}
+            >
+              GENERATED
+            </button>
+            <button
+              type="button"
+              className={`bv-option-btn${isCustom ? ' active' : ''}`}
+              onClick={() => handleSelectType('custom')}
+            >
+              CUSTOM
+            </button>
+          </div>
         </div>
       </div>
 
