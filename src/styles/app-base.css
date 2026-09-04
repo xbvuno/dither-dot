@@ -30,7 +30,7 @@
     background: var(--btn-bg-active);
     color: var(--btn-color-active);
     border-color: var(--btn-border-active);
-    font-weight: 400;
+    font-weight: 600;
 }
 
 .bv-option-btn:disabled,
