@@ -141,8 +141,9 @@
 .bv-macro-section-title h2 {
   margin: 0;
   font-size: 1rem;
-  letter-spacing: 0.08em;
-  font-weight: 600;
+  letter-spacing: normal;
+  word-spacing: normal;
+  font-weight: 400;
 }
 
 .bv-macro-section-header.modified .bv-macro-section-title h2 {
