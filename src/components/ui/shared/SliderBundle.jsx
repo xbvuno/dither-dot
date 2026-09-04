@@ -15,7 +15,16 @@ export default function SliderBundle({min = 1, max = 10, step = 1, value: _value
                 <span className="bv-label slider-bundle-label">{label}</span>
                 {tooltip && <span className="slider-tooltip">{tooltip}</span>}
             </span>
-            {defaultValue !== undefined && defaultValue !== value && <span role="button" aria-label={`Reset ${label}`} onClick={() => handleChange(defaultValue)}>[R]</span>}
+            {defaultValue !== undefined && defaultValue !== value && (
+                <button
+                    type="button"
+                    className="slider-bundle-reset-btn"
+                    aria-label={`Reset ${label}`}
+                    onClick={() => handleChange(defaultValue)}
+                >
+                    [R]
+                </button>
+            )}
             <AutoResizingInput label={label} name={name} id={id} min={min} max={max} defaultValue={defaultValue} step={step} value={value} onChange={handleChange}/>
         </div>
         <Slider label={label} min={min} max={max} value={value} defaultValue={defaultValue} step={step} onChange={handleChange}/>

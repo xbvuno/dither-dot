@@ -1,4 +1,5 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
+import { Minus, Plus } from "lucide-react";
 import { triggerHapticPulse } from "../../../utils/haptics";
 import "./styles/Slider.css";
 
@@ -31,7 +32,7 @@ export default function Slider({
   max = 10,
   step = 0.01,
   value: controlledValue,
-  defaultValue = 0,
+  defaultValue,
   onChange,
   label,
   'aria-label': ariaLabelProp,
@@ -41,8 +42,6 @@ export default function Slider({
   const containerRef = useRef(null);
   const thumbRef = useRef(null);
   const defaultThumbRef = useRef(null);
-  const decRef = useRef(null);
-  const incRef = useRef(null);
 
   const rafRef = useRef(null);
   const selectedRef = useRef(false);
@@ -58,20 +57,16 @@ export default function Slider({
   );
   const displayValue = isControlled ? controlledValue : value;
 
+  const isAtMin = displayValue <= min + 1e-5;
+  const isAtMax = displayValue >= max - 1e-5;
+
   const stateRef = useRef({});
-
-  /* ---------- sync ref state ---------- */
-
-  useEffect(() => {
-    stateRef.current = {
-      value: displayValue,
-      min,
-      max,
-      step,
-      isControlled,
-      onChange,
-    };
-  }, [displayValue, isControlled, max, min, onChange, step]);
+  stateRef.current.value = displayValue;
+  stateRef.current.min = min;
+  stateRef.current.max = max;
+  stateRef.current.step = step;
+  stateRef.current.isControlled = isControlled;
+  stateRef.current.onChange = onChange;
 
   /* ---------- internal setter ---------- */
 
@@ -95,17 +90,118 @@ export default function Slider({
     }
 
     // notify only if changed
-    if (typeof s.onChange === "function" && clamped !== s.value) {
+    if (typeof s.onChange === "function" && Math.abs(clamped - s.value) > 1e-7) {
       triggerHapticPulse(5);
+      s.value = clamped;
       s.onChange(clamped);
     }
   };
 
-  const stepUp = (t = 1) =>
-    setInternalValue((v) => v + stateRef.current.step * t);
+  const stepUp = (t = 1) => {
+    const s = stateRef.current;
+    if (s.value >= s.max - 1e-5) return;
+    setInternalValue((v) => v + s.step * t);
+  };
 
-  const stepDown = (t = 1) =>
-    setInternalValue((v) => v - stateRef.current.step * t);
+  const stepDown = (t = 1) => {
+    const s = stateRef.current;
+    if (s.value <= s.min + 1e-5) return;
+    setInternalValue((v) => v - s.step * t);
+  };
+
+  /* ---------- hold-to-repeat for step buttons ---------- */
+
+  const activePointerRef = useRef(null);
+  const repeatTimeoutRef = useRef(null);
+  const repeatIntervalRef = useRef(null);
+
+  const stopRepeat = useCallback(() => {
+    if (repeatTimeoutRef.current) {
+      clearTimeout(repeatTimeoutRef.current);
+      repeatTimeoutRef.current = null;
+    }
+    if (repeatIntervalRef.current) {
+      clearInterval(repeatIntervalRef.current);
+      repeatIntervalRef.current = null;
+    }
+  }, []);
+
+  const startRepeat = useCallback((direction) => {
+    stopRepeat();
+    const s = stateRef.current;
+    const reachedLimit = direction === 'dec'
+      ? s.value <= s.min + 1e-5
+      : s.value >= s.max - 1e-5;
+    if (reachedLimit) return;
+
+    if (direction === 'dec') stepDown();
+    else stepUp();
+
+    repeatTimeoutRef.current = setTimeout(() => {
+      repeatIntervalRef.current = setInterval(() => {
+        const curr = stateRef.current;
+        const limit = direction === 'dec'
+          ? curr.value <= curr.min + 1e-5
+          : curr.value >= curr.max - 1e-5;
+        if (limit) {
+          stopRepeat();
+        } else {
+          if (direction === 'dec') stepDown();
+          else stepUp();
+        }
+      }, 70);
+    }, 320);
+  }, [stopRepeat]);
+
+  const handleStepPointerDown = (e, direction) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    activePointerRef.current = e.pointerId;
+    try {
+      e.currentTarget.setPointerCapture?.(e.pointerId);
+    } catch {
+      /* ignore capture error */
+    }
+    startRepeat(direction);
+  };
+
+  const handleStepPointerUp = (e) => {
+    e.stopPropagation();
+    stopRepeat();
+    if (activePointerRef.current !== null) {
+      try {
+        e.currentTarget.releasePointerCapture?.(activePointerRef.current);
+      } catch {
+        /* ignore capture error */
+      }
+      setTimeout(() => {
+        activePointerRef.current = null;
+      }, 50);
+    }
+  };
+
+  const handleStepClick = (e, direction) => {
+    e.stopPropagation();
+    if (activePointerRef.current === null) {
+      if (direction === 'dec') stepDown();
+      else stepUp();
+    }
+  };
+
+  useEffect(() => {
+    const handleGlobalPointerUp = () => {
+      stopRepeat();
+      activePointerRef.current = null;
+    };
+    window.addEventListener("pointerup", handleGlobalPointerUp);
+    window.addEventListener("pointercancel", handleGlobalPointerUp);
+    return () => {
+      stopRepeat();
+      window.removeEventListener("pointerup", handleGlobalPointerUp);
+      window.removeEventListener("pointercancel", handleGlobalPointerUp);
+    };
+  }, [stopRepeat]);
 
   /* ---------- thumb position ---------- */
 
@@ -286,17 +382,22 @@ export default function Slider({
     };
   }, []);
 
-  /* ---------- reset key ---------- */
+  /* ---------- keyboard navigation & reset key ---------- */
 
   useEffect(() => {
     const onKey = (e) => {
-      if (defaultValue === undefined) return;
+      if (!selectedRef.current) return;
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.isContentEditable) return;
 
-      if (e.key.toLowerCase() === "r") {
-        setInternalValue(
-          snapValue(defaultValue, min, max, step)
-        );
+      if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
         e.preventDefault();
+        stepDown();
+      } else if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+        e.preventDefault();
+        stepUp();
+      } else if (e.key.toLowerCase() === "r" && defaultValue !== undefined) {
+        e.preventDefault();
+        setInternalValue(snapValue(defaultValue, min, max, step));
       }
     };
 
@@ -336,9 +437,19 @@ export default function Slider({
       onBlur={handleDeselect}
       onPointerDown={handleSelect}
     >
-      <span ref={decRef} onPointerDown={() => stepDown()} role="button" aria-label={`Decrease ${ariaLabel}`} disabled={value === min}>
-        [-]
-      </span>
+      <button
+        type="button"
+        className="slider-step-btn slider-step-btn--dec"
+        aria-label={`Decrease ${ariaLabel}`}
+        disabled={isAtMin}
+        tabIndex={isAtMin ? -1 : 0}
+        onPointerDown={(e) => handleStepPointerDown(e, "dec")}
+        onPointerUp={handleStepPointerUp}
+        onPointerCancel={handleStepPointerUp}
+        onClick={(e) => handleStepClick(e, "dec")}
+      >
+        <Minus size={11} strokeWidth={2.5} />
+      </button>
 
       <sub className="min">{min.toString().slice(0,5)}</sub>
 
@@ -355,9 +466,19 @@ export default function Slider({
 
       <sub className="max">{max.toString().slice(0,5)}</sub>
 
-      <span ref={incRef} onPointerDown={() => stepUp()} role="button" aria-label={`Increase ${ariaLabel}`} disabled={value === max}>
-        [+]
-      </span>
+      <button
+        type="button"
+        className="slider-step-btn slider-step-btn--inc"
+        aria-label={`Increase ${ariaLabel}`}
+        disabled={isAtMax}
+        tabIndex={isAtMax ? -1 : 0}
+        onPointerDown={(e) => handleStepPointerDown(e, "inc")}
+        onPointerUp={handleStepPointerUp}
+        onPointerCancel={handleStepPointerUp}
+        onClick={(e) => handleStepClick(e, "inc")}
+      >
+        <Plus size={11} strokeWidth={2.5} />
+      </button>
     </div>
   );
 }
