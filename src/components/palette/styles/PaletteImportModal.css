@@ -46,8 +46,9 @@
 .palette-modal-title {
   margin: 0;
   font-size: 0.95rem;
-  letter-spacing: 0.12em;
-  font-family: 'Bitcount Grid Single', sans-serif;
+  letter-spacing: 0.08em;
+  font-family: var(--font-mono, 'Sono', monospace);
+  font-weight: 600;
   color: var(--color-text);
 }
 
