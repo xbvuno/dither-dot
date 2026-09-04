@@ -3,16 +3,16 @@ import useDitherStore, { DITHER_CONTROLS, DITHER_METHOD } from '../stores/engine
 
 const METHODS = [
   { id: DITHER_METHOD.ONLY_PALETTE, label: 'ONLY PALETTE' },
-  { id: DITHER_METHOD.FLOYD_STEINBERG, label: 'FLOYD-STEINBERG' },
-  { id: DITHER_METHOD.JJN, label: 'JARVIS, JUDICE AND NINKE' },
+  { id: DITHER_METHOD.FLOYD_STEINBERG, label: 'FS' },
+  { id: DITHER_METHOD.ORDERED_BAYER, label: 'BAYER' },
+  { id: DITHER_METHOD.JJN, label: 'JJN' },
   { id: DITHER_METHOD.STUCKI, label: 'STUCKI' },
   { id: DITHER_METHOD.ATKINSON, label: 'ATKINSON' },
   { id: DITHER_METHOD.BURKES, label: 'BURKES' },
   { id: DITHER_METHOD.SIERRA, label: 'SIERRA' },
-  { id: DITHER_METHOD.TWO_ROW_SIERRA, label: 'TWO-ROW SIERRA' },
+  { id: DITHER_METHOD.TWO_ROW_SIERRA, label: '2R SIERRA' },
   { id: DITHER_METHOD.SIERRA_LITE, label: 'SIERRA LITE' },
-  { id: DITHER_METHOD.ORDERED_BAYER, label: 'ORDERED (BAYER MATRIX)' },
-  { id: DITHER_METHOD.RANDOM, label: 'RANDOM DITHERING' },
+  { id: DITHER_METHOD.RANDOM, label: 'RANDOM' },
 ];
 
 export default function DitherPage() {

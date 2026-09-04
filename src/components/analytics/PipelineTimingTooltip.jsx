@@ -54,7 +54,7 @@ function getDitherAlgorithmLabel(method, enabled) {
     case DITHER_METHOD.SIERRA_LITE:
       return 'SIERRA LITE';
     case DITHER_METHOD.ORDERED_BAYER:
-      return 'ORDERED';
+      return 'BAYER';
     case DITHER_METHOD.RANDOM:
       return 'RANDOM';
     default:
