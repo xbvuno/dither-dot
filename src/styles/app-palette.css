@@ -14,9 +14,9 @@
 .palette-name-input {
   width: 100%;
   min-width: 0;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   letter-spacing: 0.04em;
-  padding: 0.35rem 0.9rem;
+  padding: 0.35rem 0.6rem;
 }
 
 .palette-save-row {
@@ -26,12 +26,12 @@
 
 .palette-save-row .palette-name-input {
   flex: 1;
-  height: 2rem;
+  height: 1.85rem;
 }
 
 .palette-save-row .bv-option-btn {
   flex-shrink: 0;
-  height: 2rem;
+  height: 1.85rem;
   display: inline-flex;
   align-items: center;
 }

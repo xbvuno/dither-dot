@@ -104,8 +104,10 @@
 
 h2 {
     font-family: var(--font-mono);
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
 
@@ -424,7 +426,7 @@ aside {
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-gutter: stable;
-    padding: 1rem;
+    padding: 0.75rem;
 }
 
 .resize-handle {
