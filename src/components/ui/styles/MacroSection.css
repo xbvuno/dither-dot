@@ -25,6 +25,28 @@
   box-sizing: border-box;
 }
 
+/* First macro section on a page: thicker bar and no top border (flush with top of aside) */
+aside > .bv-macro-section:first-child > h2,
+aside > .bv-macro-section:first-child > .bv-macro-section-header,
+aside > div > .bv-macro-section:first-child > h2,
+aside > div > .bv-macro-section:first-child > .bv-macro-section-header,
+.bv-macro-section:first-of-type > h2,
+.bv-macro-section:first-of-type > .bv-macro-section-header {
+  min-height: 2.65rem;
+  border-top: none;
+}
+
+aside > .bv-macro-section:first-child > h2,
+aside > .bv-macro-section:first-child .bv-macro-section-title h2,
+aside > div > .bv-macro-section:first-child > h2,
+aside > div > .bv-macro-section:first-child .bv-macro-section-title h2,
+.bv-macro-section:first-of-type > h2,
+.bv-macro-section:first-of-type .bv-macro-section-title h2 {
+  font-size: 1.08rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
 .bv-macro-section > h2 {
   display: flex;
   align-items: center;
