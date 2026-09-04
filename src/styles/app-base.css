@@ -184,12 +184,13 @@ footer {
 .app-header-title-name {
     display: inline-flex;
     align-items: center;
-    font-family: 'Bitcount Grid Single', sans-serif;
+    font-family: var(--font-mono, 'Sono', monospace);
+    font-weight: 700;
     margin-left: 0;
-    font-size: 1.1rem;
+    font-size: 0.88rem;
     line-height: normal;
     white-space: nowrap;
-    letter-spacing: 0.08rem;
+    letter-spacing: 0.08em;
 }
 
 .app-header-links {
@@ -692,7 +693,7 @@ h3 {
     }
 
     .app-header-title-name {
-        font-size: 0.95rem;
+        font-size: 0.82rem;
         line-height: normal;
     }
 
