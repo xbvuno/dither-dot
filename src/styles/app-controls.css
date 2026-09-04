@@ -110,6 +110,7 @@
   border-bottom: none;
   padding-bottom: 0;
   margin-bottom: 0.85rem;
+  width: 100%;
 }
 
 .bv-macro-section:last-of-type {
@@ -121,9 +122,12 @@
 .bv-macro-section > h2,
 .bv-macro-section-header {
   background-color: rgba(0, 0, 0, 0.45);
-  border: 1px solid var(--color-border-subtle);
-  padding: 0.25rem 0.5rem;
-  margin-bottom: 0.6rem;
+  border-top: 1px solid var(--color-border-subtle);
+  border-bottom: 1px solid var(--color-border-subtle);
+  border-left: none;
+  border-right: none;
+  padding: 0.35rem 1rem;
+  margin-bottom: 0.65rem;
   width: 100%;
   box-sizing: border-box;
 }
@@ -139,6 +143,12 @@
   justify-content: space-between;
   cursor: pointer;
   user-select: none;
+}
+
+.bv-macro-section > .bv-section,
+.bv-macro-section-content {
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 .bv-macro-section-title {
