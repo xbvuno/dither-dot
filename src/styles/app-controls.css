@@ -6,7 +6,7 @@
 }
 
 .bv-label {
-  font-size: 0.75rem;
+  font-size: 1rem;
   letter-spacing: 0.08em;
   color: var(--color-text-subtle);
   text-transform: uppercase;
@@ -26,8 +26,8 @@
 }
 
 .bv-option-btn {
-  padding: 0.35rem 0.6rem;
-  font-size: 0.75rem;
+  padding: 0.4rem 0.65rem;
+  font-size: 1rem;
   letter-spacing: 0.04em;
   line-height: 1.2;
 }
@@ -125,7 +125,7 @@
 
 .bv-macro-section-title h2 {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: 1rem;
   letter-spacing: 0.08em;
   font-weight: 600;
 }

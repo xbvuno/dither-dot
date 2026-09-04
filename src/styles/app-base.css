@@ -102,9 +102,13 @@
     font-family: var(--font-mono);
 }
 
-h2 {
+h2,
+p {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 1rem;
+}
+
+h2 {
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -270,12 +274,12 @@ footer {
 
 .header-modal h2 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 1.15rem;
     letter-spacing: 0.1em;
 }
 
 .header-modal p {
-    font-size: 0.9rem;
+    font-size: 1rem;
     line-height: 1.45;
     color: color-mix(in srgb, var(--color-text) 88%, transparent);
 }
@@ -290,7 +294,7 @@ footer {
 }
 
 .header-modal-list li {
-    font-size: 0.9rem;
+    font-size: 1rem;
     line-height: 1.45;
 }
 
@@ -305,8 +309,8 @@ footer {
 }
 
 .header-modal-close {
-    padding: 0.3rem 0.55rem;
-    font-size: 0.75rem;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.9rem;
     letter-spacing: 0.08em;
 }
 
@@ -321,7 +325,7 @@ footer {
 }
 
 .header-modal-setting-label {
-    font-size: 0.78rem;
+    font-size: 0.9rem;
     letter-spacing: 0.11em;
     color: color-mix(in srgb, var(--color-text) 92%, transparent);
 }
@@ -331,8 +335,8 @@ footer {
     border: 1px solid var(--color-text);
     background: transparent;
     color: var(--color-text);
-    padding: 0.3rem 0.6rem;
-    font-size: 0.75rem;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.9rem;
     letter-spacing: 0.08em;
     cursor: pointer;
 }

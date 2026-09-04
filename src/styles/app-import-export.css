@@ -1,5 +1,5 @@
 .import-current-file {
-  font-size: 0.75rem;
+  font-size: 1rem;
   color: var(--color-text-subtle);
   overflow-wrap: anywhere;
 }
@@ -8,7 +8,7 @@
   border: 1px dashed var(--color-border-hover);
   background: var(--color-bg-subtle);
   padding: 0.85rem 0.6rem;
-  font-size: 0.75rem;
+  font-size: 1rem;
   letter-spacing: 0.04em;
   text-align: center;
   transition: background-color 0.15s ease, border-color 0.15s ease;
@@ -21,9 +21,9 @@
 
 .import-name-input {
   width: 100%;
-  height: 1.85rem;
+  height: 2.2rem;
   font-family: var(--font-mono, 'Sono', monospace);
-  font-size: 0.75rem;
+  font-size: 1rem;
   letter-spacing: 0.03em;
   padding: 0.35rem 0.6rem;
   outline: none;
@@ -41,7 +41,7 @@
 }
 
 .export-name-format {
-  font-size: 0.75rem;
+  font-size: 1rem;
   letter-spacing: 0.08em;
   color: var(--color-text-muted);
   flex-shrink: 0;
@@ -100,21 +100,21 @@
 }
 
 .large-file-dialog-title {
-  font-size: 0.78rem;
+  font-size: 1.1rem;
   letter-spacing: 0.09em;
   color: var(--color-text);
   margin-bottom: 0.7rem;
 }
 
 .large-file-dialog-dims {
-  font-size: 0.74rem;
+  font-size: 0.95rem;
   letter-spacing: 0.05em;
   color: var(--color-text-muted);
   margin-bottom: 0.55rem;
 }
 
 .large-file-dialog-body {
-  font-size: 0.74rem;
+  font-size: 1rem;
   line-height: 1.55;
   color: var(--color-text-subtle);
   margin-bottom: 1.1rem;
