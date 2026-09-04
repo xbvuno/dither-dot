@@ -22,7 +22,6 @@ aside {
     background-color: var(--color-bg);
     overflow-y: auto;
     overflow-x: hidden;
-    scrollbar-gutter: stable;
     padding: 0.75rem 0 1.5rem 0;
 }
 
