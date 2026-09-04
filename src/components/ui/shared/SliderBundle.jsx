@@ -140,6 +140,7 @@ export default function SliderBundle({
         };
     }, [clearRepeat]);
 
+
     const handleFocus = () => {
         setIsSelected(true);
     };
@@ -159,7 +160,9 @@ export default function SliderBundle({
             <div className="flex-h">
                 <span className="slider-label-wrap">
                     <span className="bv-label slider-bundle-label">{label}</span>
-                    <span className="slider-range-bounds">[{formatBound(min)}, {formatBound(max)}]</span>
+                    {isSelected && (
+                        <span className="slider-range-bounds">[{formatBound(min)}, {formatBound(max)}]</span>
+                    )}
                     {tooltip && <span className="slider-tooltip">{tooltip}</span>}
                 </span>
 
