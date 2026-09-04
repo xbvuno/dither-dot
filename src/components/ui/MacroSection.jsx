@@ -65,7 +65,7 @@ export default function MacroSection({
               <RotateCcw size={16} strokeWidth={1.5} />
             </button>
           )}
-          {onRandomize && (
+          {isOpen && onRandomize && (
             <button
               type="button"
               className="bv-macro-section-btn"
