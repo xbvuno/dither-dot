@@ -57,14 +57,19 @@ export default function Slider({
   );
   const displayValue = isControlled ? controlledValue : value;
 
-  const isAtMin = displayValue <= min + 1e-5;
-  const isAtMax = displayValue >= max - 1e-5;
+  const numMin = Number(min);
+  const numMax = Number(max);
+  const numStep = Number(step);
+  const numValue = Number(displayValue);
+
+  const isAtMin = !Number.isNaN(numValue) && !Number.isNaN(numMin) && numValue <= numMin + 1e-5;
+  const isAtMax = !Number.isNaN(numValue) && !Number.isNaN(numMax) && numValue >= numMax - 1e-5;
 
   const stateRef = useRef({});
-  stateRef.current.value = displayValue;
-  stateRef.current.min = min;
-  stateRef.current.max = max;
-  stateRef.current.step = step;
+  stateRef.current.value = numValue;
+  stateRef.current.min = numMin;
+  stateRef.current.max = numMax;
+  stateRef.current.step = numStep;
   stateRef.current.isControlled = isControlled;
   stateRef.current.onChange = onChange;
 
@@ -72,16 +77,20 @@ export default function Slider({
 
   const setInternalValue = (next) => {
     const s = stateRef.current;
+    const currVal = Number(s.value);
+    const sMin = Number(s.min);
+    const sMax = Number(s.max);
+    const sStep = Number(s.step);
 
-    const base = typeof next === "function" ? next(s.value) : next;
+    const base = typeof next === "function" ? next(currVal) : Number(next);
 
     const stepped =
-      Math.round((base - s.min) / s.step) * s.step + s.min;
+      Math.round((base - sMin) / sStep) * sStep + sMin;
 
     const clamped = clamp(
       Number(stepped.toFixed(10)),
-      s.min,
-      s.max
+      sMin,
+      sMax
     );
 
     // update local only if needed
@@ -90,7 +99,7 @@ export default function Slider({
     }
 
     // notify only if changed
-    if (typeof s.onChange === "function" && Math.abs(clamped - s.value) > 1e-7) {
+    if (typeof s.onChange === "function" && Math.abs(clamped - currVal) > 1e-7) {
       triggerHapticPulse(5);
       s.value = clamped;
       s.onChange(clamped);
@@ -99,109 +108,94 @@ export default function Slider({
 
   const stepUp = (t = 1) => {
     const s = stateRef.current;
-    if (s.value >= s.max - 1e-5) return;
-    setInternalValue((v) => v + s.step * t);
+    const curr = Number(s.value);
+    const mx = Number(s.max);
+    const stp = Number(s.step);
+    if (!Number.isNaN(curr) && !Number.isNaN(mx) && curr >= mx - 1e-5) return;
+    setInternalValue(curr + stp * t);
   };
 
   const stepDown = (t = 1) => {
     const s = stateRef.current;
-    if (s.value <= s.min + 1e-5) return;
-    setInternalValue((v) => v - s.step * t);
+    const curr = Number(s.value);
+    const mn = Number(s.min);
+    const stp = Number(s.step);
+    if (!Number.isNaN(curr) && !Number.isNaN(mn) && curr <= mn + 1e-5) return;
+    setInternalValue(curr - stp * t);
   };
 
   /* ---------- hold-to-repeat for step buttons ---------- */
 
-  const activePointerRef = useRef(null);
-  const repeatTimeoutRef = useRef(null);
-  const repeatIntervalRef = useRef(null);
+  const repeatTimerRef = useRef(null);
 
-  const stopRepeat = useCallback(() => {
-    if (repeatTimeoutRef.current) {
-      clearTimeout(repeatTimeoutRef.current);
-      repeatTimeoutRef.current = null;
-    }
-    if (repeatIntervalRef.current) {
-      clearInterval(repeatIntervalRef.current);
-      repeatIntervalRef.current = null;
+  const clearRepeat = useCallback(() => {
+    if (repeatTimerRef.current) {
+      clearInterval(repeatTimerRef.current);
+      clearTimeout(repeatTimerRef.current);
+      repeatTimerRef.current = null;
     }
   }, []);
-
-  const startRepeat = useCallback((direction) => {
-    stopRepeat();
-    const s = stateRef.current;
-    const reachedLimit = direction === 'dec'
-      ? s.value <= s.min + 1e-5
-      : s.value >= s.max - 1e-5;
-    if (reachedLimit) return;
-
-    if (direction === 'dec') stepDown();
-    else stepUp();
-
-    repeatTimeoutRef.current = setTimeout(() => {
-      repeatIntervalRef.current = setInterval(() => {
-        const curr = stateRef.current;
-        const limit = direction === 'dec'
-          ? curr.value <= curr.min + 1e-5
-          : curr.value >= curr.max - 1e-5;
-        if (limit) {
-          stopRepeat();
-        } else {
-          if (direction === 'dec') stepDown();
-          else stepUp();
-        }
-      }, 70);
-    }, 320);
-  }, [stopRepeat]);
 
   const handleStepPointerDown = (e, direction) => {
     if (e.button !== 0) return;
     e.preventDefault();
     e.stopPropagation();
-    activePointerRef.current = e.pointerId;
-    try {
-      e.currentTarget.setPointerCapture?.(e.pointerId);
-    } catch {
-      /* ignore capture error */
+
+    clearRepeat();
+
+    if (direction === 'dec') {
+      if (isAtMin) return;
+      stepDown();
+    } else {
+      if (isAtMax) return;
+      stepUp();
     }
-    startRepeat(direction);
+
+    repeatTimerRef.current = setTimeout(() => {
+      repeatTimerRef.current = setInterval(() => {
+        const s = stateRef.current;
+        const val = Number(s.value);
+        const mn = Number(s.min);
+        const mx = Number(s.max);
+
+        if (direction === 'dec') {
+          if (val <= mn + 1e-5) {
+            clearRepeat();
+          } else {
+            stepDown();
+          }
+        } else {
+          if (val >= mx - 1e-5) {
+            clearRepeat();
+          } else {
+            stepUp();
+          }
+        }
+      }, 70);
+    }, 300);
   };
 
   const handleStepPointerUp = (e) => {
-    e.stopPropagation();
-    stopRepeat();
-    if (activePointerRef.current !== null) {
-      try {
-        e.currentTarget.releasePointerCapture?.(activePointerRef.current);
-      } catch {
-        /* ignore capture error */
-      }
-      setTimeout(() => {
-        activePointerRef.current = null;
-      }, 50);
-    }
+    e?.stopPropagation?.();
+    clearRepeat();
   };
 
-  const handleStepClick = (e, direction) => {
+  const handleStepClick = (e) => {
     e.stopPropagation();
-    if (activePointerRef.current === null) {
-      if (direction === 'dec') stepDown();
-      else stepUp();
-    }
   };
 
   useEffect(() => {
     const handleGlobalPointerUp = () => {
-      stopRepeat();
-      activePointerRef.current = null;
+      clearRepeat();
     };
     window.addEventListener("pointerup", handleGlobalPointerUp);
     window.addEventListener("pointercancel", handleGlobalPointerUp);
     return () => {
-      stopRepeat();
+      clearRepeat();
       window.removeEventListener("pointerup", handleGlobalPointerUp);
       window.removeEventListener("pointercancel", handleGlobalPointerUp);
     };
-  }, [stopRepeat]);
+  }, [clearRepeat]);
 
   /* ---------- thumb position ---------- */
 

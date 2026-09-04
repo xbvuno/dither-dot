@@ -65,43 +65,40 @@
     width: 1.25rem;
     height: 1.25rem;
     padding: 0;
-    margin: 0;
+    margin: 0 0.1rem;
     flex-shrink: 0;
-    background: var(--input-surface);
-    border: 1px solid var(--btn-border-default);
+    background: transparent;
+    border: none;
+    outline: none;
     color: var(--color-text-subtle);
     cursor: pointer;
     touch-action: manipulation;
     user-select: none;
-    transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease, transform 0.08s ease;
+    transition: background-color 0.12s ease, color 0.12s ease, transform 0.08s ease;
 }
 
 .bv.slider .slider-step-btn:hover:not(:disabled) {
-    background: var(--input-surface-hover);
-    border-color: var(--btn-border-hover);
+    background: var(--color-hover);
     color: var(--color-text);
 }
 
 .bv.slider .slider-step-btn:active:not(:disabled) {
     background: var(--btn-bg-active);
-    border-color: var(--btn-border-active);
     color: var(--btn-color-active);
-    transform: scale(0.92);
+    transform: scale(0.9);
 }
 
 .bv.slider .slider-step-btn:focus-visible {
     outline: none;
-    border-color: var(--color-border-focus);
-    box-shadow: 0 0 0 1px var(--color-border-focus);
+    background: var(--color-hover);
+    color: var(--color-text);
 }
 
 .bv.slider .slider-step-btn:disabled {
-    opacity: 0.22;
+    opacity: 0.2;
     background: transparent;
-    border-color: var(--color-border-subtle);
     color: var(--color-text-muted);
     cursor: not-allowed;
-    pointer-events: none;
     transform: none;
 }
 
