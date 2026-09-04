@@ -1,4 +1,7 @@
 :root {
+    /* Typography */
+    --font-mono: 'Sono', monospace;
+
     /* Color Palette */
     --color-bg: #12120F;
     --color-text: #EEEEDF;
@@ -96,7 +99,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Google Sans Code';
+    font-family: var(--font-mono);
 }
 
 h2 {

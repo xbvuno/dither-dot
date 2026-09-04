@@ -148,7 +148,7 @@
   border: none;
   outline: none;
   color: var(--color-text);
-  font-family: 'Google Sans Code', monospace;
+  font-family: var(--font-mono, 'Sono', monospace);
   font-size: 0.76rem;
   text-transform: uppercase;
   padding: 0;
@@ -223,7 +223,7 @@
   background: transparent;
   border: none;
   color: var(--color-text);
-  font-family: 'Google Sans Code', monospace;
+  font-family: var(--font-mono, 'Sono', monospace);
   font-size: 0.72rem;
   padding: 0;
   text-align: right;

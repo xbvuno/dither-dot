@@ -21,7 +21,7 @@
 
 .import-name-input {
   width: 100%;
-  font-family: 'Google Sans Code';
+  font-family: var(--font-mono, 'Sono', monospace);
   font-size: 0.78rem;
   letter-spacing: 0.03em;
   padding: 0.35rem 0.9rem;
