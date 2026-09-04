@@ -107,9 +107,9 @@
 }
 
 .bv-macro-section {
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: 0.85rem;
-  margin-bottom: 1rem;
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0.85rem;
 }
 
 .bv-macro-section:last-of-type {
@@ -118,8 +118,19 @@
   margin-bottom: 0;
 }
 
+.bv-macro-section > h2,
+.bv-macro-section-header {
+  background-color: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--color-border-subtle);
+  padding: 0.25rem 0.5rem;
+  margin-bottom: 0.6rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .bv-macro-section > h2 {
-  margin-bottom: 0.85rem;
+  display: block;
+  line-height: 1.2;
 }
 
 .bv-macro-section-header {
@@ -128,8 +139,6 @@
   justify-content: space-between;
   cursor: pointer;
   user-select: none;
-  padding: 0.4rem 0;
-  margin-bottom: 0.8rem;
 }
 
 .bv-macro-section-title {
@@ -144,6 +153,7 @@
   letter-spacing: normal;
   word-spacing: normal;
   font-weight: 400;
+  line-height: 1.2;
 }
 
 .bv-macro-section-header.modified .bv-macro-section-title h2 {
