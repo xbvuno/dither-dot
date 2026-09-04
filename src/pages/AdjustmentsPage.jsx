@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { createPortal } from "react-dom";
-import { RotateCcw, Dices, ChevronDown } from "lucide-react";
+import { RotateCcw, Dices } from "lucide-react";
+import MacroSection from "../components/ui/MacroSection";
 import ColorControls from "../components/controls/ColorControls";
 import BlurControls from "../components/controls/BlurControls";
 import Histogram from "../components/analytics/Histogram";
@@ -63,8 +64,7 @@ export default function AdjustmentsPage() {
     return (
         <>
             <div ref={setRootNode}>
-                <div className="bv-macro-section">
-                    <h2>ADJUSTMENTS</h2>
+                <MacroSection title="ADJUSTMENTS">
                     <div className="bv-section histogram-section">
                         <div className="bv-controls-row">
                             <span className="bv-label">HISTOGRAM</span>
@@ -107,121 +107,43 @@ export default function AdjustmentsPage() {
                             </button>
                         </div>
                     </div>
-                </div>
+                </MacroSection>
 
-                <div className="bv-macro-section">
-                    <div className={`bv-macro-section-header ${isColorModified ? 'modified' : ''}`} onClick={() => toggleSection('colors')}>
-                        <div className="bv-macro-section-title">
-                            <ChevronDown size={16} className={`bv-macro-section-chevron ${openSections.colors ? '' : 'collapsed'}`} />
-                            <h2>COLORS</h2>
-                        </div>
-                        <div className="bv-macro-section-actions">
-                            {isColorModified && (
-                                <button
-                                    type="button"
-                                    className="bv-macro-section-btn"
-                                    title="Reset colors"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        resetKeys(colorKeys);
-                                    }}
-                                >
-                                    <RotateCcw size={16} strokeWidth={1.5} />
-                                </button>
-                            )}
-                            <button
-                                type="button"
-                                className="bv-macro-section-btn"
-                                title="Randomize colors"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    randomizeKeys(colorKeys, COLOR_CONTROLS);
-                                }}
-                            >
-                                <Dices size={16} strokeWidth={1.5} />
-                            </button>
-                        </div>
-                    </div>
-                    <div className={`bv-macro-section-content ${openSections.colors ? '' : 'collapsed'}`}>
-                        <ColorControls showLabel={false} />
-                    </div>
-                </div>
+                <MacroSection
+                    title="COLORS"
+                    collapsible
+                    isOpen={openSections.colors}
+                    onToggle={() => toggleSection('colors')}
+                    isModified={isColorModified}
+                    onReset={() => resetKeys(colorKeys)}
+                    onRandomize={() => randomizeKeys(colorKeys, COLOR_CONTROLS)}
+                >
+                    <ColorControls showLabel={false} />
+                </MacroSection>
 
-                <div className="bv-macro-section">
-                    <div className={`bv-macro-section-header ${isNoiseModified ? 'modified' : ''}`} onClick={() => toggleSection('noise')}>
-                        <div className="bv-macro-section-title">
-                            <ChevronDown size={16} className={`bv-macro-section-chevron ${openSections.noise ? '' : 'collapsed'}`} />
-                            <h2>NOISE</h2>
-                        </div>
-                        <div className="bv-macro-section-actions">
-                            {isNoiseModified && (
-                                <button
-                                    type="button"
-                                    className="bv-macro-section-btn"
-                                    title="Reset noise"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        resetKeys(noiseKeys);
-                                    }}
-                                >
-                                    <RotateCcw size={16} strokeWidth={1.5} />
-                                </button>
-                            )}
-                            <button
-                                type="button"
-                                className="bv-macro-section-btn"
-                                title="Randomize noise"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    randomizeKeys(noiseKeys, NOISE_CONTROLS);
-                                }}
-                            >
-                                <Dices size={16} strokeWidth={1.5} />
-                            </button>
-                        </div>
-                    </div>
-                    <div className={`bv-macro-section-content ${openSections.noise ? '' : 'collapsed'}`}>
-                        <NoiseControls showLabel={false} />
-                    </div>
-                </div>
+                <MacroSection
+                    title="NOISE"
+                    collapsible
+                    isOpen={openSections.noise}
+                    onToggle={() => toggleSection('noise')}
+                    isModified={isNoiseModified}
+                    onReset={() => resetKeys(noiseKeys)}
+                    onRandomize={() => randomizeKeys(noiseKeys, NOISE_CONTROLS)}
+                >
+                    <NoiseControls showLabel={false} />
+                </MacroSection>
 
-                <div className="bv-macro-section">
-                    <div className={`bv-macro-section-header ${isBlurModified ? 'modified' : ''}`} onClick={() => toggleSection('blur')}>
-                        <div className="bv-macro-section-title">
-                            <ChevronDown size={16} className={`bv-macro-section-chevron ${openSections.blur ? '' : 'collapsed'}`} />
-                            <h2>BLUR</h2>
-                        </div>
-                        <div className="bv-macro-section-actions">
-                            {isBlurModified && (
-                                <button
-                                    type="button"
-                                    className="bv-macro-section-btn"
-                                    title="Reset blur"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        resetKeys(blurKeys);
-                                    }}
-                                >
-                                    <RotateCcw size={16} strokeWidth={1.5} />
-                                </button>
-                            )}
-                            <button
-                                type="button"
-                                className="bv-macro-section-btn"
-                                title="Randomize blur"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    randomizeKeys(blurKeys, BLUR_CONTROLS);
-                                }}
-                            >
-                                <Dices size={16} strokeWidth={1.5} />
-                            </button>
-                        </div>
-                    </div>
-                    <div className={`bv-macro-section-content ${openSections.blur ? '' : 'collapsed'}`}>
-                        <BlurControls showLabel={false} />
-                    </div>
-                </div>
+                <MacroSection
+                    title="BLUR"
+                    collapsible
+                    isOpen={openSections.blur}
+                    onToggle={() => toggleSection('blur')}
+                    isModified={isBlurModified}
+                    onReset={() => resetKeys(blurKeys)}
+                    onRandomize={() => randomizeKeys(blurKeys, BLUR_CONTROLS)}
+                >
+                    <BlurControls showLabel={false} />
+                </MacroSection>
             </div>
 
             {showHistogram && shellHost && createPortal(

@@ -1,0 +1,58 @@
+:root {
+    /* Typography */
+    --font-mono: 'Sono', monospace;
+    font-variation-settings: 'MONO' 1;
+    font-feature-settings: 'mono' 1;
+
+    /* Color Palette */
+    --color-bg: #12120F;
+    --color-text: #EEEEDF;
+    
+    /* Interactive & Utility Colors */
+    --color-hover: rgba(255, 255, 255, 0.1);
+    --color-bg-subtle: color-mix(in srgb, var(--color-text) 3%, transparent);
+    --color-bg-subtle-hover: color-mix(in srgb, var(--color-text) 10%, transparent);
+    --color-text-subtle: color-mix(in srgb, var(--color-text) 72%, transparent);
+    --color-text-muted: color-mix(in srgb, var(--color-text) 58%, transparent);
+
+    /* White shade hierarchy for buttons and controls */
+    --btn-color-default: color-mix(in srgb, var(--color-text) 68%, transparent);
+    --btn-border-default: color-mix(in srgb, var(--color-text) 20%, transparent);
+    --btn-bg-default: color-mix(in srgb, var(--color-text) 4%, transparent);
+
+    --btn-color-hover: color-mix(in srgb, var(--color-text) 90%, transparent);
+    --btn-border-hover: color-mix(in srgb, var(--color-text) 42%, transparent);
+    --btn-bg-hover: color-mix(in srgb, var(--color-text) 9%, transparent);
+
+    --btn-color-active: var(--color-bg);
+    --btn-border-active: var(--color-text);
+    --btn-bg-active: var(--color-text);
+    
+    /* Borders */
+    --color-border: color-mix(in srgb, var(--color-text) 28%, transparent);
+    --color-border-subtle: color-mix(in srgb, var(--color-text) 22%, transparent);
+    --color-border-hover: color-mix(in srgb, var(--color-text) 48%, transparent);
+    --color-border-focus: var(--color-text);
+    
+    /* Inputs */
+    --input-surface: color-mix(in srgb, var(--color-bg) 50%, black);
+    --input-surface-hover: var(--color-hover);
+    --input-surface-focus: rgb(9, 9, 9);
+    
+    /* Floating Panels / Tooltips */
+    --color-backdrop: rgba(0, 0, 0, 0.58);
+    --color-floating-bg: rgba(0, 0, 0, 0.85);
+    --color-floating-border: rgba(255, 255, 255, 0.12);
+    --shadow-floating: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-floating-inset: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    --filter-floating-blur: blur(4px);
+    
+    /* State & Accent Colors */
+    --color-danger: #b53636;
+    --color-danger-text: #ffc8c8;
+    --color-danger-hover: #e14a4a;
+    --color-danger-bg-hover: color-mix(in srgb, var(--color-danger) 15%, transparent);
+    --color-success: #5cd56f;
+    --color-pending: #56a8ff;
+    --color-modified: #e43b44;
+}

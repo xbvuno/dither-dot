@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FileUp, Clipboard, Camera, CameraOff, Dices } from 'lucide-react';
+import MacroSection from '../components/ui/MacroSection';
 import useImageStore from '../stores/media/imageStore';
 import useGalleryStore from '../stores/data/galleryStore';
 import useGifStore from '../stores/media/gifStore';
@@ -263,9 +264,7 @@ export default function ImportPage() {
 
   return (
     <div>
-      <div className='bv-macro-section'>
-        <h2>IMPORT</h2>
-
+      <MacroSection title="IMPORT">
         <div className='bv-section import-dropzone-section'>
           <p className='bv-label'>DROP OR PASTE</p>
           <div
@@ -342,57 +341,58 @@ export default function ImportPage() {
         </div>
 
         {webcamActive && <WebcamSection />}
-      </div>
+      </MacroSection>
 
-      <div className='bv-macro-section'>
-        <h2>GALLERY</h2>
+      <MacroSection title="GALLERY">
         <SourceSection />
         <GallerySection />
-      </div>
+      </MacroSection>
 
-      <div className='bv-section pipeline-section'>
-        <div className='bv-controls-row'>
-          <span className='bv-label'>PIPELINE</span>
-          <div className='bv-option-group histogram-toggle-group'>
-            <button
-              type='button'
-              className={`bv-option-btn${showPipeline ? ' active' : ''}`}
-              onClick={() => setShowPipeline(true)}
-            >
-              SHOW
-            </button>
-            <button
-              type='button'
-              className={`bv-option-btn${!showPipeline ? ' active' : ''}`}
-              onClick={() => setShowPipeline(false)}
-            >
-              HIDE
-            </button>
+      <MacroSection title="SETTINGS">
+        <div className='bv-section pipeline-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>PIPELINE</span>
+            <div className='bv-option-group histogram-toggle-group'>
+              <button
+                type='button'
+                className={`bv-option-btn${showPipeline ? ' active' : ''}`}
+                onClick={() => setShowPipeline(true)}
+              >
+                SHOW
+              </button>
+              <button
+                type='button'
+                className={`bv-option-btn${!showPipeline ? ' active' : ''}`}
+                onClick={() => setShowPipeline(false)}
+              >
+                HIDE
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className='bv-section force-cpu-section'>
-        <div className='bv-controls-row'>
-          <span className='bv-label'>FORCE CPU</span>
-          <div className='bv-option-group histogram-toggle-group'>
-            <button
-              type='button'
-              className={`bv-option-btn${forceCpu ? ' active' : ''}`}
-              onClick={() => setForceCpu(true)}
-            >
-              ON
-            </button>
-            <button
-              type='button'
-              className={`bv-option-btn${!forceCpu ? ' active' : ''}`}
-              onClick={() => setForceCpu(false)}
-            >
-              OFF
-            </button>
+        <div className='bv-section force-cpu-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>FORCE CPU</span>
+            <div className='bv-option-group histogram-toggle-group'>
+              <button
+                type='button'
+                className={`bv-option-btn${forceCpu ? ' active' : ''}`}
+                onClick={() => setForceCpu(true)}
+              >
+                ON
+              </button>
+              <button
+                type='button'
+                className={`bv-option-btn${!forceCpu ? ' active' : ''}`}
+                onClick={() => setForceCpu(false)}
+              >
+                OFF
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </MacroSection>
 
       {pendingImport && (
         <LargeImageDialog

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import usePaletteStore, { EXTRACT_METHOD } from '../stores/data/paletteStore';
 import SliderBundle from '../components/ui/shared/SliderBundle';
+import MacroSection from '../components/ui/MacroSection';
 import PaletteImportModal from '../components/palette/PaletteImportModal';
 import PaletteExportModal from '../components/palette/PaletteExportModal';
 import PaletteEditorPanel from '../components/palette/PaletteEditorPanel';
@@ -497,30 +498,27 @@ export default function PalettePage() {
 
   return (
     <div ref={setRootNode}>
-      <div className="bv-macro-section">
-        <h2>PALETTE</h2>
+      <MacroSection title="PALETTE">
         <MethodSection />
         <ColorCountSection />
-      </div>
+      </MacroSection>
 
-      <div className="bv-macro-section">
-        <h2>COLORS</h2>
+      <MacroSection title="COLORS">
         <ColorsSection
           selectedIds={selectedIds}
           onToggleSelect={handleToggleSelect}
           onSelectAll={handleSelectAll}
           onDeselectAll={handleDeselectAll}
         />
-      </div>
+      </MacroSection>
 
       {method === EXTRACT_METHOD.CUSTOM && (
-        <div className="bv-macro-section">
-          <h2>LIBRARY</h2>
+        <MacroSection title="LIBRARY">
           <PaletteLibrarySection
             onOpenImport={() => setIsImportModalOpen(true)}
             onOpenExport={() => setIsExportModalOpen(true)}
           />
-        </div>
+        </MacroSection>
       )}
 
       {method === EXTRACT_METHOD.CUSTOM && selectedColors.length > 0 && (

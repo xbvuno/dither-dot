@@ -1,0 +1,156 @@
+.resizable-shell {
+    position: relative;
+    height: 100%;
+    min-height: 0;
+    min-width: 16rem;
+    width: 20%;
+    max-width: 64rem;
+    flex-shrink: 0;
+}
+
+aside {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    height: 100%;
+    min-height: 0;
+    width: 100%;
+    container-type: inline-size;
+    container-name: aside-panel;
+    border-right: 1px solid var(--color-border);
+    border-left: 1px solid var(--color-border);
+    background-color: var(--color-bg);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-gutter: stable;
+    padding: 0.75rem 0 1.5rem 0;
+}
+
+.resize-handle {
+    position: absolute;
+    top: 0;
+    right: -12px;
+    bottom: 0;
+    width: 12px;
+    cursor: col-resize;
+    z-index: 20;
+    background-color: transparent;
+    transition: 0.2s background-color;
+}
+
+.resize-handle::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 6px;
+    width: 1px;
+    height: 2.8rem;
+    transform: translate(-50%, -50%);
+    background: color-mix(in srgb, var(--color-text) 34%, transparent);
+}
+
+.resize-handle:hover {
+    background-color: var(--color-hover);
+}
+
+.resize-handle:hover::before,
+.resize-handle.dragging::before {
+    opacity: 1;
+}
+
+#root:has(.resize-handle.dragging) {
+    cursor: col-resize;
+}
+
+/* Scrollbars for aside */
+aside::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background-color: rgba(0, 0, 0, 0.45);
+}
+
+aside::-webkit-scrollbar-track {
+    background-color: rgba(0, 0, 0, 0.45);
+}
+
+aside::-webkit-scrollbar-thumb {
+    background-color: var(--color-text);
+    opacity: 0.2;
+}
+
+aside::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-text);
+    cursor: grab;
+}
+
+aside::-webkit-scrollbar-corner {
+    background: rgba(0, 0, 0, 0.45);
+}
+
+/* Mobile responsive handling for aside */
+@media (max-width: 768px) {
+    .mobile-resize-handle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 2.0rem;
+        cursor: row-resize;
+        touch-action: none !important;
+        user-select: none !important;
+        -webkit-user-select: none !important;
+        z-index: 30;
+        background-color: var(--color-bg) !important;
+        border-top: 1px solid var(--color-border) !important;
+        box-sizing: border-box;
+        flex-shrink: 0;
+    }
+
+    .mobile-resize-pill {
+        width: 2.8rem;
+        height: 2px;
+        border-radius: 1px;
+        background-color: var(--color-border-hover);
+        opacity: 0.8;
+        transition: opacity 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .mobile-resize-handle:hover .mobile-resize-pill,
+    .mobile-resize-handle.dragging .mobile-resize-pill {
+        opacity: 1;
+        background-color: var(--color-text-subtle);
+        transform: scaleX(1.15);
+    }
+
+    .resizable-shell {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 42vh;
+        min-height: 2.0rem;
+        max-height: 65vh;
+        flex-shrink: 0;
+        border-top: none;
+        box-sizing: border-box !important;
+    }
+
+    .resize-handle {
+        display: none;
+    }
+
+    aside {
+        border-left: none;
+        border-right: none;
+        border-top: none !important;
+        background: var(--color-bg);
+        padding: 0.75rem 0 3.0rem 0 !important;
+        flex: 1 1 0% !important;
+        min-height: 0 !important;
+        height: auto !important;
+        box-sizing: border-box !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch;
+    }
+}

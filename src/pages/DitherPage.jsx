@@ -1,3 +1,4 @@
+import MacroSection from '../components/ui/MacroSection';
 import SliderBundle from '../components/ui/shared/SliderBundle';
 import useDitherStore, { DITHER_CONTROLS, DITHER_METHOD } from '../stores/engine/ditherStore';
 
@@ -60,8 +61,7 @@ export default function DitherPage() {
 
   return (
     <div>
-      <div className='bv-macro-section'>
-        <h2>DITHER</h2>
+      <MacroSection title="DITHER">
         <div className='bv-section'>
           <p className='bv-label'>METHOD</p>
           <div className='bv-option-group'>
@@ -97,11 +97,10 @@ export default function DitherPage() {
             })}
           </div>
         </div>
-      </div>
+      </MacroSection>
 
       {showControls && (
-        <div className='bv-macro-section'>
-          <h2>CONTROLS</h2>
+        <MacroSection title="CONTROLS">
           <div className='bv-section'>
             {showSierraVariants && (
               <div className='bv-section' style={{ marginBottom: '0.6rem' }}>
@@ -158,9 +157,10 @@ export default function DitherPage() {
               />
             )}
           </div>
-        </div>
+        </MacroSection>
       )}
     </div>
   );
 }
+
 

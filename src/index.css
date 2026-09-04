@@ -1,3 +1,4 @@
+@import './styles/tokens.css';
 @import './styles/app-base.css';
 @import './styles/app-controls.css';
 @import './styles/app-palette.css';

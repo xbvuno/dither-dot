@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, RotateCcw } from "lucide-react";
+import MacroSection from "../ui/MacroSection";
 import SliderBundle from "../ui/shared/SliderBundle";
 import useSizeStore from "../../stores/media/sizeStore";
 import useWebcamStore from "../../stores/media/webcamStore";
@@ -63,17 +63,15 @@ export default function SizeControls() {
     });
   };
 
-  const webcamActive = useWebcamStore(s => s.active);
-  const cameraMaxW = useWebcamStore(s => s.maxWidth) || 1280;
-  const cameraMaxH = useWebcamStore(s => s.maxHeight) || 720;
-  const maxSliderWidth = webcamActive ? cameraMaxW : width;
-  const maxSliderHeight = webcamActive ? cameraMaxH : height;
+  const webcamActive = useWebcamStore((s) => s.active);
+  const maxSliderWidth = Math.max(1280, width || 0);
+  const maxSliderHeight = Math.max(720, height || 0);
 
   if (width == null || height == null) return null;
 
   const ratioLabel = formatRatio(customWidth, customHeight);
 
-  // Percentages for preview box
+  // Percent calculations for preview box
   const pctLeft = customWidth ? (crop.left / customWidth) * 100 : 0;
   const pctRight = customWidth ? (crop.right / customWidth) * 100 : 0;
   const pctTop = customHeight ? (crop.top / customHeight) * 100 : 0;
@@ -97,160 +95,120 @@ export default function SizeControls() {
 
   return (
     <>
-      <div className="bv-macro-section">
-        <div 
-          className={`bv-macro-section-header ${isResizingModified ? 'modified' : ''}`} 
-          onClick={() => toggleSection('resizing')}
-        >
-          <div className="bv-macro-section-title">
-            <ChevronDown size={16} className={`bv-macro-section-chevron ${openSections.resizing ? '' : 'collapsed'}`} />
-            <h2>RESIZING</h2>
-          </div>
-          <div className="bv-macro-section-actions">
-            {isResizingModified && (
-              <button
-                type="button"
-                className="bv-macro-section-btn"
-                title="Reset resizing"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  resetSizeToCurrent();
-                }}
-              >
-                <RotateCcw size={16} strokeWidth={1.5} />
-              </button>
-            )}
-          </div>
+      <MacroSection
+        title="RESIZING"
+        collapsible
+        isOpen={openSections.resizing}
+        onToggle={() => toggleSection('resizing')}
+        isModified={isResizingModified}
+        onReset={resetSizeToCurrent}
+      >
+        <div className="bv-section">
+          <p className="bv-label">SIZE</p>
+          <SliderBundle
+            min={1}
+            max={maxSliderWidth}
+            defaultValue={width}
+            step={1}
+            label="WIDTH"
+            value={customWidth}
+            onChange={setCustomWidth}
+          />
+          <SliderBundle
+            min={1}
+            max={maxSliderHeight}
+            defaultValue={height}
+            step={1}
+            label="HEIGHT"
+            value={customHeight}
+            onChange={setCustomHeight}
+          />
         </div>
 
-        <div className={`bv-macro-section-content ${openSections.resizing ? '' : 'collapsed'}`}>
-          <div className="bv-section">
-            <p className="bv-label">SIZE</p>
-            <SliderBundle
-              min={1}
-              max={maxSliderWidth}
-              defaultValue={width}
-              step={1}
-              label="WIDTH"
-              value={customWidth}
-              onChange={setCustomWidth}
-            />
-            <SliderBundle
-              min={1}
-              max={maxSliderHeight}
-              defaultValue={height}
-              step={1}
-              label="HEIGHT"
-              value={customHeight}
-              onChange={setCustomHeight}
-            />
-          </div>
-
-          <div className="bv-section">
-            <div className="bv-controls-row">
-              <span className="bv-label">RATIO{ratioLabel ? ` [${ratioLabel}]` : ''}</span>
-              <div className="bv-option-group histogram-toggle-group size-controls-ratio-buttons">
-                <button
-                  className={`bv-option-btn${ratioLocked ? ' active' : ''}`}
-                  onClick={() => setRatioLocked(true)}
-                >
-                  KEEP
-                </button>
-                <button
-                  className={`bv-option-btn${!ratioLocked ? ' active' : ''}`}
-                  onClick={() => setRatioLocked(false)}
-                >
-                  FREE
-                </button>
-              </div>
+        <div className="bv-section">
+          <div className="bv-controls-row">
+            <span className="bv-label">RATIO{ratioLabel ? ` [${ratioLabel}]` : ''}</span>
+            <div className="bv-option-group histogram-toggle-group size-controls-ratio-buttons">
+              <button
+                className={`bv-option-btn${ratioLocked ? ' active' : ''}`}
+                onClick={() => setRatioLocked(true)}
+              >
+                KEEP
+              </button>
+              <button
+                className={`bv-option-btn${!ratioLocked ? ' active' : ''}`}
+                onClick={() => setRatioLocked(false)}
+              >
+                FREE
+              </button>
             </div>
           </div>
         </div>
-      </div>
+      </MacroSection>
 
-      <div className="bv-macro-section">
-        <div 
-          className={`bv-macro-section-header ${isCroppingModified ? 'modified' : ''}`} 
-          onClick={() => toggleSection('cropping')}
-        >
-          <div className="bv-macro-section-title">
-            <ChevronDown size={16} className={`bv-macro-section-chevron ${openSections.cropping ? '' : 'collapsed'}`} />
-            <h2>CROPPING</h2>
-          </div>
-          <div className="bv-macro-section-actions">
-            {isCroppingModified && (
-              <button
-                type="button"
-                className="bv-macro-section-btn"
-                title="Reset cropping"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  resetCrop();
-                }}
-              >
-                <RotateCcw size={16} strokeWidth={1.5} />
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className={`bv-macro-section-content ${openSections.cropping ? '' : 'collapsed'}`}>
-          <div className="bv-section">
-            <div className="crop-preview-container">
-              <div className="crop-preview-frame" style={{ width: frameW, height: frameH, position: 'relative', border: '1px solid var(--color-border, #444)', overflow: 'hidden', background: '#0a0a0a' }}>
-                {/* Shaded cropped areas */}
-                <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: `${pctTop}%`, background: 'rgba(255, 59, 48, 0.15)' }} />
-                <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: `${pctBottom}%`, background: 'rgba(255, 59, 48, 0.15)' }} />
-                <div style={{ position: 'absolute', left: 0, top: `${pctTop}%`, bottom: `${pctBottom}%`, width: `${pctLeft}%`, background: 'rgba(255, 59, 48, 0.15)' }} />
-                <div style={{ position: 'absolute', right: 0, top: `${pctTop}%`, bottom: `${pctBottom}%`, width: `${pctRight}%`, background: 'rgba(255, 59, 48, 0.15)' }} />
-                
-                {/* Red grid lines */}
-                {pctLeft > 0 && <div style={{ position: 'absolute', left: `${pctLeft}%`, top: 0, bottom: 0, width: '1px', backgroundColor: '#ff3b30' }} />}
-                {pctRight > 0 && <div style={{ position: 'absolute', right: `${pctRight}%`, top: 0, bottom: 0, width: '1px', backgroundColor: '#ff3b30' }} />}
-                {pctTop > 0 && <div style={{ position: 'absolute', top: `${pctTop}%`, left: 0, right: 0, height: '1px', backgroundColor: '#ff3b30' }} />}
-                {pctBottom > 0 && <div style={{ position: 'absolute', bottom: `${pctBottom}%`, left: 0, right: 0, height: '1px', backgroundColor: '#ff3b30' }} />}
-              </div>
+      <MacroSection
+        title="CROPPING"
+        collapsible
+        isOpen={openSections.cropping}
+        onToggle={() => toggleSection('cropping')}
+        isModified={isCroppingModified}
+        onReset={resetCrop}
+      >
+        <div className="bv-section">
+          <div className="crop-preview-container">
+            <div className="crop-preview-frame" style={{ width: frameW, height: frameH, position: 'relative', border: '1px solid var(--color-border, #444)', overflow: 'hidden', background: '#0a0a0a' }}>
+              {/* Shaded cropped areas */}
+              <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: `${pctTop}%`, background: 'rgba(255, 59, 48, 0.15)' }} />
+              <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: `${pctBottom}%`, background: 'rgba(255, 59, 48, 0.15)' }} />
+              <div style={{ position: 'absolute', left: 0, top: `${pctTop}%`, bottom: `${pctBottom}%`, width: `${pctLeft}%`, background: 'rgba(255, 59, 48, 0.15)' }} />
+              <div style={{ position: 'absolute', right: 0, top: `${pctTop}%`, bottom: `${pctBottom}%`, width: `${pctRight}%`, background: 'rgba(255, 59, 48, 0.15)' }} />
+              
+              {/* Red grid lines */}
+              {pctLeft > 0 && <div style={{ position: 'absolute', left: `${pctLeft}%`, top: 0, bottom: 0, width: '1px', backgroundColor: '#ff3b30' }} />}
+              {pctRight > 0 && <div style={{ position: 'absolute', right: `${pctRight}%`, top: 0, bottom: 0, width: '1px', backgroundColor: '#ff3b30' }} />}
+              {pctTop > 0 && <div style={{ position: 'absolute', top: `${pctTop}%`, left: 0, right: 0, height: '1px', backgroundColor: '#ff3b30' }} />}
+              {pctBottom > 0 && <div style={{ position: 'absolute', bottom: `${pctBottom}%`, left: 0, right: 0, height: '1px', backgroundColor: '#ff3b30' }} />}
             </div>
-
-            <SliderBundle
-              min={0}
-              max={customHeight - crop.bottom - 1}
-              defaultValue={0}
-              step={1}
-              label="TOP"
-              value={crop.top}
-              onChange={setCropTop}
-            />
-            <SliderBundle
-              min={0}
-              max={customHeight - crop.top - 1}
-              defaultValue={0}
-              step={1}
-              label="BOTTOM"
-              value={crop.bottom}
-              onChange={setCropBottom}
-            />
-            <SliderBundle
-              min={0}
-              max={customWidth - crop.right - 1}
-              defaultValue={0}
-              step={1}
-              label="LEFT"
-              value={crop.left}
-              onChange={setCropLeft}
-            />
-            <SliderBundle
-              min={0}
-              max={customWidth - crop.left - 1}
-              defaultValue={0}
-              step={1}
-              label="RIGHT"
-              value={crop.right}
-              onChange={setCropRight}
-            />
           </div>
+
+          <SliderBundle
+            min={0}
+            max={customHeight - crop.bottom - 1}
+            defaultValue={0}
+            step={1}
+            label="TOP"
+            value={crop.top}
+            onChange={setCropTop}
+          />
+          <SliderBundle
+            min={0}
+            max={customHeight - crop.top - 1}
+            defaultValue={0}
+            step={1}
+            label="BOTTOM"
+            value={crop.bottom}
+            onChange={setCropBottom}
+          />
+          <SliderBundle
+            min={0}
+            max={customWidth - crop.right - 1}
+            defaultValue={0}
+            step={1}
+            label="LEFT"
+            value={crop.left}
+            onChange={setCropLeft}
+          />
+          <SliderBundle
+            min={0}
+            max={customWidth - crop.left - 1}
+            defaultValue={0}
+            step={1}
+            label="RIGHT"
+            value={crop.right}
+            onChange={setCropRight}
+          />
         </div>
-      </div>
+      </MacroSection>
     </>
   );
 }

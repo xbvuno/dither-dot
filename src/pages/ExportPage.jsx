@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Save, Copy, Eye, Trash2 } from 'lucide-react';
+import MacroSection from '../components/ui/MacroSection';
 import useImageStore from '../stores/media/imageStore';
 import useGifStore from '../stores/media/gifStore';
 import useWebcamStore from '../stores/media/webcamStore';
@@ -271,8 +272,7 @@ export default function ExportPage() {
 
   return (
     <div>
-      <div className='bv-macro-section'>
-        <h2>EXPORT</h2>
+      <MacroSection title="EXPORT">
         <div className='bv-section'>
           <label htmlFor='export-name-input' className='bv-label' style={{ display: 'block' }}>EXPORT NAME</label>
           <div className='export-name-input-row'>
@@ -417,7 +417,7 @@ export default function ExportPage() {
             </div>
           )
         )}
-      </div>
+      </MacroSection>
     </div>
   );
 }
