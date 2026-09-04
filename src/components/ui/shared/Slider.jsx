@@ -1,5 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from "react";
-import { Minus, Plus } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
 import { triggerHapticPulse } from "../../../utils/haptics";
 import "./styles/Slider.css";
 
@@ -36,6 +35,9 @@ export default function Slider({
   onChange,
   label,
   'aria-label': ariaLabelProp,
+  isSelected: isSelectedProp,
+  onSelect,
+  onDeselect,
 }) {
   const ariaLabel = ariaLabelProp || label || 'Slider';
   const trackRef = useRef(null);
@@ -46,7 +48,9 @@ export default function Slider({
   const rafRef = useRef(null);
   const selectedRef = useRef(false);
 
-  const [isSelected, setIsSelected] = useState(false);
+  const [internalSelected, setInternalSelected] = useState(false);
+  const isSelected = isSelectedProp !== undefined ? isSelectedProp : internalSelected;
+  selectedRef.current = isSelected;
 
   const isControlled = controlledValue !== undefined;
 
@@ -61,9 +65,6 @@ export default function Slider({
   const numMax = Number(max);
   const numStep = Number(step);
   const numValue = Number(displayValue);
-
-  const isAtMin = !Number.isNaN(numValue) && !Number.isNaN(numMin) && numValue <= numMin + 1e-5;
-  const isAtMax = !Number.isNaN(numValue) && !Number.isNaN(numMax) && numValue >= numMax - 1e-5;
 
   const stateRef = useRef({});
   stateRef.current.value = numValue;
@@ -123,79 +124,6 @@ export default function Slider({
     if (!Number.isNaN(curr) && !Number.isNaN(mn) && curr <= mn + 1e-5) return;
     setInternalValue(curr - stp * t);
   };
-
-  /* ---------- hold-to-repeat for step buttons ---------- */
-
-  const repeatTimerRef = useRef(null);
-
-  const clearRepeat = useCallback(() => {
-    if (repeatTimerRef.current) {
-      clearInterval(repeatTimerRef.current);
-      clearTimeout(repeatTimerRef.current);
-      repeatTimerRef.current = null;
-    }
-  }, []);
-
-  const handleStepPointerDown = (e, direction) => {
-    if (e.button !== 0) return;
-    e.preventDefault();
-    e.stopPropagation();
-
-    clearRepeat();
-
-    if (direction === 'dec') {
-      if (isAtMin) return;
-      stepDown();
-    } else {
-      if (isAtMax) return;
-      stepUp();
-    }
-
-    repeatTimerRef.current = setTimeout(() => {
-      repeatTimerRef.current = setInterval(() => {
-        const s = stateRef.current;
-        const val = Number(s.value);
-        const mn = Number(s.min);
-        const mx = Number(s.max);
-
-        if (direction === 'dec') {
-          if (val <= mn + 1e-5) {
-            clearRepeat();
-          } else {
-            stepDown();
-          }
-        } else {
-          if (val >= mx - 1e-5) {
-            clearRepeat();
-          } else {
-            stepUp();
-          }
-        }
-      }, 70);
-    }, 300);
-  };
-
-  const handleStepPointerUp = (e) => {
-    e?.stopPropagation?.();
-    clearRepeat();
-  };
-
-  const handleStepClick = (e) => {
-    e.stopPropagation();
-  };
-
-  useEffect(() => {
-    const handleGlobalPointerUp = () => {
-      clearRepeat();
-    };
-    window.addEventListener("pointerup", handleGlobalPointerUp);
-    window.addEventListener("pointercancel", handleGlobalPointerUp);
-    return () => {
-      clearRepeat();
-      window.removeEventListener("pointerup", handleGlobalPointerUp);
-      window.removeEventListener("pointercancel", handleGlobalPointerUp);
-    };
-  }, [clearRepeat]);
 
   /* ---------- thumb position ---------- */
 
@@ -408,13 +336,15 @@ export default function Slider({
 
   const handleSelect = () => {
     selectedRef.current = true;
-    setIsSelected(true);
+    setInternalSelected(true);
+    onSelect?.();
     containerRef.current?.focus();
   };
 
   const handleDeselect = () => {
     selectedRef.current = false;
-    setIsSelected(false);
+    setInternalSelected(false);
+    onDeselect?.();
   };
 
   return (
@@ -423,52 +353,24 @@ export default function Slider({
       className={`bv slider${isSelected ? ' selected' : ''}`}
       role="slider"
       aria-label={ariaLabel}
-      aria-valuemin={min}
-      aria-valuemax={max}
-      aria-valuenow={displayValue}
+      aria-valuemin={numMin}
+      aria-valuemax={numMax}
+      aria-valuenow={numValue}
       tabIndex={0}
       onFocus={handleSelect}
       onBlur={handleDeselect}
       onPointerDown={handleSelect}
     >
-      <button
-        type="button"
-        className="slider-step-btn slider-step-btn--dec"
-        aria-label={`Decrease ${ariaLabel}`}
-        disabled={isAtMin}
-        tabIndex={isAtMin ? -1 : 0}
-        onPointerDown={(e) => handleStepPointerDown(e, "dec")}
-        onPointerUp={handleStepPointerUp}
-        onPointerCancel={handleStepPointerUp}
-        onClick={(e) => handleStepClick(e, "dec")}
-      >
-        <Minus size={11} strokeWidth={2.5} />
-      </button>
-
       <div
         className="track"
         ref={trackRef}
         onDoubleClick={handleReset}
       >
-        <div className={`thumb${defaultValue !== undefined && displayValue !== defaultValue ? ' modified' : ''}`} ref={thumbRef} />
+        <div className={`thumb${defaultValue !== undefined && numValue !== Number(defaultValue) ? ' modified' : ''}`} ref={thumbRef} />
         {defaultValue !== undefined && (
           <div className="thumb default" ref={defaultThumbRef} />
         )}
       </div>
-
-      <button
-        type="button"
-        className="slider-step-btn slider-step-btn--inc"
-        aria-label={`Increase ${ariaLabel}`}
-        disabled={isAtMax}
-        tabIndex={isAtMax ? -1 : 0}
-        onPointerDown={(e) => handleStepPointerDown(e, "inc")}
-        onPointerUp={handleStepPointerUp}
-        onPointerCancel={handleStepPointerUp}
-        onClick={(e) => handleStepClick(e, "inc")}
-      >
-        <Plus size={11} strokeWidth={2.5} />
-      </button>
     </div>
   );
 }

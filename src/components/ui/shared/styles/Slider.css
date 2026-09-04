@@ -3,7 +3,6 @@
     height: 1.25rem;
     display: flex;
     align-items: center;
-    gap: 0.35rem;
     margin-top: 0.4rem;
     margin-bottom: 1rem;
 }
@@ -48,89 +47,6 @@
     pointer-events: none;
 }
 
-/* Step Buttons (- / +) */
-.bv.slider .slider-step-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.25rem;
-    height: 1.25rem;
-    padding: 0;
-    margin: 0 0.1rem;
-    flex-shrink: 0;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--color-text-subtle);
-    cursor: pointer;
-    touch-action: manipulation;
-    user-select: none;
-    transition: background-color 0.12s ease, color 0.12s ease, transform 0.08s ease;
-}
-
-.bv.slider .slider-step-btn:hover:not(:disabled) {
-    background: var(--color-hover);
-    color: var(--color-text);
-}
-
-.bv.slider .slider-step-btn:active:not(:disabled) {
-    background: var(--btn-bg-active);
-    color: var(--btn-color-active);
-    transform: scale(0.9);
-}
-
-.bv.slider .slider-step-btn:focus-visible {
-    outline: none;
-    background: var(--color-hover);
-    color: var(--color-text);
-}
-
-.bv.slider .slider-step-btn:disabled {
-    opacity: 0.2;
-    background: transparent;
-    color: var(--color-text-muted);
-    cursor: not-allowed;
-    transform: none;
-}
-
-.bv.slider .slider-step-btn svg {
-    display: block;
-    pointer-events: none;
-    flex-shrink: 0;
-}
-
-/* Legacy & generic button fallback */
-.slider-bundle-reset-btn,
-.bv [role=button] {
-    background: transparent;
-    border: none;
-    padding: 0.15rem 0.35rem;
-    font-size: 0.75rem;
-    font-family: var(--font-mono);
-    color: var(--color-text-subtle);
-    cursor: pointer;
-    touch-action: manipulation;
-    user-select: none;
-    transition: color 0.12s ease, transform 0.08s ease;
-}
-
-.slider-bundle-reset-btn:hover,
-.bv [role=button]:hover:not([disabled]) {
-    color: var(--color-text);
-}
-
-.slider-bundle-reset-btn:active,
-.bv [role=button]:active:not([disabled]) {
-    color: var(--color-text);
-    transform: scale(0.95);
-}
-
-.bv [role="button"][disabled] {
-    opacity: 0.25;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
 .bv.slider-bundle {
     position: relative;
     margin-bottom: 1rem;
@@ -153,6 +69,70 @@
     color: var(--color-text);
 }
 
+.slider-bundle-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-left: auto;
+}
+
+.slider-bundle-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+/* Step Buttons (- / +) */
+.slider-step-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    margin: 0;
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--color-text-subtle);
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    transition: background-color 0.12s ease, color 0.12s ease, transform 0.08s ease;
+}
+
+.slider-step-btn:hover:not(:disabled) {
+    background: var(--color-hover);
+    color: var(--color-text);
+}
+
+.slider-step-btn:active:not(:disabled) {
+    background: var(--btn-bg-active);
+    color: var(--btn-color-active);
+    transform: scale(0.9);
+}
+
+.slider-step-btn:focus-visible {
+    outline: none;
+    background: var(--color-hover);
+    color: var(--color-text);
+}
+
+.slider-step-btn:disabled {
+    opacity: 0.2;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+    transform: none;
+}
+
+.slider-step-btn svg {
+    display: block;
+    pointer-events: none;
+    flex-shrink: 0;
+}
+
 .bv.slider-bundle input {
     background-color: var(--input-surface);
     border: none;
@@ -161,25 +141,12 @@
     padding: 0.1rem 1rem;
     width: 4ch;
     border: 1px solid transparent;
-
-    margin-left: auto;
     flex-shrink: 1;
     transition: 0.2s;
 }
 
 .bv.slider-bundle input:hover {
     background-color: var(--input-surface-hover);
-}
-.bv.slider-bundle .slider-bundle-reset-btn,
-.bv.slider-bundle [aria-label^="Reset"],
-.bv.slider-bundle [aria-label="reset"] {
-    margin-left: auto;
-}
-
-.bv.slider-bundle:has(.slider-bundle-reset-btn) input,
-.bv.slider-bundle:has([aria-label^="Reset"]) input,
-.bv.slider-bundle:has([aria-label="reset"]) input {
-    margin-left: 0.5rem;
 }
 
 .bv.slider-bundle input:focus-visible {
@@ -208,11 +175,6 @@
         height: 1.5rem;
         width: 3px;
         top: -0.1rem;
-    }
-
-    .bv.slider > [role=button],
-    .bv.slider > .slider-step-btn {
-        display: none;
     }
 }
 
