@@ -8,7 +8,7 @@ import PaletteExportModal from '../components/palette/PaletteExportModal';
 import PaletteEditorPanel from '../components/palette/PaletteEditorPanel';
 
 /* ---------------------------------- */
-/* COLOR COUNT                         */
+/* PALETTE SIZE                        */
 /* ---------------------------------- */
 
 function ColorCountSection() {
@@ -32,35 +32,72 @@ function ColorCountSection() {
 }
 
 /* ---------------------------------- */
-/* METHOD SELECTOR                    */
+/* PALETTE TYPE & METHOD SELECTOR     */
 /* ---------------------------------- */
 
-const METHODS = [
+const GENERATED_METHODS = [
   { id: EXTRACT_METHOD.MEDIAN_CUT, label: 'MEDIAN CUT' },
   { id: EXTRACT_METHOD.OCTREE, label: 'OCTREE' },
   { id: EXTRACT_METHOD.KMEANS, label: 'K-MEANS' },
-  { id: EXTRACT_METHOD.CUSTOM, label: 'CUSTOM' },
 ];
 
-function MethodSection() {
+function PaletteTypeAndMethodSection() {
   const method = usePaletteStore(s => s.method);
   const setMethod = usePaletteStore(s => s.setMethod);
+  const isCustom = method === EXTRACT_METHOD.CUSTOM;
+
+  const handleSelectType = (targetType) => {
+    if (targetType === 'custom') {
+      if (!isCustom) {
+        setMethod(EXTRACT_METHOD.CUSTOM);
+      }
+    } else {
+      if (isCustom) {
+        setMethod(EXTRACT_METHOD.OCTREE);
+      }
+    }
+  };
 
   return (
-    <div className="bv-section">
-      <p className="bv-label">METHOD</p>
-      <div className="bv-option-group">
-        {METHODS.map(m => (
+    <>
+      <div className="bv-section">
+        <p className="bv-label">TYPE</p>
+        <div className="bv-option-group">
           <button
-            key={m.id}
-            className={`bv-option-btn${method === m.id ? ' active' : ''}`}
-            onClick={() => setMethod(m.id)}
+            type="button"
+            className={`bv-option-btn${!isCustom ? ' active' : ''}`}
+            onClick={() => handleSelectType('generated')}
           >
-            {m.label}
+            GENERATED
           </button>
-        ))}
+          <button
+            type="button"
+            className={`bv-option-btn${isCustom ? ' active' : ''}`}
+            onClick={() => handleSelectType('custom')}
+          >
+            CUSTOM
+          </button>
+        </div>
       </div>
-    </div>
+
+      {!isCustom && (
+        <div className="bv-section">
+          <p className="bv-label">METHOD</p>
+          <div className="bv-option-group">
+            {GENERATED_METHODS.map(m => (
+              <button
+                key={m.id}
+                type="button"
+                className={`bv-option-btn${method === m.id ? ' active' : ''}`}
+                onClick={() => setMethod(m.id)}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -499,8 +536,8 @@ export default function PalettePage() {
   return (
     <div ref={setRootNode}>
       <MacroSection title="PALETTE">
-        <MethodSection />
         <ColorCountSection />
+        <PaletteTypeAndMethodSection />
       </MacroSection>
 
       <MacroSection title="COLORS">
