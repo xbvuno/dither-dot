@@ -182,10 +182,12 @@ footer {
 }
 
 .app-header-title-name {
+    display: inline-flex;
+    align-items: center;
     font-family: 'Bitcount Grid Single', sans-serif;
     margin-left: 0;
     font-size: 1.1rem;
-    line-height: 1;
+    line-height: normal;
     white-space: nowrap;
     letter-spacing: 0.08rem;
 }
@@ -203,17 +205,24 @@ footer {
     height: 100%;
     gap: 0.35rem;
     border: none;
+    border-top: 1px solid transparent;
     border-bottom: 1px solid transparent;
     background: transparent;
     color: var(--color-text);
     padding: 0 0.35rem;
     font-size: 0.76rem;
-    line-height: 1;
+    line-height: normal;
     font-family: inherit;
     font-weight: inherit;
     letter-spacing: 0.06em;
     text-decoration: none;
     cursor: pointer;
+}
+
+.header-link-label {
+    display: inline-flex;
+    align-items: center;
+    line-height: normal;
 }
 
 .header-link-btn svg {
@@ -684,7 +693,7 @@ h3 {
 
     .app-header-title-name {
         font-size: 0.95rem;
-        line-height: 1;
+        line-height: normal;
     }
 
     .header-logo-img {
