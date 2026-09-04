@@ -1,6 +1,8 @@
 :root {
     /* Typography */
     --font-mono: 'Sono', monospace;
+    font-variation-settings: 'MONO' 1;
+    font-feature-settings: 'mono' 1;
 
     /* Color Palette */
     --color-bg: #12120F;
@@ -12,6 +14,19 @@
     --color-bg-subtle-hover: color-mix(in srgb, var(--color-text) 10%, transparent);
     --color-text-subtle: color-mix(in srgb, var(--color-text) 72%, transparent);
     --color-text-muted: color-mix(in srgb, var(--color-text) 58%, transparent);
+
+    /* White shade hierarchy for buttons and controls */
+    --btn-color-default: color-mix(in srgb, var(--color-text) 68%, transparent);
+    --btn-border-default: color-mix(in srgb, var(--color-text) 20%, transparent);
+    --btn-bg-default: color-mix(in srgb, var(--color-text) 4%, transparent);
+
+    --btn-color-hover: color-mix(in srgb, var(--color-text) 90%, transparent);
+    --btn-border-hover: color-mix(in srgb, var(--color-text) 42%, transparent);
+    --btn-bg-hover: color-mix(in srgb, var(--color-text) 9%, transparent);
+
+    --btn-color-active: var(--color-text);
+    --btn-border-active: var(--color-text);
+    --btn-bg-active: color-mix(in srgb, var(--color-text) 20%, transparent);
     
     /* Borders */
     --color-border: color-mix(in srgb, var(--color-text) 28%, transparent);
@@ -48,9 +63,10 @@
 .fullscreen-blocker-btn,
 .footer-preview-btn,
 .gif-timeline-btn {
-    border: 1px solid var(--color-border);
-    background: var(--color-bg-subtle);
-    color: var(--color-text);
+    border: 1px solid var(--btn-border-default);
+    background: var(--btn-bg-default);
+    color: var(--btn-color-default);
+    font-weight: 400;
     cursor: pointer;
     transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
@@ -60,9 +76,9 @@
 .fullscreen-blocker-btn:hover,
 .footer-preview-btn:hover,
 .gif-timeline-btn:hover {
-    background: var(--color-bg-subtle-hover);
-    border-color: var(--color-border-hover);
-    color: var(--color-text);
+    background: var(--btn-bg-hover);
+    border-color: var(--btn-border-hover);
+    color: var(--btn-color-hover);
 }
 
 .bv-option-btn.active,
@@ -70,9 +86,10 @@
 .header-modal-close[aria-pressed='true'],
 .footer-preview-btn--active,
 .gif-timeline-btn.active {
-    background: var(--color-text);
-    color: var(--color-bg);
-    border-color: var(--color-text);
+    background: var(--btn-bg-active);
+    color: var(--btn-color-active);
+    border-color: var(--btn-border-active);
+    font-weight: 400;
 }
 
 .bv-option-btn:disabled,
@@ -100,12 +117,16 @@
     padding: 0;
     box-sizing: border-box;
     font-family: var(--font-mono);
+    font-variation-settings: 'MONO' 1;
+    font-feature-settings: 'mono' 1;
 }
 
 h2,
 p {
     font-family: var(--font-mono);
     font-size: 1rem;
+    font-variation-settings: 'MONO' 1;
+    font-feature-settings: 'mono' 1;
 }
 
 h2 {
@@ -419,7 +440,9 @@ main {
 }
 
 aside {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
     height: 100%;
     min-height: 0;
     width: 100%;
@@ -427,10 +450,11 @@ aside {
     container-name: aside-panel;
     border-right: 1px solid var(--color-border);
     border-left: 1px solid var(--color-border);
+    background-color: var(--color-bg);
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-gutter: stable;
-    padding: 0.75rem;
+    padding: 1rem 1.1rem 1.5rem 1.1rem;
 }
 
 .resize-handle {
