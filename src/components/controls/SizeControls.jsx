@@ -11,6 +11,7 @@ function gcd(a, b) {
   return a || 1;
 }
 
+
 function formatRatio(w, h) {
   if (!w || !h) return null;
   const d = gcd(w, h);
@@ -47,8 +48,8 @@ export default function SizeControls() {
       console.error("Error parsing open resizing sections", e);
     }
     return {
-      resizing: true,
-      cropping: true
+      cropping: true,
+      resize: true
     };
   });
 
@@ -69,16 +70,20 @@ export default function SizeControls() {
 
   if (width == null || height == null) return null;
 
-  const ratioLabel = formatRatio(customWidth, customHeight);
+  // Base dimensions after crop
+  const croppedWidth = Math.max(1, width - (crop.left || 0) - (crop.right || 0));
+  const croppedHeight = Math.max(1, height - (crop.top || 0) - (crop.bottom || 0));
 
-  // Percent calculations for preview box
-  const pctLeft = customWidth ? (crop.left / customWidth) * 100 : 0;
-  const pctRight = customWidth ? (crop.right / customWidth) * 100 : 0;
-  const pctTop = customHeight ? (crop.top / customHeight) * 100 : 0;
-  const pctBottom = customHeight ? (crop.bottom / customHeight) * 100 : 0;
+  const currentRatioLabel = formatRatio(customWidth || croppedWidth, customHeight || croppedHeight);
+
+  // Percent calculations for preview box based on original image
+  const pctLeft = width ? (crop.left / width) * 100 : 0;
+  const pctRight = width ? (crop.right / width) * 100 : 0;
+  const pctTop = height ? (crop.top / height) * 100 : 0;
+  const pctBottom = height ? (crop.bottom / height) * 100 : 0;
 
   // Fit contain aspect ratio calculation for preview box
-  const aspect = (customWidth && customHeight) ? customWidth / customHeight : 1;
+  const aspect = (width && height) ? width / height : 1;
   const maxW = 280;
   const maxH = 140;
   let frameW = maxW;
@@ -90,58 +95,30 @@ export default function SizeControls() {
   }
 
   // Modified checks for underline and reset buttons
-  const isResizingModified = customWidth !== width || customHeight !== height || !ratioLocked;
+  const isResizeModified = customWidth !== croppedWidth || customHeight !== croppedHeight || !ratioLocked;
   const isCroppingModified = crop.top !== 0 || crop.bottom !== 0 || crop.left !== 0 || crop.right !== 0;
 
   return (
     <>
-      <MacroSection
-        title="RESIZING"
-        collapsible
-        isOpen={openSections.resizing}
-        onToggle={() => toggleSection('resizing')}
-        isModified={isResizingModified}
-        onReset={resetSizeToCurrent}
-      >
-        <div className="bv-section">
-          <p className="bv-label">SIZE</p>
-          <SliderBundle
-            min={1}
-            max={maxSliderWidth}
-            defaultValue={width}
-            step={1}
-            label="WIDTH"
-            value={customWidth}
-            onChange={setCustomWidth}
-          />
-          <SliderBundle
-            min={1}
-            max={maxSliderHeight}
-            defaultValue={height}
-            step={1}
-            label="HEIGHT"
-            value={customHeight}
-            onChange={setCustomHeight}
-          />
-        </div>
-
+      <MacroSection title="RESIZING">
         <div className="bv-section">
           <div className="bv-controls-row">
-            <span className="bv-label">RATIO{ratioLabel ? ` [${ratioLabel}]` : ''}</span>
-            <div className="bv-option-group histogram-toggle-group size-controls-ratio-buttons">
-              <button
-                className={`bv-option-btn${ratioLocked ? ' active' : ''}`}
-                onClick={() => setRatioLocked(true)}
-              >
-                KEEP
-              </button>
-              <button
-                className={`bv-option-btn${!ratioLocked ? ' active' : ''}`}
-                onClick={() => setRatioLocked(false)}
-              >
-                FREE
-              </button>
-            </div>
+            <span className="bv-label">RATIO</span>
+            <span style={{ fontSize: '0.88rem', letterSpacing: '0.04em' }}>
+              {currentRatioLabel || '-'}
+            </span>
+          </div>
+          <div className="bv-controls-row" style={{ marginTop: '0.45rem' }}>
+            <span className="bv-label">WIDTH</span>
+            <span style={{ fontSize: '0.88rem', letterSpacing: '0.04em' }}>
+              {customWidth || croppedWidth}px
+            </span>
+          </div>
+          <div className="bv-controls-row" style={{ marginTop: '0.45rem' }}>
+            <span className="bv-label">HEIGHT</span>
+            <span style={{ fontSize: '0.88rem', letterSpacing: '0.04em' }}>
+              {customHeight || croppedHeight}px
+            </span>
           </div>
         </div>
       </MacroSection>
@@ -173,7 +150,7 @@ export default function SizeControls() {
 
           <SliderBundle
             min={0}
-            max={customHeight - crop.bottom - 1}
+            max={Math.max(0, height - crop.bottom - 1)}
             defaultValue={0}
             step={1}
             label="TOP"
@@ -182,7 +159,7 @@ export default function SizeControls() {
           />
           <SliderBundle
             min={0}
-            max={customHeight - crop.top - 1}
+            max={Math.max(0, height - crop.top - 1)}
             defaultValue={0}
             step={1}
             label="BOTTOM"
@@ -191,7 +168,7 @@ export default function SizeControls() {
           />
           <SliderBundle
             min={0}
-            max={customWidth - crop.right - 1}
+            max={Math.max(0, width - crop.right - 1)}
             defaultValue={0}
             step={1}
             label="LEFT"
@@ -200,13 +177,66 @@ export default function SizeControls() {
           />
           <SliderBundle
             min={0}
-            max={customWidth - crop.left - 1}
+            max={Math.max(0, width - crop.left - 1)}
             defaultValue={0}
             step={1}
             label="RIGHT"
             value={crop.right}
             onChange={setCropRight}
           />
+        </div>
+      </MacroSection>
+
+      <MacroSection
+        title="RESIZE"
+        collapsible
+        isOpen={openSections.resize}
+        onToggle={() => toggleSection('resize')}
+        isModified={isResizeModified}
+        onReset={resetSizeToCurrent}
+      >
+        <div className="bv-section">
+          <p className="bv-label">SIZE</p>
+          <SliderBundle
+            min={1}
+            max={maxSliderWidth}
+            defaultValue={croppedWidth}
+            step={1}
+            label="WIDTH"
+            value={customWidth}
+            onChange={setCustomWidth}
+          />
+          <SliderBundle
+            min={1}
+            max={maxSliderHeight}
+            defaultValue={croppedHeight}
+            step={1}
+            label="HEIGHT"
+            value={customHeight}
+            onChange={setCustomHeight}
+          />
+        </div>
+
+        <div className="bv-section">
+          <div className="bv-controls-row">
+            <span className="bv-label">RATIO</span>
+            <div className="bv-option-group histogram-toggle-group size-controls-ratio-buttons">
+              <button
+                type="button"
+                className={`bv-option-btn${ratioLocked ? ' active' : ''}`}
+                onClick={() => setRatioLocked(true)}
+              >
+                KEEP
+              </button>
+              <button
+                type="button"
+                className={`bv-option-btn${!ratioLocked ? ' active' : ''}`}
+                onClick={() => setRatioLocked(false)}
+              >
+                FREE
+              </button>
+            </div>
+          </div>
         </div>
       </MacroSection>
     </>
