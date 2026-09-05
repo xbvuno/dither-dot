@@ -24,9 +24,14 @@ import useImageStore from '../stores/media/imageStore';
 import useGalleryStore, { GALLERY_PRESETS } from '../stores/data/galleryStore';
 import useGifStore from '../stores/media/gifStore';
 import useWebcamStore, { WEBCAM_SOURCE } from '../stores/media/webcamStore';
+import useProcessingStore from '../stores/engine/processingStore';
 import useTemplateStore from '../stores/data/templateStore';
 import { TEMPLATES } from '../constants/templates';
 import { PAGE } from '../stores/ui/pageStore';
+import ZoomableDiv from '../components/ui/shared/ZoomableDiv';
+import ImageShader from '../components/canvas/ImageShader';
+import WaveGridSpinner from '../components/ui/shared/WaveGridSpinner';
+import PopupMessage from '../components/ui/shared/PopupMessage';
 import WebcamSection from '../components/import/WebcamSection';
 import LargeImageDialog from '../components/import/LargeImageDialog';
 import watermarkMini from '../assets/watermark/watermark-mini.png';
@@ -54,6 +59,8 @@ export default function ImportRoute() {
   const sourceImg = useImageStore((s) => s.sourceImg);
   const sourceName = useImageStore((s) => s.sourceName);
   const sourceKind = useImageStore((s) => s.sourceKind);
+  const viewerLoading = useImageStore((s) => s.viewerLoading);
+  const renderProcessing = useProcessingStore((s) => s.renderProcessing);
   const setSourceFromBlob = useImageStore((s) => s.setSourceFromBlob);
   const setSourceDirect = useImageStore((s) => s.setSourceDirect);
 
@@ -72,7 +79,6 @@ export default function ImportRoute() {
   const stopWebcam = useWebcamStore((s) => s.stopWebcam);
 
   const selectedTemplateId = useTemplateStore((s) => s.selectedTemplateId);
-  const setSelectedTemplateId = useTemplateStore((s) => s.setSelectedTemplateId);
   const applyTemplate = useTemplateStore((s) => s.applyTemplate);
 
   useEffect(() => {
@@ -318,6 +324,10 @@ export default function ImportRoute() {
     setSourceDirect(item.src, item.name, 'history');
   };
 
+  const handleSelectTemplate = (templateId) => {
+    applyTemplate(templateId);
+  };
+
   const handleLaunchEditor = () => {
     applyTemplate(selectedTemplateId);
     navigate('/editor');
@@ -396,7 +406,6 @@ export default function ImportRoute() {
           </div>
 
           <div className='nav-links-wrap'>
-
             {DISABLED_NAV_ITEMS.map((item) => {
               const Icon = item.Icon;
               const tooltipText = `${item.label.toUpperCase()} [LOCKED]`;
@@ -428,20 +437,21 @@ export default function ImportRoute() {
           </div>
         </nav>
 
-        {/* FULL-WIDTH DEDICATED MAIN IMPORT CONTENT (NO ASIDE, NO ZOOMABLE DIV) */}
-        <main className='import-main-scroll'>
-          <div className='import-route-container'>
-            {/* STEP 1: SELECT MEDIA */}
-            <section className='import-route-section'>
-              <h2 className='import-route-section-title'>
-                <span>1. SELECT MEDIA</span>
-                {hasValidMedia && (
-                  <span className='import-route-selected-badge'>
-                    READY: {sourceName || (webcamActive ? 'CAMERA' : 'ACTIVE')}
-                  </span>
-                )}
-              </h2>
+        {/* 3-COLUMN MAIN WORKSPACE */}
+        <main className='import-3col-layout'>
+          {/* COLUMN 1: SELECT MEDIA */}
+          <div className='import-col import-col-media'>
+            <div className='import-col-header'>
+              <h2 className='import-col-title'>1. SELECT MEDIA</h2>
+              {hasValidMedia && (
+                <span className='import-col-badge'>
+                  {sourceName || (webcamActive ? 'CAMERA' : 'READY')}
+                </span>
+              )}
+            </div>
 
+            <div className='import-col-content'>
+              {/* Dropzone */}
               <div
                 className={`import-route-dropzone${isDropActive ? ' active' : ''}`}
                 onDragEnter={(e) => {
@@ -459,9 +469,10 @@ export default function ImportRoute() {
                 onDrop={handleDrop}
                 onClick={() => inputRef.current?.click()}
               >
-                DROP IMAGE / GIF HERE OR PRESS CTRL+V (CLICK TO BROWSE)
+                DROP IMAGE / GIF OR CTRL+V (CLICK TO BROWSE)
               </div>
 
+              {/* Action Buttons */}
               <div className='import-route-actions-grid'>
                 <button
                   type='button'
@@ -477,7 +488,7 @@ export default function ImportRoute() {
                   onClick={importFromClipboardButton}
                 >
                   <Clipboard size={13} strokeWidth={1.5} />
-                  READ CLIPBOARD
+                  CLIPBOARD
                 </button>
                 <button
                   type='button'
@@ -486,7 +497,7 @@ export default function ImportRoute() {
                   disabled={isRandomLoading}
                 >
                   <Dices size={13} strokeWidth={1.5} />
-                  {isRandomLoading ? 'LOADING...' : 'RANDOM IMAGE'}
+                  {isRandomLoading ? 'LOADING...' : 'RANDOM'}
                 </button>
                 <button
                   type='button'
@@ -495,7 +506,7 @@ export default function ImportRoute() {
                   disabled={webcamStarting}
                 >
                   {webcamActive ? <CameraOff size={13} strokeWidth={1.5} /> : <Camera size={13} strokeWidth={1.5} />}
-                  {webcamStarting ? 'STARTING...' : webcamActive ? 'STOP CAMERA' : 'CAMERA MODE'}
+                  {webcamStarting ? 'STARTING...' : webcamActive ? 'STOP CAM' : 'CAMERA MODE'}
                 </button>
               </div>
 
@@ -509,7 +520,7 @@ export default function ImportRoute() {
 
               {webcamActive && <WebcamSection />}
 
-              {/* Active Preview */}
+              {/* Active Preview Info */}
               {sourceImg && !webcamActive && (
                 <div className='import-route-media-preview-card'>
                   <img src={sourceImg} alt='Selected Media' className='import-route-thumb-img' />
@@ -520,8 +531,8 @@ export default function ImportRoute() {
                 </div>
               )}
 
-              {/* Demo Presets */}
-              <p className='bv-label' style={{ marginTop: 8 }}>SAMPLE PRESETS</p>
+              {/* Sample Presets */}
+              <p className='bv-label' style={{ marginTop: 6, marginBottom: 0 }}>SAMPLE PRESETS</p>
               <div className='import-route-presets-grid'>
                 {GALLERY_PRESETS.map((p) => {
                   const isSelected = sourceName === p.name && !webcamActive;
@@ -539,18 +550,18 @@ export default function ImportRoute() {
                 })}
               </div>
 
-              {/* History */}
+              {/* Recent History */}
               {history.length > 0 && (
                 <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
                     <p className='bv-label' style={{ margin: 0 }}>RECENT IMPORTS</p>
                     <button
                       type='button'
                       className='header-link-btn'
                       onClick={clearHistory}
-                      style={{ fontSize: 10, height: 22, padding: '0 6px' }}
+                      style={{ fontSize: 10, height: 20, padding: '0 4px' }}
                     >
-                      <Trash2 size={11} /> CLEAR
+                      <Trash2 size={10} /> CLEAR
                     </button>
                   </div>
                   <div className='import-route-presets-grid'>
@@ -576,7 +587,7 @@ export default function ImportRoute() {
                               removeHistoryItem(h.id);
                             }}
                             style={{ position: 'absolute', top: 4, right: 4, padding: 2, background: 'rgba(0,0,0,0.6)' }}
-                            title='Remove from history'
+                            title='Remove'
                           >
                             <Trash2 size={10} />
                           </button>
@@ -586,25 +597,25 @@ export default function ImportRoute() {
                   </div>
                 </>
               )}
-            </section>
+            </div>
+          </div>
 
-            {/* STEP 2: SELECT TEMPLATE */}
-            <section className='import-route-section'>
-              <h2 className='import-route-section-title'>
-                <span>2. SELECT TEMPLATE</span>
-                <span className='import-route-selected-badge'>
-                  {activeTemplate.name}
-                </span>
-              </h2>
+          {/* COLUMN 2: SELECT TEMPLATE */}
+          <div className='import-col import-col-templates'>
+            <div className='import-col-header'>
+              <h2 className='import-col-title'>2. SELECT TEMPLATE</h2>
+              <span className='import-col-badge'>{activeTemplate.name}</span>
+            </div>
 
-              <div className='import-route-templates-grid'>
+            <div className='import-col-content'>
+              <div className='import-route-templates-list'>
                 {TEMPLATES.map((tpl) => {
                   const isSelected = selectedTemplateId === tpl.id;
                   return (
                     <div
                       key={tpl.id}
                       className={`import-route-template-card${isSelected ? ' selected' : ''}`}
-                      onClick={() => setSelectedTemplateId(tpl.id)}
+                      onClick={() => handleSelectTemplate(tpl.id)}
                       role='button'
                       tabIndex={0}
                     >
@@ -636,26 +647,48 @@ export default function ImportRoute() {
                   );
                 })}
               </div>
-            </section>
+            </div>
           </div>
 
-          {/* FLOATING LAUNCH BAR */}
-          <div className='import-route-launch-bar'>
-            <div className='import-route-launch-summary'>
-              <span>MEDIA: <b>{sourceName || (webcamActive ? 'CAMERA' : 'NONE')}</b></span>
-              <span>•</span>
-              <span>TEMPLATE: <b>{activeTemplate.name}</b></span>
+          {/* COLUMN 3: REALTIME PREVIEW & LAUNCH */}
+          <div className='import-col import-col-preview'>
+            <div className='import-col-header'>
+              <h2 className='import-col-title'>3. PREVIEW</h2>
+              <span className='import-col-badge'>
+                {activeTemplate.name} • {sourceName || 'ACTIVE'}
+              </span>
             </div>
 
-            <button
-              type='button'
-              className='import-route-launch-btn'
-              onClick={handleLaunchEditor}
-              disabled={!hasValidMedia}
-            >
-              <span>OPEN IN EDITOR</span>
-              <ArrowRight size={15} strokeWidth={2} />
-            </button>
+            <div className='import-preview-container'>
+              <div className='import-preview-canvas-wrap'>
+                <PopupMessage />
+                <ZoomableDiv content={<ImageShader sourceImg={sourceImg} />} />
+                {(viewerLoading || renderProcessing) && !webcamActive && (
+                  <div className='zoomable-loading-overlay' role='status' aria-live='polite' aria-label='Loading preview'>
+                    <WaveGridSpinner />
+                  </div>
+                )}
+              </div>
+
+              {/* Bottom Launch Action Bar */}
+              <div className='import-preview-launch-bar'>
+                <div className='import-preview-launch-summary'>
+                  <span>MEDIA: <b>{sourceName || (webcamActive ? 'CAMERA' : 'NONE')}</b></span>
+                  <span>•</span>
+                  <span>TEMPLATE: <b>{activeTemplate.name}</b></span>
+                </div>
+
+                <button
+                  type='button'
+                  className='import-preview-launch-btn'
+                  onClick={handleLaunchEditor}
+                  disabled={!hasValidMedia}
+                >
+                  <span>OPEN IN EDITOR</span>
+                  <ArrowRight size={14} strokeWidth={2} />
+                </button>
+              </div>
+            </div>
           </div>
         </main>
       </div>
