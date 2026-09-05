@@ -228,9 +228,9 @@ export default function PinnedPage() {
       <MacroSection title="PINNED">
         <div className="bv-section">
           {pinnedIds.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '1.25rem 0.5rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <Pin size={22} strokeWidth={1.5} style={{ opacity: 0.4, marginBottom: '0.75rem' }} />
-              <p className="bv-label" style={{ opacity: 0.7, margin: '0 0 0.5rem', letterSpacing: '0.06em' }}>
+            <div style={{ textAlign: 'center', padding: '1.75rem 0.5rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <Pin size={36} strokeWidth={1.3} style={{ opacity: 0.35, marginBottom: '1.35rem' }} />
+              <p className="bv-label" style={{ opacity: 0.75, margin: '0 0 0.65rem', letterSpacing: '0.06em' }}>
                 NO PINNED SLIDERS
               </p>
               <p
