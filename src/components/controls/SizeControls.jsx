@@ -191,18 +191,18 @@ export default function SizeControls() {
       >
         <div className="bv-section">
           <div className="crop-preview-container">
-            <div className="crop-preview-frame" style={{ width: frameW, height: frameH, position: 'relative', border: '1px solid var(--color-border, #444)', overflow: 'hidden', background: '#0a0a0a' }}>
+            <div className="crop-preview-frame" style={{ width: frameW, height: frameH, position: 'relative', border: '1px solid var(--color-border)', overflow: 'hidden', background: 'var(--color-surface)' }}>
               {/* Shaded cropped areas */}
-              <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: `${pctTop}%`, background: 'rgba(255, 59, 48, 0.15)' }} />
-              <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: `${pctBottom}%`, background: 'rgba(255, 59, 48, 0.15)' }} />
-              <div style={{ position: 'absolute', left: 0, top: `${pctTop}%`, bottom: `${pctBottom}%`, width: `${pctLeft}%`, background: 'rgba(255, 59, 48, 0.15)' }} />
-              <div style={{ position: 'absolute', right: 0, top: `${pctTop}%`, bottom: `${pctBottom}%`, width: `${pctRight}%`, background: 'rgba(255, 59, 48, 0.15)' }} />
+              <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: `${pctTop}%`, background: 'var(--color-danger-bg-hover)' }} />
+              <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: `${pctBottom}%`, background: 'var(--color-danger-bg-hover)' }} />
+              <div style={{ position: 'absolute', left: 0, top: `${pctTop}%`, bottom: `${pctBottom}%`, width: `${pctLeft}%`, background: 'var(--color-danger-bg-hover)' }} />
+              <div style={{ position: 'absolute', right: 0, top: `${pctTop}%`, bottom: `${pctBottom}%`, width: `${pctRight}%`, background: 'var(--color-danger-bg-hover)' }} />
               
               {/* Red grid lines */}
-              {pctLeft > 0 && <div style={{ position: 'absolute', left: `${pctLeft}%`, top: 0, bottom: 0, width: '1px', backgroundColor: '#ff3b30' }} />}
-              {pctRight > 0 && <div style={{ position: 'absolute', right: `${pctRight}%`, top: 0, bottom: 0, width: '1px', backgroundColor: '#ff3b30' }} />}
-              {pctTop > 0 && <div style={{ position: 'absolute', top: `${pctTop}%`, left: 0, right: 0, height: '1px', backgroundColor: '#ff3b30' }} />}
-              {pctBottom > 0 && <div style={{ position: 'absolute', bottom: `${pctBottom}%`, left: 0, right: 0, height: '1px', backgroundColor: '#ff3b30' }} />}
+              {pctLeft > 0 && <div style={{ position: 'absolute', left: `${pctLeft}%`, top: 0, bottom: 0, width: '1px', backgroundColor: 'var(--color-danger-hover)' }} />}
+              {pctRight > 0 && <div style={{ position: 'absolute', right: `${pctRight}%`, top: 0, bottom: 0, width: '1px', backgroundColor: 'var(--color-danger-hover)' }} />}
+              {pctTop > 0 && <div style={{ position: 'absolute', top: `${pctTop}%`, left: 0, right: 0, height: '1px', backgroundColor: 'var(--color-danger-hover)' }} />}
+              {pctBottom > 0 && <div style={{ position: 'absolute', bottom: `${pctBottom}%`, left: 0, right: 0, height: '1px', backgroundColor: 'var(--color-danger-hover)' }} />}
             </div>
           </div>
 

@@ -424,9 +424,9 @@ main.import-3col-layout,
 }
 
 .import-history-delete-btn:hover {
-  background: var(--color-danger-bg, #3a1111);
-  color: var(--color-danger, #ff6b6b);
-  border-color: var(--color-danger, #ff6b6b);
+  background: var(--color-danger-bg-hover);
+  color: var(--color-danger-hover);
+  border-color: var(--color-danger-hover);
 }
 
 /* Templates List in Column 3 (16rem vertical stack) */

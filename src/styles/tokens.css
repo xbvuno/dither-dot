@@ -8,21 +8,21 @@
     --color-bg: #12120F;
     --color-text: #EEEEDF;
     
-    /* Interactive & Utility Colors */
-    --color-hover: rgba(255, 255, 255, 0.1);
-    --color-bg-subtle: color-mix(in srgb, var(--color-text) 3%, transparent);
-    --color-bg-subtle-hover: color-mix(in srgb, var(--color-text) 10%, transparent);
-    --color-text-subtle: color-mix(in srgb, var(--color-text) 72%, transparent);
-    --color-text-muted: color-mix(in srgb, var(--color-text) 58%, transparent);
+    /* Interactive & Utility Overlays */
+    --color-hover: color-mix(in srgb, var(--color-text) 10%, transparent);
+    --color-bg-subtle: color-mix(in srgb, var(--color-text) 4%, transparent);
+    --color-bg-subtle-hover: var(--color-hover);
+    --color-text-subtle: color-mix(in srgb, var(--color-text) 70%, transparent);
+    --color-text-muted: color-mix(in srgb, var(--color-text) 56%, transparent);
 
     /* White shade hierarchy for buttons and controls */
-    --btn-color-default: color-mix(in srgb, var(--color-text) 68%, transparent);
-    --btn-border-default: color-mix(in srgb, var(--color-text) 20%, transparent);
-    --btn-bg-default: color-mix(in srgb, var(--color-text) 4%, transparent);
+    --btn-color-default: var(--color-text-subtle);
+    --btn-border-default: var(--color-border-subtle);
+    --btn-bg-default: var(--color-bg-subtle);
 
-    --btn-color-hover: color-mix(in srgb, var(--color-text) 90%, transparent);
-    --btn-border-hover: color-mix(in srgb, var(--color-text) 42%, transparent);
-    --btn-bg-hover: color-mix(in srgb, var(--color-text) 9%, transparent);
+    --btn-color-hover: color-mix(in srgb, var(--color-text) 92%, transparent);
+    --btn-border-hover: var(--color-border-hover);
+    --btn-bg-hover: var(--color-hover);
 
     --btn-color-active: var(--color-bg);
     --btn-border-active: var(--color-text);
@@ -30,22 +30,22 @@
     
     /* Borders */
     --color-border: color-mix(in srgb, var(--color-text) 28%, transparent);
-    --color-border-subtle: color-mix(in srgb, var(--color-text) 22%, transparent);
-    --color-border-hover: color-mix(in srgb, var(--color-text) 48%, transparent);
+    --color-border-subtle: color-mix(in srgb, var(--color-text) 20%, transparent);
+    --color-border-hover: color-mix(in srgb, var(--color-text) 45%, transparent);
     --color-border-focus: var(--color-text);
     
     /* Surfaces & Inputs */
     --color-surface: color-mix(in srgb, var(--color-bg) 50%, black);
     --color-surface-hover: var(--color-hover);
-    --color-surface-focus: rgb(9, 9, 9);
+    --color-surface-focus: var(--color-surface);
     --input-surface: var(--color-surface);
     --input-surface-hover: var(--color-hover);
-    --input-surface-focus: rgb(9, 9, 9);
+    --input-surface-focus: var(--color-surface);
     --color-macro-section-bg: var(--color-surface);
     --color-slider-selected-bg: color-mix(in srgb, var(--color-text) 7%, var(--color-bg));
     
     /* Floating Panels / Tooltips */
-    --color-backdrop: rgba(0, 0, 0, 0.58);
+    --color-backdrop: rgba(0, 0, 0, 0.6);
     --color-floating-bg: rgba(0, 0, 0, 0.85);
     --color-floating-border: rgba(255, 255, 255, 0.12);
     --shadow-floating: 0 8px 24px rgba(0, 0, 0, 0.5);
@@ -55,7 +55,7 @@
     /* State & Accent Colors */
     --color-danger: #b53636;
     --color-danger-text: #ffc8c8;
-    --color-danger-hover: #e14a4a;
+    --color-danger-hover: #e43b44;
     --color-danger-bg-hover: color-mix(in srgb, var(--color-danger) 15%, transparent);
     --color-success: #5cd56f;
     --color-pending: #56a8ff;
