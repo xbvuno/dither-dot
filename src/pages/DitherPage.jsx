@@ -192,7 +192,7 @@ export default function DitherPage() {
             )}
             {showAmount && (
               <SliderBundle
-                label="AMOUNT"
+                label="DITHER AMOUNT"
                 min={DITHER_CONTROLS.amount.min}
                 max={DITHER_CONTROLS.amount.max}
                 step={DITHER_CONTROLS.amount.step}
