@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Save, Copy, Eye, Trash2 } from 'lucide-react';
 import MacroSection from '../components/ui/MacroSection';
-import OptionGroup from '../components/ui/shared/OptionGroup';
 import useImageStore from '../stores/media/imageStore';
 import useGifStore from '../stores/media/gifStore';
 import useWebcamStore from '../stores/media/webcamStore';
@@ -354,46 +353,22 @@ export default function ExportPage() {
         </div>
 
         <div className='bv-section'>
-          <SliderBundle
-            label='UPSCALE'
-            min={1}
-            max={10}
-            step={1}
-            defaultValue={1}
-            value={upscale}
-            onChange={setUpscale}
-            pinId="export:upscale"
-          />
-        </div>
-
-        <div className='bv-section'>
-          <span className='bv-label' style={{ display: 'block' }}>LIVE PREVIEW</span>
-          <OptionGroup
-            options={[
-              { value: 'off', label: 'OFF' },
-              { value: 'on', label: 'ON' },
-            ]}
-            value={livePreview ? 'on' : 'off'}
-            onChange={handleToggleLivePreview}
-            ariaLabel='Live preview mode'
-          />
-        </div>
-
-        {isGifSource && !isPreviewValid && (
-          <div className='bv-section' style={{ marginBottom: '14px' }}>
-            <p className='export-gif-warning-text' style={{ color: '#ffffff', fontSize: '12px', letterSpacing: '0.03em', margin: 0 }}>
-              YOU MUST RENDER ALL THE FRAMES BEFORE EXPORT
-            </p>
-          </div>
-        )}
-
-        <div className='bv-section'>
           <div className='bv-option-group'>
+            <button
+              type='button'
+              className={`bv-option-btn export-btn${livePreview ? ' active' : ''}`}
+              onClick={() => handleToggleLivePreview(!livePreview)}
+              aria-pressed={livePreview}
+              title={livePreview ? 'Live Preview is ON (auto updates)' : 'Live Preview is OFF'}
+            >
+              LIVE PREVIEW
+            </button>
             <button
               type='button'
               className='bv-option-btn export-btn'
               onClick={handleGeneratePreview}
-              disabled={gifExporting || previewGenerating}
+              disabled={livePreview || gifExporting || previewGenerating}
+              title={livePreview ? 'Disabled while Live Preview is active' : 'Generate preview'}
             >
               <Eye size={13} strokeWidth={1.5} />
               {previewGenerating ? 'GENERATING...' : 'GENERATE'}
@@ -419,6 +394,27 @@ export default function ExportPage() {
           </div>
           {status && <p className='import-export-status'>{status}</p>}
         </div>
+
+        <div className='bv-section'>
+          <SliderBundle
+            label='UPSCALE'
+            min={1}
+            max={10}
+            step={1}
+            defaultValue={1}
+            value={upscale}
+            onChange={setUpscale}
+            pinId="export:upscale"
+          />
+        </div>
+
+        {isGifSource && !isPreviewValid && (
+          <div className='bv-section' style={{ marginBottom: '14px' }}>
+            <p className='export-gif-warning-text' style={{ color: '#ffffff', fontSize: '12px', letterSpacing: '0.03em', margin: 0 }}>
+              YOU MUST RENDER ALL THE FRAMES BEFORE EXPORT
+            </p>
+          </div>
+        )}
 
         {shoots.length > 0 ? (
           <div className='bv-section camera-shoots-section'>
