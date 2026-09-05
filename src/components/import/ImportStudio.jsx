@@ -88,6 +88,7 @@ function OriginalMediaPreview({
   frames,
   currentFrameIndex,
   isGif,
+  allFramesDone,
   webcamActive,
   webcamStream,
   webcamMirrored,
@@ -107,7 +108,8 @@ function OriginalMediaPreview({
   useEffect(() => {
     if (!isGif || !canvasRef.current || !frames || frames.length <= 1) return;
     const canvas = canvasRef.current;
-    const frame = frames[currentFrameIndex] || frames[0];
+    const targetIndex = allFramesDone ? currentFrameIndex : 0;
+    const frame = frames[targetIndex] || frames[0];
     if (!frame || !frame.pixels) return;
 
     if (canvas.width !== frame.width || canvas.height !== frame.height) {
@@ -120,7 +122,7 @@ function OriginalMediaPreview({
 
     const imgData = new ImageData(frame.pixels, frame.width, frame.height);
     ctx.putImageData(imgData, 0, 0);
-  }, [isGif, frames, currentFrameIndex]);
+  }, [isGif, frames, currentFrameIndex, allFramesDone]);
 
   if (webcamActive && webcamStream) {
     return (
@@ -229,6 +231,12 @@ export default function ImportStudio() {
 
   const mediaColRef = useRef(null);
   const resizeHandleRef = useRef(null);
+  const prevAllDoneRef = useRef(false);
+
+  const allFramesDone =
+    frames.length > 1 &&
+    frameStates.length === frames.length &&
+    frameStates.every((s) => s === 'done');
 
   // Ensure loaded GIFs are set to playing on mount
   useEffect(() => {
@@ -237,14 +245,20 @@ export default function ImportStudio() {
     }
   }, [frames.length, playing, setPlaying]);
 
+  // Once all frames finish generating, sync and restart both from frame 0 together
+  useEffect(() => {
+    if (allFramesDone && !prevAllDoneRef.current) {
+      prevAllDoneRef.current = true;
+      setCurrentFrameIndex(0);
+    } else if (!allFramesDone) {
+      prevAllDoneRef.current = false;
+    }
+  }, [allFramesDone, setCurrentFrameIndex]);
+
   // GIF playback animation loop in Import view
   useEffect(() => {
     if (!playing || frames.length <= 1) return;
     if (frameStates[currentFrameIndex] !== 'done') return;
-
-    const isAllDone =
-      frameStates.length === frames.length &&
-      frameStates.every((s) => s === 'done');
 
     const nextIndex = (currentFrameIndex + 1) % frames.length;
     if (!frames[nextIndex]) {
@@ -254,14 +268,14 @@ export default function ImportStudio() {
 
     const activeFrameDelay = frames[currentFrameIndex]?.delay;
     const naturalDelay = Math.max(20, Number(activeFrameDelay) || 100);
-    const delay = isAllDone ? naturalDelay : 0;
+    const delay = allFramesDone ? naturalDelay : 0;
 
     const timer = window.setTimeout(() => {
       setCurrentFrameIndex(nextIndex);
     }, delay);
 
     return () => window.clearTimeout(timer);
-  }, [currentFrameIndex, frameStates, frames, playing, setCurrentFrameIndex, setPlaying]);
+  }, [currentFrameIndex, frameStates, frames, playing, allFramesDone, setCurrentFrameIndex, setPlaying]);
 
   // Resize column 1 handler
   useEffect(() => {
@@ -824,6 +838,7 @@ export default function ImportStudio() {
                         frames={frames}
                         currentFrameIndex={currentFrameIndex}
                         isGif={frames.length > 1}
+                        allFramesDone={allFramesDone}
                         webcamActive={webcamActive}
                         webcamStream={webcamStream}
                         webcamMirrored={webcamMirrored}
