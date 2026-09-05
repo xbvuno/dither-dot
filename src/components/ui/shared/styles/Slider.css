@@ -120,11 +120,11 @@
 .bv.slider-bundle .slider-bundle-label.modified::after {
     content: '';
     display: inline-block;
-    width: 4px;
-    height: 4px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     background-color: var(--color-modified, #e43b44);
-    margin-left: 0.35rem;
+    margin-left: 0.4rem;
     vertical-align: middle;
     transform: translateY(-1px);
 }
