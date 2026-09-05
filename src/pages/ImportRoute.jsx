@@ -17,6 +17,7 @@ import {
   SprayCan,
   Download,
   Trash2,
+  FolderOpen,
 } from 'lucide-react';
 import { useRouter } from '../router/router';
 import useImageStore from '../stores/media/imageStore';
@@ -390,8 +391,18 @@ export default function ImportRoute() {
 
       <div className='app-layout'>
         {/* NAV BAR: Exact same structure with disabled buttons */}
-        <nav className='app-nav' aria-label='Main Navigation (Select media and template to unlock editor)'>
+        <nav className='app-nav' aria-label='Main Navigation'>
           <div className='nav-links-wrap'>
+            <button
+              type='button'
+              className='nav-icon-btn selected'
+              data-tooltip='MEDIA & TEMPLATES [1]'
+              aria-label='MEDIA & TEMPLATES [1]'
+              aria-current='page'
+            >
+              <FolderOpen size={24} strokeWidth={2} aria-hidden='true' className='nav-icon-img' />
+            </button>
+
             {DISABLED_NAV_ITEMS.map((item, index) => {
               const Icon = item.Icon;
               const tooltipText = `${item.label.toUpperCase()} [LOCKED]`;

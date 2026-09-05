@@ -29,13 +29,12 @@ import useProcessingStore from '../stores/engine/processingStore';
 import useWatermarkStore from '../stores/media/watermarkStore';
 import useViewStore from '../stores/ui/viewStore';
 import useWebcamStore from '../stores/media/webcamStore';
-import useTemplateStore from '../stores/data/templateStore';
-import { TEMPLATES } from '../constants/templates';
 import { useRouter } from '../router/router';
 
 const ExportPage = lazy(() => import('./ExportPage'));
 
 const MAIN_NAV_ITEMS = [
+  { id: 'import', label: 'Media & Templates', Icon: FolderOpen, isRoute: true },
   { id: PAGE.PINNED, label: 'Pinned', Icon: Pin },
   { id: PAGE.RESIZING, label: 'Resizing', Icon: ImageUpscale },
   { id: PAGE.ADJUSTMENTS, label: 'Adjustments', Icon: SlidersHorizontal },
@@ -54,14 +53,12 @@ export default function EditorPage() {
   const toggleExportOpen = usePageStore((s) => s.toggleExportOpen);
 
   const sourceImg = useImageStore((s) => s.sourceImg);
-  const sourceName = useImageStore((s) => s.sourceName);
   const viewerLoading = useImageStore((s) => s.viewerLoading);
   const renderProcessing = useProcessingStore((s) => s.renderProcessing);
   const webcamActive = useWebcamStore((s) => s.active);
   const watermarkEnabled = useWatermarkStore((s) => s.enabled);
   const setWatermarkEnabled = useWatermarkStore((s) => s.setEnabled);
   const splitView = useViewStore((s) => s.splitView);
-  const selectedTemplateId = useTemplateStore((s) => s.selectedTemplateId);
 
   const navRef = useRef(null);
   const lastScrollTimeRef = useRef(0);
@@ -100,12 +97,17 @@ export default function EditorPage() {
 
       const keyNum = parseInt(e.key, 10);
       if (!isNaN(keyNum)) {
-        if (keyNum >= 1 && keyNum <= MAIN_NAV_ITEMS.length) {
+        if (keyNum === 1) {
+          e.preventDefault();
+          navigate('/import');
+          return;
+        }
+        if (keyNum >= 2 && keyNum <= MAIN_NAV_ITEMS.length) {
           e.preventDefault();
           setPage(MAIN_NAV_ITEMS[keyNum - 1].id);
           return;
         }
-        if (keyNum === 6 || keyNum === 7) {
+        if (keyNum === 7) {
           e.preventDefault();
           toggleExportOpen();
           return;
@@ -150,7 +152,7 @@ export default function EditorPage() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [setPage, toggleExportOpen]);
+  }, [setPage, toggleExportOpen, navigate]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -178,18 +180,18 @@ export default function EditorPage() {
       const delta = event.deltaY;
       if (delta === 0) return;
 
-      const pageIds = MAIN_NAV_ITEMS.map((item) => item.id);
-      const currentIndex = pageIds.indexOf(currentPageRef.current);
+      const editorPages = MAIN_NAV_ITEMS.filter((item) => !item.isRoute).map((item) => item.id);
+      const currentIndex = editorPages.indexOf(currentPageRef.current);
       if (currentIndex === -1) return;
 
       let nextIndex;
       if (delta > 0) {
-        nextIndex = (currentIndex + 1) % pageIds.length;
+        nextIndex = (currentIndex + 1) % editorPages.length;
       } else {
-        nextIndex = (currentIndex - 1 + pageIds.length) % pageIds.length;
+        nextIndex = (currentIndex - 1 + editorPages.length) % editorPages.length;
       }
 
-      setPage(pageIds[nextIndex]);
+      setPage(editorPages[nextIndex]);
       lastScrollTimeRef.current = now;
     };
 
@@ -205,8 +207,6 @@ export default function EditorPage() {
       setPage(pageId);
     }
   };
-
-  const activeTemplate = TEMPLATES.find((t) => t.id === selectedTemplateId) || TEMPLATES[0];
 
   return (
     <>
@@ -261,16 +261,22 @@ export default function EditorPage() {
           <div className='nav-links-wrap'>
             {MAIN_NAV_ITEMS.map((item, index) => {
               const Icon = item.Icon;
-              const isSelected = currentPage === item.id;
+              const isSelected = item.isRoute ? false : currentPage === item.id;
               const tooltipText = `${item.label.toUpperCase()} [${index + 1}]`;
               return (
                 <button
                   key={item.id}
                   type='button'
                   className={`nav-icon-btn${isSelected ? ' selected' : ''}`}
-                  onClick={() => setPage(item.id)}
-                  onDragEnter={(event) => handleNavDragOver(event, item.id)}
-                  onDragOver={(event) => handleNavDragOver(event, item.id)}
+                  onClick={() => {
+                    if (item.isRoute) {
+                      navigate('/import');
+                    } else {
+                      setPage(item.id);
+                    }
+                  }}
+                  onDragEnter={(event) => !item.isRoute && handleNavDragOver(event, item.id)}
+                  onDragOver={(event) => !item.isRoute && handleNavDragOver(event, item.id)}
                   data-tooltip={tooltipText}
                   aria-label={tooltipText}
                   aria-current={isSelected ? 'page' : undefined}
@@ -286,8 +292,8 @@ export default function EditorPage() {
               type='button'
               className={`nav-icon-btn${exportOpen ? ' selected' : ''}`}
               onClick={toggleExportOpen}
-              data-tooltip='EXPORT [6 / E]'
-              aria-label='EXPORT [6 / E]'
+              data-tooltip='EXPORT [7 / E]'
+              aria-label='EXPORT [7 / E]'
               aria-pressed={exportOpen}
             >
               <Download size={24} strokeWidth={2} aria-hidden='true' className='nav-icon-img' />
@@ -297,18 +303,6 @@ export default function EditorPage() {
 
         <main>
           <Aside side='left'>
-            <button
-              type='button'
-              className='aside-media-template-banner'
-              onClick={() => navigate('/import')}
-              title='Change Media & Template'
-            >
-              <div className='aside-media-template-banner-left'>
-                <FolderOpen size={14} strokeWidth={2} />
-                <span>MEDIA &amp; TEMPLATES</span>
-              </div>
-              <span className='aside-media-template-banner-badge'>{activeTemplate.name}</span>
-            </button>
             <AsideRouter />
           </Aside>
           <div className='flex-v'>
