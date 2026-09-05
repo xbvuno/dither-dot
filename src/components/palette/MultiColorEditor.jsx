@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import PaletteColorSlider from './PaletteColorSlider';
-import CurveEditor from './CurveEditor';
 import {
   hexToHsv,
   hsvToHex,
@@ -8,7 +7,6 @@ import {
   rgbToHex,
   applyTonalAdjustments,
 } from '../../utils/colorConversions';
-import { DEFAULT_CURVE_POINTS, applyRgbCurves } from '../../utils/curveUtils';
 
 function MultiHexRow({ id, originalColor, currentColor, onUpdate }) {
   const [typed, setTyped] = useState(null);
@@ -79,12 +77,6 @@ export default function MultiColorEditor({
   const [gamma, setGamma] = useState(1.0);
   const [contrast, setContrast] = useState(0);
 
-  const [curves, setCurves] = useState({
-    r: DEFAULT_CURVE_POINTS,
-    g: DEFAULT_CURVE_POINTS,
-    b: DEFAULT_CURVE_POINTS,
-  });
-
   const points = selectedColors.map((item) => {
     const hsv = hexToHsv(item.hex);
     return {
@@ -103,7 +95,7 @@ export default function MultiColorEditor({
   const desatColor = hsvToHex(currentHue, 0, 85);
   const fullSatColor = hsvToHex(currentHue, 100, 100);
 
-  const recalculateColors = (dH, dS, dV, g, c, cur) => {
+  const recalculateColors = (dH, dS, dV, g, c) => {
     const updates = {};
     selectedColors.forEach((item) => {
       const base = baseMap[item.id] || {
@@ -120,9 +112,7 @@ export default function MultiColorEditor({
         contrast: c,
       });
 
-      const rgb = hexToRgb(tonedHex);
-      const curvedRgb = applyRgbCurves(rgb.r, rgb.g, rgb.b, cur);
-      updates[item.id] = rgbToHex(curvedRgb.r, curvedRgb.g, curvedRgb.b);
+      updates[item.id] = tonedHex;
     });
 
     if (onUpdateColors) {
@@ -138,32 +128,27 @@ export default function MultiColorEditor({
 
   const handleHueChange = (val) => {
     setDeltaH(val);
-    recalculateColors(val, deltaS, deltaV, gamma, contrast, curves);
+    recalculateColors(val, deltaS, deltaV, gamma, contrast);
   };
 
   const handleSaturationChange = (val) => {
     setDeltaS(val);
-    recalculateColors(deltaH, val, deltaV, gamma, contrast, curves);
+    recalculateColors(deltaH, val, deltaV, gamma, contrast);
   };
 
   const handleValueChange = (val) => {
     setDeltaV(val);
-    recalculateColors(deltaH, deltaS, val, gamma, contrast, curves);
+    recalculateColors(deltaH, deltaS, val, gamma, contrast);
   };
 
   const handleGammaChange = (val) => {
     setGamma(val);
-    recalculateColors(deltaH, deltaS, deltaV, val, contrast, curves);
+    recalculateColors(deltaH, deltaS, deltaV, val, contrast);
   };
 
   const handleContrastChange = (val) => {
     setContrast(val);
-    recalculateColors(deltaH, deltaS, deltaV, gamma, val, curves);
-  };
-
-  const handleCurveChange = (nextCurves) => {
-    setCurves(nextCurves);
-    recalculateColors(deltaH, deltaS, deltaV, gamma, contrast, nextCurves);
+    recalculateColors(deltaH, deltaS, deltaV, gamma, val);
   };
 
   return (
@@ -241,14 +226,6 @@ export default function MultiColorEditor({
           gradient="linear-gradient(to right, #444 0%, #888 50%, #fff 100%)"
         />
       </div>
-
-      <div className="pe-slider-divider" />
-
-      {/* RGB Curves */}
-      <CurveEditor
-        curves={curves}
-        onChangeCurves={handleCurveChange}
-      />
     </div>
   );
 }

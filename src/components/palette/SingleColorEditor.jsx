@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import PaletteColorSlider from './PaletteColorSlider';
-import CurveEditor from './CurveEditor';
 import {
   cleanHex,
   hexToRgb,
@@ -10,7 +9,6 @@ import {
   hsvToHex,
   applyTonalAdjustments,
 } from '../../utils/colorConversions';
-import { DEFAULT_CURVE_POINTS, applyRgbCurves } from '../../utils/curveUtils';
 
 function initFromHex(hex) {
   const r = hexToRgb(hex);
@@ -37,11 +35,6 @@ export default function SingleColorEditor({
   const [hexInput, setHexInput] = useState(() => cleanHex(color));
   const [gamma, setGamma] = useState(1.0);
   const [contrast, setContrast] = useState(0);
-  const [curves, setCurves] = useState({
-    r: DEFAULT_CURVE_POINTS,
-    g: DEFAULT_CURVE_POINTS,
-    b: DEFAULT_CURVE_POINTS,
-  });
 
   // When the selected colorId changes, reinitialise all local state from new color.
   if (colorId !== lastColorId) {
@@ -52,11 +45,6 @@ export default function SingleColorEditor({
     setHexInput(init.hexInput);
     setGamma(1.0);
     setContrast(0);
-    setCurves({
-      r: DEFAULT_CURVE_POINTS,
-      g: DEFAULT_CURVE_POINTS,
-      b: DEFAULT_CURVE_POINTS,
-    });
   }
 
   const notify = useCallback((newHex) => {
@@ -85,30 +73,23 @@ export default function SingleColorEditor({
     notify(nextHex);
   };
 
-  const applyTonalAndCurves = (baseHex, g, c, cur) => {
+  const applyTonal = (baseHex, g, c) => {
     const adjustedHex = applyTonalAdjustments(baseHex, { gamma: g, contrast: c });
-    const uncurvedRgb = hexToRgb(adjustedHex);
-    const curvedRgb = applyRgbCurves(uncurvedRgb.r, uncurvedRgb.g, uncurvedRgb.b, cur);
-    const finalHex = rgbToHex(curvedRgb.r, curvedRgb.g, curvedRgb.b);
-    setRgb(curvedRgb);
-    setHsv(rgbToHsv(curvedRgb.r, curvedRgb.g, curvedRgb.b));
-    setHexInput(finalHex);
-    notify(finalHex);
+    const nextRgb = hexToRgb(adjustedHex);
+    setRgb(nextRgb);
+    setHsv(rgbToHsv(nextRgb.r, nextRgb.g, nextRgb.b));
+    setHexInput(adjustedHex);
+    notify(adjustedHex);
   };
 
   const handleGammaChange = (val) => {
     setGamma(val);
-    applyTonalAndCurves(originalColor || color, val, contrast, curves);
+    applyTonal(originalColor || color, val, contrast);
   };
 
   const handleContrastChange = (val) => {
     setContrast(val);
-    applyTonalAndCurves(originalColor || color, gamma, val, curves);
-  };
-
-  const handleCurveChange = (nextCurves) => {
-    setCurves(nextCurves);
-    applyTonalAndCurves(originalColor || color, gamma, contrast, nextCurves);
+    applyTonal(originalColor || color, gamma, val);
   };
 
   const handleHexInputChange = (e) => {
@@ -243,14 +224,6 @@ export default function SingleColorEditor({
           gradient="linear-gradient(to right, #444 0%, #888 50%, #fff 100%)"
         />
       </div>
-
-      <div className="pe-slider-divider" />
-
-      {/* RGB Curves */}
-      <CurveEditor
-        curves={curves}
-        onChangeCurves={handleCurveChange}
-      />
     </div>
   );
 }
