@@ -20,7 +20,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+.bv-controls-row > .bv-option-group {
+  flex: 0 1 max-content;
+  min-width: 0;
 }
 
 .bv-option-group {
@@ -36,6 +42,7 @@
   font-weight: 400;
   letter-spacing: 0.04em;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 .bv-option-btn.icon-btn {
