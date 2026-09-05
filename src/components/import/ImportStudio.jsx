@@ -180,14 +180,16 @@ export default function ImportStudio() {
   const [pendingImport, setPendingImport] = useState(null);
   const [isRandomLoading, setIsRandomLoading] = useState(false);
 
-  // Store bindings
   const sourceImg = useImageStore((s) => s.sourceImg);
   const sourceName = useImageStore((s) => s.sourceName);
+  const sourceKind = useImageStore((s) => s.sourceKind);
   const viewerLoading = useImageStore((s) => s.viewerLoading);
   const setSourceFromBlob = useImageStore((s) => s.setSourceFromBlob);
   const setSourceDirect = useImageStore((s) => s.setSourceDirect);
 
   const history = useGalleryStore((s) => s.history);
+  const randomImages = useGalleryStore((s) => s.randomImages);
+  const refreshRandomImages = useGalleryStore((s) => s.refreshRandomImages);
   const pushGifHistory = useGalleryStore((s) => s.pushGifHistory);
   const removeHistoryItem = useGalleryStore((s) => s.removeHistoryItem);
   const clearHistory = useGalleryStore((s) => s.clearHistory);
@@ -238,6 +240,13 @@ export default function ImportStudio() {
 
   const mediaColRef = useRef(null);
   const resizeHandleRef = useRef(null);
+
+  // Automatically select first random image on initial load if still default statue
+  useEffect(() => {
+    if ((sourceName === 'STATUE' || sourceKind === 'default') && randomImages?.length > 0) {
+      handleSelectPreset(randomImages[0]);
+    }
+  }, []);
 
   // Ensure loaded GIFs are set to playing on mount
   useEffect(() => {
@@ -729,6 +738,48 @@ export default function ImportStudio() {
                     </button>
                   );
                 })}
+              </div>
+
+              {/* Random Images Library */}
+              <div style={{ marginTop: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px' }}>
+                  <p className='bv-label' style={{ margin: 0 }}>RANDOM IMAGES</p>
+                  <button
+                    type='button'
+                    className='import-recent-clear-btn'
+                    onClick={() => {
+                      const newImages = refreshRandomImages();
+                      if (newImages?.length > 0) {
+                        handleSelectPreset(newImages[0]);
+                      }
+                    }}
+                    title='Generate new random images'
+                  >
+                    (<span>REFRESH</span>)
+                  </button>
+                </div>
+                <div className='import-route-presets-grid' style={{ marginTop: 4 }}>
+                  {randomImages.map((p) => {
+                    const isSelected = (sourceName === p.name || sourceImg === p.src) && !webcamActive;
+                    return (
+                      <button
+                        key={p.id}
+                        type='button'
+                        className={`import-route-preset-item${isSelected ? ' selected' : ''}`}
+                        onClick={() => handleSelectPreset(p)}
+                      >
+                        <img
+                          src={p.thumb || p.src}
+                          alt={p.name}
+                          className='import-route-preset-thumb'
+                          loading='lazy'
+                          decoding='async'
+                        />
+                        <span className='import-route-preset-label'>{p.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Recent History */}

@@ -16,6 +16,25 @@ export const GALLERY_PRESETS = [
   { id: 'preset-pizza-cow', src: pizzaCow, name: 'PIZZA_COW', isGif: true },
 ];
 
+export const INITIAL_RANDOM_SEEDS = [
+  'cyber-cat',
+  'retro-wave',
+  'urban-neon',
+  'abstract-art',
+  'vapor-grid',
+  'cosmic-dust',
+];
+
+export function createRandomItems(seeds = INITIAL_RANDOM_SEEDS) {
+  return seeds.map((seed, index) => ({
+    id: `random-${seed}`,
+    name: `RANDOM ${index + 1}`,
+    src: `https://picsum.photos/seed/${encodeURIComponent(seed)}/800/600`,
+    thumb: `https://picsum.photos/seed/${encodeURIComponent(seed)}/200/200`,
+    isRandom: true,
+  }));
+}
+
 const MAX_HISTORY_ITEMS = 20;
 
 function normalizeHistoryEntry(entry) {
@@ -38,6 +57,9 @@ function normalizeHistoryEntry(entry) {
 
 function isPresetItem(src, name, gifDataUrl) {
   const normName = String(name || '').trim().toUpperCase();
+  if (normName.startsWith('RANDOM') || (typeof src === 'string' && src.includes('picsum.photos'))) {
+    return true;
+  }
   return GALLERY_PRESETS.some((p) => {
     const pName = p.name.toUpperCase();
     if (pName === normName) return true;
@@ -47,9 +69,18 @@ function isPresetItem(src, name, gifDataUrl) {
   });
 }
 
-const useGalleryStore = create((set) => ({
+const useGalleryStore = create((set, get) => ({
   history: [],
   hasHydratedHistory: false,
+  randomImages: createRandomItems(),
+
+  refreshRandomImages: () => {
+    const timestamp = Date.now();
+    const newSeeds = Array.from({ length: 6 }, (_, i) => `rnd-${timestamp}-${i + 1}`);
+    const newItems = createRandomItems(newSeeds);
+    set({ randomImages: newItems });
+    return newItems;
+  },
 
   hydrateHistory: async () => {
     const storedHistory = await loadGalleryHistoryFromDb();

@@ -1,15 +1,16 @@
 import { create } from 'zustand';
-import statue from '../../assets/STATUE.jpg';
-import useGalleryStore from '../data/galleryStore';
+import useGalleryStore, { createRandomItems, INITIAL_RANDOM_SEEDS } from '../data/galleryStore';
 import useGifStore from './gifStore';
 import useWebcamStore, { WEBCAM_SOURCE } from './webcamStore';
 
 const IMAGE_STORE_KEY = 'dither-dot:image';
 
+const defaultRandom = createRandomItems(INITIAL_RANDOM_SEEDS)[0];
+
 const DEFAULT_IMAGE_STATE = {
-  sourceImg: statue,
-  sourceName: 'STATUE',
-  sourceKind: 'default',
+  sourceImg: defaultRandom.src,
+  sourceName: defaultRandom.name,
+  sourceKind: 'preset',
 };
 
 function purgeOversizedPersistedState(storageKey, maxChars = 250_000) {
@@ -103,7 +104,13 @@ const useImageStore = create(
         };
       },
       onRehydrateStorage: () => (state) => {
-        if (state && (state.sourceImg === WEBCAM_SOURCE || state.sourceKind === 'webcam' || !state.sourceImg)) {
+        if (
+          state &&
+          (state.sourceImg === WEBCAM_SOURCE ||
+            state.sourceKind === 'webcam' ||
+            !state.sourceImg ||
+            (state.sourceName === 'STATUE' && state.sourceKind === 'default'))
+        ) {
           state.sourceImg = DEFAULT_IMAGE_STATE.sourceImg;
           state.sourceName = DEFAULT_IMAGE_STATE.sourceName;
           state.sourceKind = DEFAULT_IMAGE_STATE.sourceKind;
