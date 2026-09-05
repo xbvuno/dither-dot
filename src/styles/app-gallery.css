@@ -96,14 +96,18 @@
 }
 
 .gallery-thumb-wrap:hover .gallery-thumb-delete,
-.gallery-thumb-wrap--active .gallery-thumb-delete {
-  opacity: 1;
+.gallery-thumb-wrap--active .gallery-thumb-delete,
+.gallery-thumb-delete:hover,
+.gallery-thumb-delete:focus,
+.gallery-thumb-delete:focus-visible {
+  opacity: 1 !important;
+  pointer-events: auto;
 }
 
 .gallery-thumb-delete:hover {
   border-color: var(--color-border-hover);
-  background: var(--color-surface-hover);
-  color: var(--color-text);
+  background: var(--color-bg, #12120F);
+  color: var(--color-text, #EEEEDF);
 }
 
 #root.is-resizing-aside .gallery-thumb,

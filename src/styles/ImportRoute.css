@@ -438,15 +438,17 @@ main.import-3col-layout,
 }
 
 .import-route-history-item:hover .import-history-delete-btn,
+.import-history-delete-btn:hover,
+.import-history-delete-btn:focus,
 .import-history-delete-btn:focus-visible {
-  opacity: 1;
+  opacity: 1 !important;
   pointer-events: auto;
 }
 
 .import-history-delete-btn:hover {
-  background: var(--color-surface-hover, rgba(40, 40, 40, 0.95));
-  color: var(--color-text, #eee);
-  border-color: var(--color-border-hover, rgba(255, 255, 255, 0.3));
+  background: var(--color-bg, #12120F);
+  color: var(--color-text, #EEEEDF);
+  border-color: var(--color-border-hover);
 }
 
 /* Templates List in Column 3 (16rem vertical stack) */
