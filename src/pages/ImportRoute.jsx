@@ -442,7 +442,7 @@ export default function ImportRoute() {
           {/* COLUMN 1: SELECT MEDIA */}
           <div className='import-col import-col-media'>
             <div className='import-col-header'>
-              <h2 className='import-col-title'>1. SELECT MEDIA</h2>
+              <h2 className='import-col-title'>MEDIA</h2>
               {hasValidMedia && (
                 <span className='import-col-badge'>
                   {sourceName || (webcamActive ? 'CAMERA' : 'READY')}
@@ -450,163 +450,171 @@ export default function ImportRoute() {
               )}
             </div>
 
-            <div className='import-col-content'>
-              {/* Dropzone */}
-              <div
-                className={`import-route-dropzone${isDropActive ? ' active' : ''}`}
-                onDragEnter={(e) => {
-                  e.preventDefault();
-                  setIsDropActive(true);
-                }}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setIsDropActive(true);
-                }}
-                onDragLeave={(e) => {
-                  e.preventDefault();
-                  setIsDropActive(false);
-                }}
-                onDrop={handleDrop}
-                onClick={() => inputRef.current?.click()}
-              >
-                DROP IMAGE / GIF OR CTRL+V (CLICK TO BROWSE)
-              </div>
-
-              {/* Action Buttons */}
-              <div className='import-route-actions-grid'>
-                <button
-                  type='button'
-                  className='bv-option-btn import-btn'
+            <div className='import-col-content import-col-content--media'>
+              {/* Top Controls */}
+              <div className='import-media-top-group'>
+                {/* Dropzone */}
+                <div
+                  className={`import-route-dropzone${isDropActive ? ' active' : ''}`}
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                    setIsDropActive(true);
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDropActive(true);
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    setIsDropActive(false);
+                  }}
+                  onDrop={handleDrop}
                   onClick={() => inputRef.current?.click()}
                 >
-                  <FileUp size={13} strokeWidth={1.5} />
-                  IMPORT FILE
-                </button>
-                <button
-                  type='button'
-                  className='bv-option-btn import-btn'
-                  onClick={importFromClipboardButton}
-                >
-                  <Clipboard size={13} strokeWidth={1.5} />
-                  CLIPBOARD
-                </button>
-                <button
-                  type='button'
-                  className='bv-option-btn import-btn'
-                  onClick={handleRandomImage}
-                  disabled={isRandomLoading}
-                >
-                  <Dices size={13} strokeWidth={1.5} />
-                  {isRandomLoading ? 'LOADING...' : 'RANDOM'}
-                </button>
-                <button
-                  type='button'
-                  className={`bv-option-btn import-btn${webcamActive ? ' danger-btn' : ''}`}
-                  onClick={handleWebcamToggle}
-                  disabled={webcamStarting}
-                >
-                  {webcamActive ? <CameraOff size={13} strokeWidth={1.5} /> : <Camera size={13} strokeWidth={1.5} />}
-                  {webcamStarting ? 'STARTING...' : webcamActive ? 'STOP CAM' : 'CAMERA MODE'}
-                </button>
+                  DROP IMAGE / GIF OR CTRL+V (CLICK TO BROWSE)
+                </div>
+
+                {/* Action Buttons */}
+                <div className='import-route-actions-grid'>
+                  <button
+                    type='button'
+                    className='bv-option-btn import-btn'
+                    onClick={() => inputRef.current?.click()}
+                  >
+                    <FileUp size={13} strokeWidth={1.5} />
+                    IMPORT FILE
+                  </button>
+                  <button
+                    type='button'
+                    className='bv-option-btn import-btn'
+                    onClick={importFromClipboardButton}
+                  >
+                    <Clipboard size={13} strokeWidth={1.5} />
+                    CLIPBOARD
+                  </button>
+                  <button
+                    type='button'
+                    className='bv-option-btn import-btn'
+                    onClick={handleRandomImage}
+                    disabled={isRandomLoading}
+                  >
+                    <Dices size={13} strokeWidth={1.5} />
+                    {isRandomLoading ? 'LOADING...' : 'RANDOM'}
+                  </button>
+                  <button
+                    type='button'
+                    className={`bv-option-btn import-btn${webcamActive ? ' danger-btn' : ''}`}
+                    onClick={handleWebcamToggle}
+                    disabled={webcamStarting}
+                  >
+                    {webcamActive ? <CameraOff size={13} strokeWidth={1.5} /> : <Camera size={13} strokeWidth={1.5} />}
+                    {webcamStarting ? 'STARTING...' : webcamActive ? 'STOP CAM' : 'CAMERA MODE'}
+                  </button>
+                </div>
+
+                <input
+                  ref={inputRef}
+                  type='file'
+                  accept='image/*,.gif,.webp'
+                  onChange={handleFilePickerChange}
+                  style={{ display: 'none' }}
+                />
+
+                {webcamActive && <WebcamSection />}
               </div>
 
-              <input
-                ref={inputRef}
-                type='file'
-                accept='image/*,.gif,.webp'
-                onChange={handleFilePickerChange}
-                style={{ display: 'none' }}
-              />
-
-              {webcamActive && <WebcamSection />}
-
-              {/* Active Preview Info */}
+              {/* Active Media Preview Card: takes available vertical space with image + bottom info */}
               {sourceImg && !webcamActive && (
                 <div className='import-route-media-preview-card'>
-                  <img src={sourceImg} alt='Selected Media' className='import-route-thumb-img' />
+                  <div className='import-route-media-canvas-wrap'>
+                    <img src={sourceImg} alt='Selected Media' className='import-route-preview-large-img' />
+                  </div>
                   <div className='import-route-media-info'>
                     <span className='import-route-media-name'>{sourceName || 'Current Media'}</span>
-                    <span className='import-route-media-type'>Source: {sourceKind?.toUpperCase() || 'LOADED'}</span>
+                    <span className='import-route-media-type'>SOURCE: {sourceKind?.toUpperCase() || 'LOADED'}</span>
                   </div>
                 </div>
               )}
 
-              {/* Sample Presets */}
-              <p className='bv-label' style={{ marginTop: 6, marginBottom: 0 }}>SAMPLE PRESETS</p>
-              <div className='import-route-presets-row'>
-                {GALLERY_PRESETS.map((p) => {
-                  const isSelected = sourceName === p.name && !webcamActive;
-                  return (
-                    <button
-                      key={p.id}
-                      type='button'
-                      className={`import-route-preset-item${isSelected ? ' selected' : ''}`}
-                      onClick={() => handleSelectPreset(p)}
-                    >
-                      <img src={p.src} alt={p.name} className='import-route-preset-thumb' />
-                      <span className='import-route-preset-label'>{p.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              {/* Bottom Group: Presets and Recent Imports */}
+              <div className='import-media-bottom-group'>
+                {/* Sample Presets */}
+                <p className='bv-label' style={{ marginTop: 0, marginBottom: 0 }}>SAMPLE PRESETS</p>
+                <div className='import-route-presets-row'>
+                  {GALLERY_PRESETS.map((p) => {
+                    const isSelected = sourceName === p.name && !webcamActive;
+                    return (
+                      <button
+                        key={p.id}
+                        type='button'
+                        className={`import-route-preset-item${isSelected ? ' selected' : ''}`}
+                        onClick={() => handleSelectPreset(p)}
+                      >
+                        <img src={p.src} alt={p.name} className='import-route-preset-thumb' />
+                        <span className='import-route-preset-label'>{p.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
 
-              {/* Recent History */}
-              {history.length > 0 && (
-                <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
-                    <p className='bv-label' style={{ margin: 0 }}>RECENT IMPORTS</p>
-                    <button
-                      type='button'
-                      className='header-link-btn'
-                      onClick={clearHistory}
-                      style={{ fontSize: 10, height: 20, padding: '0 4px' }}
-                    >
-                      <Trash2 size={10} /> CLEAR
-                    </button>
-                  </div>
-                  <div className='import-route-presets-row'>
-                    {history.map((h) => {
-                      const isSelected = sourceName === h.name && !webcamActive;
-                      return (
-                        <div
-                          key={h.id}
-                          className={`import-route-preset-item import-route-history-item${isSelected ? ' selected' : ''}`}
-                        >
-                          <button
-                            type='button'
-                            className='import-route-history-btn'
-                            onClick={() => handleSelectHistory(h)}
+                {/* Recent History */}
+                {history.length > 0 && (
+                  <>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
+                      <p className='bv-label' style={{ margin: 0 }}>RECENT IMPORTS</p>
+                      <button
+                        type='button'
+                        className='header-link-btn'
+                        onClick={clearHistory}
+                        style={{ fontSize: 10, height: 20, padding: '0 4px' }}
+                      >
+                        <Trash2 size={10} /> CLEAR
+                      </button>
+                    </div>
+                    <div className='import-route-presets-row'>
+                      {history.map((h) => {
+                        const isSelected = sourceName === h.name && !webcamActive;
+                        return (
+                          <div
+                            key={h.id}
+                            className={`import-route-preset-item import-route-history-item${isSelected ? ' selected' : ''}`}
                           >
-                            <img src={h.src} alt={h.name} className='import-route-preset-thumb' />
-                            <span className='import-route-preset-label'>
-                              {h.kind === 'gif' ? '🎬 ' : ''}{h.name}
-                            </span>
-                          </button>
-                          <button
-                            type='button'
-                            className='import-history-delete-btn'
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeHistoryItem(h.id);
-                            }}
-                            title={`Remove ${h.name}`}
-                            aria-label={`Remove ${h.name}`}
-                          >
-                            <Trash2 size={10} />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
+                            <button
+                              type='button'
+                              className='import-route-history-btn'
+                              onClick={() => handleSelectHistory(h)}
+                            >
+                              <img src={h.src} alt={h.name} className='import-route-preset-thumb' />
+                              <span className='import-route-preset-label'>
+                                {h.kind === 'gif' ? '🎬 ' : ''}{h.name}
+                              </span>
+                            </button>
+                            <button
+                              type='button'
+                              className='import-history-delete-btn'
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeHistoryItem(h.id);
+                              }}
+                              title={`Remove ${h.name}`}
+                              aria-label={`Remove ${h.name}`}
+                            >
+                              <Trash2 size={10} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
           {/* COLUMN 2: SELECT TEMPLATE */}
           <div className='import-col import-col-templates'>
             <div className='import-col-header'>
-              <h2 className='import-col-title'>2. SELECT TEMPLATE</h2>
+              <h2 className='import-col-title'>TEMPLATE</h2>
               <span className='import-col-badge'>{activeTemplate.name}</span>
             </div>
 
@@ -656,7 +664,7 @@ export default function ImportRoute() {
           {/* COLUMN 3: REALTIME PREVIEW & LAUNCH */}
           <div className='import-col import-col-preview'>
             <div className='import-col-header'>
-              <h2 className='import-col-title'>3. PREVIEW</h2>
+              <h2 className='import-col-title'>PREVIEW</h2>
               <span className='import-col-badge'>
                 {activeTemplate.name} • {sourceName || 'ACTIVE'}
               </span>

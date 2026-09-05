@@ -82,10 +82,25 @@ main.import-3col-layout,
   gap: 14px;
 }
 
+.import-col-content--media {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.import-media-top-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+  width: 100%;
+}
+
 /* Dropzone & Action Buttons */
 .import-route-dropzone {
   border: 2px dashed var(--color-border);
-  padding: 20px 14px;
+  padding: 16px 12px;
   text-align: center;
   font-size: 11px;
   letter-spacing: 0.08em;
@@ -130,42 +145,79 @@ main.import-3col-layout,
   border-color: var(--color-danger, #ff6b6b) !important;
 }
 
+/* Media preview card taking full available height */
 .import-route-media-preview-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 10px;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px;
   background: var(--input-surface);
   border: 1px solid var(--color-border-subtle);
+  flex: 1 1 0%;
+  min-height: 100px;
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
 }
 
-.import-route-thumb-img {
-  width: 44px;
-  height: 44px;
-  object-fit: cover;
+.import-route-media-canvas-wrap {
+  flex: 1 1 0%;
+  width: 100%;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #0d0d0b;
   border: 1px solid var(--color-border);
+}
+
+.import-route-preview-large-img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
   image-rendering: pixelated;
-  flex-shrink: 0;
+  display: block;
 }
 
 .import-route-media-info {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: 2px;
+  width: 100%;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .import-route-media-name {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
+  color: var(--color-text);
 }
 
 .import-route-media-type {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--color-text-muted);
+  letter-spacing: 0.05em;
+}
+
+.import-media-bottom-group {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+  width: 100%;
 }
 
 /* Preset Gallery Horizontal Row */
