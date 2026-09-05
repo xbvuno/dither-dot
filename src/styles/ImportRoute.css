@@ -1,10 +1,12 @@
 /* 3-Column Layout for Import Route */
+main.import-3col-layout,
 .import-3col-layout {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   width: 100%;
   height: 100%;
   min-height: 0;
+  min-width: 0;
   overflow: hidden;
   background-color: var(--color-bg);
 }
@@ -15,9 +17,13 @@
   height: 100%;
   min-height: 0;
   min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   border-right: 1px solid var(--color-border);
   background-color: var(--color-bg);
   position: relative;
+  overflow: hidden;
 }
 
 .import-col:last-child {
@@ -88,8 +94,30 @@
 
 .import-route-actions-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
+  width: 100%;
+}
+
+.import-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.danger-btn {
+  background: var(--color-danger-bg, #3a1111) !important;
+  color: var(--color-danger, #ff6b6b) !important;
+  border-color: var(--color-danger, #ff6b6b) !important;
 }
 
 .import-route-media-preview-card {
@@ -347,10 +375,12 @@
   cursor: not-allowed;
 }
 
-/* Responsive fallback for smaller screens */
-@media (max-width: 1024px) {
+/* Responsive fallback for mobile screens */
+@media (max-width: 768px) {
+  main.import-3col-layout,
   .import-3col-layout {
-    grid-template-columns: 1fr;
+    display: flex !important;
+    flex-direction: column;
     overflow-y: auto;
     height: auto;
   }
@@ -358,6 +388,7 @@
   .import-col {
     height: auto;
     min-height: 380px;
+    flex-shrink: 0;
     border-right: none;
     border-bottom: 1px solid var(--color-border);
   }
