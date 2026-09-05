@@ -155,8 +155,9 @@ main.import-3col-layout,
   padding: 8px;
   background: var(--input-surface);
   border: 1px solid var(--color-border-subtle);
-  flex: 1 1 0%;
-  min-height: 100px;
+  flex: 1 1 auto;
+  min-height: 140px;
+  max-height: 320px;
   overflow: hidden;
   box-sizing: border-box;
   width: 100%;
@@ -165,20 +166,19 @@ main.import-3col-layout,
 .import-route-media-canvas-wrap {
   flex: 1 1 0%;
   width: 100%;
-  min-height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-height: 90px;
+  position: relative;
   overflow: hidden;
   background: #0d0d0b;
   border: 1px solid var(--color-border);
 }
 
 .import-route-preview-large-img {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   image-rendering: pixelated;
   display: block;
@@ -464,6 +464,32 @@ main.import-3col-layout,
   position: relative;
   overflow: hidden;
   background-color: #0d0d0b;
+}
+
+.import-preview-empty-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--color-text-subtle);
+  text-align: center;
+  padding: 20px;
+  font-family: var(--font-mono);
+}
+
+.import-preview-empty-state p {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+
+.import-preview-empty-state span {
+  font-size: 11px;
+  opacity: 0.7;
 }
 
 .import-preview-launch-bar {
