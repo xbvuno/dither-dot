@@ -42,16 +42,15 @@ aside {
     z-index: 20;
     background-color: transparent;
     transition: 0.2s background-color;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .resize-handle::before {
     content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
     width: 1px;
     height: 2.8rem;
-    transform: translate(-50%, -50%);
     background: color-mix(in srgb, var(--color-text) 34%, transparent);
 }
 

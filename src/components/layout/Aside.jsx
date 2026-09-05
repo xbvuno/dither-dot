@@ -122,23 +122,14 @@ export default function Aside({ children, side = "left", storageKey, className =
       >
         <span className="mobile-resize-pill" />
       </div>
-      {side === "right" && (
-        <div
-          ref={resizeHandleRef}
-          className="resize-handle resize-handle--left"
-          role="separator"
-        />
-      )}
       <aside ref={asideRef}>
         {children}
       </aside>
-      {side !== "right" && (
-        <div
-          ref={resizeHandleRef}
-          className="resize-handle resize-handle--right"
-          role="separator"
-        />
-      )}
+      <div
+        ref={resizeHandleRef}
+        className={`resize-handle resize-handle--${side === "right" ? "left" : "right"}`}
+        role="separator"
+      />
     </div>
   );
 }
