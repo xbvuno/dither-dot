@@ -76,9 +76,16 @@ aside > div > .bv-macro-section:first-child .bv-macro-section-title h2,
   line-height: 1.2;
 }
 
-.bv-macro-section-header.modified .bv-macro-section-title h2 {
-  text-decoration: underline;
-  text-underline-offset: 4px;
+.bv-macro-section-header.modified .bv-macro-section-title h2::after {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--color-modified, #e43b44);
+  margin-left: 0.45rem;
+  vertical-align: middle;
+  transform: translateY(-1px);
 }
 
 .bv-macro-section-chevron {
