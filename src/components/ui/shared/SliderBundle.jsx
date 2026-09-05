@@ -30,9 +30,7 @@ export default function SliderBundle({
     const value = _value ?? (defaultValue !== undefined ? defaultValue : min);
     const [isSelected, setIsSelected] = useState(false);
 
-    const isPinned = usePinnedStore(
-        useCallback((s) => (pinId ? s.pinnedIds.includes(pinId) : false), [pinId])
-    );
+    const isPinned = usePinnedStore((s) => Boolean(pinId && s.pinnedIds?.includes(pinId)));
     const togglePin = usePinnedStore((s) => s.togglePin);
     const unpin = usePinnedStore((s) => s.unpin);
 
@@ -234,6 +232,10 @@ export default function SliderBundle({
                                     className="slider-step-btn slider-reset-btn"
                                     aria-label={`Reset ${label}`}
                                     title={`Reset ${label}`}
+                                    onPointerDown={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                    }}
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setInternalValue(effectiveDefault);
@@ -248,6 +250,10 @@ export default function SliderBundle({
                                     className={`slider-step-btn slider-pin-btn${isPinned ? ' is-pinned' : ''}`}
                                     aria-label={isPinned ? `Unpin ${label}` : `Pin ${label}`}
                                     title={isPinned ? `UNPIN ${label}` : `PIN ${label}`}
+                                    onPointerDown={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                    }}
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         togglePin(pinId);
@@ -262,6 +268,10 @@ export default function SliderBundle({
                                     className="slider-step-btn slider-unpin-btn"
                                     aria-label={`Unpin ${label}`}
                                     title={`UNPIN ${label}`}
+                                    onPointerDown={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                    }}
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         unpin(pinId);
