@@ -184,15 +184,7 @@ export default function Slider({
     const sStep = Number(s.step);
 
     const base = typeof next === "function" ? next(currVal) : Number(next);
-
-    const stepped =
-      Math.round((base - sMin) / sStep) * sStep + sMin;
-
-    const clamped = clamp(
-      Number(stepped.toFixed(10)),
-      sMin,
-      sMax
-    );
+    const clamped = snapValue(base, sMin, sMax, sStep);
 
     // update local only if needed
     if (!s.isControlled) {

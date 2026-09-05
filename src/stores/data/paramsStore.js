@@ -120,8 +120,12 @@ function clamp(v, min, max) {
 }
 
 function snap(v, min, max, step) {
-  const stepped =
-    Math.round((v - min) / step) * step + min;
+  let stepped;
+  if (min < 0 && max > 0) {
+    stepped = Math.round(v / step) * step;
+  } else {
+    stepped = Math.round((v - min) / step) * step + min;
+  }
 
   return clamp(
     Number(stepped.toFixed(6)), // evita floating drift
