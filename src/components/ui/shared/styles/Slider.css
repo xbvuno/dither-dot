@@ -58,9 +58,9 @@
     top: 50%;
     transform: translate(-50%, -50%);
     width: 1px;
-    height: 0.45rem;
+    height: 0.85rem;
     background-color: var(--color-text);
-    opacity: 0.4;
+    opacity: 0.5;
 }
 
 .bv.slider.selected:focus {
@@ -246,7 +246,7 @@
     }
 
     .slider-tick {
-        height: 0.55rem;
+        height: 1.05rem;
     }
 }
 
