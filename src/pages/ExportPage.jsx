@@ -397,8 +397,9 @@ export default function ExportPage() {
             max={10}
             step={1}
             defaultValue={1}
-            value={upscale}
-            onChange={handleUpscaleChange}
+            value={livePreview ? 1 : upscale}
+            onChange={setUpscale}
+            disabled={livePreview}
             pinId="export:upscale"
           />
         </div>
