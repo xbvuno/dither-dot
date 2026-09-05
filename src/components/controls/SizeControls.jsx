@@ -44,6 +44,7 @@ export default function SizeControls() {
 
   const resetSizeToCurrent = useSizeStore(s => s.resetSizeToCurrent);
   const resetCrop = useSizeStore(s => s.resetCrop);
+  const resetAspectRatio = useSizeStore(s => s.resetAspectRatio);
 
   const isFree = aspectPreset === 'free';
   const croppedAxis = !isFree ? getAspectCroppedAxis(width, height, aspectPreset, aspectOrientation) : null;
@@ -112,11 +113,9 @@ export default function SizeControls() {
   }
 
   // Modified checks for underline and reset buttons
-  const isAspectModified = !isFree || aspectOrientation !== 'landscape' || Math.abs(aspectOffset - 0.5) > 1e-4;
+  const isAspectModified = aspectPreset !== 'free' || aspectOrientation !== 'landscape' || Math.abs(aspectOffset - 0.5) > 1e-4;
   const isResizeModified = currentCroppedW !== croppedWidth || currentCroppedH !== croppedHeight || !ratioLocked;
   const isCroppingModified = crop.top !== 0 || crop.bottom !== 0 || crop.left !== 0 || crop.right !== 0;
-
-  const resetAspectRatio = () => setAspectPreset('free');
 
   return (
     <>

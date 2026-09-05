@@ -467,6 +467,8 @@ const useSizeStore = create(persist((set) => ({
       if (preset === 'free') {
         return {
           aspectPreset: 'free',
+          aspectOrientation: 'landscape',
+          aspectOffset: 0.5,
         };
       }
 
@@ -589,6 +591,23 @@ const useSizeStore = create(persist((set) => ({
           customWidth: nextCustomWidth,
           customHeight: nextCustomHeight,
         },
+      };
+    }),
+
+  resetAspectRatio: () =>
+    set((state) => {
+      const w = Number(state.size.width) || 1;
+      const h = Number(state.size.height) || 1;
+      return {
+        aspectPreset: 'free',
+        aspectOrientation: 'landscape',
+        aspectOffset: 0.5,
+        crop: { top: 0, bottom: 0, left: 0, right: 0 },
+        customSize: {
+          customWidth: w,
+          customHeight: h,
+        },
+        ratio: w / h,
       };
     }),
 
