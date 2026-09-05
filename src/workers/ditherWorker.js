@@ -219,20 +219,9 @@ self.onmessage = async (event) => {
     // 1. Draw cropped region of source ImageBitmap to scratch OffscreenCanvas scaled to outW x outH
     const sCtx = getScratchContext(outW, outH);
     sCtx.imageSmoothingEnabled = false;
-    if (excludeAlpha) {
-      sCtx.fillStyle = '#000000';
-      sCtx.fillRect(0, 0, outW, outH);
-    } else {
-      sCtx.clearRect(0, 0, outW, outH);
-    }
+    sCtx.clearRect(0, 0, outW, outH);
     sCtx.drawImage(source, cropLeft, cropTop, sw, sh, 0, 0, outW, outH);
     const imgData = sCtx.getImageData(0, 0, outW, outH);
-    if (excludeAlpha) {
-      const data = imgData.data;
-      for (let i = 3; i < data.length; i += 4) {
-        data[i] = 255;
-      }
-    }
 
     image = new WasmImage(imgData);
     const activeImage = image;
@@ -327,8 +316,10 @@ self.onmessage = async (event) => {
     outputPixels = new Uint8ClampedArray(outputBuffer.buffer);
 
     if (dither.enabled) {
-      if (!excludeAlpha) {
-        applyBinaryAlphaThreshold(outputPixels);
+      if (excludeAlpha) {
+        for (let index = 3; index < outputPixels.length; index += 4) {
+          outputPixels[index] = croppedSnapshot[index] >= 128 ? 255 : 0;
+        }
       } else {
         for (let index = 3; index < outputPixels.length; index += 4) {
           outputPixels[index] = 255;
@@ -343,6 +334,7 @@ self.onmessage = async (event) => {
         viewportCanvas.width = outWidth;
         viewportCanvas.height = outHeight;
       }
+      viewportCtx.clearRect(0, 0, outWidth, outHeight);
       viewportCtx.imageSmoothingEnabled = false;
       const imgDataOut = new ImageData(outputPixels, outWidth, outHeight);
       viewportCtx.putImageData(imgDataOut, 0, 0);
