@@ -8,8 +8,14 @@ import {
   ArrowRight,
   Cat,
   Heart,
-  Image as ImageIcon,
-  Film,
+  Maximize,
+  Minimize,
+  Pin,
+  ImageUpscale,
+  SlidersHorizontal,
+  Palette,
+  SprayCan,
+  Download,
   Trash2,
 } from 'lucide-react';
 import { useRouter } from '../router/router';
@@ -17,29 +23,29 @@ import useImageStore from '../stores/media/imageStore';
 import useGalleryStore, { GALLERY_PRESETS } from '../stores/data/galleryStore';
 import useGifStore from '../stores/media/gifStore';
 import useWebcamStore, { WEBCAM_SOURCE } from '../stores/media/webcamStore';
+import useProcessingStore from '../stores/engine/processingStore';
 import useTemplateStore from '../stores/data/templateStore';
 import { TEMPLATES } from '../constants/templates';
-import {
-  INPUT_ACCEPT,
-  LARGE_IMAGE_THRESHOLD,
-  stripExtension,
-  isGifFile,
-  isWebpFile,
-  getImageDimensions,
-  buildClipboardFileName,
-  validateImageFile,
-} from '../utils/importUtils';
-import {
-  decodeGifWithWorker,
-  rgbaFrameToPngBlob,
-  blobToDataUrl,
-  getStaticPreviewFromBlob,
-} from '../utils/gifDecodeUtils';
-
+import { PAGE } from '../stores/ui/pageStore';
+import Aside from '../components/layout/Aside';
+import MacroSection from '../components/ui/MacroSection';
+import ZoomableDiv from '../components/ui/shared/ZoomableDiv';
+import ImageShader from '../components/canvas/ImageShader';
+import WaveGridSpinner from '../components/ui/shared/WaveGridSpinner';
+import PopupMessage from '../components/ui/shared/PopupMessage';
+import Footer from '../components/layout/Footer';
 import WebcamSection from '../components/import/WebcamSection';
 import LargeImageDialog from '../components/import/LargeImageDialog';
 import watermarkMini from '../assets/watermark/watermark-mini.png';
 import '../styles/ImportRoute.css';
+
+const DISABLED_NAV_ITEMS = [
+  { id: PAGE.PINNED, label: 'Pinned', Icon: Pin },
+  { id: PAGE.RESIZING, label: 'Resizing', Icon: ImageUpscale },
+  { id: PAGE.ADJUSTMENTS, label: 'Adjustments', Icon: SlidersHorizontal },
+  { id: PAGE.PALETTE, label: 'Palette', Icon: Palette },
+  { id: PAGE.DITHER, label: 'Dither', Icon: SprayCan },
+];
 
 export default function ImportRoute() {
   const { navigate } = useRouter();
@@ -49,11 +55,13 @@ export default function ImportRoute() {
   const [pendingImport, setPendingImport] = useState(null);
   const [isRandomLoading, setIsRandomLoading] = useState(false);
   const [modalType, setModalType] = useState(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Store bindings
   const sourceImg = useImageStore((s) => s.sourceImg);
   const sourceName = useImageStore((s) => s.sourceName);
-  const sourceKind = useImageStore((s) => s.sourceKind);
+  const viewerLoading = useImageStore((s) => s.viewerLoading);
+  const renderProcessing = useProcessingStore((s) => s.renderProcessing);
   const setSourceFromBlob = useImageStore((s) => s.setSourceFromBlob);
   const setSourceDirect = useImageStore((s) => s.setSourceDirect);
 
@@ -75,12 +83,35 @@ export default function ImportRoute() {
   const setSelectedTemplateId = useTemplateStore((s) => s.setSelectedTemplateId);
   const applyTemplate = useTemplateStore((s) => s.applyTemplate);
 
-  // Import handler
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+  };
+
+  // Import handlers
   const doImport = useCallback(
     async (blob, name) => {
-      if (isGifFile({ type: blob?.type, name })) {
+      const isGif = blob?.type === 'image/gif' || name?.toLowerCase().endsWith('.gif');
+      if (isGif) {
         setDecoding(true);
         try {
+          const { decodeGifWithWorker, rgbaFrameToPngBlob, blobToDataUrl } = await import('../utils/gifDecodeUtils');
           const decoded = await decodeGifWithWorker(blob);
           if (!decoded.frames.length) {
             throw new Error('GIF decode returned no frames.');
@@ -103,7 +134,9 @@ export default function ImportRoute() {
 
       clearGifFrames();
 
-      if (isWebpFile({ type: blob?.type, name })) {
+      const isWebp = blob?.type === 'image/webp' || name?.toLowerCase().endsWith('.webp');
+      if (isWebp) {
+        const { blobToDataUrl, getStaticPreviewFromBlob } = await import('../utils/gifDecodeUtils');
         const animDataUrl = await blobToDataUrl(blob);
         const previewSrc = await getStaticPreviewFromBlob(blob);
         await setSourceFromBlob(blob, name, { skipHistory: true });
@@ -118,6 +151,7 @@ export default function ImportRoute() {
 
   const importWithSizeCheck = useCallback(
     async (blob, name) => {
+      const { getImageDimensions, LARGE_IMAGE_THRESHOLD } = await import('../utils/importUtils');
       const dims = await getImageDimensions(blob);
       const pixelCount = dims.width * dims.height;
 
@@ -142,6 +176,7 @@ export default function ImportRoute() {
   const importFromFile = useCallback(
     async (file) => {
       try {
+        const { validateImageFile, stripExtension, buildClipboardFileName } = await import('../utils/importUtils');
         await validateImageFile(file);
         const rawName =
           typeof file.name === 'string' && file.name ? file.name : buildClipboardFileName(file.type || 'image/png');
@@ -197,6 +232,7 @@ export default function ImportRoute() {
       if (!imageType) return;
 
       const blob = await imageItem.getType(imageType);
+      const { validateImageFile, buildClipboardFileName } = await import('../utils/importUtils');
       await validateImageFile(blob);
       await importWithSizeCheck(blob, buildClipboardFileName(imageType));
     } catch {
@@ -238,6 +274,7 @@ export default function ImportRoute() {
       const response = await fetch(url);
       if (!response.ok) throw new Error('Random image fetch failed.');
       const blob = await response.blob();
+      const { validateImageFile } = await import('../utils/importUtils');
       await validateImageFile(blob);
       await importWithSizeCheck(blob, `lorem-picsum-${w}x${h}`);
     } catch (error) {
@@ -253,6 +290,7 @@ export default function ImportRoute() {
         setDecoding(true);
         const res = await fetch(preset.src);
         const blob = await res.blob();
+        const { decodeGifWithWorker, rgbaFrameToPngBlob } = await import('../utils/gifDecodeUtils');
         const decoded = await decodeGifWithWorker(blob);
         setGifFrames(decoded.frames, decoded.loop);
         const firstFrameBlob = await rgbaFrameToPngBlob(decoded.frames[0]);
@@ -273,6 +311,7 @@ export default function ImportRoute() {
         setDecoding(true);
         const res = await fetch(item.gifDataUrl);
         const blob = await res.blob();
+        const { decodeGifWithWorker, rgbaFrameToPngBlob } = await import('../utils/gifDecodeUtils');
         const decoded = await decodeGifWithWorker(blob);
         setGifFrames(decoded.frames, decoded.loop);
         const firstFrameBlob = await rgbaFrameToPngBlob(decoded.frames[0]);
@@ -299,14 +338,17 @@ export default function ImportRoute() {
   }, [handlePaste]);
 
   const hasValidMedia = Boolean(sourceImg || webcamActive);
+  const activeTemplate = TEMPLATES.find((t) => t.id === selectedTemplateId) || TEMPLATES[0];
 
   return (
-    <div className='import-route-wrap'>
-      <header className='import-route-header'>
-        <div className='app-header-title' onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+    <>
+      <h1 className='sr-only'>DITHER-DOT Import &amp; Template Hub</h1>
+      <header className='app-header'>
+        <span className='app-header-title' onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
           <img src={watermarkMini} alt='DITHER-DOT Logo' className='header-logo-img' />
           <span className='app-header-title-name'>DITHER-DOT</span>
-        </div>
+        </span>
+
         <div className='app-header-links'>
           <button
             type='button'
@@ -329,237 +371,295 @@ export default function ImportRoute() {
             <Cat size={14} strokeWidth={2} aria-hidden='true' />
             <span className='header-link-label'>GITHUB</span>
           </a>
+          <button
+            type='button'
+            className='header-link-btn header-btn--mobile-only'
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+            title={isFullscreen ? 'EXIT FULLSCREEN' : 'FULLSCREEN'}
+          >
+            {isFullscreen ? (
+              <Minimize size={14} strokeWidth={2} aria-hidden='true' />
+            ) : (
+              <Maximize size={14} strokeWidth={2} aria-hidden='true' />
+            )}
+            <span className='header-link-label'>FULLSCREEN</span>
+          </button>
         </div>
       </header>
 
-      <div className='import-route-container'>
-        {/* STEP 1: MEDIA SELECTION */}
-        <section className='import-route-section'>
-          <h2 className='import-route-section-title'>
-            <span>1. SELECT MEDIA</span>
-            {hasValidMedia && (
-              <span className='import-route-selected-badge'>
-                READY: {sourceName || (webcamActive ? 'CAMERA' : 'ACTIVE')}
-              </span>
-            )}
-          </h2>
-
-          {/* Dropzone */}
-          <div
-            className={`import-route-dropzone${isDropActive ? ' active' : ''}`}
-            onDragEnter={(e) => {
-              e.preventDefault();
-              setIsDropActive(true);
-            }}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setIsDropActive(true);
-            }}
-            onDragLeave={(e) => {
-              e.preventDefault();
-              setIsDropActive(false);
-            }}
-            onDrop={handleDrop}
-            onClick={() => inputRef.current?.click()}
-          >
-            DROP IMAGE / GIF HERE OR PRESS CTRL+V (CLICK TO BROWSE)
-          </div>
-
-          {/* Action buttons */}
-          <div className='import-route-actions-grid'>
-            <button
-              type='button'
-              className='bv-option-btn import-btn'
-              onClick={() => inputRef.current?.click()}
-            >
-              <FileUp size={13} strokeWidth={1.5} />
-              IMPORT FILE
-            </button>
-            <button
-              type='button'
-              className='bv-option-btn import-btn'
-              onClick={importFromClipboardButton}
-            >
-              <Clipboard size={13} strokeWidth={1.5} />
-              READ CLIPBOARD
-            </button>
-            <button
-              type='button'
-              className='bv-option-btn import-btn'
-              onClick={handleRandomImage}
-              disabled={isRandomLoading}
-            >
-              <Dices size={13} strokeWidth={1.5} />
-              {isRandomLoading ? 'LOADING...' : 'RANDOM IMAGE'}
-            </button>
-            <button
-              type='button'
-              className={`bv-option-btn import-btn${webcamActive ? ' danger-btn' : ''}`}
-              onClick={handleWebcamToggle}
-              disabled={webcamStarting}
-            >
-              {webcamActive ? <CameraOff size={13} strokeWidth={1.5} /> : <Camera size={13} strokeWidth={1.5} />}
-              {webcamStarting ? 'STARTING...' : webcamActive ? 'STOP CAMERA' : 'CAMERA MODE'}
-            </button>
-          </div>
-
-          <input
-            ref={inputRef}
-            type='file'
-            accept={INPUT_ACCEPT}
-            onChange={handleFilePickerChange}
-            style={{ display: 'none' }}
-          />
-
-          {webcamActive && <WebcamSection />}
-
-          {/* Active Preview */}
-          {sourceImg && !webcamActive && (
-            <div className='import-route-media-preview-card'>
-              <img src={sourceImg} alt='Selected Media' className='import-route-thumb-img' />
-              <div className='import-route-media-info'>
-                <span className='import-route-media-name'>{sourceName || 'Current Media'}</span>
-                <span className='import-route-media-type'>Source: {sourceKind?.toUpperCase() || 'LOADED'}</span>
-              </div>
-            </div>
-          )}
-
-          {/* Demo Presets */}
-          <p className='bv-label' style={{ marginTop: 8 }}>SAMPLE PRESETS</p>
-          <div className='import-route-presets-grid'>
-            {GALLERY_PRESETS.map((p) => {
-              const isSelected = sourceName === p.name && !webcamActive;
+      <div className='app-layout'>
+        {/* NAV BAR: Exact same structure with disabled buttons */}
+        <nav className='app-nav' aria-label='Main Navigation (Select media and template to unlock editor)'>
+          <div className='nav-links-wrap'>
+            {DISABLED_NAV_ITEMS.map((item, index) => {
+              const Icon = item.Icon;
+              const tooltipText = `${item.label.toUpperCase()} [LOCKED]`;
               return (
                 <button
-                  key={p.id}
+                  key={item.id}
                   type='button'
-                  className={`import-route-preset-item${isSelected ? ' selected' : ''}`}
-                  onClick={() => handleSelectPreset(p)}
+                  className='nav-icon-btn disabled'
+                  disabled
+                  data-tooltip={tooltipText}
+                  aria-label={tooltipText}
                 >
-                  <img src={p.src} alt={p.name} className='import-route-preset-thumb' />
-                  <span className='import-route-preset-label'>{p.name}</span>
+                  <Icon size={24} strokeWidth={2} aria-hidden='true' className='nav-icon-img' />
                 </button>
               );
             })}
           </div>
 
-          {/* History */}
-          {history.length > 0 && (
-            <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
-                <p className='bv-label' style={{ margin: 0 }}>RECENT IMPORTS</p>
-                <button
-                  type='button'
-                  className='header-link-btn'
-                  onClick={clearHistory}
-                  style={{ fontSize: 10, height: 22, padding: '0 6px' }}
-                >
-                  <Trash2 size={11} /> CLEAR
-                </button>
-              </div>
-              <div className='import-route-presets-grid'>
-                {history.map((h) => {
-                  const isSelected = sourceName === h.name && !webcamActive;
-                  return (
-                    <div
-                      key={h.id}
-                      className={`import-route-preset-item${isSelected ? ' selected' : ''}`}
-                      style={{ position: 'relative' }}
-                    >
-                      <div onClick={() => handleSelectHistory(h)} style={{ cursor: 'pointer', width: '100%' }}>
-                        <img src={h.src} alt={h.name} className='import-route-preset-thumb' />
-                        <span className='import-route-preset-label'>
-                          {h.kind === 'gif' ? '🎬 ' : ''}{h.name}
-                        </span>
-                      </div>
-                      <button
-                        type='button'
-                        className='header-link-btn'
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeHistoryItem(h.id);
-                        }}
-                        style={{ position: 'absolute', top: 4, right: 4, padding: 2, background: 'rgba(0,0,0,0.6)' }}
-                        title='Remove from history'
-                      >
-                        <Trash2 size={10} />
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
-        </section>
+          <div className='nav-export-wrap'>
+            <button
+              type='button'
+              className='nav-icon-btn disabled'
+              disabled
+              data-tooltip='EXPORT [LOCKED]'
+              aria-label='EXPORT [LOCKED]'
+            >
+              <Download size={24} strokeWidth={2} aria-hidden='true' className='nav-icon-img' />
+            </button>
+          </div>
+        </nav>
 
-        {/* STEP 2: TEMPLATE SELECTION */}
-        <section className='import-route-section'>
-          <h2 className='import-route-section-title'>
-            <span>2. SELECT TEMPLATE</span>
-            <span className='import-route-selected-badge'>
-              {TEMPLATES.find((t) => t.id === selectedTemplateId)?.name || 'DEFAULT'}
-            </span>
-          </h2>
-
-          <div className='import-route-templates-grid'>
-            {TEMPLATES.map((tpl) => {
-              const isSelected = selectedTemplateId === tpl.id;
-              return (
+        <main>
+          <Aside side='left'>
+            {/* MACRO SECTION 1: MEDIA */}
+            <MacroSection title='MEDIA'>
+              <div className='bv-section import-dropzone-section'>
+                <p className='bv-label'>DROP OR PASTE</p>
                 <div
-                  key={tpl.id}
-                  className={`import-route-template-card${isSelected ? ' selected' : ''}`}
-                  onClick={() => setSelectedTemplateId(tpl.id)}
-                  role='button'
-                  tabIndex={0}
+                  className={`import-dropzone${isDropActive ? ' active' : ''}`}
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                    setIsDropActive(true);
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDropActive(true);
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    setIsDropActive(false);
+                  }}
+                  onDrop={handleDrop}
+                  onClick={() => inputRef.current?.click()}
+                  style={{ cursor: 'pointer' }}
                 >
-                  <div className='import-route-template-top'>
-                    <span className='import-route-template-name'>{tpl.name}</span>
-                    <span className='import-route-template-badge'>{tpl.badge}</span>
+                  DROP HERE OR PRESS CTRL+V
+                </div>
+              </div>
+
+              <div className='bv-section'>
+                <p className='bv-label'>IMPORT OPTIONS</p>
+                <div className='bv-option-group'>
+                  <button
+                    type='button'
+                    className='bv-option-btn import-btn'
+                    onClick={() => inputRef.current?.click()}
+                  >
+                    <FileUp size={13} strokeWidth={1.5} />
+                    IMPORT FILE
+                  </button>
+                  <button
+                    type='button'
+                    className='bv-option-btn import-btn'
+                    onClick={importFromClipboardButton}
+                  >
+                    <Clipboard size={13} strokeWidth={1.5} />
+                    CLIPBOARD
+                  </button>
+                  <button
+                    type='button'
+                    className='bv-option-btn import-btn'
+                    onClick={handleRandomImage}
+                    disabled={isRandomLoading}
+                  >
+                    <Dices size={13} strokeWidth={1.5} />
+                    {isRandomLoading ? 'LOADING...' : 'RANDOM'}
+                  </button>
+                  <button
+                    type='button'
+                    className={`bv-option-btn import-btn${webcamActive ? ' danger-btn' : ''}`}
+                    onClick={handleWebcamToggle}
+                    disabled={webcamStarting}
+                  >
+                    {webcamActive ? <CameraOff size={13} strokeWidth={1.5} /> : <Camera size={13} strokeWidth={1.5} />}
+                    {webcamStarting ? 'STARTING...' : webcamActive ? 'STOP CAMERA' : 'CAMERA MODE'}
+                  </button>
+                </div>
+                <input
+                  ref={inputRef}
+                  type='file'
+                  accept='image/*,.gif,.webp'
+                  onChange={handleFilePickerChange}
+                  style={{ display: 'none' }}
+                />
+              </div>
+
+              {webcamActive && <WebcamSection />}
+
+              {/* Sample Presets */}
+              <div className='bv-section'>
+                <p className='bv-label'>SAMPLE PRESETS</p>
+                <div className='import-route-presets-grid'>
+                  {GALLERY_PRESETS.map((p) => {
+                    const isSelected = sourceName === p.name && !webcamActive;
+                    return (
+                      <button
+                        key={p.id}
+                        type='button'
+                        className={`import-route-preset-item${isSelected ? ' selected' : ''}`}
+                        onClick={() => handleSelectPreset(p)}
+                      >
+                        <img src={p.src} alt={p.name} className='import-route-preset-thumb' />
+                        <span className='import-route-preset-label'>{p.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* History */}
+              {history.length > 0 && (
+                <div className='bv-section'>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <p className='bv-label' style={{ margin: 0 }}>RECENT IMPORTS</p>
+                    <button
+                      type='button'
+                      className='header-link-btn'
+                      onClick={clearHistory}
+                      style={{ fontSize: 10, height: 20, padding: '0 4px' }}
+                    >
+                      <Trash2 size={10} /> CLEAR
+                    </button>
                   </div>
-
-                  <p className='import-route-template-desc'>{tpl.description}</p>
-
-                  <div className='import-route-swatches-row'>
-                    {tpl.palette.colors.map((hex, idx) => (
-                      <span
-                        key={idx}
-                        className='import-route-swatch'
-                        style={{ backgroundColor: hex }}
-                        title={hex}
-                      />
-                    ))}
-                  </div>
-
-                  <div className='import-route-template-tags'>
-                    <span className='import-route-template-tag'>{tpl.dither.method.toUpperCase()}</span>
-                    <span className='import-route-template-tag'>
-                      PINNED: {tpl.pinnedIds.length} CONTROLS
-                    </span>
+                  <div className='import-route-presets-grid'>
+                    {history.map((h) => {
+                      const isSelected = sourceName === h.name && !webcamActive;
+                      return (
+                        <div
+                          key={h.id}
+                          className={`import-route-preset-item${isSelected ? ' selected' : ''}`}
+                          style={{ position: 'relative' }}
+                        >
+                          <div onClick={() => handleSelectHistory(h)} style={{ cursor: 'pointer', width: '100%' }}>
+                            <img src={h.src} alt={h.name} className='import-route-preset-thumb' />
+                            <span className='import-route-preset-label'>
+                              {h.kind === 'gif' ? '🎬 ' : ''}{h.name}
+                            </span>
+                          </div>
+                          <button
+                            type='button'
+                            className='header-link-btn'
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeHistoryItem(h.id);
+                            }}
+                            style={{ position: 'absolute', top: 4, right: 4, padding: 2, background: 'rgba(0,0,0,0.6)' }}
+                            title='Remove'
+                          >
+                            <Trash2 size={10} />
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              );
-            })}
+              )}
+            </MacroSection>
+
+            {/* MACRO SECTION 2: TEMPLATES */}
+            <MacroSection title='TEMPLATES'>
+              <div className='bv-section'>
+                <p className='bv-label'>CHOOSE TEMPLATE</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {TEMPLATES.map((tpl) => {
+                    const isSelected = selectedTemplateId === tpl.id;
+                    return (
+                      <div
+                        key={tpl.id}
+                        className={`import-route-template-card${isSelected ? ' selected' : ''}`}
+                        onClick={() => setSelectedTemplateId(tpl.id)}
+                        role='button'
+                        tabIndex={0}
+                      >
+                        <div className='import-route-template-top'>
+                          <span className='import-route-template-name'>{tpl.name}</span>
+                          <span className='import-route-template-badge'>{tpl.badge}</span>
+                        </div>
+                        <p className='import-route-template-desc'>{tpl.description}</p>
+                        <div className='import-route-swatches-row'>
+                          {tpl.palette.colors.map((hex, idx) => (
+                            <span
+                              key={idx}
+                              className='import-route-swatch'
+                              style={{ backgroundColor: hex }}
+                              title={hex}
+                            />
+                          ))}
+                        </div>
+                        <div className='import-route-template-tags'>
+                          <span className='import-route-template-tag'>{tpl.dither.method.toUpperCase()}</span>
+                          <span className='import-route-template-tag'>
+                            PINNED: {tpl.pinnedIds.length}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </MacroSection>
+          </Aside>
+
+          {/* MAIN PREVIEW AREA */}
+          <div className='flex-v'>
+            <div className='zoomable-wrap'>
+              <PopupMessage />
+              <ZoomableDiv content={<ImageShader sourceImg={sourceImg} />} />
+              {(viewerLoading || renderProcessing) && !webcamActive && (
+                <div className='zoomable-loading-overlay' role='status' aria-live='polite' aria-label='Loading media'>
+                  <WaveGridSpinner />
+                </div>
+              )}
+            </div>
+
+            {/* Bottom Launch Action Bar */}
+            <div
+              style={{
+                height: 52,
+                borderTop: '1px solid var(--color-border)',
+                background: 'var(--color-bg)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '0 16px',
+                flexShrink: 0,
+              }}
+            >
+              <div style={{ fontSize: 12, color: 'var(--color-text-subtle)', display: 'flex', gap: 12 }}>
+                <span>MEDIA: <b>{sourceName || (webcamActive ? 'CAMERA' : 'NONE')}</b></span>
+                <span>•</span>
+                <span>TEMPLATE: <b>{activeTemplate.name}</b></span>
+              </div>
+
+              <button
+                type='button'
+                className='bv-option-btn active'
+                onClick={handleLaunchEditor}
+                disabled={!hasValidMedia}
+                style={{ height: 34, padding: '0 18px', display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12 }}
+              >
+                <span>OPEN IN EDITOR</span>
+                <ArrowRight size={14} strokeWidth={2} />
+              </button>
+            </div>
+
+            <Footer />
           </div>
-        </section>
-      </div>
-
-      {/* FLOATING LAUNCH BAR */}
-      <div className='import-route-launch-bar'>
-        <div className='import-route-launch-summary'>
-          <span>MEDIA: <b>{sourceName || (webcamActive ? 'CAMERA' : 'NONE')}</b></span>
-          <span>•</span>
-          <span>TEMPLATE: <b>{TEMPLATES.find((t) => t.id === selectedTemplateId)?.name || 'DEFAULT'}</b></span>
-        </div>
-
-        <button
-          type='button'
-          className='import-route-launch-btn'
-          onClick={handleLaunchEditor}
-          disabled={!hasValidMedia}
-        >
-          <span>OPEN IN EDITOR</span>
-          <ArrowRight size={15} strokeWidth={2} />
-        </button>
+        </main>
       </div>
 
       {pendingImport && (
@@ -596,6 +696,6 @@ export default function ImportRoute() {
           </section>
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -10,7 +10,6 @@ import {
   Download,
   Maximize,
   Minimize,
-  ArrowLeft,
   FolderOpen,
 } from 'lucide-react';
 import Aside from '../components/layout/Aside';
@@ -213,31 +212,10 @@ export default function EditorPage() {
     <>
       <h1 className='sr-only'>DITHER-DOT Studio Editor</h1>
       <header className='app-header'>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <button
-            type='button'
-            className='header-link-btn'
-            onClick={() => navigate('/import')}
-            title='Change Media & Template'
-            style={{ fontWeight: 600 }}
-          >
-            <ArrowLeft size={14} strokeWidth={2} />
-            <span>IMPORT</span>
-          </button>
-
-          <span className='app-header-title' onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-            <img src={watermarkMini} alt='DITHER-DOT Logo' className='header-logo-img' />
-            <span className='app-header-title-name'>DITHER-DOT</span>
-          </span>
-
-          <span
-            className='landing-feature-chip'
-            style={{ fontSize: 10, padding: '2px 6px', display: 'inline-flex' }}
-            title={`Active Template: ${activeTemplate.name} | Media: ${sourceName || 'Active'}`}
-          >
-            {activeTemplate.name} • {sourceName || 'ACTIVE'}
-          </span>
-        </div>
+        <span className='app-header-title' onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+          <img src={watermarkMini} alt='DITHER-DOT Logo' className='header-logo-img' />
+          <span className='app-header-title-name'>DITHER-DOT</span>
+        </span>
 
         <div className='app-header-links'>
           <button
@@ -281,16 +259,6 @@ export default function EditorPage() {
       <div className='app-layout'>
         <nav ref={navRef} className='app-nav' aria-label='Main Navigation'>
           <div className='nav-links-wrap'>
-            <button
-              type='button'
-              className='nav-icon-btn'
-              onClick={() => navigate('/import')}
-              data-tooltip='MEDIA & TEMPLATES'
-              aria-label='MEDIA & TEMPLATES'
-            >
-              <FolderOpen size={24} strokeWidth={2} aria-hidden='true' className='nav-icon-img' />
-            </button>
-
             {MAIN_NAV_ITEMS.map((item, index) => {
               const Icon = item.Icon;
               const isSelected = currentPage === item.id;
@@ -329,6 +297,18 @@ export default function EditorPage() {
 
         <main>
           <Aside side='left'>
+            <button
+              type='button'
+              className='aside-media-template-banner'
+              onClick={() => navigate('/import')}
+              title='Change Media & Template'
+            >
+              <div className='aside-media-template-banner-left'>
+                <FolderOpen size={14} strokeWidth={2} />
+                <span>MEDIA &amp; TEMPLATES</span>
+              </div>
+              <span className='aside-media-template-banner-badge'>{activeTemplate.name}</span>
+            </button>
             <AsideRouter />
           </Aside>
           <div className='flex-v'>

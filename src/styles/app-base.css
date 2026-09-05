@@ -462,6 +462,13 @@ main {
     cursor: pointer;
 }
 
+.nav-icon-btn:disabled,
+.nav-icon-btn.disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .nav-icon-btn.selected {
     background-color: var(--color-text);
     color: var(--color-bg);
@@ -470,6 +477,47 @@ main {
 .nav-icon-img {
     width: 24px;
     height: 24px;
+}
+
+/* Aside Media & Template Header Banner */
+.aside-media-template-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0.85rem;
+    background: var(--btn-bg-default);
+    border: none;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    width: 100%;
+    text-align: left;
+    flex-shrink: 0;
+}
+
+.aside-media-template-banner:hover {
+    background: var(--btn-bg-hover);
+    color: var(--btn-color-hover);
+}
+
+.aside-media-template-banner-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.aside-media-template-banner-badge {
+    font-size: 0.68rem;
+    padding: 2px 6px;
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border-subtle);
+    color: var(--color-text-subtle);
+    font-weight: 500;
 }
 
 .flex-v {
