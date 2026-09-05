@@ -548,6 +548,7 @@ const action = this.debugEnabled ? "disable" : "enable";
         const prevState = this.previousGifState || {};
         const hadFrames = (prevState.frames?.length || 0) > 1;
         const hasFrames = (state?.frames?.length || 0) > 1;
+        const framesChanged = state.frames !== prevState.frames;
 
         this.previousGifState = {
           frames: state.frames,
@@ -556,12 +557,7 @@ const action = this.debugEnabled ? "disable" : "enable";
 
         if (!hasFrames && !hadFrames) return;
 
-        if (!hadFrames && hasFrames) {
-          this.swapSourceFrame(state.currentFrameIndex);
-          return;
-        }
-
-        if (state.currentFrameIndex !== prevState.currentFrameIndex) {
+        if (framesChanged || (!hadFrames && hasFrames) || state.currentFrameIndex !== prevState.currentFrameIndex) {
           this.swapSourceFrame(state.currentFrameIndex);
         }
       })

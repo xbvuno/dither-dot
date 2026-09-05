@@ -13,7 +13,7 @@ export const GALLERY_PRESETS = [
   { id: 'preset-statue', src: statue, name: 'STATUE' },
   { id: 'preset-sunset', src: sunset, name: 'SUNSET' },
   { id: 'preset-flames', src: flames, name: 'FLAMES' },
-  { id: 'preset-pizza-cow', src: pizzaCow, name: 'PIZZA_COW' },
+  { id: 'preset-pizza-cow', src: pizzaCow, name: 'PIZZA_COW', isGif: true },
 ];
 
 const MAX_HISTORY_ITEMS = 20;

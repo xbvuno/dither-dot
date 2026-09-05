@@ -93,7 +93,6 @@ function OriginalMediaPreview({
   webcamMirrored,
 }) {
   const canvasRef = useRef(null);
-  const bitmapsRef = useRef([]);
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -106,57 +105,10 @@ function OriginalMediaPreview({
   }, [webcamActive, webcamStream]);
 
   useEffect(() => {
-    if (!isGif || !frames || frames.length <= 1) {
-      bitmapsRef.current.forEach((b) => b?.close?.());
-      bitmapsRef.current = [];
-      return;
-    }
-
-    let canceled = false;
-    Promise.all(
-      frames.map((frame) => {
-        try {
-          const imgData = new ImageData(frame.pixels, frame.width, frame.height);
-          return createImageBitmap(imgData);
-        } catch {
-          return null;
-        }
-      })
-    ).then((bitmaps) => {
-      if (canceled) {
-        bitmaps.forEach((b) => b?.close?.());
-        return;
-      }
-      bitmapsRef.current.forEach((b) => b?.close?.());
-      bitmapsRef.current = bitmaps;
-
-      if (canvasRef.current && bitmaps[0]) {
-        const canvas = canvasRef.current;
-        const frame0 = frames[0];
-        if (canvas.width !== frame0.width || canvas.height !== frame0.height) {
-          canvas.width = frame0.width;
-          canvas.height = frame0.height;
-        }
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.imageSmoothingEnabled = false;
-          ctx.drawImage(bitmaps[0], 0, 0);
-        }
-      }
-    });
-
-    return () => {
-      canceled = true;
-      bitmapsRef.current.forEach((b) => b?.close?.());
-      bitmapsRef.current = [];
-    };
-  }, [isGif, frames]);
-
-  useEffect(() => {
     if (!isGif || !canvasRef.current || !frames || frames.length <= 1) return;
     const canvas = canvasRef.current;
-    const frame = frames[currentFrameIndex];
-    if (!frame) return;
+    const frame = frames[currentFrameIndex] || frames[0];
+    if (!frame || !frame.pixels) return;
 
     if (canvas.width !== frame.width || canvas.height !== frame.height) {
       canvas.width = frame.width;
@@ -166,14 +118,8 @@ function OriginalMediaPreview({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const bitmap = bitmapsRef.current[currentFrameIndex];
-    if (bitmap) {
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(bitmap, 0, 0);
-    } else if (frame.pixels) {
-      const imgData = new ImageData(frame.pixels, frame.width, frame.height);
-      ctx.putImageData(imgData, 0, 0);
-    }
+    const imgData = new ImageData(frame.pixels, frame.width, frame.height);
+    ctx.putImageData(imgData, 0, 0);
   }, [isGif, frames, currentFrameIndex]);
 
   if (webcamActive && webcamStream) {
@@ -583,7 +529,8 @@ export default function ImportStudio() {
   };
 
   const handleSelectPreset = async (preset) => {
-    if (preset.isGif) {
+    const isGifPreset = Boolean(preset.isGif || preset.src?.endsWith?.('.gif') || preset.name?.toLowerCase().includes('cow'));
+    if (isGifPreset) {
       setDecoding(true);
       try {
         const response = await fetch(preset.src);
@@ -623,13 +570,14 @@ export default function ImportStudio() {
         try {
           const response = await fetch(item.gifDataUrl);
           const blob = await response.blob();
-          const { decodeGifWithWorker } = await import('../../utils/gifDecodeUtils');
+          const { decodeGifWithWorker, rgbaFrameToPngBlob } = await import('../../utils/gifDecodeUtils');
           const decoded = await decodeGifWithWorker(blob);
           if (decoded.frames.length) {
             setGifFrames(decoded.frames, decoded.loop);
             setPlaying(true);
             setGifSourceUrl(item.gifDataUrl);
-            setSourceDirect(item.src, item.name, 'imported');
+            const firstFrameBlob = await rgbaFrameToPngBlob(decoded.frames[0]);
+            await setSourceFromBlob(firstFrameBlob, item.name, { skipHistory: true });
           }
         } catch (err) {
           console.error('Failed to re-decode history GIF:', err);
