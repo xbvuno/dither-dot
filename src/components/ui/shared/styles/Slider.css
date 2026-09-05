@@ -150,6 +150,7 @@
 }
 
 .bv.slider-bundle .slider-bundle-label {
+    font-size: 0.875rem;
     margin-right: 0;
     margin-bottom: 0;
     color: var(--color-text);
