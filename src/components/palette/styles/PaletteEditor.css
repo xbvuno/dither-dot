@@ -6,8 +6,10 @@
   position: absolute;
   top: 1rem;
   left: calc(100% + 0.65rem);
-  width: 31rem;
-  max-height: calc(100vh - 5rem);
+  width: clamp(26rem, 36vw, 42rem);
+  max-width: calc(100vw - 100% - 1.5rem);
+  height: auto;
+  max-height: calc(100vh - 3rem);
   background: var(--color-floating-bg, rgba(0, 0, 0, 0.88));
   backdrop-filter: var(--filter-floating-blur, blur(6px));
   border: 1px solid var(--color-floating-border, rgba(255, 255, 255, 0.14));
