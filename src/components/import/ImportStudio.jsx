@@ -225,7 +225,6 @@ export default function ImportStudio() {
 
   const selectedTemplateId = useTemplateStore((s) => s.selectedTemplateId);
   const applyTemplate = useTemplateStore((s) => s.applyTemplate);
-  const setPage = usePageStore((s) => s.setPage);
 
   const mediaColRef = useRef(null);
   const resizeHandleRef = useRef(null);
