@@ -55,12 +55,30 @@
 
 .slider-tick {
     position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
+    top: 0;
+    bottom: 0;
+    transform: translateX(-50%);
     width: 1px;
-    height: 0.85rem;
+    pointer-events: none;
+}
+
+.slider-tick::before,
+.slider-tick::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 1px;
+    height: 4px;
     background-color: var(--color-text);
     opacity: 0.5;
+}
+
+.slider-tick::before {
+    top: 0;
+}
+
+.slider-tick::after {
+    bottom: 0;
 }
 
 .bv.slider.selected:focus {
@@ -252,8 +270,9 @@
         transform: translateY(-50%);
     }
 
-    .slider-tick {
-        height: 1.05rem;
+    .slider-tick::before,
+    .slider-tick::after {
+        height: 5px;
     }
 }
 
