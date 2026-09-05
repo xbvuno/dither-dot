@@ -13,6 +13,7 @@ import useDitherStore, {
 import usePaletteStore, { EXTRACT_METHOD } from '../stores/data/paletteStore';
 import useSizeStore, { getAspectCroppedAxis } from '../stores/media/sizeStore';
 import useImageStore from '../stores/media/imageStore';
+import useAccordion from '../hooks/useAccordion';
 import { PIN_ID } from '../constants/pinnedRegistry';
 
 function capitalize(str) {
@@ -25,6 +26,18 @@ function formatParamLabel(key) {
 
 export default function PinnedPage() {
   const pinnedIds = usePinnedStore((s) => s.pinnedIds);
+
+  const [openSections, toggleSection] = useAccordion('dither-dot:open-sections-pinned', {
+    colors: true,
+    noise: true,
+    blur: true,
+    aspectRatio: true,
+    cropping: true,
+    resize: true,
+    palette: true,
+    dither: true,
+    export: true,
+  });
 
   // Params store (Colors, Noise, Blur)
   const paramsState = useParamsStore();
@@ -154,7 +167,12 @@ export default function PinnedPage() {
 
       {/* COLORS */}
       {pinnedColors.length > 0 && (
-        <MacroSection title="COLORS">
+        <MacroSection
+          title="COLORS"
+          collapsible
+          isOpen={openSections.colors !== false}
+          onToggle={() => toggleSection('colors')}
+        >
           <div className="bv-section">
             {pinnedColors.map(([key, cfg]) => {
               const val = paramsState[key];
@@ -181,7 +199,12 @@ export default function PinnedPage() {
 
       {/* NOISE */}
       {pinnedNoise.length > 0 && (
-        <MacroSection title="NOISE">
+        <MacroSection
+          title="NOISE"
+          collapsible
+          isOpen={openSections.noise !== false}
+          onToggle={() => toggleSection('noise')}
+        >
           <div className="bv-section">
             {pinnedNoise.map(([key, cfg]) => {
               const val = paramsState[key];
@@ -209,7 +232,12 @@ export default function PinnedPage() {
 
       {/* BLUR */}
       {pinnedBlur.length > 0 && (
-        <MacroSection title="BLUR">
+        <MacroSection
+          title="BLUR"
+          collapsible
+          isOpen={openSections.blur !== false}
+          onToggle={() => toggleSection('blur')}
+        >
           <div className="bv-section">
             {pinnedBlur.map(([key, cfg]) => {
               const val = paramsState[key];
@@ -237,7 +265,12 @@ export default function PinnedPage() {
 
       {/* ASPECT RATIO */}
       {hasAspectOffset && (
-        <MacroSection title="ASPECT RATIO">
+        <MacroSection
+          title="ASPECT RATIO"
+          collapsible
+          isOpen={openSections.aspectRatio !== false}
+          onToggle={() => toggleSection('aspectRatio')}
+        >
           <div className="bv-section">
             <SliderBundle
               label="POSITION"
@@ -257,7 +290,12 @@ export default function PinnedPage() {
 
       {/* CROPPING */}
       {hasCropping && (
-        <MacroSection title="CROPPING">
+        <MacroSection
+          title="CROPPING"
+          collapsible
+          isOpen={openSections.cropping !== false}
+          onToggle={() => toggleSection('cropping')}
+        >
           <div className="bv-section">
             {hasCropTop && (
               <SliderBundle
@@ -321,7 +359,12 @@ export default function PinnedPage() {
 
       {/* RESIZE */}
       {hasResize && (
-        <MacroSection title="RESIZE">
+        <MacroSection
+          title="RESIZE"
+          collapsible
+          isOpen={openSections.resize !== false}
+          onToggle={() => toggleSection('resize')}
+        >
           <div className="bv-section">
             {hasResizeScale && (
               <SliderBundle
@@ -371,7 +414,12 @@ export default function PinnedPage() {
 
       {/* PALETTE */}
       {hasPaletteColorCount && (
-        <MacroSection title="PALETTE">
+        <MacroSection
+          title="PALETTE"
+          collapsible
+          isOpen={openSections.palette !== false}
+          onToggle={() => toggleSection('palette')}
+        >
           <div className="bv-section">
             <SliderBundle
               label="COLORS"
@@ -391,7 +439,12 @@ export default function PinnedPage() {
 
       {/* DITHER */}
       {hasDither && (
-        <MacroSection title="DITHER">
+        <MacroSection
+          title="DITHER"
+          collapsible
+          isOpen={openSections.dither !== false}
+          onToggle={() => toggleSection('dither')}
+        >
           <div className="bv-section">
             {hasDitherAmount && (
               <SliderBundle
@@ -444,7 +497,12 @@ export default function PinnedPage() {
 
       {/* EXPORT */}
       {hasExportUpscale && (
-        <MacroSection title="EXPORT">
+        <MacroSection
+          title="EXPORT"
+          collapsible
+          isOpen={openSections.export !== false}
+          onToggle={() => toggleSection('export')}
+        >
           <div className="bv-section">
             <SliderBundle
               label="UPSCALE"
