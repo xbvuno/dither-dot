@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ArrowRight, Cat, Heart } from 'lucide-react';
 import { useRouter } from '../router/router';
+import usePageStore, { PAGE } from '../stores/ui/pageStore';
 import watermarkMini from '../assets/watermark/watermark-mini.png';
 import '../styles/LandingPage.css';
 
@@ -50,7 +51,10 @@ export default function LandingPage() {
         <button
           type='button'
           className='landing-cta-btn'
-          onClick={() => navigate('/editor')}
+          onClick={() => {
+            usePageStore.getState().setPage(PAGE.IMPORT);
+            navigate('/editor');
+          }}
           aria-label='Open DITHER-DOT WebApp'
         >
           <span>OPEN WEBAPP</span>
