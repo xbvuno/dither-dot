@@ -556,6 +556,67 @@ main.import-3col-layout,
   line-height: 1.2;
 }
 
+/* Template Card Context Menu */
+.template-context-menu {
+  position: fixed;
+  z-index: 10000;
+  background: var(--color-floating-bg, rgba(0, 0, 0, 0.85));
+  border: 1px solid var(--color-floating-border, rgba(255, 255, 255, 0.12));
+  box-shadow: var(--shadow-floating, 0 8px 24px rgba(0, 0, 0, 0.5));
+  backdrop-filter: var(--filter-floating-blur, blur(4px));
+  -webkit-backdrop-filter: var(--filter-floating-blur, blur(4px));
+  padding: 4px;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--font-mono);
+  box-sizing: border-box;
+  animation: template-context-fade 0.08s ease-out;
+}
+
+@keyframes template-context-fade {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.template-context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: transparent;
+  border: none;
+  color: var(--color-text-subtle);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.12s ease, color 0.12s ease;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.template-context-menu-item:hover,
+.template-context-menu-item:focus-visible {
+  background: var(--color-hover);
+  color: var(--color-text);
+  outline: none;
+}
+
+.template-context-menu-item svg {
+  flex-shrink: 0;
+}
+
 /* Column 2: Preview Container & Launch Footer */
 .import-preview-container {
   flex: 1;

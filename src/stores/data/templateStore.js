@@ -79,19 +79,27 @@ const useTemplateStore = create(
           currentTemplate: current,
         }),
 
-      applyTemplate: (templateId) => {
+      applyTemplate: (templateOrId) => {
         isApplyingTemplate = true;
         try {
           const state = get();
           let template = null;
-          if (templateId === 'current' || templateId === 'custom') {
+          if (templateOrId && typeof templateOrId === 'object') {
+            template = {
+              ...templateOrId,
+              id: 'current',
+              name: 'CURRENT',
+              author: 'you',
+            };
+            set({ currentTemplate: template, selectedTemplateId: 'current' });
+          } else if (templateOrId === 'current' || templateOrId === 'custom') {
             template = state.currentTemplate || buildCurrentTemplate();
+            set({ selectedTemplateId: 'current' });
           } else {
-            template = TEMPLATES.find((t) => t.id === templateId) || TEMPLATES[0];
+            template = TEMPLATES.find((t) => t.id === templateOrId) || TEMPLATES[0];
+            set({ selectedTemplateId: template.id });
           }
           if (!template) return;
-
-          set({ selectedTemplateId: template.id });
 
           // Apply Palette
           const paletteState = usePaletteStore.getState();

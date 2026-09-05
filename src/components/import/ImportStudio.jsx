@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   FileUp,
   Clipboard,
+  Copy,
   Camera,
   CameraOff,
   Dices,
@@ -16,6 +17,7 @@ import useTemplateStore, { buildCurrentTemplate } from '../../stores/data/templa
 import { TEMPLATES } from '../../constants/templates';
 import { generateTemplatePreview } from '../../utils/templatePreviewGenerator';
 import { drawWebcamFrameToCanvas } from '../../utils/shaderHelpers';
+import { notify } from '../../stores/ui/popupStore';
 import ZoomableDiv from '../ui/shared/ZoomableDiv';
 import ImageShader from '../canvas/ImageShader';
 import WaveGridSpinner from '../ui/shared/WaveGridSpinner';
@@ -25,7 +27,134 @@ import LargeImageDialog from './LargeImageDialog';
 import statuePreviewUrl from '../../assets/STATUE_PREVIEW.png';
 import '../../styles/ImportRoute.css';
 
-function TemplateCard({ tpl, isSelected, onSelect }) {
+function TemplateContextMenu({ x, y, tpl, onClose, onApplyTemplate }) {
+  const menuRef = useRef(null);
+  const [coords, setCoords] = useState({ x, y });
+
+  useEffect(() => {
+    if (!menuRef.current) return;
+    const rect = menuRef.current.getBoundingClientRect();
+    const maxX = window.innerWidth - rect.width - 8;
+    const maxY = window.innerHeight - rect.height - 8;
+    setCoords({
+      x: Math.max(8, Math.min(x, maxX)),
+      y: Math.max(8, Math.min(y, maxY)),
+    });
+  }, [x, y]);
+
+  useEffect(() => {
+    const handleClose = () => onClose();
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+
+    window.addEventListener('click', handleClose);
+    window.addEventListener('contextmenu', handleClose);
+    window.addEventListener('scroll', handleClose, true);
+    window.addEventListener('resize', handleClose);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('click', handleClose);
+      window.removeEventListener('contextmenu', handleClose);
+      window.removeEventListener('scroll', handleClose, true);
+      window.removeEventListener('resize', handleClose);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClose]);
+
+  const handleCopyJson = async (e) => {
+    e.stopPropagation();
+    onClose();
+    try {
+      const jsonString = JSON.stringify(tpl, null, 2);
+      await navigator.clipboard.writeText(jsonString);
+      notify('TEMPLATE JSON COPIED', 'success');
+    } catch (err) {
+      console.error('[COPY TEMPLATE JSON ERROR]', err);
+      notify('FAILED TO COPY JSON', 'error');
+    }
+  };
+
+  const handlePasteJson = async (e) => {
+    e.stopPropagation();
+    onClose();
+    try {
+      let text = '';
+      if (navigator.clipboard?.readText) {
+        try {
+          text = await navigator.clipboard.readText();
+        } catch {
+          // ignore permission errors and fallback
+        }
+      }
+      if (!text) {
+        text = window.prompt('Paste Template JSON:') || '';
+      }
+      if (!text || !text.trim()) return;
+
+      const parsed = JSON.parse(text.trim());
+      if (!parsed || typeof parsed !== 'object' || (!parsed.palette && !parsed.dither && !parsed.params)) {
+        notify('INVALID TEMPLATE JSON', 'error');
+        return;
+      }
+
+      const normalized = {
+        id: 'current',
+        name: 'CURRENT',
+        author: 'you',
+        palette: parsed.palette || { id: null, name: 'Current', colors: [], colorCount: 8 },
+        dither: parsed.dither || { enabled: true, method: 'floyd_steinberg', amount: 0.65, matrixScale: 1.0, seed: 1.0 },
+        params: parsed.params || {},
+        pinnedIds: Array.isArray(parsed.pinnedIds) ? parsed.pinnedIds : [],
+      };
+
+      onApplyTemplate(normalized);
+      notify('TEMPLATE APPLIED', 'success');
+    } catch (err) {
+      console.error('[PASTE TEMPLATE JSON ERROR]', err);
+      notify('INVALID TEMPLATE JSON', 'error');
+    }
+  };
+
+  const isCurrent = tpl?.id === 'current' || tpl?.id === 'custom';
+
+  return (
+    <div
+      ref={menuRef}
+      className='template-context-menu'
+      style={{ left: `${coords.x}px`, top: `${coords.y}px` }}
+      onClick={(e) => e.stopPropagation()}
+      onContextMenu={(e) => e.preventDefault()}
+      role='menu'
+      aria-label='Template Actions'
+    >
+      <button
+        type='button'
+        className='template-context-menu-item'
+        onClick={handleCopyJson}
+        role='menuitem'
+      >
+        <Copy size={13} strokeWidth={1.5} />
+        <span>COPY JSON</span>
+      </button>
+
+      {isCurrent && (
+        <button
+          type='button'
+          className='template-context-menu-item'
+          onClick={handlePasteJson}
+          role='menuitem'
+        >
+          <Clipboard size={13} strokeWidth={1.5} />
+          <span>PASTE JSON</span>
+        </button>
+      )}
+    </div>
+  );
+}
+
+function TemplateCard({ tpl, isSelected, onSelect, onContextMenu }) {
   const [previewSrc, setPreviewSrc] = useState('');
 
   useEffect(() => {
@@ -46,6 +175,11 @@ function TemplateCard({ tpl, isSelected, onSelect }) {
     <div
       className={`import-route-template-card${isSelected ? ' selected' : ''}`}
       onClick={() => onSelect(tpl.id)}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onContextMenu?.(e, tpl);
+      }}
       onMouseDown={(e) => {
         if (e.button === 1) {
           e.preventDefault();
@@ -290,6 +424,20 @@ export default function ImportStudio() {
   const templatesList = useMemo(() => {
     return [activeCurrentTemplate, ...TEMPLATES];
   }, [activeCurrentTemplate]);
+
+  const [contextMenu, setContextMenu] = useState(null);
+
+  const handleOpenContextMenu = useCallback((e, tpl) => {
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      tpl,
+    });
+  }, []);
+
+  const handleCloseContextMenu = useCallback(() => {
+    setContextMenu(null);
+  }, []);
 
 
   const mediaColRef = useRef(null);
@@ -930,6 +1078,7 @@ export default function ImportStudio() {
                   tpl={tpl}
                   isSelected={selectedTemplateId === tpl.id}
                   onSelect={handleSelectTemplate}
+                  onContextMenu={handleOpenContextMenu}
                 />
               ))}
             </div>
@@ -979,6 +1128,16 @@ export default function ImportStudio() {
           </div>
         </div>
       </div>
+
+      {contextMenu && (
+        <TemplateContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          tpl={contextMenu.tpl}
+          onClose={handleCloseContextMenu}
+          onApplyTemplate={applyTemplate}
+        />
+      )}
 
       {pendingImport && (
         <LargeImageDialog
