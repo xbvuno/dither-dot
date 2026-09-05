@@ -533,7 +533,7 @@ export default function ImportRoute() {
 
               {/* Sample Presets */}
               <p className='bv-label' style={{ marginTop: 6, marginBottom: 0 }}>SAMPLE PRESETS</p>
-              <div className='import-route-presets-grid'>
+              <div className='import-route-presets-row'>
                 {GALLERY_PRESETS.map((p) => {
                   const isSelected = sourceName === p.name && !webcamActive;
                   return (
@@ -564,7 +564,7 @@ export default function ImportRoute() {
                       <Trash2 size={10} /> CLEAR
                     </button>
                   </div>
-                  <div className='import-route-presets-grid'>
+                  <div className='import-route-presets-row'>
                     {history.map((h) => {
                       const isSelected = sourceName === h.name && !webcamActive;
                       return (

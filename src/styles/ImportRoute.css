@@ -130,27 +130,46 @@
   color: var(--color-text-muted);
 }
 
-/* Preset Gallery Grid */
-.import-route-presets-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+/* Preset Gallery Horizontal Row */
+.import-route-presets-row {
+  display: flex;
+  flex-direction: row;
   gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 2px 6px 2px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.import-route-presets-row::-webkit-scrollbar {
+  height: 4px;
+  background-color: var(--color-macro-section-bg);
+}
+
+.import-route-presets-row::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-hover);
+  border-radius: 2px;
 }
 
 .import-route-preset-item {
   display: flex;
   flex-direction: column;
+  flex: 0 0 74px;
+  width: 74px;
   border: 1px solid var(--color-border-subtle);
   background: var(--btn-bg-default);
   cursor: pointer;
-  transition: border-color 0.15s ease;
-  padding: 6px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  padding: 4px;
   text-align: left;
   font-family: var(--font-mono);
+  box-sizing: border-box;
 }
 
 .import-route-preset-item:hover {
   border-color: var(--color-border-hover);
+  background: var(--btn-bg-hover);
 }
 
 .import-route-preset-item.selected {
@@ -160,19 +179,21 @@
 
 .import-route-preset-thumb {
   width: 100%;
-  aspect-ratio: 1.2;
+  height: 50px;
   object-fit: cover;
   border: 1px solid var(--color-border-subtle);
   image-rendering: pixelated;
+  display: block;
 }
 
 .import-route-preset-label {
-  font-size: 10px;
-  margin-top: 4px;
+  font-size: 9px;
+  margin-top: 3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--color-text);
+  line-height: 1.2;
 }
 
 /* Templates List in Column 2 */
