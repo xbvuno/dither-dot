@@ -1,0 +1,302 @@
+.import-route-wrap {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+}
+
+.import-route-header {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-bg);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.import-route-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 24px 16px 80px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.import-route-section {
+  border: 1px solid var(--color-border);
+  background-color: var(--color-macro-section-bg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.import-route-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding-bottom: 10px;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.import-route-selected-badge {
+  font-size: 11px;
+  color: var(--color-success);
+  font-weight: 500;
+}
+
+/* Media Dropzone & Inputs */
+.import-route-dropzone {
+  border: 2px dashed var(--color-border);
+  padding: 24px;
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--color-text-subtle);
+  background: var(--color-bg-subtle);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.import-route-dropzone.active,
+.import-route-dropzone:hover {
+  border-color: var(--color-text);
+  color: var(--color-text);
+  background: var(--color-bg-subtle-hover);
+}
+
+.import-route-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+.import-route-media-preview-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  background: var(--input-surface);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.import-route-thumb-img {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  image-rendering: pixelated;
+}
+
+.import-route-media-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.import-route-media-name {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.import-route-media-type {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+/* Preset Gallery Grid */
+.import-route-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.import-route-preset-item {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border-subtle);
+  background: var(--btn-bg-default);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+  padding: 6px;
+  text-align: left;
+  font-family: var(--font-mono);
+}
+
+.import-route-preset-item:hover {
+  border-color: var(--color-border-hover);
+}
+
+.import-route-preset-item.selected {
+  border-color: var(--btn-border-active);
+  background: var(--color-bg-subtle-hover);
+}
+
+.import-route-preset-thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 1px solid var(--color-border-subtle);
+  image-rendering: pixelated;
+}
+
+.import-route-preset-label {
+  font-size: 11px;
+  margin-top: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--color-text);
+}
+
+/* Templates Grid */
+.import-route-templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.import-route-template-card {
+  border: 1px solid var(--color-border-subtle);
+  background: var(--input-surface);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  font-family: var(--font-mono);
+}
+
+.import-route-template-card:hover {
+  border-color: var(--color-border-hover);
+  background: var(--input-surface-hover);
+}
+
+.import-route-template-card.selected {
+  border-color: var(--color-text);
+  box-shadow: 0 0 0 1px var(--color-text);
+  background: var(--color-bg-subtle-hover);
+}
+
+.import-route-template-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.import-route-template-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.import-route-template-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-subtle);
+}
+
+.import-route-template-desc {
+  font-size: 12px;
+  color: var(--color-text-subtle);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.import-route-swatches-row {
+  display: flex;
+  gap: 4px;
+  height: 16px;
+}
+
+.import-route-swatch {
+  flex: 1;
+  height: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.import-route-template-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.import-route-template-tag {
+  background: var(--color-bg-subtle);
+  padding: 2px 6px;
+  border: 1px solid var(--color-border-subtle);
+}
+
+/* Floating Launch Bar */
+.import-route-launch-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: var(--color-floating-bg);
+  backdrop-filter: var(--filter-floating-blur);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 30;
+}
+
+.import-route-launch-summary {
+  font-size: 12px;
+  color: var(--color-text-subtle);
+  display: flex;
+  gap: 16px;
+}
+
+.import-route-launch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 42px;
+  padding: 0 24px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  color: var(--btn-color-active);
+  background-color: var(--btn-bg-active);
+  border: 1px solid var(--btn-border-active);
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.import-route-launch-btn:hover {
+  opacity: 0.9;
+}
+
+.import-route-launch-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

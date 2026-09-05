@@ -51,6 +51,12 @@ const usePinnedStore = create(
       resetToDefault: () => {
         set({ pinnedIds: DEFAULT_PINNED_IDS });
       },
+
+      setPinnedIds: (ids) => {
+        if (Array.isArray(ids)) {
+          set({ pinnedIds: ids });
+        }
+      },
     }),
     {
       name: 'dither-dot:pinned-controls',

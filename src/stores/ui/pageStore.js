@@ -21,8 +21,8 @@ export const PAGE = {
 
 const usePageStore = create(
     persist(
-        (set, get) => ({
-            currentPage: PAGE.IMPORT,
+        (set) => ({
+            currentPage: PAGE.PINNED,
             exportOpen: false,
 
             setPage: (page) => {
