@@ -167,9 +167,10 @@
 
 .palette-library-group-title {
   margin: 0;
-  font-size: 0.66rem;
+  font-size: 1rem;
   letter-spacing: 0.08em;
   color: var(--color-text-subtle);
+  text-transform: uppercase;
 }
 
 .palette-library-card {

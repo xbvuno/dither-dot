@@ -339,7 +339,6 @@ function PaletteLibrarySection({ onOpenImport, onOpenExport }) {
 
   return (
     <div className="bv-section">
-      <p className="bv-label">PALETTE LIBRARY</p>
       <div className="bv-option-group">
         <button
           type="button"
@@ -396,7 +395,7 @@ function PaletteLibrarySection({ onOpenImport, onOpenExport }) {
         )}
 
         <div className="palette-library-group">
-          <p className="palette-library-group-title">PRESET</p>
+          <p className="palette-library-group-title">PRESETS</p>
           {builtinPalettes.map((entry) => (
             <div key={entry.id} className="palette-library-card">
               <button
