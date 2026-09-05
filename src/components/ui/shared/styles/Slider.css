@@ -112,19 +112,19 @@
 }
 
 .bv.slider-bundle.is-selected {
-    background-color: var(--color-bg-subtle-hover);
+    background-color: var(--color-slider-selected-bg);
 }
 
 .bv.slider-bundle.is-selected .slider-bundle-controls,
 .bv.slider-bundle.is-selected .slider-bundle-actions,
 .bv.slider-bundle.is-selected .slider-step-btn {
-    background-color: var(--color-bg-subtle-hover);
+    background-color: var(--color-slider-selected-bg);
 }
 
 .bv.slider-bundle.is-selected .slider-step-btn:hover:not(:disabled),
 .bv.slider-bundle.is-selected .slider-pin-btn:hover,
 .bv.slider-bundle.is-selected .slider-unpin-btn:hover {
-    background-color: color-mix(in srgb, var(--color-text) 14%, var(--color-bg-subtle-hover));
+    background-color: color-mix(in srgb, var(--color-text) 16%, var(--color-bg));
     color: var(--color-text);
 }
 
