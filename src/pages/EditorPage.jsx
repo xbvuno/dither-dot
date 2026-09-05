@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, Suspense, lazy } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import {
   Heart,
   Cat,
@@ -7,6 +7,7 @@ import {
   SlidersHorizontal,
   Palette,
   SprayCan,
+  Settings,
   Download,
   Maximize,
   Minimize,
@@ -23,6 +24,7 @@ import CameraControlsBar from '../components/camera/CameraControlsBar';
 import Footer from '../components/layout/Footer';
 import WaveGridSpinner from '../components/ui/shared/WaveGridSpinner';
 import PopupMessage from '../components/ui/shared/PopupMessage';
+import ImportStudio from '../components/import/ImportStudio';
 import usePageStore, { PAGE } from '../stores/ui/pageStore';
 import useImageStore from '../stores/media/imageStore';
 import useProcessingStore from '../stores/engine/processingStore';
@@ -34,11 +36,13 @@ import { useRouter } from '../router/router';
 const ExportPage = lazy(() => import('./ExportPage'));
 
 const MAIN_NAV_ITEMS = [
+  { id: PAGE.IMPORT, label: 'Import', Icon: FolderOpen },
   { id: PAGE.PINNED, label: 'Pinned', Icon: Pin },
   { id: PAGE.RESIZING, label: 'Resizing', Icon: ImageUpscale },
   { id: PAGE.ADJUSTMENTS, label: 'Adjustments', Icon: SlidersHorizontal },
   { id: PAGE.PALETTE, label: 'Palette', Icon: Palette },
   { id: PAGE.DITHER, label: 'Dither', Icon: SprayCan },
+  { id: PAGE.SETTINGS, label: 'Settings', Icon: Settings },
 ];
 
 export default function EditorPage() {
@@ -63,12 +67,12 @@ export default function EditorPage() {
   const lastScrollTimeRef = useRef(0);
   const currentPageRef = useRef(currentPage);
 
-  // Guard: Redirect if no media is loaded and webcam is not active
+  // Guard: Switch to import page if no media is loaded and webcam is not active
   useEffect(() => {
-    if (!sourceImg && !webcamActive) {
-      navigate('/import', { replace: true });
+    if (!sourceImg && !webcamActive && currentPage !== PAGE.IMPORT) {
+      setPage(PAGE.IMPORT);
     }
-  }, [sourceImg, webcamActive, navigate]);
+  }, [sourceImg, webcamActive, currentPage, setPage]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -96,19 +100,9 @@ export default function EditorPage() {
 
       const keyNum = parseInt(e.key, 10);
       if (!isNaN(keyNum)) {
-        if (keyNum === 1) {
-          e.preventDefault();
-          navigate('/import');
-          return;
-        }
-        if (keyNum >= 2 && keyNum <= MAIN_NAV_ITEMS.length) {
+        if (keyNum >= 1 && keyNum <= MAIN_NAV_ITEMS.length) {
           e.preventDefault();
           setPage(MAIN_NAV_ITEMS[keyNum - 1].id);
-          return;
-        }
-        if (keyNum === 7) {
-          e.preventDefault();
-          toggleExportOpen();
           return;
         }
       }
@@ -151,7 +145,7 @@ export default function EditorPage() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [setPage, toggleExportOpen, navigate]);
+  }, [setPage, toggleExportOpen]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -179,7 +173,7 @@ export default function EditorPage() {
       const delta = event.deltaY;
       if (delta === 0) return;
 
-      const editorPages = MAIN_NAV_ITEMS.filter((item) => !item.isRoute).map((item) => item.id);
+      const editorPages = MAIN_NAV_ITEMS.map((item) => item.id);
       const currentIndex = editorPages.indexOf(currentPageRef.current);
       if (currentIndex === -1) return;
 
@@ -257,23 +251,11 @@ export default function EditorPage() {
 
       <div className='app-layout'>
         <nav ref={navRef} className='app-nav' aria-label='Main Navigation'>
-          <div className='nav-top-wrap'>
-            <button
-              type='button'
-              className='nav-icon-btn'
-              onClick={() => navigate('/import')}
-              data-tooltip='MEDIA & TEMPLATES [1]'
-              aria-label='MEDIA & TEMPLATES [1]'
-            >
-              <FolderOpen size={24} strokeWidth={2} aria-hidden='true' className='nav-icon-img' />
-            </button>
-          </div>
-
           <div className='nav-links-wrap'>
             {MAIN_NAV_ITEMS.map((item, index) => {
               const Icon = item.Icon;
               const isSelected = currentPage === item.id;
-              const tooltipText = `${item.label.toUpperCase()} [${index + 2}]`;
+              const tooltipText = `${item.label.toUpperCase()} [${index + 1}]`;
               return (
                 <button
                   key={item.id}
@@ -297,8 +279,8 @@ export default function EditorPage() {
               type='button'
               className={`nav-icon-btn${exportOpen ? ' selected' : ''}`}
               onClick={toggleExportOpen}
-              data-tooltip='EXPORT [7 / E]'
-              aria-label='EXPORT [7 / E]'
+              data-tooltip='EXPORT [E]'
+              aria-label='EXPORT [E]'
               aria-pressed={exportOpen}
             >
               <Download size={24} strokeWidth={2} aria-hidden='true' className='nav-icon-img' />
@@ -306,44 +288,68 @@ export default function EditorPage() {
           </div>
         </nav>
 
-        <main>
-          <Aside side='left'>
-            <AsideRouter />
-          </Aside>
-          <div className='flex-v'>
-            <div className='zoomable-wrap'>
-              <PopupMessage />
-              {splitView ? (
-                <div className='split-view-container'>
-                  <div className='split-view-pane'>
-                    <span className='split-view-badge'>POST-PROCESSING</span>
-                    <ZoomableDiv content={<PostProcessShader />} />
-                  </div>
-                  <div className='split-view-divider' />
-                  <div className='split-view-pane'>
-                    <span className='split-view-badge'>DITHERED</span>
+        <main className={currentPage === PAGE.IMPORT ? 'import-3col-layout' : ''}>
+          {currentPage === PAGE.IMPORT ? (
+            <ImportStudio />
+          ) : (
+            <>
+              <Aside side='left'>
+                <AsideRouter />
+              </Aside>
+              <div className='flex-v'>
+                <div className='zoomable-wrap'>
+                  <PopupMessage />
+                  {splitView ? (
+                    <div className='split-view-container'>
+                      <div className='split-view-pane'>
+                        <span className='split-view-badge'>POST-PROCESSING</span>
+                        <ZoomableDiv content={<PostProcessShader />} />
+                      </div>
+                      <div className='split-view-divider' />
+                      <div className='split-view-pane'>
+                        <span className='split-view-badge'>DITHERED</span>
+                        <ZoomableDiv content={<ImageShader sourceImg={sourceImg} />} />
+                      </div>
+                    </div>
+                  ) : (
                     <ZoomableDiv content={<ImageShader sourceImg={sourceImg} />} />
-                  </div>
+                  )}
+                  {(viewerLoading || renderProcessing) && !webcamActive && (
+                    <div className='zoomable-loading-overlay' role='status' aria-live='polite' aria-label='Loading media'>
+                      <WaveGridSpinner />
+                    </div>
+                  )}
+                  {!sourceImg && !webcamActive && (
+                    <div className='editor-no-media-overlay' role='alert'>
+                      <div className='editor-no-media-card'>
+                        <p className='editor-no-media-title'>NO MEDIA LOADED</p>
+                        <p className='editor-no-media-desc'>
+                          No active media or configuration was found. Import an image or choose a template to begin editing.
+                        </p>
+                        <button
+                          type='button'
+                          className='bv-option-btn editor-no-media-btn'
+                          onClick={() => setPage(PAGE.IMPORT)}
+                        >
+                          <FolderOpen size={14} strokeWidth={2} />
+                          <span>GO TO IMPORT</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <ZoomableDiv content={<ImageShader sourceImg={sourceImg} />} />
+                <GifTimeline />
+                <CameraControlsBar />
+                <Footer />
+              </div>
+              {exportOpen && (
+                <Aside side='right'>
+                  <Suspense fallback={null}>
+                    <ExportPage />
+                  </Suspense>
+                </Aside>
               )}
-              {(viewerLoading || renderProcessing) && !webcamActive && (
-                <div className='zoomable-loading-overlay' role='status' aria-live='polite' aria-label='Loading media'>
-                  <WaveGridSpinner />
-                </div>
-              )}
-            </div>
-            <GifTimeline />
-            <CameraControlsBar />
-            <Footer />
-          </div>
-          {exportOpen && (
-            <Aside side='right'>
-              <Suspense fallback={null}>
-                <ExportPage />
-              </Suspense>
-            </Aside>
+            </>
           )}
         </main>
       </div>

@@ -22,9 +22,16 @@ const useTemplateStore = create(
 
         // Apply Palette
         const paletteState = usePaletteStore.getState();
-        if (template.palette.id && template.palette.id.startsWith('builtin-')) {
+        if (template.palette?.extractMethod) {
+          usePaletteStore.setState({
+            method: template.palette.extractMethod,
+            colorCount: template.palette.colorCount || 8,
+            selectedLibraryPaletteId: null,
+          });
+          paletteState.generatePalette?.();
+        } else if (template.palette?.id && template.palette.id.startsWith('builtin-')) {
           paletteState.applyLibraryPaletteById?.(template.palette.id);
-        } else if (template.palette.colors) {
+        } else if (template.palette?.colors) {
           paletteState.applyPaletteByHexes?.(template.palette.colors, template.palette.name);
         }
 

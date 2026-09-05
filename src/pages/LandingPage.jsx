@@ -50,7 +50,7 @@ export default function LandingPage() {
         <button
           type='button'
           className='landing-cta-btn'
-          onClick={() => navigate('/import')}
+          onClick={() => navigate('/editor')}
           aria-label='Open DITHER-DOT WebApp'
         >
           <span>OPEN WEBAPP</span>

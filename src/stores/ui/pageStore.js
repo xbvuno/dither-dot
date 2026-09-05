@@ -12,6 +12,7 @@ export const PAGE = {
     ADJUSTMENTS: 'adjustments',
     PALETTE: 'palette',
     DITHER: 'dither',
+    SETTINGS: 'settings',
     EXPORT: 'export',
 };
 

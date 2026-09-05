@@ -1,8 +1,8 @@
-/* 3-Column Layout for Import Route */
+/* 3-Column Layout for Import Route: Resizable Media | Flex Preview | Fixed 16rem Templates */
 main.import-3col-layout,
 .import-3col-layout {
-  display: grid !important;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  display: flex !important;
+  flex-direction: row;
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -17,17 +17,69 @@ main.import-3col-layout,
   height: 100%;
   min-height: 0;
   min-width: 0;
-  width: 100%;
-  max-width: 100%;
   box-sizing: border-box;
   border-right: 1px solid var(--color-border);
   background-color: var(--color-bg);
   position: relative;
-  overflow: hidden;
 }
 
 .import-col:last-child {
   border-right: none;
+}
+
+.import-col-media {
+  width: 32rem;
+  min-width: 20rem;
+  max-width: 48rem;
+  flex-shrink: 0;
+  position: relative;
+  overflow: visible;
+}
+
+.import-col-preview {
+  flex: 1 1 0%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.import-col-templates {
+  width: 16rem;
+  min-width: 16rem;
+  max-width: 16rem;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* Column 1 Resize Handle (Internal) */
+.import-col-media .resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  cursor: col-resize;
+  z-index: 20;
+  background-color: transparent;
+  transition: 0.2s background-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.import-col-media .resize-handle::before {
+  content: '';
+  width: 1px;
+  height: 2.8rem;
+  background: color-mix(in srgb, var(--color-text) 34%, transparent);
+}
+
+.import-col-media .resize-handle:hover {
+  background-color: var(--color-hover);
+}
+
+.import-col-media .resize-handle:hover::before,
+.import-col-media .resize-handle.dragging::before {
+  opacity: 1;
 }
 
 .import-col-header {
@@ -45,9 +97,9 @@ main.import-3col-layout,
 }
 
 .import-col-title {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   color: var(--color-text);
   margin: 0;
   text-transform: uppercase;
@@ -59,9 +111,9 @@ main.import-3col-layout,
 }
 
 .import-col-badge {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--color-success);
-  font-weight: 600;
+  font-weight: 400;
   letter-spacing: 0.05em;
   white-space: nowrap;
   overflow: hidden;
@@ -82,6 +134,16 @@ main.import-3col-layout,
   gap: 14px;
 }
 
+.import-col-content .bv-label,
+.import-media-gallery-group .bv-label,
+.import-media-bottom-group .bv-label {
+  font-size: 14px !important;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--color-text-subtle);
+  text-transform: uppercase;
+}
+
 .import-col-content--media {
   display: flex;
   flex-direction: column;
@@ -98,18 +160,20 @@ main.import-3col-layout,
   width: 100%;
 }
 
-/* Dropzone: capped at max-height 12rem */
+/* Dropzone: fixed height 12rem */
 .import-route-dropzone {
   border: 2px dashed var(--color-border);
   padding: 14px;
   text-align: center;
-  font-size: 11px;
+  font-size: 14px;
+  font-weight: 400;
   letter-spacing: 0.08em;
   color: var(--color-text-subtle);
   background: var(--color-bg-subtle);
   cursor: pointer;
   transition: all 0.15s ease;
-  min-height: 56px;
+  height: 12rem;
+  min-height: 12rem;
   max-height: 12rem;
   display: flex;
   align-items: center;
@@ -138,9 +202,9 @@ main.import-3col-layout,
   justify-content: center;
   gap: 6px;
   padding: 8px 6px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -148,9 +212,13 @@ main.import-3col-layout,
 }
 
 .danger-btn {
-  background: var(--color-danger-bg, #3a1111) !important;
   color: var(--color-danger, #ff6b6b) !important;
   border-color: var(--color-danger, #ff6b6b) !important;
+}
+
+.danger-btn:hover:not(:disabled) {
+  color: var(--color-danger-hover, #ff8787) !important;
+  border-color: var(--color-danger-hover, #ff8787) !important;
 }
 
 /* Full-width Media Preview: Priority vertical expansion, complete image visibility (object-fit: contain), and clean footer */
@@ -179,7 +247,16 @@ main.import-3col-layout,
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: #0d0d0b;
+  --checkerboard-color-1: #101010;
+  --checkerboard-color-2: #1d1d1d;
+  background-color: var(--checkerboard-color-1);
+  background-image:
+    linear-gradient(45deg, var(--checkerboard-color-2) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--checkerboard-color-2) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--checkerboard-color-2) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--checkerboard-color-2) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
   border: none;
 }
 
@@ -208,8 +285,8 @@ main.import-3col-layout,
 }
 
 .import-route-media-name {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -219,65 +296,43 @@ main.import-3col-layout,
 }
 
 .import-route-media-type {
-  font-size: 9px;
+  font-size: 14px;
+  font-weight: 400;
   color: var(--color-text-muted);
   letter-spacing: 0.05em;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
+.import-media-gallery-group,
 .import-media-bottom-group {
-  margin-top: auto;
+  margin-top: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
   flex-shrink: 0;
   width: 100%;
 }
 
-/* Preset Gallery Horizontal Row */
+/* Preset & History Gallery Grid (Wrapped items placed right under input) */
+.import-route-presets-grid,
 .import-route-presets-row {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   gap: 8px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 2px 2px 6px 2px;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-
-.import-route-presets-row::-webkit-scrollbar {
-  height: 6px;
-  background-color: var(--color-macro-section-bg);
-}
-
-.import-route-presets-row::-webkit-scrollbar-track {
-  background-color: var(--color-macro-section-bg);
-}
-
-.import-route-presets-row::-webkit-scrollbar-thumb {
-  background-color: var(--color-text);
-  opacity: 0.2;
-}
-
-.import-route-presets-row::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-text);
-  cursor: grab;
+  width: 100%;
 }
 
 .import-route-preset-item {
   display: flex;
   flex-direction: column;
-  flex: 0 0 74px;
-  width: 74px;
-  max-width: 74px;
+  width: 100%;
   min-width: 0;
   border: 1px solid var(--color-border-subtle);
   background: var(--btn-bg-default);
   cursor: pointer;
   transition: border-color 0.15s ease, background-color 0.15s ease;
-  padding: 4px;
+  padding: 0;
   text-align: left;
   font-family: var(--font-mono);
   box-sizing: border-box;
@@ -312,9 +367,11 @@ main.import-3col-layout,
 
 .import-route-preset-thumb {
   width: 100%;
-  height: 50px;
+  aspect-ratio: 1 / 1;
+  height: auto;
   object-fit: cover;
-  border: 1px solid var(--color-border-subtle);
+  border: none;
+  border-bottom: 1px solid var(--color-border-subtle);
   image-rendering: pixelated;
   display: block;
 }
@@ -324,8 +381,9 @@ main.import-3col-layout,
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  font-size: 9px;
-  margin-top: 3px;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 5px 6px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -370,24 +428,28 @@ main.import-3col-layout,
   border-color: var(--color-danger, #ff6b6b);
 }
 
-/* Templates List in Column 2 */
+/* Templates List in Column 3 (16rem vertical stack) */
 .import-route-templates-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
 }
 
 .import-route-template-card {
-  border: 1px solid var(--color-border-subtle);
-  background: var(--input-surface);
-  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--color-border-subtle);
+  background: var(--input-surface);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  padding: 0;
   text-align: left;
   font-family: var(--font-mono);
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .import-route-template-card:hover {
@@ -401,69 +463,77 @@ main.import-3col-layout,
   background: var(--color-bg-subtle-hover);
 }
 
-.import-route-template-top {
+.import-route-template-preview-wrap {
+  position: relative;
+  width: 100%;
+  height: 84px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-width: 0;
+  justify-content: center;
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-border-subtle);
+  --checkerboard-color-1: #101010;
+  --checkerboard-color-2: #1d1d1d;
+  background-color: var(--checkerboard-color-1);
+  background-image:
+    linear-gradient(45deg, var(--checkerboard-color-2) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--checkerboard-color-2) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--checkerboard-color-2) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--checkerboard-color-2) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+
+.import-route-template-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 60%;
+  image-rendering: pixelated;
+  display: block;
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+.import-route-template-preview-img.placeholder {
+  filter: grayscale(100%) contrast(1.15) brightness(0.85);
+  opacity: 0.65;
+}
+
+.import-route-template-bottom {
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background-color: var(--color-bg);
+  box-sizing: border-box;
 }
 
 .import-route-template-name {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
-  flex: 1 1 auto;
+  color: var(--color-text);
+  line-height: 1.2;
+  text-transform: uppercase;
 }
 
-.import-route-template-badge {
-  font-size: 9px;
-  padding: 2px 5px;
-  border: 1px solid var(--color-border-subtle);
-  background: var(--color-bg-subtle);
-  color: var(--color-text-subtle);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.import-route-template-desc {
-  font-size: 11px;
-  color: var(--color-text-subtle);
-  line-height: 1.35;
-  margin: 0;
-}
-
-.import-route-swatches-row {
-  display: flex;
-  gap: 3px;
-  height: 14px;
-}
-
-.import-route-swatch {
-  flex: 1;
-  height: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.import-route-template-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  font-size: 9px;
+.import-route-template-author {
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
   color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  line-height: 1.2;
 }
 
-.import-route-template-tag {
-  background: var(--color-bg-subtle);
-  padding: 1px 5px;
-  border: 1px solid var(--color-border-subtle);
-}
-
-/* Column 3: Preview Container & Launch Footer */
+/* Column 2: Preview Container & Launch Footer */
 .import-preview-container {
   flex: 1;
   min-height: 0;
@@ -473,12 +543,79 @@ main.import-3col-layout,
   background-color: var(--color-bg);
 }
 
-.import-preview-canvas-wrap {
+.import-preview-source-wrap {
+  flex: 1 1 50%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--color-border);
+  position: relative;
+  overflow: hidden;
+}
+
+.import-preview-source-canvas,
+.import-preview-dither-canvas {
+  position: relative;
+  width: 100%;
   flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  --checkerboard-color-1: #101010;
+  --checkerboard-color-2: #1d1d1d;
+  background-color: var(--checkerboard-color-1);
+  background-image:
+    linear-gradient(45deg, var(--checkerboard-color-2) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--checkerboard-color-2) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--checkerboard-color-2) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--checkerboard-color-2) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+
+.import-preview-section-header {
+  height: 28px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background-color: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: var(--color-text-subtle);
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+.import-preview-section-title {
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.import-preview-section-meta {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.import-preview-canvas-wrap {
+  flex: 1 1 50%;
   min-height: 0;
   position: relative;
   overflow: hidden;
-  background-color: #0d0d0b;
+  display: flex;
+  flex-direction: column;
 }
 
 .import-preview-empty-state {
@@ -496,24 +633,25 @@ main.import-3col-layout,
 }
 
 .import-preview-empty-state p {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 400;
   letter-spacing: 0.1em;
   margin: 0;
 }
 
 .import-preview-empty-state span {
-  font-size: 11px;
+  font-size: 14px;
+  font-weight: 400;
   opacity: 0.7;
 }
 
 .import-preview-launch-bar {
   height: 52px;
   border-top: 1px solid var(--color-border);
-  background-color: var(--color-macro-section-bg);
+  background-color: var(--color-bg);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 12px;
   padding: 0 16px;
   flex-shrink: 0;
@@ -521,24 +659,47 @@ main.import-3col-layout,
   box-sizing: border-box;
 }
 
-.import-preview-launch-summary {
-  font-size: 11px;
+.import-recent-clear-btn {
+  background: none;
+  border: none;
   color: var(--color-text-subtle);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-  flex: 1 1 auto;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s ease;
 }
 
-.import-preview-launch-summary span {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
+.import-recent-clear-btn span {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.import-recent-clear-btn:hover {
+  color: var(--color-text);
+}
+
+.import-preview-back-link {
+  background: none;
+  border: none;
+  color: var(--color-text-subtle);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+  padding: 6px 4px;
+  transition: color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.import-preview-back-link:hover {
+  color: var(--color-text);
 }
 
 .import-preview-launch-btn {
@@ -547,8 +708,8 @@ main.import-3col-layout,
   gap: 8px;
   height: 34px;
   padding: 0 16px;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   font-family: var(--font-mono);
   letter-spacing: 0.08em;
   color: var(--btn-color-active);
@@ -571,7 +732,9 @@ main.import-3col-layout,
 /* Responsive fallback for mobile screens */
 @media (max-width: 768px) {
   main.import-3col-layout,
-  .import-3col-layout {
+  .import-3col-layout,
+  main.import-2col-layout,
+  .import-2col-layout {
     display: flex !important;
     flex-direction: column;
     overflow-y: auto;
@@ -584,6 +747,17 @@ main.import-3col-layout,
     flex-shrink: 0;
     border-right: none;
     border-bottom: 1px solid var(--color-border);
+  }
+
+  .import-col-media,
+  .import-col-templates {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .import-col-media .resize-handle {
+    display: none;
   }
 
   .import-preview-container {

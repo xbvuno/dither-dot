@@ -57,10 +57,14 @@ export default function ZoomableDiv({ content }) {
       if (!outerWidth || !outerHeight) return;
 
       const contentWidth =
+        contentElem.videoWidth ||
+        contentElem.naturalWidth ||
         contentElem.scrollWidth ||
         contentElem.offsetWidth ||
         (contentElem.style.width ? parseFloat(contentElem.style.width) : 0);
       const contentHeight =
+        contentElem.videoHeight ||
+        contentElem.naturalHeight ||
         contentElem.scrollHeight ||
         contentElem.offsetHeight ||
         (contentElem.style.height ? parseFloat(contentElem.style.height) : 0);
@@ -111,10 +115,14 @@ export default function ZoomableDiv({ content }) {
       }
 
       const contentWidth =
+        contentElem.videoWidth ||
+        contentElem.naturalWidth ||
         contentElem.scrollWidth ||
         contentElem.offsetWidth ||
         (contentElem.style.width ? parseFloat(contentElem.style.width) : 0);
       const contentHeight =
+        contentElem.videoHeight ||
+        contentElem.naturalHeight ||
         contentElem.scrollHeight ||
         contentElem.offsetHeight ||
         (contentElem.style.height ? parseFloat(contentElem.style.height) : 0);
@@ -180,18 +188,87 @@ export default function ZoomableDiv({ content }) {
       }
     };
 
+    let updateScaleRafId = null;
+    const lastLayout = {
+      outerW: 0,
+      outerH: 0,
+      contentW: 0,
+      contentH: 0,
+      scale: 0,
+    };
+
     const updateScale = () => {
-      const atBaseZoom = Math.abs(state.current.scale - ZOOM_MIN) < SCALE_EPSILON;
-      if (atBaseZoom) {
-        state.current.scale = ZOOM_MIN;
-        outer.scrollLeft = 0;
-        outer.scrollTop = 0;
-      }
-      const outerWidth = outer.clientWidth;
-      const outerHeight = outer.clientHeight;
-      if (outerWidth && outerHeight) {
+      if (updateScaleRafId) cancelAnimationFrame(updateScaleRafId);
+      updateScaleRafId = requestAnimationFrame(() => {
+        const contentElem = getContentElem();
+        if (!contentElem) return;
+
+        const outerWidth = outer.clientWidth;
+        const outerHeight = outer.clientHeight;
+        if (!outerWidth || !outerHeight) return;
+
+        const contentWidth =
+          contentElem.videoWidth ||
+          contentElem.naturalWidth ||
+          contentElem.scrollWidth ||
+          contentElem.offsetWidth ||
+          (contentElem.style.width ? parseFloat(contentElem.style.width) : 0);
+        const contentHeight =
+          contentElem.videoHeight ||
+          contentElem.naturalHeight ||
+          contentElem.scrollHeight ||
+          contentElem.offsetHeight ||
+          (contentElem.style.height ? parseFloat(contentElem.style.height) : 0);
+
+        if (!contentWidth || !contentHeight) {
+          updateScaleRafId = requestAnimationFrame(() => {
+            const retryElem = getContentElem();
+            if (!retryElem) return;
+            const retryW =
+              retryElem.videoWidth ||
+              retryElem.naturalWidth ||
+              retryElem.scrollWidth ||
+              retryElem.offsetWidth ||
+              (retryElem.style.width ? parseFloat(retryElem.style.width) : 0);
+            const retryH =
+              retryElem.videoHeight ||
+              retryElem.naturalHeight ||
+              retryElem.scrollHeight ||
+              retryElem.offsetHeight ||
+              (retryElem.style.height ? parseFloat(retryElem.style.height) : 0);
+            if (retryW > 0 && retryH > 0 && outer.clientWidth > 0 && outer.clientHeight > 0) {
+              zoomTo(state.current.scale, outer.clientWidth / 2, outer.clientHeight / 2);
+            }
+          });
+          return;
+        }
+
+        const atBaseZoom = Math.abs(state.current.scale - ZOOM_MIN) < SCALE_EPSILON;
+        if (atBaseZoom) {
+          state.current.scale = ZOOM_MIN;
+          outer.scrollLeft = 0;
+          outer.scrollTop = 0;
+        }
+
+        // Check if layout is already identical to avoid unnecessary DOM writes
+        if (
+          Math.abs(lastLayout.outerW - outerWidth) < 0.5 &&
+          Math.abs(lastLayout.outerH - outerHeight) < 0.5 &&
+          Math.abs(lastLayout.contentW - contentWidth) < 0.5 &&
+          Math.abs(lastLayout.contentH - contentHeight) < 0.5 &&
+          Math.abs(lastLayout.scale - state.current.scale) < SCALE_EPSILON
+        ) {
+          return;
+        }
+
+        lastLayout.outerW = outerWidth;
+        lastLayout.outerH = outerHeight;
+        lastLayout.contentW = contentWidth;
+        lastLayout.contentH = contentHeight;
+        lastLayout.scale = state.current.scale;
+
         zoomTo(state.current.scale, outerWidth / 2, outerHeight / 2);
-      }
+      });
     };
 
     updateScale();
@@ -345,9 +422,7 @@ export default function ZoomableDiv({ content }) {
 
     const handleRenderReady = () => {
       if (state.current.isUpdatingProgrammatically) return;
-      requestAnimationFrame(() => {
-        updateScale();
-      });
+      updateScale();
     };
 
     window.addEventListener('dither-render-ready', handleRenderReady);
@@ -360,31 +435,33 @@ export default function ZoomableDiv({ content }) {
 
     resizeObserver.observe(outer);
 
-    const reobserveContent = () => {
-      const render = innerRef.current?.querySelector('#render');
-      if (render) resizeObserver.observe(render);
-      const layer = innerRef.current?.querySelector('.render-canvas-layer');
-      if (layer) resizeObserver.observe(layer);
-      const canvas = innerRef.current?.querySelector('canvas');
-      if (canvas) resizeObserver.observe(canvas);
+    const bindContentLoad = () => {
+      const img = innerRef.current?.querySelector('img');
+      if (img && !img.complete) {
+        img.addEventListener('load', () => updateScale(), { once: true });
+      }
+      const video = innerRef.current?.querySelector('video');
+      if (video && video.readyState < 1) {
+        video.addEventListener('loadedmetadata', () => updateScale(), { once: true });
+      }
     };
 
-    reobserveContent();
+    bindContentLoad();
 
     const mutationObserver = new MutationObserver(() => {
       if (state.current.isUpdatingProgrammatically) return;
-      reobserveContent();
+      bindContentLoad();
       updateScale();
     });
 
     mutationObserver.observe(inner, {
       childList: true,
       subtree: true,
-      attributes: true,
-      attributeFilter: ['style', 'width', 'height', 'class'],
+      attributes: false,
     });
 
     return () => {
+      if (updateScaleRafId) cancelAnimationFrame(updateScaleRafId);
       outer.removeEventListener('wheel', handleWheel);
       outer.removeEventListener('mousedown', handleMouseDown);
       outer.removeEventListener('dblclick', handleDoubleClick);
@@ -400,7 +477,7 @@ export default function ZoomableDiv({ content }) {
       mutationObserver.disconnect();
       resizeObserver.disconnect();
     };
-  }, [content]);
+  }, []);
 
   return (
     <div ref={outerRef} className="zoomable-outer">

@@ -86,12 +86,29 @@ const useImageStore = create(
     {
       name: IMAGE_STORE_KEY,
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({
-        sourceImg: state.sourceImg,
-        sourceName: state.sourceName,
-        sourceKind: state.sourceKind,
-        exportUpscale: state.exportUpscale,
-      }),
+      partialize: (state) => {
+        if (state.sourceKind === 'webcam' || state.sourceImg === WEBCAM_SOURCE) {
+          return {
+            sourceImg: DEFAULT_IMAGE_STATE.sourceImg,
+            sourceName: DEFAULT_IMAGE_STATE.sourceName,
+            sourceKind: DEFAULT_IMAGE_STATE.sourceKind,
+            exportUpscale: state.exportUpscale,
+          };
+        }
+        return {
+          sourceImg: state.sourceImg,
+          sourceName: state.sourceName,
+          sourceKind: state.sourceKind,
+          exportUpscale: state.exportUpscale,
+        };
+      },
+      onRehydrateStorage: () => (state) => {
+        if (state && (state.sourceImg === WEBCAM_SOURCE || state.sourceKind === 'webcam' || !state.sourceImg)) {
+          state.sourceImg = DEFAULT_IMAGE_STATE.sourceImg;
+          state.sourceName = DEFAULT_IMAGE_STATE.sourceName;
+          state.sourceKind = DEFAULT_IMAGE_STATE.sourceKind;
+        }
+      },
     }
   )
 );

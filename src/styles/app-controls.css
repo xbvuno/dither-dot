@@ -53,13 +53,12 @@
 
 .danger-btn {
   border-color: var(--color-danger);
-  color: var(--color-danger-text);
+  color: var(--color-danger-text, var(--color-danger));
 }
 
 .danger-btn:hover:not(:disabled) {
   border-color: var(--color-danger-hover);
-  background: var(--color-danger-bg-hover);
-  color: var(--color-text);
+  color: var(--color-danger-hover);
 }
 
 .dither-toggle-btn[data-dither-enabled='true'][data-selected='true'] {

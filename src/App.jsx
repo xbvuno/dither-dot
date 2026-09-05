@@ -3,16 +3,13 @@ import { RouterProvider, useRouter } from './router/router';
 import WaveGridSpinner from './components/ui/shared/WaveGridSpinner';
 
 const LandingPage = lazy(() => import('./pages/LandingPage'));
-const ImportRoute = lazy(() => import('./pages/ImportRoute'));
 const EditorPage = lazy(() => import('./pages/EditorPage'));
 
 function AppRoutes() {
   const { path } = useRouter();
 
   let Component = LandingPage;
-  if (path === '/import' || path.startsWith('/import/')) {
-    Component = ImportRoute;
-  } else if (path === '/editor' || path.startsWith('/editor/')) {
+  if (path === '/editor' || path.startsWith('/editor/') || path === '/import' || path.startsWith('/import/')) {
     Component = EditorPage;
   } else if (path === '/') {
     Component = LandingPage;
