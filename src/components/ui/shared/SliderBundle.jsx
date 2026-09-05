@@ -196,6 +196,24 @@ export default function SliderBundle({
                 <div className="slider-bundle-controls">
                     {showActions && (
                         <div className="slider-bundle-actions">
+                            {showReset && (
+                                <button
+                                    type="button"
+                                    className="slider-step-btn slider-reset-btn"
+                                    aria-label={`Reset ${label}`}
+                                    title={`Reset ${label}`}
+                                    onPointerDown={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                    }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setInternalValue(effectiveDefault);
+                                    }}
+                                >
+                                    <RotateCcw size={12} strokeWidth={1.5} />
+                                </button>
+                            )}
                             {showStepControls && (
                                 <>
                                     <button
@@ -225,24 +243,6 @@ export default function SliderBundle({
                                         <Plus size={12} strokeWidth={2.5} />
                                     </button>
                                 </>
-                            )}
-                            {showReset && (
-                                <button
-                                    type="button"
-                                    className="slider-step-btn slider-reset-btn"
-                                    aria-label={`Reset ${label}`}
-                                    title={`Reset ${label}`}
-                                    onPointerDown={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                    }}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setInternalValue(effectiveDefault);
-                                    }}
-                                >
-                                    <RotateCcw size={12} strokeWidth={1.5} />
-                                </button>
                             )}
                             {showPin && (
                                 <button
