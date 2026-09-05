@@ -201,6 +201,8 @@
     display: block;
     pointer-events: none;
     flex-shrink: 0;
+    transform: scale(1.28);
+    transition: transform 0.08s ease;
 }
 
 .slider-pin-btn {
