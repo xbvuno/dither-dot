@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import PaletteColorSlider from './PaletteColorSlider';
-import ColorWheel from './ColorWheel';
 import CurveEditor from './CurveEditor';
 import {
   hexToHsv,
@@ -169,15 +168,6 @@ export default function MultiColorEditor({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-      {/* Visual Multi-Color Wheel */}
-      <div className="pe-wheel-section">
-        <ColorWheel
-          points={points}
-          interactive={false}
-          size={154}
-        />
-      </div>
-
       {/* Hex List */}
       <div className="pe-multi-hex-list">
         {selectedColors.map((item) => (

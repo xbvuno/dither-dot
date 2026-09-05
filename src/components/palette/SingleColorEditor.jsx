@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import PaletteColorSlider from './PaletteColorSlider';
-import ColorWheel from './ColorWheel';
 import CurveEditor from './CurveEditor';
 import {
   cleanHex,
@@ -86,16 +85,6 @@ export default function SingleColorEditor({
     notify(nextHex);
   };
 
-  const handleWheelChange = ({ h, s }) => {
-    const nextHsv = { ...hsv, h, s };
-    const nextRgb = hsvToRgb(nextHsv.h, nextHsv.s, nextHsv.v);
-    const nextHex = rgbToHex(nextRgb.r, nextRgb.g, nextRgb.b);
-    setHsv(nextHsv);
-    setRgb(nextRgb);
-    setHexInput(nextHex);
-    notify(nextHex);
-  };
-
   const applyTonalAndCurves = (baseHex, g, c, cur) => {
     const adjustedHex = applyTonalAdjustments(baseHex, { gamma: g, contrast: c });
     const uncurvedRgb = hexToRgb(adjustedHex);
@@ -164,17 +153,6 @@ export default function SingleColorEditor({
             aria-label="Hex color"
           />
         </div>
-      </div>
-
-      {/* Color Wheel */}
-      <div className="pe-wheel-section">
-        <ColorWheel
-          hue={hsv.h}
-          saturation={hsv.s}
-          value={hsv.v}
-          onChange={handleWheelChange}
-          size={154}
-        />
       </div>
 
       {/* HSV + RGB Sliders */}

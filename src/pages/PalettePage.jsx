@@ -179,32 +179,16 @@ function CustomColorSwatch({ color, selected, onSelect, onRemoveColor, onDropCol
   );
 }
 
-function ColorsSection({ selectedIds, onToggleSelect, onSelectAll, onDeselectAll }) {
+function ColorsSection({ selectedIds, onToggleSelect }) {
   const method = usePaletteStore(s => s.method);
   const colors = usePaletteStore(s => s.colors);
   const removeColor = usePaletteStore(s => s.removeColor);
   const addColor = usePaletteStore(s => s.addColor);
   const moveColorCustom = usePaletteStore(s => s.moveColorCustom);
-  const sortCustomColors = usePaletteStore(s => s.sortCustomColors);
-
-  const [isSortOpen, setIsSortOpen] = useState(false);
-  const sortRef = useRef(null);
 
   const isCustom = method === EXTRACT_METHOD.CUSTOM;
   const active = colors.filter(c => !c.hidden);
   const hidden = colors.filter(c => c.hidden);
-
-  useEffect(() => {
-    const handleOutsideClick = (e) => {
-      if (sortRef.current && !sortRef.current.contains(e.target)) {
-        setIsSortOpen(false);
-      }
-    };
-    if (isSortOpen) {
-      window.addEventListener('pointerdown', handleOutsideClick);
-    }
-    return () => window.removeEventListener('pointerdown', handleOutsideClick);
-  }, [isSortOpen]);
 
   const handleDropColor = (fromId, toId) => {
     if (!fromId || !toId) return;
@@ -214,13 +198,6 @@ function ColorsSection({ selectedIds, onToggleSelect, onSelectAll, onDeselectAll
   const handleRemove = (id) => {
     removeColor(id);
   };
-
-  const handleSortOption = (criteria) => {
-    sortCustomColors(criteria);
-    setIsSortOpen(false);
-  };
-
-  const hasSelection = selectedIds.length > 0;
 
   return (
     <div className="bv-section">
@@ -257,47 +234,6 @@ function ColorsSection({ selectedIds, onToggleSelect, onSelectAll, onDeselectAll
 
       {isCustom && (
         <>
-          {/* Sort & Select Tools */}
-          <div className="palette-sort-row">
-            <div ref={sortRef} style={{ position: 'relative' }}>
-              <button
-                type="button"
-                className="palette-link-btn"
-                onClick={() => setIsSortOpen(prev => !prev)}
-              >
-                SORT ▾
-              </button>
-              {isSortOpen && (
-                <div className="palette-sort-dropdown">
-                  <button type="button" className="palette-sort-item" onClick={() => handleSortOption('hue')}>
-                    HUE
-                  </button>
-                  <button type="button" className="palette-sort-item" onClick={() => handleSortOption('luminance')}>
-                    LUMINANCE
-                  </button>
-                  <button type="button" className="palette-sort-item" onClick={() => handleSortOption('saturation')}>
-                    SATURATION
-                  </button>
-                  <button type="button" className="palette-sort-item" onClick={() => handleSortOption('brightness')}>
-                    BRIGHTNESS
-                  </button>
-                  <div className="pe-slider-divider" style={{ margin: '2px 0' }} />
-                  <button type="button" className="palette-sort-item" onClick={() => handleSortOption('reverse')}>
-                    REVERSE
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <button
-              type="button"
-              className="palette-link-btn"
-              onClick={hasSelection ? onDeselectAll : onSelectAll}
-            >
-              {hasSelection ? 'DESELECT ALL' : 'SELECT ALL'}
-            </button>
-          </div>
-
           <div className="palette-color-grid">
             {active.map((c) => (
               <CustomColorSwatch
@@ -511,19 +447,6 @@ export default function PalettePage() {
     }
   }, [colors]);
 
-  const handleSelectAll = useCallback(() => {
-    const active = colors.filter(c => !c.hidden);
-    const snap = {};
-    active.forEach(c => { snap[c.id] = c.hex; });
-    setOriginalHexSnapshot(snap);
-    setSelectedIds(active.map(c => c.id));
-  }, [colors]);
-
-  const handleDeselectAll = () => {
-    setSelectedIds([]);
-    setOriginalHexSnapshot({});
-  };
-
   const handleImportPalette = (importedHexes, importedName) => {
     applyPaletteByHexes(importedHexes, importedName, true);
   };
@@ -550,8 +473,6 @@ export default function PalettePage() {
         <ColorsSection
           selectedIds={selectedIds}
           onToggleSelect={handleToggleSelect}
-          onSelectAll={handleSelectAll}
-          onDeselectAll={handleDeselectAll}
         />
       </MacroSection>
 
