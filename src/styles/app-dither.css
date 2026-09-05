@@ -44,7 +44,8 @@
   height: 100%;
   display: block;
   image-rendering: pixelated;
-  object-fit: fill;
+  object-fit: cover;
+  object-position: center;
 }
 
 .dither-method-preview-placeholder {
