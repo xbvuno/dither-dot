@@ -260,6 +260,7 @@ export default function Slider({
     const container = containerRef.current;
     if (!track || !container) return;
 
+    let pointerDown = false;
     let dragging = false;
     let touchPending = false;
     let startX = 0;
@@ -274,38 +275,32 @@ export default function Slider({
 
     const onPointerDown = (e) => {
       if (stateRef.current.disabled) return;
-      triggerHapticPulse(5);
-      if (e.pointerType === "mouse") {
-        if (e.button !== 0) return;
-        dragging = true;
-        touchPending = false;
-        activePointerId = e.pointerId;
-        try {
-          track.setPointerCapture?.(e.pointerId);
-        } catch {
-          /* ignore pointer capture error */
-        }
+      if (e.pointerType === "mouse" && e.button !== 0) return;
 
-        const s = stateRef.current;
-        const pct = getPercent(e.clientX);
-        setInternalValue(percentToValue(pct, s.min, s.max, s.step));
+      startX = e.clientX;
+      startY = e.clientY;
+      activePointerId = e.pointerId;
+      pointerDown = true;
+      dragging = false;
+
+      if (e.pointerType === "mouse") {
+        touchPending = false;
       } else {
         // Touch pointer: wait for gesture direction to avoid accidental slider edits during vertical page scroll
         touchPending = true;
-        dragging = false;
-        startX = e.clientX;
-        startY = e.clientY;
-        activePointerId = e.pointerId;
       }
     };
 
     const onPointerMove = (e) => {
-      if (touchPending) {
-        const dx = Math.abs(e.clientX - startX);
-        const dy = Math.abs(e.clientY - startY);
+      if (!pointerDown || activePointerId !== e.pointerId) return;
 
+      const dx = Math.abs(e.clientX - startX);
+      const dy = Math.abs(e.clientY - startY);
+
+      if (touchPending) {
         if (dy > dx && dy > 5) {
           // Vertical scroll detected: release touch slider drag
+          pointerDown = false;
           touchPending = false;
           dragging = false;
           return;
@@ -314,6 +309,16 @@ export default function Slider({
         if (dx > dy && dx > 5) {
           // Horizontal slider drag detected!
           touchPending = false;
+          dragging = true;
+          try {
+            track.setPointerCapture?.(e.pointerId);
+          } catch {
+            /* ignore pointer capture error */
+          }
+        }
+      } else if (!dragging) {
+        // For mouse pointer: require a minimum movement threshold before dragging
+        if (dx >= 3) {
           dragging = true;
           try {
             track.setPointerCapture?.(e.pointerId);
@@ -340,13 +345,13 @@ export default function Slider({
     };
 
     const onPointerUp = (e) => {
-      if (touchPending) {
-        // Tap action without vertical scrolling
+      if (pointerDown && dragging) {
         const s = stateRef.current;
         const pct = getPercent(e.clientX);
         setInternalValue(percentToValue(pct, s.min, s.max, s.step));
       }
 
+      pointerDown = false;
       touchPending = false;
       dragging = false;
       if (activePointerId !== null) {
@@ -360,6 +365,7 @@ export default function Slider({
     };
 
     const onPointerCancel = () => {
+      pointerDown = false;
       touchPending = false;
       dragging = false;
       if (activePointerId !== null) {
