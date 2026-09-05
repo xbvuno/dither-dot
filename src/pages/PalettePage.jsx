@@ -181,13 +181,10 @@ function CustomColorSwatch({ color, selected, onSelect, onRemoveColor, onDropCol
 
 function ColorsSection({ selectedIds, onToggleSelect, onSelectAll, onDeselectAll }) {
   const method = usePaletteStore(s => s.method);
-  const customPaletteName = usePaletteStore(s => s.customPaletteName);
-  const setCustomPaletteName = usePaletteStore(s => s.setCustomPaletteName);
   const colors = usePaletteStore(s => s.colors);
   const removeColor = usePaletteStore(s => s.removeColor);
   const addColor = usePaletteStore(s => s.addColor);
   const moveColorCustom = usePaletteStore(s => s.moveColorCustom);
-  const saveCurrentPaletteToLibrary = usePaletteStore(s => s.saveCurrentPaletteToLibrary);
   const sortCustomColors = usePaletteStore(s => s.sortCustomColors);
 
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -325,28 +322,6 @@ function ColorsSection({ selectedIds, onToggleSelect, onSelectAll, onDeselectAll
               </div>
             </>
           )}
-
-          <label htmlFor="custom-palette-name-input" className="bv-label" style={{ display: 'block', marginTop: '0.65rem' }}>CUSTOM PALETTE</label>
-          <div className="bv-option-group palette-save-row">
-            <input
-              type="text"
-              name="customPaletteName"
-              id="custom-palette-name-input"
-              className="palette-name-input"
-              value={customPaletteName}
-              onChange={(event) => setCustomPaletteName(event.target.value)}
-              spellCheck={false}
-              maxLength={64}
-              aria-label="Custom Palette Name"
-            />
-            <button
-              type="button"
-              className="bv-option-btn"
-              onClick={saveCurrentPaletteToLibrary}
-            >
-              SAVE TO LIBRARY
-            </button>
-          </div>
         </>
       )}
     </div>
@@ -466,6 +441,34 @@ export default function PalettePage() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
+  // Accordion state
+  const [openSections, setOpenSections] = useState(() => {
+    try {
+      const saved = localStorage.getItem("dither-dot:open-sections-palette");
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error("Error parsing open palette sections", e);
+    }
+    return {
+      library: true,
+    };
+  });
+
+  const toggleSection = (section) => {
+    setOpenSections((prev) => {
+      const next = {
+        ...prev,
+        [section]: !prev[section],
+      };
+      try {
+        localStorage.setItem("dither-dot:open-sections-palette", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
   const setRootNode = useCallback((node) => {
     if (!node) return;
     setShellHost(node.closest('.resizable-shell') || null);
@@ -552,7 +555,12 @@ export default function PalettePage() {
       </MacroSection>
 
       {method === EXTRACT_METHOD.CUSTOM && (
-        <MacroSection title="LIBRARY">
+        <MacroSection
+          title="LIBRARY"
+          collapsible
+          isOpen={openSections.library !== false}
+          onToggle={() => toggleSection('library')}
+        >
           <PaletteLibrarySection
             onOpenImport={() => setIsImportModalOpen(true)}
             onOpenExport={() => setIsExportModalOpen(true)}
