@@ -11,7 +11,7 @@ export default function SettingsPage() {
   const [openSections, toggleSection] = useAccordion('dither-dot:open-sections-settings', {
     settings: true,
     storage: false,
-    about: false,
+    about: true,
   });
 
   const showPipeline = useParamsStore((s) => s.pipelineVisible);
@@ -165,7 +165,7 @@ export default function SettingsPage() {
               DITHER-DOT v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.4.1'}
             </span>
             <p className='bv-label' style={{ margin: '0.35rem 0 0 0', lineHeight: 1.4 }}>
-              BROWSER-BASED REALTIME DITHERING AND COLOR QUANTIZATION SUITE. DESIGNED WITH RETRO MONOCHROME COMPUTING AESTHETICS.
+              A FAST, OPEN-SOURCE BROWSER DITHERING STUDIO FOR IMAGES AND GIFS — RUNNING ENTIRELY IN YOUR BROWSER WITH CLIENT-SIDE WEBGL SHADERS AND WEBASSEMBLY. 10+ ALGORITHMS, PALETTES &amp; WEBCAM SUPPORT.
             </p>
           </div>
 

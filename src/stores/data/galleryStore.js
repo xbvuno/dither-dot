@@ -82,6 +82,17 @@ const useGalleryStore = create((set, get) => ({
     return newItems;
   },
 
+  addRandomImage: (item) => {
+    set((state) => {
+      const filtered = state.randomImages.filter(
+        (r) => r.id !== item.id && r.src !== item.src && r.name.toUpperCase() !== item.name.toUpperCase()
+      );
+      return {
+        randomImages: [item, ...filtered],
+      };
+    });
+  },
+
   hydrateHistory: async () => {
     const storedHistory = await loadGalleryHistoryFromDb();
     const normalized = Array.isArray(storedHistory)

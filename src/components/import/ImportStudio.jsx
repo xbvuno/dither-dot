@@ -189,7 +189,7 @@ export default function ImportStudio() {
 
   const history = useGalleryStore((s) => s.history);
   const randomImages = useGalleryStore((s) => s.randomImages);
-  const refreshRandomImages = useGalleryStore((s) => s.refreshRandomImages);
+  const addRandomImage = useGalleryStore((s) => s.addRandomImage);
   const pushGifHistory = useGalleryStore((s) => s.pushGifHistory);
   const removeHistoryItem = useGalleryStore((s) => s.removeHistoryItem);
   const clearHistory = useGalleryStore((s) => s.clearHistory);
@@ -525,17 +525,18 @@ export default function ImportStudio() {
     if (isRandomLoading) return;
     setIsRandomLoading(true);
     try {
-      const w = 800;
-      const h = 600;
-      const url = `https://picsum.photos/${w}/${h}?random=${Date.now()}`;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Random image fetch failed.');
-      const blob = await response.blob();
-      const { validateImageFile } = await import('../../utils/importUtils');
-      await validateImageFile(blob);
-      await importWithSizeCheck(blob, `lorem-picsum-${w}x${h}`);
+      const seed = `rnd-${Date.now()}`;
+      const newItem = {
+        id: `random-${seed}`,
+        name: `RANDOM ${randomImages.length + 1}`,
+        src: `https://picsum.photos/seed/${seed}/800/600`,
+        thumb: `https://picsum.photos/seed/${seed}/200/200`,
+        isRandom: true,
+      };
+      addRandomImage(newItem);
+      await handleSelectPreset(newItem);
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Random image failed.');
+      console.error('Random image fetch failed:', error);
     } finally {
       setIsRandomLoading(false);
     }
@@ -715,10 +716,105 @@ export default function ImportStudio() {
               </div>
             )}
 
-            {/* Presets Library */}
+            {/* Gallery 1: Recent History */}
+            {history.length > 0 && (
+              <div className='bv-section' style={{ marginTop: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                  <p className='bv-label' style={{ margin: 0 }}>RECENT IMPORTS</p>
+                  <button
+                    type='button'
+                    className='import-recent-clear-btn'
+                    onClick={() => {
+                      clearHistory();
+                      if (history.some((h) => h.kind === 'gif' && h.name === sourceName)) {
+                        setGifSourceUrl(null);
+                      }
+                    }}
+                  >
+                    (<span>CLEAR</span>)
+                  </button>
+                </div>
+                <div className='import-route-presets-grid' style={{ marginTop: 4 }}>
+                  {history.map((h) => {
+                    const isSelected = sourceName === h.name && !webcamActive;
+                    return (
+                      <div
+                        key={h.id}
+                        className={`import-route-preset-item import-route-history-item${isSelected ? ' selected' : ''}`}
+                      >
+                        <button
+                          type='button'
+                          className='import-route-history-btn'
+                          onClick={() => handleSelectHistory(h)}
+                        >
+                          <img src={h.src} alt={h.name} className='import-route-preset-thumb' />
+                          <span className='import-route-preset-label'>{h.name}</span>
+                        </button>
+                        {h.kind === 'gif' && (
+                          <div className='import-preset-gif-badge' title='Animated GIF' aria-label='Animated GIF'>
+                            <Film size={10} strokeWidth={1.75} />
+                          </div>
+                        )}
+                        <button
+                          type='button'
+                          className='import-history-delete-btn'
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeHistoryItem(h.id);
+                            if (h.name === sourceName) {
+                              setGifSourceUrl(null);
+                            }
+                          }}
+                          title={`Remove ${h.name}`}
+                          aria-label={`Remove ${h.name}`}
+                        >
+                          <Trash2 size={10} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Gallery 2: Random Images */}
             <div className='bv-section' style={{ marginTop: 8 }}>
-              <p className='bv-label'>PRESETS LIBRARY</p>
-              <div className='import-route-presets-grid'>
+              <p className='bv-label' style={{ margin: 0 }}>
+                RANDOM IMAGES (<a
+                  href='https://picsum.photos/'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  style={{ textDecoration: 'underline', color: 'inherit' }}
+                >LOREM-PICSUM</a>)
+              </p>
+              <div className='import-route-presets-grid' style={{ marginTop: 4 }}>
+                {randomImages.map((p) => {
+                  const isSelected = (sourceName === p.name || sourceImg === p.src) && !webcamActive;
+                  return (
+                    <button
+                      key={p.id}
+                      type='button'
+                      className={`import-route-preset-item${isSelected ? ' selected' : ''}`}
+                      onClick={() => handleSelectPreset(p)}
+                    >
+                      <img
+                        src={p.thumb || p.src}
+                        alt={p.name}
+                        className='import-route-preset-thumb'
+                        loading='lazy'
+                        decoding='async'
+                      />
+                      <span className='import-route-preset-label'>{p.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Gallery 3: Presets Library */}
+            <div className='bv-section' style={{ marginTop: 8 }}>
+              <p className='bv-label' style={{ margin: 0 }}>PRESETS LIBRARY</p>
+              <div className='import-route-presets-grid' style={{ marginTop: 4 }}>
                 {GALLERY_PRESETS.map((p) => {
                   const isSelected = sourceName === p.name && !webcamActive;
                   return (
@@ -739,109 +835,6 @@ export default function ImportStudio() {
                   );
                 })}
               </div>
-
-              {/* Random Images Library */}
-              <div style={{ marginTop: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px' }}>
-                  <p className='bv-label' style={{ margin: 0 }}>RANDOM IMAGES</p>
-                  <button
-                    type='button'
-                    className='import-recent-clear-btn'
-                    onClick={() => {
-                      const newImages = refreshRandomImages();
-                      if (newImages?.length > 0) {
-                        handleSelectPreset(newImages[0]);
-                      }
-                    }}
-                    title='Generate new random images'
-                  >
-                    (<span>REFRESH</span>)
-                  </button>
-                </div>
-                <div className='import-route-presets-grid' style={{ marginTop: 4 }}>
-                  {randomImages.map((p) => {
-                    const isSelected = (sourceName === p.name || sourceImg === p.src) && !webcamActive;
-                    return (
-                      <button
-                        key={p.id}
-                        type='button'
-                        className={`import-route-preset-item${isSelected ? ' selected' : ''}`}
-                        onClick={() => handleSelectPreset(p)}
-                      >
-                        <img
-                          src={p.thumb || p.src}
-                          alt={p.name}
-                          className='import-route-preset-thumb'
-                          loading='lazy'
-                          decoding='async'
-                        />
-                        <span className='import-route-preset-label'>{p.name}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Recent History */}
-              {history.length > 0 && (
-                <>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: 4 }}>
-                    <p className='bv-label' style={{ margin: 0 }}>RECENT IMPORTS</p>
-                    <button
-                      type='button'
-                      className='import-recent-clear-btn'
-                      onClick={() => {
-                        clearHistory();
-                        if (history.some((h) => h.kind === 'gif' && h.name === sourceName)) {
-                          setGifSourceUrl(null);
-                        }
-                      }}
-                    >
-                      (<span>CLEAR</span>)
-                    </button>
-                  </div>
-                  <div className='import-route-presets-grid'>
-                    {history.map((h) => {
-                      const isSelected = sourceName === h.name && !webcamActive;
-                      return (
-                        <div
-                          key={h.id}
-                          className={`import-route-preset-item import-route-history-item${isSelected ? ' selected' : ''}`}
-                        >
-                          <button
-                            type='button'
-                            className='import-route-history-btn'
-                            onClick={() => handleSelectHistory(h)}
-                          >
-                            <img src={h.src} alt={h.name} className='import-route-preset-thumb' />
-                            <span className='import-route-preset-label'>{h.name}</span>
-                          </button>
-                          {h.kind === 'gif' && (
-                            <div className='import-preset-gif-badge' title='Animated GIF' aria-label='Animated GIF'>
-                              <Film size={10} strokeWidth={1.75} />
-                            </div>
-                          )}
-                          <button
-                            type='button'
-                            className='import-history-delete-btn'
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeHistoryItem(h.id);
-                              if (h.name === sourceName) {
-                                setGifSourceUrl(null);
-                              }
-                            }}
-                            title={`Remove ${h.name}`}
-                            aria-label={`Remove ${h.name}`}
-                          >
-                            <Trash2 size={10} />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
             </div>
           </div>
           <div
