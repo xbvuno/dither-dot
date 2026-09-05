@@ -10,7 +10,7 @@
 }
 
 .bv-label {
-  font-size: 1rem;
+  font-size: 0.875rem;
   letter-spacing: 0.08em;
   color: var(--color-text-subtle);
   text-transform: uppercase;
