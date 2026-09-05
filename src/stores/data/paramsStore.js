@@ -49,7 +49,7 @@ export const COLOR_CONTROLS = {
   hue: {
     min: -3.14,
     max: 3.14,
-    step: 0.01,
+    step: 0.05,
     default: 0.0,
     description: 'Rotates all colors around the color wheel. At ±π the full spectrum is cycled.',
   }
