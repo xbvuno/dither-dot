@@ -132,6 +132,96 @@ export default function PinnedPage() {
 
   const hasExportUpscale = pinnedIds.includes(PIN_ID.EXPORT_UPSCALE);
 
+  // Modified & Reset handlers per macro section (only for pinned controls)
+  const isColorsModified = pinnedColors.some(([key, cfg]) => {
+    const val = Number(paramsState[key]);
+    const def = Number(cfg.default);
+    return !Number.isNaN(val) && Math.abs(val - def) > 1e-5;
+  });
+  const handleResetColors = () => {
+    pinnedColors.forEach(([key, cfg]) => {
+      const setter = paramsState['set' + capitalize(key)];
+      setter(cfg.default);
+    });
+  };
+
+  const isNoiseModified = pinnedNoise.some(([key, cfg]) => {
+    const val = Number(paramsState[key]);
+    const def = Number(cfg.default);
+    return !Number.isNaN(val) && Math.abs(val - def) > 1e-5;
+  });
+  const handleResetNoise = () => {
+    pinnedNoise.forEach(([key, cfg]) => {
+      const setter = paramsState['set' + capitalize(key)];
+      setter(cfg.default);
+    });
+  };
+
+  const isBlurModified = pinnedBlur.some(([key, cfg]) => {
+    const val = Number(paramsState[key]);
+    const def = Number(cfg.default);
+    return !Number.isNaN(val) && Math.abs(val - def) > 1e-5;
+  });
+  const handleResetBlur = () => {
+    pinnedBlur.forEach(([key, cfg]) => {
+      const setter = paramsState['set' + capitalize(key)];
+      setter(cfg.default);
+    });
+  };
+
+  const isAspectModified = hasAspectOffset && Math.abs((aspectOffset ?? 0.5) - 0.5) > 1e-4;
+  const handleResetAspect = () => {
+    setAspectOffset(0.5);
+  };
+
+  const isCroppingModified = Boolean(
+    (hasCropTop && (crop.top || 0) !== 0) ||
+    (hasCropBottom && (crop.bottom || 0) !== 0) ||
+    (hasCropLeft && (crop.left || 0) !== 0) ||
+    (hasCropRight && (crop.right || 0) !== 0)
+  );
+  const handleResetCropping = () => {
+    if (hasCropTop && crop.top !== 0) setCropTop(0);
+    if (hasCropBottom && crop.bottom !== 0) setCropBottom(0);
+    if (hasCropLeft && crop.left !== 0) setCropLeft(0);
+    if (hasCropRight && crop.right !== 0) setCropRight(0);
+  };
+
+  const isResizeModified = Boolean(
+    (hasResizeScale && ratioLocked && Math.abs(currentScale - 1.0) > 1e-3) ||
+    (hasResizeWidth && !ratioLocked && currentCroppedW !== croppedWidth) ||
+    (hasResizeHeight && !ratioLocked && currentCroppedH !== croppedHeight)
+  );
+  const handleResetResize = () => {
+    if (ratioLocked) {
+      setScale(1.0);
+    } else {
+      if (hasResizeWidth) setCustomWidth(croppedWidth);
+      if (hasResizeHeight) setCustomHeight(croppedHeight);
+    }
+  };
+
+  const isPaletteModified = hasPaletteColorCount && paletteColorCount !== 8;
+  const handleResetPalette = () => {
+    setPaletteColorCount(8);
+  };
+
+  const isDitherModified = Boolean(
+    (hasDitherAmount && Math.abs(ditherAmount - (DITHER_CONTROLS.amount.default ?? 1)) > 1e-4) ||
+    (hasDitherMatrixScale && ditherMatrixScale !== (DITHER_CONTROLS.matrixScale.default ?? 1)) ||
+    (hasDitherSeed && ditherSeed !== (DITHER_CONTROLS.seed.default ?? 0))
+  );
+  const handleResetDither = () => {
+    if (hasDitherAmount) setDitherAmount(DITHER_CONTROLS.amount.default ?? 1);
+    if (hasDitherMatrixScale) setDitherMatrixScale(DITHER_CONTROLS.matrixScale.default ?? 1);
+    if (hasDitherSeed) setDitherSeed(DITHER_CONTROLS.seed.default ?? 0);
+  };
+
+  const isExportModified = hasExportUpscale && exportUpscale !== 1;
+  const handleResetExport = () => {
+    setExportUpscale(1);
+  };
+
   return (
     <div>
       <MacroSection title="PINNED">
@@ -172,6 +262,8 @@ export default function PinnedPage() {
           collapsible
           isOpen={openSections.colors !== false}
           onToggle={() => toggleSection('colors')}
+          isModified={isColorsModified}
+          onReset={handleResetColors}
         >
           <div className="bv-section">
             {pinnedColors.map(([key, cfg]) => {
@@ -204,6 +296,8 @@ export default function PinnedPage() {
           collapsible
           isOpen={openSections.noise !== false}
           onToggle={() => toggleSection('noise')}
+          isModified={isNoiseModified}
+          onReset={handleResetNoise}
         >
           <div className="bv-section">
             {pinnedNoise.map(([key, cfg]) => {
@@ -237,6 +331,8 @@ export default function PinnedPage() {
           collapsible
           isOpen={openSections.blur !== false}
           onToggle={() => toggleSection('blur')}
+          isModified={isBlurModified}
+          onReset={handleResetBlur}
         >
           <div className="bv-section">
             {pinnedBlur.map(([key, cfg]) => {
@@ -270,6 +366,8 @@ export default function PinnedPage() {
           collapsible
           isOpen={openSections.aspectRatio !== false}
           onToggle={() => toggleSection('aspectRatio')}
+          isModified={isAspectModified}
+          onReset={handleResetAspect}
         >
           <div className="bv-section">
             <SliderBundle
@@ -295,6 +393,8 @@ export default function PinnedPage() {
           collapsible
           isOpen={openSections.cropping !== false}
           onToggle={() => toggleSection('cropping')}
+          isModified={isCroppingModified}
+          onReset={handleResetCropping}
         >
           <div className="bv-section">
             {hasCropTop && (
@@ -364,6 +464,8 @@ export default function PinnedPage() {
           collapsible
           isOpen={openSections.resize !== false}
           onToggle={() => toggleSection('resize')}
+          isModified={isResizeModified}
+          onReset={handleResetResize}
         >
           <div className="bv-section">
             {hasResizeScale && (
@@ -419,6 +521,8 @@ export default function PinnedPage() {
           collapsible
           isOpen={openSections.palette !== false}
           onToggle={() => toggleSection('palette')}
+          isModified={isPaletteModified}
+          onReset={handleResetPalette}
         >
           <div className="bv-section">
             <SliderBundle
@@ -444,6 +548,8 @@ export default function PinnedPage() {
           collapsible
           isOpen={openSections.dither !== false}
           onToggle={() => toggleSection('dither')}
+          isModified={isDitherModified}
+          onReset={handleResetDither}
         >
           <div className="bv-section">
             {hasDitherAmount && (
@@ -502,6 +608,8 @@ export default function PinnedPage() {
           collapsible
           isOpen={openSections.export !== false}
           onToggle={() => toggleSection('export')}
+          isModified={isExportModified}
+          onReset={handleResetExport}
         >
           <div className="bv-section">
             <SliderBundle
