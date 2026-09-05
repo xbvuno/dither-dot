@@ -1,5 +1,4 @@
-import { useCallback, useState } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
 import { RotateCcw, Dices } from "lucide-react";
 import MacroSection from "../components/ui/MacroSection";
 import ColorControls from "../components/controls/ColorControls";
@@ -13,9 +12,6 @@ const blurKeys = Object.keys(BLUR_CONTROLS);
 const noiseKeys = Object.keys(NOISE_CONTROLS);
 
 export default function AdjustmentsPage() {
-    const [shellHost, setShellHost] = useState(null);
-    const showHistogram = useParamsStore((s) => s.histogramVisible);
-    const setShowHistogram = useParamsStore((s) => s.setHistogramVisible);
     const resetParams = useParamsStore((s) => s.resetParams);
     const randomizeParams = useParamsStore((s) => s.randomizeParams);
 
@@ -56,103 +52,71 @@ export default function AdjustmentsPage() {
     const isNoiseModified = useParamsStore((s) => Boolean(s.noiseEnabled) || noiseKeys.some((k) => s[k] !== NOISE_CONTROLS[k].default));
     const isBlurModified = useParamsStore((s) => Boolean(s.blurEnabled) || blurKeys.some((k) => s[k] !== BLUR_CONTROLS[k].default));
 
-    const setRootNode = useCallback((node) => {
-        if (!node) return;
-        setShellHost(node.closest('.resizable-shell') || null);
-    }, []);
-
     return (
-        <>
-            <div ref={setRootNode}>
-                <MacroSection title="ADJUSTMENTS">
-                    <div className="bv-section histogram-section">
-                        <div className="bv-controls-row">
-                            <span className="bv-label">HISTOGRAM</span>
-                            <div className="bv-option-group histogram-toggle-group">
-                                <button
-                                    type="button"
-                                    className={`bv-option-btn${showHistogram ? ' active' : ''}`}
-                                    onClick={() => setShowHistogram(true)}
-                                >
-                                    SHOW
-                                </button>
-                                <button
-                                    type="button"
-                                    className={`bv-option-btn${!showHistogram ? ' active' : ''}`}
-                                    onClick={() => setShowHistogram(false)}
-                                >
-                                    HIDE
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="bv-section">
-                        <p className="bv-label">ACTIONS</p>
-                        <div className="bv-option-group">
-                            <button
-                                type="button"
-                                className="bv-option-btn icon-btn"
-                                onClick={resetParams}
-                            >
-                                <RotateCcw size={14} strokeWidth={1.5} />
-                                RESET DEFAULT
-                            </button>
-                            <button
-                                type="button"
-                                className="bv-option-btn icon-btn"
-                                onClick={randomizeParams}
-                            >
-                                <Dices size={14} strokeWidth={1.5} />
-                                RANDOMIZE
-                            </button>
-                        </div>
-                    </div>
-                </MacroSection>
-
-                <MacroSection
-                    title="COLORS"
-                    collapsible
-                    isOpen={openSections.colors}
-                    onToggle={() => toggleSection('colors')}
-                    isModified={isColorModified}
-                    onReset={() => resetKeys(colorKeys)}
-                    onRandomize={() => randomizeKeys(colorKeys, COLOR_CONTROLS)}
-                >
-                    <ColorControls showLabel={false} />
-                </MacroSection>
-
-                <MacroSection
-                    title="NOISE"
-                    collapsible
-                    isOpen={openSections.noise}
-                    onToggle={() => toggleSection('noise')}
-                    isModified={isNoiseModified}
-                    onReset={() => resetKeys([...noiseKeys, 'noiseEnabled'])}
-                    onRandomize={() => randomizeKeys(noiseKeys, NOISE_CONTROLS)}
-                >
-                    <NoiseControls showLabel={false} />
-                </MacroSection>
-
-                <MacroSection
-                    title="BLUR"
-                    collapsible
-                    isOpen={openSections.blur}
-                    onToggle={() => toggleSection('blur')}
-                    isModified={isBlurModified}
-                    onReset={() => resetKeys([...blurKeys, 'blurEnabled'])}
-                    onRandomize={() => randomizeKeys(blurKeys, BLUR_CONTROLS)}
-                >
-                    <BlurControls showLabel={false} />
-                </MacroSection>
-            </div>
-
-            {showHistogram && shellHost && createPortal(
-                <div className="histogram-floating-panel">
-                    <p className="bv-label">HISTOGRAM</p>
+        <div>
+            <MacroSection title="ADJUSTMENTS">
+                <div className="bv-section histogram-section">
+                    <span className="bv-label">HISTOGRAM</span>
                     <Histogram />
-                </div>,
-                shellHost,
-            )}
-        </>
+                </div>
+                <div className="bv-section">
+                    <p className="bv-label">ACTIONS</p>
+                    <div className="bv-option-group">
+                        <button
+                            type="button"
+                            className="bv-option-btn icon-btn"
+                            onClick={resetParams}
+                        >
+                            <RotateCcw size={14} strokeWidth={1.5} />
+                            RESET DEFAULT
+                        </button>
+                        <button
+                            type="button"
+                            className="bv-option-btn icon-btn"
+                            onClick={randomizeParams}
+                        >
+                            <Dices size={14} strokeWidth={1.5} />
+                            RANDOMIZE
+                        </button>
+                    </div>
+                </div>
+            </MacroSection>
+
+            <MacroSection
+                title="COLORS"
+                collapsible
+                isOpen={openSections.colors}
+                onToggle={() => toggleSection('colors')}
+                isModified={isColorModified}
+                onReset={() => resetKeys(colorKeys)}
+                onRandomize={() => randomizeKeys(colorKeys, COLOR_CONTROLS)}
+            >
+                <ColorControls showLabel={false} />
+            </MacroSection>
+
+            <MacroSection
+                title="NOISE"
+                collapsible
+                isOpen={openSections.noise}
+                onToggle={() => toggleSection('noise')}
+                isModified={isNoiseModified}
+                onReset={() => resetKeys([...noiseKeys, 'noiseEnabled'])}
+                onRandomize={() => randomizeKeys(noiseKeys, NOISE_CONTROLS)}
+            >
+                <NoiseControls showLabel={false} />
+            </MacroSection>
+
+            <MacroSection
+                title="BLUR"
+                collapsible
+                isOpen={openSections.blur}
+                onToggle={() => toggleSection('blur')}
+                isModified={isBlurModified}
+                onReset={() => resetKeys([...blurKeys, 'blurEnabled'])}
+                onRandomize={() => randomizeKeys(blurKeys, BLUR_CONTROLS)}
+            >
+                <BlurControls showLabel={false} />
+            </MacroSection>
+        </div>
     );
 }

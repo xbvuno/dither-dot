@@ -90,7 +90,7 @@ export default function Histogram() {
   }, []);
 
   return (
-    <div>
+    <div className="histogram-container">
       <canvas
         ref={canvasRef}
         className="histogram-canvas"
