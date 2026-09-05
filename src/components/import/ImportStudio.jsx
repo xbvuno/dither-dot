@@ -672,15 +672,24 @@ export default function ImportStudio() {
           }}
           onDrop={handleDrop}
         >
-          <div className='import-col-header'>
-            <h2 className='import-col-title'>SELECT MEDIA</h2>
-            <span className='import-col-badge'>{sourceName}</span>
-          </div>
-
           <div className='import-col-content'>
             {/* Drop Zone Box */}
             <div
-              className={`import-drop-zone${isDropActive ? ' active' : ''}`}
+              className={`import-route-dropzone${isDropActive ? ' active' : ''}`}
+              onDragEnter={(e) => {
+                e.preventDefault();
+                setIsDropActive(true);
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDropActive(true);
+              }}
+              onDragLeave={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget)) {
+                  setIsDropActive(false);
+                }
+              }}
+              onDrop={handleDrop}
               onClick={() => inputRef.current?.click()}
               role='button'
               tabIndex={0}
@@ -691,11 +700,7 @@ export default function ImportStudio() {
                 }
               }}
             >
-              <FileUp size={24} strokeWidth={1.5} className='import-drop-zone-icon' />
-              <p className='import-drop-zone-text'>
-                <strong>CLICK TO UPLOAD</strong> OR DRAG AND DROP
-              </p>
-              <span className='import-drop-zone-hint'>PNG, JPG, WEBP, GIF, SVG, BMP</span>
+              DROP IMAGE / GIF OR CTRL+V (CLICK TO BROWSE)
             </div>
 
             {/* Action Buttons */}
@@ -840,9 +845,6 @@ export default function ImportStudio() {
 
         {/* COLUMN 2: SELECT TEMPLATE (Fixed 16rem Column to the left of Preview) */}
         <div className='import-col import-col-templates'>
-          <div className='import-col-header'>
-            <h2 className='import-col-title'>TEMPLATES</h2>
-          </div>
           <div className='import-col-content'>
             <div className='import-route-templates-list'>
               {TEMPLATES.map((tpl) => (
