@@ -518,13 +518,13 @@ export default function ImportRoute() {
                 {webcamActive && <WebcamSection />}
               </div>
 
-              {/* Active Media Preview Card: takes available vertical space with image + bottom info */}
+              {/* Active Media Preview Card: clean borderless preview with footer */}
               {sourceImg && !webcamActive && (
                 <div className='import-route-media-preview-card'>
                   <div className='import-route-media-canvas-wrap'>
                     <img src={sourceImg} alt='Selected Media' className='import-route-preview-large-img' />
                   </div>
-                  <div className='import-route-media-info'>
+                  <div className='import-route-media-footer'>
                     <span className='import-route-media-name'>{sourceName || 'Current Media'}</span>
                     <span className='import-route-media-type'>SOURCE: {sourceKind?.toUpperCase() || 'LOADED'}</span>
                   </div>

@@ -87,20 +87,22 @@ main.import-3col-layout,
   flex-direction: column;
   gap: 12px;
   height: 100%;
+  min-height: 0;
 }
 
 .import-media-top-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  flex-shrink: 0;
+  flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
 }
 
-/* Dropzone & Action Buttons */
+/* Dropzone: expands in height when space is available */
 .import-route-dropzone {
   border: 2px dashed var(--color-border);
-  padding: 16px 12px;
+  padding: 14px;
   text-align: center;
   font-size: 11px;
   letter-spacing: 0.08em;
@@ -108,6 +110,12 @@ main.import-3col-layout,
   background: var(--color-bg-subtle);
   cursor: pointer;
   transition: all 0.15s ease;
+  flex: 1 1 auto;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .import-route-dropzone.active,
@@ -122,6 +130,7 @@ main.import-3col-layout,
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
   width: 100%;
+  flex-shrink: 0;
 }
 
 .import-btn {
@@ -145,32 +154,34 @@ main.import-3col-layout,
   border-color: var(--color-danger, #ff6b6b) !important;
 }
 
-/* Media preview card taking full available height */
+/* Borderless Media Preview: 100% width, max-height 50%, with single footer */
 .import-route-media-preview-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px;
-  background: var(--input-surface);
-  border: 1px solid var(--color-border-subtle);
-  flex: 1 1 auto;
-  min-height: 140px;
-  max-height: 320px;
+  width: 100%;
+  max-height: 50%;
+  flex: 0 1 auto;
+  min-height: 0;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  padding: 0;
+  margin: 0;
   overflow: hidden;
   box-sizing: border-box;
-  width: 100%;
 }
 
 .import-route-media-canvas-wrap {
-  flex: 1 1 0%;
-  width: 100%;
-  min-height: 90px;
   position: relative;
+  width: 100%;
+  min-height: 100px;
+  max-height: 240px;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
   background: #0d0d0b;
-  border: 1px solid var(--color-border);
+  border: none;
 }
 
 .import-route-preview-large-img {
@@ -184,15 +195,17 @@ main.import-3col-layout,
   display: block;
 }
 
-.import-route-media-info {
+.import-route-media-footer {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
-  gap: 2px;
+  justify-content: space-between;
+  gap: 8px;
   width: 100%;
-  overflow: hidden;
+  padding: 6px 10px;
+  background: var(--color-macro-section-bg);
+  border-top: 1px solid var(--color-border);
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .import-route-media-name {
@@ -201,14 +214,17 @@ main.import-3col-layout,
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100%;
   color: var(--color-text);
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .import-route-media-type {
   font-size: 9px;
   color: var(--color-text-muted);
   letter-spacing: 0.05em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .import-media-bottom-group {
