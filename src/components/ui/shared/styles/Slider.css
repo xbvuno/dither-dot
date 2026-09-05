@@ -148,7 +148,8 @@
     color: var(--color-text);
     text-align: right;
     padding: 0.1rem 0.5rem;
-    min-width: 4ch;
+    width: 6.5ch;
+    box-sizing: content-box;
     border: 1px solid transparent;
     margin-left: auto;
     flex-shrink: 0;
