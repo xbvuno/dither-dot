@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   FileUp,
   Clipboard,
@@ -225,6 +225,16 @@ export default function ImportStudio() {
 
   const selectedTemplateId = useTemplateStore((s) => s.selectedTemplateId);
   const applyTemplate = useTemplateStore((s) => s.applyTemplate);
+  const hasCustom = useTemplateStore((s) => s.hasCustom);
+  const customTemplate = useTemplateStore((s) => s.customTemplate);
+
+  const templatesList = useMemo(() => {
+    if (hasCustom && customTemplate) {
+      return [customTemplate, ...TEMPLATES];
+    }
+    return TEMPLATES;
+  }, [hasCustom, customTemplate]);
+
 
   const mediaColRef = useRef(null);
   const resizeHandleRef = useRef(null);
@@ -795,7 +805,7 @@ export default function ImportStudio() {
         <div className='import-col import-col-templates'>
           <div className='import-col-content'>
             <div className='import-route-templates-list'>
-              {TEMPLATES.map((tpl) => (
+              {templatesList.map((tpl) => (
                 <TemplateCard
                   key={tpl.id}
                   tpl={tpl}

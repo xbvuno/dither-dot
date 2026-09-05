@@ -59,16 +59,28 @@ async function loadBaseImageData() {
   return baseImageDataPromise;
 }
 
+function getTemplateCacheKey(template) {
+  if (!template) return '';
+  if (template.id === 'custom') {
+    const p = template.params || {};
+    const d = template.dither || {};
+    const pal = template.palette || {};
+    return `custom:${p.gamma}_${p.blacks}_${p.whites}_${p.contrast}_${p.saturation}_${p.hue}_${p.noiseEnabled}_${p.noiseCoverage}_${p.noiseIntensity}_${p.blurEnabled}_${p.blurStrength}_${p.passes}_${d.enabled}_${d.method}_${d.amount}_${d.matrixScale}_${d.seed}_${pal.extractMethod}_${pal.id}_${(pal.colors || []).join(',')}`;
+  }
+  return template.id;
+}
+
 export async function generateTemplatePreview(template) {
   if (!template) return '';
   const templateId = template.id;
+  const cacheKey = getTemplateCacheKey(template);
 
-  if (previewCache.has(templateId)) {
-    return previewCache.get(templateId);
+  if (previewCache.has(cacheKey)) {
+    return previewCache.get(cacheKey);
   }
 
-  if (inFlightPromises.has(templateId)) {
-    return inFlightPromises.get(templateId);
+  if (inFlightPromises.has(cacheKey)) {
+    return inFlightPromises.get(cacheKey);
   }
 
   const promise = (async () => {
@@ -206,7 +218,7 @@ export async function generateTemplatePreview(template) {
         outCtx.putImageData(outImgData, 0, 0);
 
         const dataUrl = outCanvas.toDataURL('image/png');
-        previewCache.set(templateId, dataUrl);
+        previewCache.set(cacheKey, dataUrl);
         return dataUrl;
       } catch (err) {
         console.error('[template-preview] Failed to generate preview for template', templateId, err);
@@ -224,10 +236,10 @@ export async function generateTemplatePreview(template) {
       return statuePreviewUrl;
     }));
 
-    inFlightPromises.delete(templateId);
+    inFlightPromises.delete(cacheKey);
     return result;
   })();
 
-  inFlightPromises.set(templateId, promise);
+  inFlightPromises.set(cacheKey, promise);
   return promise;
 }
