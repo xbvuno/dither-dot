@@ -8,6 +8,16 @@
     flex-shrink: 0;
 }
 
+.resizable-shell--left aside {
+    border-right: 1px solid var(--color-border);
+    border-left: 1px solid var(--color-border);
+}
+
+.resizable-shell--right aside {
+    border-left: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-border);
+}
+
 aside {
     display: flex;
     flex-direction: column;
@@ -17,8 +27,6 @@ aside {
     width: 100%;
     container-type: inline-size;
     container-name: aside-panel;
-    border-right: 1px solid var(--color-border);
-    border-left: 1px solid var(--color-border);
     background-color: var(--color-bg);
     overflow-y: auto;
     overflow-x: hidden;
@@ -28,24 +36,30 @@ aside {
 .resize-handle {
     position: absolute;
     top: 0;
-    right: -12px;
     bottom: 0;
     width: 12px;
     cursor: col-resize;
     z-index: 20;
     background-color: transparent;
     transition: 0.2s background-color;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .resize-handle::before {
     content: '';
-    position: absolute;
-    top: 50%;
-    left: 6px;
     width: 1px;
     height: 2.8rem;
-    transform: translate(-50%, -50%);
     background: color-mix(in srgb, var(--color-text) 34%, transparent);
+}
+
+.resize-handle--right {
+    right: -12px;
+}
+
+.resize-handle--left {
+    left: 0;
 }
 
 .resize-handle:hover {
@@ -99,7 +113,7 @@ aside::-webkit-scrollbar-corner {
         user-select: none !important;
         -webkit-user-select: none !important;
         z-index: 30;
-        background-color: var(--color-bg) !important;
+        background-color: var(--color-macro-section-bg) !important;
         border-top: 1px solid var(--color-border) !important;
         box-sizing: border-box;
         flex-shrink: 0;

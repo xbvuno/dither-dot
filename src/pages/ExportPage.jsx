@@ -1,12 +1,24 @@
 import { useEffect, useState } from 'react';
 import { Save, Copy, Eye, Trash2 } from 'lucide-react';
 import MacroSection from '../components/ui/MacroSection';
+import OptionGroup from '../components/ui/shared/OptionGroup';
 import useImageStore from '../stores/media/imageStore';
 import useGifStore from '../stores/media/gifStore';
 import useWebcamStore from '../stores/media/webcamStore';
 import { getOutputCanvas } from '../utils/canvasRegistry';
 import { exportCurrentGif } from '../utils/exportGif';
 import SliderBundle from '../components/ui/shared/SliderBundle';
+
+const LIVE_PREVIEW_STORAGE_KEY = 'dither-dot:export-live-preview';
+
+function getStoredLivePreview() {
+  try {
+    const val = localStorage.getItem(LIVE_PREVIEW_STORAGE_KEY);
+    return val !== null ? val === 'true' : true;
+  } catch {
+    return true;
+  }
+}
 
 function getExportBaseName(sourceName = '') {
   return sourceName.replace(/\.[^.]+$/, '').trim() || 'export';
@@ -88,6 +100,7 @@ export default function ExportPage() {
   const setExportUpscale = useImageStore(s => s.setExportUpscale);
   const upscale = exportUpscale;
   const setUpscale = setExportUpscale;
+  const [livePreview, setLivePreview] = useState(getStoredLivePreview);
   const [status, setStatus] = useState(null);
   const [gifExporting, setGifExporting] = useState(false);
   const [previewGenerating, setPreviewGenerating] = useState(false);
@@ -95,6 +108,7 @@ export default function ExportPage() {
   const [previewUpscale, setPreviewUpscale] = useState(null);
 
   const isGifSource = gifFrames.length > 1;
+  const isLivePreviewActive = livePreview && !isGifSource;
   const exportFormat = isGifSource ? 'GIF' : 'PNG';
   const exportBaseName = getExportBaseName(exportName.trim() || getDefaultExportName(sourceName));
   const canvas = getOutputCanvas();
@@ -103,11 +117,41 @@ export default function ExportPage() {
   const finalWidth = baseWidth * upscale;
   const finalHeight = baseHeight * upscale;
   
-  const isPreviewValid = Boolean(
-    previewUrl &&
-    previewJobId === lastRenderJobId &&
-    previewUpscale === upscale
-  );
+  const isPreviewValid = isGifSource
+    ? Boolean(previewUrl && previewJobId === lastRenderJobId && previewUpscale === upscale)
+    : Boolean(previewUrl && (previewJobId === lastRenderJobId || isLivePreviewActive));
+
+  const handleToggleLivePreview = (val) => {
+    const isLive = val === 'on' || val === true;
+    setLivePreview(isLive);
+    if (isLive && !isGifSource) {
+      setUpscale(1);
+    }
+    try {
+      localStorage.setItem(LIVE_PREVIEW_STORAGE_KEY, String(isLive));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleUpscaleChange = (newUpscale) => {
+    const nextVal = Math.max(1, Math.floor(Number(newUpscale) || 1));
+    setUpscale(nextVal);
+    if (nextVal > 1 && isLivePreviewActive) {
+      setLivePreview(false);
+      try {
+        localStorage.setItem(LIVE_PREVIEW_STORAGE_KEY, 'false');
+      } catch {
+        // ignore
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (isLivePreviewActive && upscale > 1) {
+      setUpscale(1);
+    }
+  }, [isLivePreviewActive, upscale, setUpscale]);
 
   useEffect(() => {
     setExportName(getDefaultExportName(sourceName));
@@ -158,13 +202,51 @@ export default function ExportPage() {
   };
 
   useEffect(() => {
-    const canvasExists = !!getOutputCanvas();
-    const canGenerate = canvasExists && !isGifSource;
-    if (canGenerate) {
-      handleGeneratePreview();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isGifSource, sourceName, upscale]);
+    if (!livePreview) return;
+    if (isGifSource) return;
+
+    let canceled = false;
+    let idleHandle = null;
+
+    const generateLazy = async () => {
+      if (canceled) return;
+      const outputCanvas = getOutputCanvas();
+      if (!outputCanvas) return;
+
+      try {
+        // Force upscale to 1 for lightweight, non-blocking lazy live preview
+        const dataUrl = await canvasToDataUrl(outputCanvas);
+        if (!canceled) {
+          setExportPreviewUrl(dataUrl);
+          setPreviewJobId(useImageStore.getState().lastRenderJobId);
+          setPreviewUpscale(1);
+        }
+      } catch {
+        // silent fail on discarded frame
+      }
+    };
+
+    const timer = setTimeout(() => {
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        idleHandle = window.requestIdleCallback(
+          () => {
+            generateLazy();
+          },
+          { timeout: 1000 }
+        );
+      } else {
+        generateLazy();
+      }
+    }, 250);
+
+    return () => {
+      canceled = true;
+      clearTimeout(timer);
+      if (idleHandle && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+        window.cancelIdleCallback(idleHandle);
+      }
+    };
+  }, [livePreview, lastRenderJobId, sourceName, isGifSource, setExportPreviewUrl]);
 
   const handleCopy = async () => {
     try {
@@ -294,6 +376,23 @@ export default function ExportPage() {
           </div>
         </div>
 
+        {!isGifSource && (
+          <div className='bv-section'>
+            <div className='bv-controls-row'>
+              <span className='bv-label'>LIVE PREVIEW</span>
+              <OptionGroup
+                options={[
+                  { value: true, label: 'ON' },
+                  { value: false, label: 'OFF' },
+                ]}
+                value={livePreview}
+                onChange={handleToggleLivePreview}
+                ariaLabel="Live preview"
+              />
+            </div>
+          </div>
+        )}
+
         <div className='bv-section'>
           <SliderBundle
             label='UPSCALE'
@@ -301,19 +400,12 @@ export default function ExportPage() {
             max={10}
             step={1}
             defaultValue={1}
-            value={upscale}
+            value={isLivePreviewActive ? 1 : upscale}
             onChange={setUpscale}
+            disabled={isLivePreviewActive}
             pinId="export:upscale"
           />
         </div>
-
-        {isGifSource && !isPreviewValid && (
-          <div className='bv-section' style={{ marginBottom: '14px' }}>
-            <p className='export-gif-warning-text' style={{ color: '#ffffff', fontSize: '12px', letterSpacing: '0.03em', margin: 0 }}>
-              YOU MUST RENDER ALL THE FRAMES BEFORE EXPORT
-            </p>
-          </div>
-        )}
 
         <div className='bv-section'>
           <div className='bv-option-group'>
@@ -321,7 +413,8 @@ export default function ExportPage() {
               type='button'
               className='bv-option-btn export-btn'
               onClick={handleGeneratePreview}
-              disabled={gifExporting || previewGenerating}
+              disabled={isLivePreviewActive || gifExporting || previewGenerating}
+              title={isLivePreviewActive ? 'Disabled while Live Preview is active' : 'Generate preview'}
             >
               <Eye size={13} strokeWidth={1.5} />
               {previewGenerating ? 'GENERATING...' : 'GENERATE'}
@@ -347,6 +440,14 @@ export default function ExportPage() {
           </div>
           {status && <p className='import-export-status'>{status}</p>}
         </div>
+
+        {isGifSource && !isPreviewValid && (
+          <div className='bv-section' style={{ marginBottom: '14px' }}>
+            <p className='export-gif-warning-text' style={{ color: '#ffffff', fontSize: '12px', letterSpacing: '0.03em', margin: 0 }}>
+              YOU MUST RENDER ALL THE FRAMES BEFORE EXPORT
+            </p>
+          </div>
+        )}
 
         {shoots.length > 0 ? (
           <div className='bv-section camera-shoots-section'>

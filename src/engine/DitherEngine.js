@@ -358,6 +358,7 @@ const action = this.debugEnabled ? "disable" : "enable";
           contrast: state.contrast,
           saturation: state.saturation,
           hue: state.hue,
+          excludeAlpha: state.excludeAlpha,
         };
 
         const colorParamsChanged = !this.previousColorParams || (
@@ -371,7 +372,8 @@ const action = this.debugEnabled ? "disable" : "enable";
           prevParams.whites !== nextParams.whites ||
           prevParams.contrast !== nextParams.contrast ||
           prevParams.saturation !== nextParams.saturation ||
-          prevParams.hue !== nextParams.hue
+          prevParams.hue !== nextParams.hue ||
+          prevParams.excludeAlpha !== nextParams.excludeAlpha
         );
 
         this.previousColorParams = nextParams;
@@ -498,7 +500,8 @@ const action = this.debugEnabled ? "disable" : "enable";
       useWatermarkStore.subscribe((state) => {
         this.watermarkEnabled = Boolean(state.enabled);
         this.syncWatermarkPalette();
-        this.syncVisibleLayer();
+        this.markGifFramesPending();
+        this.queueProcessing(false);
       })
     );
 
@@ -776,6 +779,7 @@ const action = this.debugEnabled ? "disable" : "enable";
           customHeight,
           paletteRgb,
           forceCpu: paramsState.forceCpu,
+          excludeAlpha: Boolean(paramsState.excludeAlpha),
           watermarkEnabled: this.watermarkEnabled,
           skipStats: frameIndex >= 0 && (gifState.playing || gifState.exporting || frameIndex !== gifState.currentFrameIndex),
           dither: {
@@ -1014,6 +1018,15 @@ const action = this.debugEnabled ? "disable" : "enable";
         }
 
         const output = new Uint8ClampedArray(outputPixels);
+        let reference = null;
+        if (referencePixels && referencePixels.byteLength > 0) {
+          reference = new Uint8ClampedArray(referencePixels);
+          registerPaletteReference({
+            width: outWidth,
+            height: outHeight,
+            pixels: reference,
+          });
+        }
 
         const textureUpdateStart = performance.now();
         usePerformanceStore.getState().setCurrentPhase('texture');
@@ -1031,6 +1044,7 @@ const action = this.debugEnabled ? "disable" : "enable";
             width: outWidth,
             height: outHeight,
             pixels: new Uint8ClampedArray(output),
+            referencePixels: reference ? new Uint8ClampedArray(reference) : null,
             uniqueColors: uniqueColorCount ?? 0,
           };
           if (thumbnailUrl) {
@@ -1588,6 +1602,20 @@ const action = this.debugEnabled ? "disable" : "enable";
         this.outputMode = useDitherStore.getState().enabled ? 'dither' : 'clean';
         this.outputReady = true;
 
+        if (cachedFrame.referencePixels) {
+          registerPaletteReference({
+            width: cachedFrame.width,
+            height: cachedFrame.height,
+            pixels: cachedFrame.referencePixels,
+          });
+        } else if (frame.pixels) {
+          registerPaletteReference({
+            width: frame.width,
+            height: frame.height,
+            pixels: frame.pixels,
+          });
+        }
+
         registerRenderSnapshot({
           uniqueColors: cachedFrame.uniqueColors ?? 0,
           originalUniqueColors: this.originalUniqueColors,
@@ -1613,6 +1641,14 @@ const action = this.debugEnabled ? "disable" : "enable";
         this.internalFrameSwap = false;
         return;
       }
+    }
+
+    if (frame.pixels) {
+      registerPaletteReference({
+        width: frame.width,
+        height: frame.height,
+        pixels: frame.pixels,
+      });
     }
 
     this.queueProcessing(false);

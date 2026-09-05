@@ -149,6 +149,7 @@ const UI_DEFAULTS = {
   histogramVisible: false,
   pipelineVisible: false,
   forceCpu: false,
+  excludeAlpha: false,
   noiseEnabled: false,
   blurEnabled: false,
 };
@@ -174,6 +175,7 @@ const useParamsStore = create(persist((set) => {
     setHistogramVisible: (visible) => set(() => ({ histogramVisible: Boolean(visible) })),
     setPipelineVisible: (visible) => set(() => ({ pipelineVisible: Boolean(visible) })),
     setForceCpu: (forceCpu) => set(() => ({ forceCpu: Boolean(forceCpu) })),
+    setExcludeAlpha: (excludeAlpha) => set(() => ({ excludeAlpha: Boolean(excludeAlpha) })),
     setNoiseEnabled: (enabled) => set(() => ({ noiseEnabled: Boolean(enabled) })),
     setBlurEnabled: (enabled) => set(() => ({ blurEnabled: Boolean(enabled) })),
     resetKeys: (keys) => set(() => {

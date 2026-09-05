@@ -90,10 +90,10 @@ function getScratchContext(width, height) {
   return scratchCtx;
 }
 
-function countUniqueColors(pixels) {
+function countUniqueColors(pixels, excludeAlpha = false) {
   const unique = new Set();
   for (let index = 0; index < pixels.length; index += 4) {
-    if (pixels[index + 3] === 0) continue;
+    if (!excludeAlpha && pixels[index + 3] === 0) continue;
     unique.add((pixels[index] << 16) | (pixels[index + 1] << 8) | pixels[index + 2]);
   }
   return unique.size;
@@ -171,6 +171,7 @@ self.onmessage = async (event) => {
     noise,
     blur,
     forceCpu,
+    excludeAlpha,
     watermarkEnabled,
     skipStats,
   } = event.data;
@@ -218,6 +219,7 @@ self.onmessage = async (event) => {
     // 1. Draw cropped region of source ImageBitmap to scratch OffscreenCanvas scaled to outW x outH
     const sCtx = getScratchContext(outW, outH);
     sCtx.imageSmoothingEnabled = false;
+    sCtx.clearRect(0, 0, outW, outH);
     sCtx.drawImage(source, cropLeft, cropTop, sw, sh, 0, 0, outW, outH);
     const imgData = sCtx.getImageData(0, 0, outW, outH);
 
@@ -314,7 +316,15 @@ self.onmessage = async (event) => {
     outputPixels = new Uint8ClampedArray(outputBuffer.buffer);
 
     if (dither.enabled) {
-      applyBinaryAlphaThreshold(outputPixels);
+      if (excludeAlpha) {
+        for (let index = 3; index < outputPixels.length; index += 4) {
+          outputPixels[index] = croppedSnapshot[index] >= 128 ? 255 : 0;
+        }
+      } else {
+        for (let index = 3; index < outputPixels.length; index += 4) {
+          outputPixels[index] = 255;
+        }
+      }
     }
     tFinal = performance.now() - tFinalStart;
 
@@ -324,6 +334,7 @@ self.onmessage = async (event) => {
         viewportCanvas.width = outWidth;
         viewportCanvas.height = outHeight;
       }
+      viewportCtx.clearRect(0, 0, outWidth, outHeight);
       viewportCtx.imageSmoothingEnabled = false;
       const imgDataOut = new ImageData(outputPixels, outWidth, outHeight);
       viewportCtx.putImageData(imgDataOut, 0, 0);
@@ -403,7 +414,7 @@ self.onmessage = async (event) => {
         const tHistogram = performance.now() - tHistogramStart;
 
         const tColorsStart = performance.now();
-        const uniqueColorCount = countUniqueColors(outputPixels);
+        const uniqueColorCount = countUniqueColors(outputPixels, excludeAlpha);
         const tColors = performance.now() - tColorsStart;
 
         const statsElapsed = performance.now() - tStatsStart;

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 /* ---------------------------------- */
 /* PAGE IDs                           */
@@ -9,19 +10,40 @@ export const PAGE = {
     PINNED: 'pinned',
     RESIZING: 'resizing',
     ADJUSTMENTS: 'adjustments',
+    PALETTE: 'palette',
     DITHER: 'dither',
     EXPORT: 'export',
-    PALETTE: 'palette',
 };
 
 /* ---------------------------------- */
 /* STORE                              */
 /* ---------------------------------- */
 
-const usePageStore = create((set) => ({
-    currentPage: PAGE.IMPORT,
+const usePageStore = create(
+    persist(
+        (set, get) => ({
+            currentPage: PAGE.IMPORT,
+            exportOpen: false,
 
-    setPage: (page) => set({ currentPage: page }),
-}));
+            setPage: (page) => {
+                if (page === PAGE.EXPORT) {
+                    set((s) => ({ exportOpen: !s.exportOpen }));
+                    return;
+                }
+                set({ currentPage: page });
+            },
+
+            setExportOpen: (open) => set({ exportOpen: Boolean(open) }),
+            toggleExportOpen: () => set((s) => ({ exportOpen: !s.exportOpen })),
+        }),
+        {
+            name: 'dither-dot:page-state',
+            storage: createJSONStorage(() => localStorage),
+            partialize: (state) => ({
+                exportOpen: state.exportOpen,
+            }),
+        }
+    )
+);
 
 export default usePageStore;

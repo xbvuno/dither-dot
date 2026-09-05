@@ -39,6 +39,7 @@
     --input-surface-hover: var(--color-hover);
     --input-surface-focus: rgb(9, 9, 9);
     --color-macro-section-bg: rgba(0, 0, 0, 0.45);
+    --color-slider-selected-bg: color-mix(in srgb, var(--color-text) 7%, var(--color-bg));
     
     /* Floating Panels / Tooltips */
     --color-backdrop: rgba(0, 0, 0, 0.58);
