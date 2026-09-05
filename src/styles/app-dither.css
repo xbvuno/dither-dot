@@ -56,9 +56,7 @@
 
 .dither-method-head {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.45rem;
+  align-items: center;
   padding: 0.55rem 0.75rem;
 }
 
@@ -68,12 +66,4 @@
   letter-spacing: 0.03em;
   color: var(--color-text);
   text-transform: uppercase;
-}
-
-.dither-method-category {
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  font-family: var(--font-mono);
 }
