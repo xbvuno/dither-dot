@@ -443,11 +443,6 @@ export default function ImportRoute() {
           <div className='import-col import-col-media'>
             <div className='import-col-header'>
               <h2 className='import-col-title'>MEDIA</h2>
-              {hasValidMedia && (
-                <span className='import-col-badge'>
-                  {sourceName || (webcamActive ? 'CAMERA' : 'READY')}
-                </span>
-              )}
             </div>
 
             <div className='import-col-content import-col-content--media'>
@@ -615,7 +610,6 @@ export default function ImportRoute() {
           <div className='import-col import-col-templates'>
             <div className='import-col-header'>
               <h2 className='import-col-title'>TEMPLATE</h2>
-              <span className='import-col-badge'>{activeTemplate.name}</span>
             </div>
 
             <div className='import-col-content'>
@@ -665,9 +659,6 @@ export default function ImportRoute() {
           <div className='import-col import-col-preview'>
             <div className='import-col-header'>
               <h2 className='import-col-title'>PREVIEW</h2>
-              <span className='import-col-badge'>
-                {activeTemplate.name} • {sourceName || 'ACTIVE'}
-              </span>
             </div>
 
             <div className='import-preview-container'>
