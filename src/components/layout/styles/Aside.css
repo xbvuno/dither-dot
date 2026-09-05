@@ -78,11 +78,11 @@ aside {
 aside::-webkit-scrollbar {
     width: 8px;
     height: 8px;
-    background-color: var(--color-macro-section-bg);
+    background-color: var(--color-surface);
 }
 
 aside::-webkit-scrollbar-track {
-    background-color: var(--color-macro-section-bg);
+    background-color: var(--color-surface);
 }
 
 aside::-webkit-scrollbar-thumb {
@@ -96,7 +96,7 @@ aside::-webkit-scrollbar-thumb:hover {
 }
 
 aside::-webkit-scrollbar-corner {
-    background: var(--color-macro-section-bg);
+    background: var(--color-surface);
 }
 
 /* Mobile responsive handling for aside */
@@ -112,7 +112,7 @@ aside::-webkit-scrollbar-corner {
         user-select: none !important;
         -webkit-user-select: none !important;
         z-index: 30;
-        background-color: var(--color-macro-section-bg) !important;
+        background-color: var(--color-surface) !important;
         border-top: 1px solid var(--color-border) !important;
         box-sizing: border-box;
         flex-shrink: 0;

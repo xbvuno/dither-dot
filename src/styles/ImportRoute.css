@@ -90,7 +90,7 @@ main.import-3col-layout,
   justify-content: space-between;
   gap: 8px;
   border-bottom: 1px solid var(--color-border);
-  background-color: var(--color-macro-section-bg);
+  background-color: var(--color-surface);
   flex-shrink: 0;
   min-width: 0;
   box-sizing: border-box;
@@ -278,7 +278,7 @@ main.import-3col-layout,
   gap: 8px;
   width: 100%;
   padding: 6px 12px;
-  background: var(--color-macro-section-bg);
+  background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
   box-sizing: border-box;
