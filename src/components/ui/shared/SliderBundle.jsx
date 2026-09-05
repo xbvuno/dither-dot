@@ -259,7 +259,7 @@ export default function SliderBundle({
                                         togglePin(pinId);
                                     }}
                                 >
-                                    <Pin size={12} strokeWidth={isPinned ? 2.2 : 1.7} />
+                                    {isPinned ? <PinOff size={12} strokeWidth={1.8} /> : <Pin size={12} strokeWidth={1.8} />}
                                 </button>
                             )}
                             {showUnpin && (
