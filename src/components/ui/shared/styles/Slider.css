@@ -109,12 +109,23 @@
     letter-spacing: 0.02em;
     user-select: none;
     opacity: 0.7;
+    white-space: nowrap;
+}
+
+.slider-label-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    min-width: 0;
+    z-index: 1;
 }
 
 .bv.slider-bundle .slider-bundle-label {
     margin-right: 0;
     margin-bottom: 0;
     color: var(--color-text);
+    white-space: nowrap;
 }
 
 .bv.slider-bundle .slider-bundle-label.modified::after {
@@ -134,6 +145,7 @@
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    position: relative;
 }
 
 .slider-bundle-controls {
@@ -143,15 +155,21 @@
     gap: 0.35rem;
     margin-left: auto;
     flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+    background-color: var(--color-bg);
 }
 
 .slider-bundle-actions {
     display: inline-flex;
     align-items: center;
     gap: 0.15rem;
+    background-color: var(--color-bg);
+    position: relative;
+    z-index: 2;
 }
 
-/* Step Buttons (- / +) */
+/* Step Buttons (- / + / reset / pin / unpin) */
 .slider-step-btn {
     display: inline-flex;
     align-items: center;
@@ -161,7 +179,7 @@
     padding: 0;
     margin: 0;
     flex-shrink: 0;
-    background: transparent;
+    background-color: var(--color-bg);
     border: none;
     border-radius: 0;
     outline: none;
@@ -170,28 +188,30 @@
     touch-action: manipulation;
     user-select: none;
     transition: background-color 0.12s ease, color 0.12s ease, transform 0.08s ease;
+    position: relative;
+    z-index: 2;
 }
 
 .slider-step-btn:hover:not(:disabled) {
-    background: var(--color-hover);
+    background-color: color-mix(in srgb, var(--color-text) 12%, var(--color-bg));
     color: var(--color-text);
 }
 
 .slider-step-btn:active:not(:disabled) {
-    background: var(--btn-bg-active);
+    background-color: var(--btn-bg-active);
     color: var(--btn-color-active);
     transform: scale(0.9);
 }
 
 .slider-step-btn:focus-visible {
     outline: none;
-    background: var(--color-hover);
+    background-color: color-mix(in srgb, var(--color-text) 12%, var(--color-bg));
     color: var(--color-text);
 }
 
 .slider-step-btn:disabled {
     opacity: 0.2;
-    background: transparent;
+    background-color: var(--color-bg);
     color: var(--color-text-muted);
     cursor: not-allowed;
     transform: none;
@@ -215,7 +235,7 @@
 
 .slider-pin-btn:hover {
     color: var(--color-text);
-    background: var(--color-hover);
+    background-color: color-mix(in srgb, var(--color-text) 12%, var(--color-bg));
 }
 
 .slider-unpin-btn {
@@ -224,7 +244,7 @@
 
 .slider-unpin-btn:hover {
     color: var(--color-text);
-    background: var(--color-hover);
+    background-color: color-mix(in srgb, var(--color-text) 12%, var(--color-bg));
 }
 
 .bv.slider-bundle input {
