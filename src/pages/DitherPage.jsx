@@ -14,7 +14,7 @@ import '../styles/app-dither.css';
 const ALL_DITHER_METHODS = [
   {
     id: 'disabled',
-    name: 'Disabled (No Dither)',
+    name: 'Disabled',
   },
   {
     id: DITHER_METHOD.ONLY_PALETTE,
@@ -142,7 +142,7 @@ export default function DitherPage() {
   };
 
   const getActiveMethodName = () => {
-    if (!enabled) return 'Disabled (No Dither)';
+    if (!enabled) return 'Disabled';
     if (method === DITHER_METHOD.SIERRA) return 'Sierra (Normal)';
     if (method === DITHER_METHOD.TWO_ROW_SIERRA) return 'Sierra (2 Row)';
     if (method === DITHER_METHOD.SIERRA_LITE) return 'Sierra Lite';
