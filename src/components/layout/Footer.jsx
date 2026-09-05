@@ -41,18 +41,11 @@ export default function Footer() {
   const customHeight = useSizeStore(s => s.customSize.customHeight);
   const crop = useSizeStore(s => s.crop) || { top: 0, bottom: 0, left: 0, right: 0 };
 
-  const scaleX = customWidth ? (width / customWidth) : 1;
-  const scaleY = customHeight ? (height / customHeight) : 1;
-  const nativeLeft = Math.round((crop.left || 0) * scaleX);
-  const nativeRight = Math.round((crop.right || 0) * scaleX);
-  const nativeTop = Math.round((crop.top || 0) * scaleY);
-  const nativeBottom = Math.round((crop.bottom || 0) * scaleY);
+  const displayOriginalWidth = Math.max(1, (width || 0) - (crop.left || 0) - (crop.right || 0));
+  const displayOriginalHeight = Math.max(1, (height || 0) - (crop.top || 0) - (crop.bottom || 0));
 
-  const displayOriginalWidth = Math.max(1, (width || 0) - nativeLeft - nativeRight);
-  const displayOriginalHeight = Math.max(1, (height || 0) - nativeTop - nativeBottom);
-
-  const displayWidth = Math.max(1, (customWidth || 0) - (crop.left || 0) - (crop.right || 0));
-  const displayHeight = Math.max(1, (customHeight || 0) - (crop.top || 0) - (crop.bottom || 0));
+  const displayWidth = Math.max(1, customWidth != null ? customWidth : displayOriginalWidth);
+  const displayHeight = Math.max(1, customHeight != null ? customHeight : displayOriginalHeight);
   const isProcessing = useProcessingStore(s => s.isProcessing);
   const processingLabel = useProcessingStore(s => s.processingLabel);
   const previewingOriginal = useViewStore(s => s.previewingOriginal);

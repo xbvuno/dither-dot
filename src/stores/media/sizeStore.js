@@ -161,8 +161,8 @@ const useSizeStore = create(persist((set) => ({
           ratioLocked: true,
           ratio: curW / curH,
           customSize: {
-            customWidth: origW,
-            customHeight: origH,
+            customWidth: curW,
+            customHeight: curH,
           },
         };
       }
@@ -172,8 +172,8 @@ const useSizeStore = create(persist((set) => ({
         ratioLocked: false,
         ratio: curW / curH,
         customSize: {
-          customWidth: origW,
-          customHeight: origH,
+          customWidth: curW,
+          customHeight: curH,
         },
       };
     }),
@@ -235,44 +235,43 @@ const useSizeStore = create(persist((set) => ({
           customHeight: nextCustomHeight,
         },
         ratio: nextRatio,
-        crop: clampCrop(state.crop, nextCustomWidth, nextCustomHeight),
+        crop: clampCrop(state.crop, safeWidth, safeHeight),
       };
     }),
 
   setCustomWidth: (newWidth) =>
     set((state) => {
+      const w = Math.max(1, Math.round(newWidth));
       let nextHeight = state.customSize.customHeight;
       if (state.ratioLocked && state.ratio) {
-        nextHeight = Math.round(newWidth / state.ratio);
+        nextHeight = Math.max(1, Math.round(w / state.ratio));
       }
       return {
         customSize: {
-          customWidth: newWidth,
+          customWidth: w,
           customHeight: nextHeight,
         },
-        crop: clampCrop(state.crop, newWidth, nextHeight),
       };
     }),
 
   setCustomHeight: (newHeight) =>
     set((state) => {
+      const h = Math.max(1, Math.round(newHeight));
       let nextWidth = state.customSize.customWidth;
       if (state.ratioLocked && state.ratio) {
-        nextWidth = Math.round(newHeight * state.ratio);
+        nextWidth = Math.max(1, Math.round(h * state.ratio));
       }
       return {
         customSize: {
           customWidth: nextWidth,
-          customHeight: newHeight,
+          customHeight: h,
         },
-        crop: clampCrop(state.crop, nextWidth, newHeight),
       };
     }),
 
   setCustomSize: (newSize) =>
-    set((state) => ({
+    set(() => ({
       customSize: newSize,
-      crop: clampCrop(state.crop, newSize.customWidth, newSize.customHeight),
     })),
 
   setScale: (scale) =>
@@ -285,134 +284,183 @@ const useSizeStore = create(persist((set) => ({
       const croppedOrigW = Math.max(1, origW - (crop.left || 0) - (crop.right || 0));
       const croppedOrigH = Math.max(1, origH - (crop.top || 0) - (crop.bottom || 0));
 
-      const s = Math.max(0, Math.min(1.0, Number(scale) || 0));
-      const targetCroppedW = s === 0 ? 1 : Math.max(1, Math.round(croppedOrigW * s));
-      const targetCroppedH = s === 0 ? 1 : Math.max(1, Math.round(croppedOrigH * s));
-
-      const newCustomW = targetCroppedW + (crop.left || 0) + (crop.right || 0);
-      const newCustomH = targetCroppedH + (crop.top || 0) + (crop.bottom || 0);
+      const s = Math.max(0.01, Math.min(1.0, Number(scale) || 0));
+      const targetCroppedW = Math.max(1, Math.round(croppedOrigW * s));
+      const targetCroppedH = Math.max(1, Math.round(croppedOrigH * s));
 
       return {
         ratio: targetCroppedW / targetCroppedH,
         customSize: {
-          customWidth: newCustomW,
-          customHeight: newCustomH,
+          customWidth: targetCroppedW,
+          customHeight: targetCroppedH,
         },
       };
     }),
 
   setCropTop: (val) =>
     set((state) => {
-      const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
-      const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+      const w = Number(state.size.width) || 1;
+      const h = Number(state.size.height) || 1;
+      const prevCroppedW = Math.max(1, w - (state.crop?.left || 0) - (state.crop?.right || 0));
 
+      let nextCrop;
       if (state.aspectPreset && state.aspectPreset !== 'free') {
         const result = computeAspectCrop(w, h, state.aspectPreset, state.aspectOrientation, state.aspectOffset, { ...state.crop, top: val });
-        if (result) {
-          const nextCrop = clampCrop(result.crop, w, h);
-          const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
-          const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
-          return {
-            crop: nextCrop,
-            ratio: curW / curH,
-          };
-        }
+        nextCrop = result ? clampCrop(result.crop, w, h) : clampCrop({ ...state.crop, top: val }, w, h);
+      } else {
+        nextCrop = clampCrop({ ...state.crop, top: val }, w, h);
       }
 
-      const nextCrop = clampCrop({ ...state.crop, top: val }, state.customSize.customWidth, state.customSize.customHeight);
-      const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
-      const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+      const newCroppedW = Math.max(1, w - nextCrop.left - nextCrop.right);
+      const newCroppedH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+
+      let nextCustomWidth = newCroppedW;
+      let nextCustomHeight = newCroppedH;
+
+      if (state.ratioLocked) {
+        const curCustomW = Number(state.customSize.customWidth) || prevCroppedW;
+        const scaleFactor = Math.max(0.01, Math.min(1.0, curCustomW / prevCroppedW));
+        nextCustomWidth = Math.max(1, Math.round(newCroppedW * scaleFactor));
+        nextCustomHeight = Math.max(1, Math.round(newCroppedH * scaleFactor));
+      } else {
+        nextCustomWidth = Number(state.customSize.customWidth) || newCroppedW;
+        nextCustomHeight = Number(state.customSize.customHeight) || newCroppedH;
+      }
+
       return {
         crop: nextCrop,
-        ratio: curW / curH,
+        ratio: newCroppedW / newCroppedH,
+        customSize: {
+          customWidth: nextCustomWidth,
+          customHeight: nextCustomHeight,
+        },
       };
     }),
 
   setCropBottom: (val) =>
     set((state) => {
-      const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
-      const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+      const w = Number(state.size.width) || 1;
+      const h = Number(state.size.height) || 1;
+      const prevCroppedW = Math.max(1, w - (state.crop?.left || 0) - (state.crop?.right || 0));
 
+      let nextCrop;
       if (state.aspectPreset && state.aspectPreset !== 'free') {
         const result = computeAspectCrop(w, h, state.aspectPreset, state.aspectOrientation, state.aspectOffset, { ...state.crop, bottom: val });
-        if (result) {
-          const nextCrop = clampCrop(result.crop, w, h);
-          const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
-          const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
-          return {
-            crop: nextCrop,
-            ratio: curW / curH,
-          };
-        }
+        nextCrop = result ? clampCrop(result.crop, w, h) : clampCrop({ ...state.crop, bottom: val }, w, h);
+      } else {
+        nextCrop = clampCrop({ ...state.crop, bottom: val }, w, h);
       }
 
-      const nextCrop = clampCrop({ ...state.crop, bottom: val }, state.customSize.customWidth, state.customSize.customHeight);
-      const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
-      const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+      const newCroppedW = Math.max(1, w - nextCrop.left - nextCrop.right);
+      const newCroppedH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+
+      let nextCustomWidth = newCroppedW;
+      let nextCustomHeight = newCroppedH;
+
+      if (state.ratioLocked) {
+        const curCustomW = Number(state.customSize.customWidth) || prevCroppedW;
+        const scaleFactor = Math.max(0.01, Math.min(1.0, curCustomW / prevCroppedW));
+        nextCustomWidth = Math.max(1, Math.round(newCroppedW * scaleFactor));
+        nextCustomHeight = Math.max(1, Math.round(newCroppedH * scaleFactor));
+      } else {
+        nextCustomWidth = Number(state.customSize.customWidth) || newCroppedW;
+        nextCustomHeight = Number(state.customSize.customHeight) || newCroppedH;
+      }
+
       return {
         crop: nextCrop,
-        ratio: curW / curH,
+        ratio: newCroppedW / newCroppedH,
+        customSize: {
+          customWidth: nextCustomWidth,
+          customHeight: nextCustomHeight,
+        },
       };
     }),
 
   setCropLeft: (val) =>
     set((state) => {
-      const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
-      const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+      const w = Number(state.size.width) || 1;
+      const h = Number(state.size.height) || 1;
+      const prevCroppedW = Math.max(1, w - (state.crop?.left || 0) - (state.crop?.right || 0));
 
+      let nextCrop;
       if (state.aspectPreset && state.aspectPreset !== 'free') {
         const result = computeAspectCrop(w, h, state.aspectPreset, state.aspectOrientation, state.aspectOffset, { ...state.crop, left: val });
-        if (result) {
-          const nextCrop = clampCrop(result.crop, w, h);
-          const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
-          const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
-          return {
-            crop: nextCrop,
-            ratio: curW / curH,
-          };
-        }
+        nextCrop = result ? clampCrop(result.crop, w, h) : clampCrop({ ...state.crop, left: val }, w, h);
+      } else {
+        nextCrop = clampCrop({ ...state.crop, left: val }, w, h);
       }
 
-      const nextCrop = clampCrop({ ...state.crop, left: val }, state.customSize.customWidth, state.customSize.customHeight);
-      const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
-      const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+      const newCroppedW = Math.max(1, w - nextCrop.left - nextCrop.right);
+      const newCroppedH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+
+      let nextCustomWidth = newCroppedW;
+      let nextCustomHeight = newCroppedH;
+
+      if (state.ratioLocked) {
+        const curCustomW = Number(state.customSize.customWidth) || prevCroppedW;
+        const scaleFactor = Math.max(0.01, Math.min(1.0, curCustomW / prevCroppedW));
+        nextCustomWidth = Math.max(1, Math.round(newCroppedW * scaleFactor));
+        nextCustomHeight = Math.max(1, Math.round(newCroppedH * scaleFactor));
+      } else {
+        nextCustomWidth = Number(state.customSize.customWidth) || newCroppedW;
+        nextCustomHeight = Number(state.customSize.customHeight) || newCroppedH;
+      }
+
       return {
         crop: nextCrop,
-        ratio: curW / curH,
+        ratio: newCroppedW / newCroppedH,
+        customSize: {
+          customWidth: nextCustomWidth,
+          customHeight: nextCustomHeight,
+        },
       };
     }),
 
   setCropRight: (val) =>
     set((state) => {
-      const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
-      const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+      const w = Number(state.size.width) || 1;
+      const h = Number(state.size.height) || 1;
+      const prevCroppedW = Math.max(1, w - (state.crop?.left || 0) - (state.crop?.right || 0));
 
+      let nextCrop;
       if (state.aspectPreset && state.aspectPreset !== 'free') {
         const result = computeAspectCrop(w, h, state.aspectPreset, state.aspectOrientation, state.aspectOffset, { ...state.crop, right: val });
-        if (result) {
-          const nextCrop = clampCrop(result.crop, w, h);
-          const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
-          const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
-          return {
-            crop: nextCrop,
-            ratio: curW / curH,
-          };
-        }
+        nextCrop = result ? clampCrop(result.crop, w, h) : clampCrop({ ...state.crop, right: val }, w, h);
+      } else {
+        nextCrop = clampCrop({ ...state.crop, right: val }, w, h);
       }
 
-      const nextCrop = clampCrop({ ...state.crop, right: val }, state.customSize.customWidth, state.customSize.customHeight);
-      const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
-      const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+      const newCroppedW = Math.max(1, w - nextCrop.left - nextCrop.right);
+      const newCroppedH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+
+      let nextCustomWidth = newCroppedW;
+      let nextCustomHeight = newCroppedH;
+
+      if (state.ratioLocked) {
+        const curCustomW = Number(state.customSize.customWidth) || prevCroppedW;
+        const scaleFactor = Math.max(0.01, Math.min(1.0, curCustomW / prevCroppedW));
+        nextCustomWidth = Math.max(1, Math.round(newCroppedW * scaleFactor));
+        nextCustomHeight = Math.max(1, Math.round(newCroppedH * scaleFactor));
+      } else {
+        nextCustomWidth = Number(state.customSize.customWidth) || newCroppedW;
+        nextCustomHeight = Number(state.customSize.customHeight) || newCroppedH;
+      }
+
       return {
         crop: nextCrop,
-        ratio: curW / curH,
+        ratio: newCroppedW / newCroppedH,
+        customSize: {
+          customWidth: nextCustomWidth,
+          customHeight: nextCustomHeight,
+        },
       };
     }),
 
   setAspectPreset: (preset) =>
     set((state) => {
-      const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
-      const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+      const w = Number(state.size.width) || 1;
+      const h = Number(state.size.height) || 1;
       const orientation = state.aspectOrientation || 'landscape';
       const offset = typeof state.aspectOffset === 'number' && !Number.isNaN(state.aspectOffset) ? state.aspectOffset : 0.5;
 
@@ -426,22 +474,40 @@ const useSizeStore = create(persist((set) => ({
       if (!result) return { aspectPreset: preset };
 
       const nextCrop = clampCrop(result.crop, w, h);
-      const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
-      const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+      const prevCroppedW = Math.max(1, w - (state.crop?.left || 0) - (state.crop?.right || 0));
+      const newCroppedW = Math.max(1, w - nextCrop.left - nextCrop.right);
+      const newCroppedH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+
+      let nextCustomWidth = newCroppedW;
+      let nextCustomHeight = newCroppedH;
+
+      if (state.ratioLocked) {
+        const curCustomW = Number(state.customSize.customWidth) || prevCroppedW;
+        const scaleFactor = Math.max(0.01, Math.min(1.0, curCustomW / prevCroppedW));
+        nextCustomWidth = Math.max(1, Math.round(newCroppedW * scaleFactor));
+        nextCustomHeight = Math.max(1, Math.round(newCroppedH * scaleFactor));
+      } else {
+        nextCustomWidth = Number(state.customSize.customWidth) || newCroppedW;
+        nextCustomHeight = Number(state.customSize.customHeight) || newCroppedH;
+      }
 
       return {
         aspectPreset: preset,
         aspectOrientation: orientation,
         aspectOffset: offset,
         crop: nextCrop,
-        ratio: curW / curH,
+        ratio: newCroppedW / newCroppedH,
+        customSize: {
+          customWidth: nextCustomWidth,
+          customHeight: nextCustomHeight,
+        },
       };
     }),
 
   setAspectOrientation: (orientation) =>
     set((state) => {
-      const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
-      const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+      const w = Number(state.size.width) || 1;
+      const h = Number(state.size.height) || 1;
       const safeOrientation = orientation === 'portrait' ? 'portrait' : 'landscape';
       const offset = typeof state.aspectOffset === 'number' && !Number.isNaN(state.aspectOffset) ? state.aspectOffset : 0.5;
       const preset = state.aspectPreset || 'free';
@@ -454,20 +520,38 @@ const useSizeStore = create(persist((set) => ({
       if (!result) return { aspectOrientation: safeOrientation };
 
       const nextCrop = clampCrop(result.crop, w, h);
-      const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
-      const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+      const prevCroppedW = Math.max(1, w - (state.crop?.left || 0) - (state.crop?.right || 0));
+      const newCroppedW = Math.max(1, w - nextCrop.left - nextCrop.right);
+      const newCroppedH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+
+      let nextCustomWidth = newCroppedW;
+      let nextCustomHeight = newCroppedH;
+
+      if (state.ratioLocked) {
+        const curCustomW = Number(state.customSize.customWidth) || prevCroppedW;
+        const scaleFactor = Math.max(0.01, Math.min(1.0, curCustomW / prevCroppedW));
+        nextCustomWidth = Math.max(1, Math.round(newCroppedW * scaleFactor));
+        nextCustomHeight = Math.max(1, Math.round(newCroppedH * scaleFactor));
+      } else {
+        nextCustomWidth = Number(state.customSize.customWidth) || newCroppedW;
+        nextCustomHeight = Number(state.customSize.customHeight) || newCroppedH;
+      }
 
       return {
         aspectOrientation: safeOrientation,
         crop: nextCrop,
-        ratio: curW / curH,
+        ratio: newCroppedW / newCroppedH,
+        customSize: {
+          customWidth: nextCustomWidth,
+          customHeight: nextCustomHeight,
+        },
       };
     }),
 
   setAspectOffset: (offset) =>
     set((state) => {
-      const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
-      const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+      const w = Number(state.size.width) || 1;
+      const h = Number(state.size.height) || 1;
       const safeOffset = Math.max(0, Math.min(1.0, typeof offset === 'number' && !Number.isNaN(offset) ? offset : 0.5));
       const orientation = state.aspectOrientation || 'landscape';
       const preset = state.aspectPreset || 'free';
@@ -480,24 +564,46 @@ const useSizeStore = create(persist((set) => ({
       if (!result) return { aspectOffset: safeOffset };
 
       const nextCrop = clampCrop(result.crop, w, h);
-      const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
-      const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+      const prevCroppedW = Math.max(1, w - (state.crop?.left || 0) - (state.crop?.right || 0));
+      const newCroppedW = Math.max(1, w - nextCrop.left - nextCrop.right);
+      const newCroppedH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+
+      let nextCustomWidth = newCroppedW;
+      let nextCustomHeight = newCroppedH;
+
+      if (state.ratioLocked) {
+        const curCustomW = Number(state.customSize.customWidth) || prevCroppedW;
+        const scaleFactor = Math.max(0.01, Math.min(1.0, curCustomW / prevCroppedW));
+        nextCustomWidth = Math.max(1, Math.round(newCroppedW * scaleFactor));
+        nextCustomHeight = Math.max(1, Math.round(newCroppedH * scaleFactor));
+      } else {
+        nextCustomWidth = Number(state.customSize.customWidth) || newCroppedW;
+        nextCustomHeight = Number(state.customSize.customHeight) || newCroppedH;
+      }
 
       return {
         aspectOffset: safeOffset,
         crop: nextCrop,
-        ratio: curW / curH,
+        ratio: newCroppedW / newCroppedH,
+        customSize: {
+          customWidth: nextCustomWidth,
+          customHeight: nextCustomHeight,
+        },
       };
     }),
 
   resetCrop: () =>
     set((state) => {
-      const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
-      const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+      const w = Number(state.size.width) || 1;
+      const h = Number(state.size.height) || 1;
       return {
         aspectPreset: 'free',
         aspectOffset: 0.5,
         crop: { top: 0, bottom: 0, left: 0, right: 0 },
+        customSize: {
+          customWidth: w,
+          customHeight: h,
+        },
         ratio: w / h,
       };
     }),
@@ -506,17 +612,16 @@ const useSizeStore = create(persist((set) => ({
     set((state) => {
       const width = Number(state.size.width) || null;
       const height = Number(state.size.height) || null;
+      const crop = state.crop || { top: 0, bottom: 0, left: 0, right: 0 };
+      const croppedW = width ? Math.max(1, width - (crop.left || 0) - (crop.right || 0)) : null;
+      const croppedH = height ? Math.max(1, height - (crop.top || 0) - (crop.bottom || 0)) : null;
       return {
         ratioLocked: true,
         customSize: {
-          customWidth: width,
-          customHeight: height,
+          customWidth: croppedW,
+          customHeight: croppedH,
         },
-        ratio: (width && height) ? width / height : state.ratio,
-        crop: { top: 0, bottom: 0, left: 0, right: 0 },
-        aspectPreset: 'free',
-        aspectOrientation: 'landscape',
-        aspectOffset: 0.5,
+        ratio: (croppedW && croppedH) ? croppedW / croppedH : state.ratio,
       };
     }),
 

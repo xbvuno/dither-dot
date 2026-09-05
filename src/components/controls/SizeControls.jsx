@@ -84,8 +84,8 @@ export default function SizeControls() {
   const croppedWidth = Math.max(1, width - (crop.left || 0) - (crop.right || 0));
   const croppedHeight = Math.max(1, height - (crop.top || 0) - (crop.bottom || 0));
 
-  const currentCroppedW = Math.max(1, (customWidth != null ? customWidth : width) - (crop.left || 0) - (crop.right || 0));
-  const currentCroppedH = Math.max(1, (customHeight != null ? customHeight : height) - (crop.top || 0) - (crop.bottom || 0));
+  const currentCroppedW = customWidth != null ? customWidth : croppedWidth;
+  const currentCroppedH = customHeight != null ? customHeight : croppedHeight;
   const currentScale = Number(Math.min(1.0, Math.max(0, currentCroppedW / croppedWidth)).toFixed(3));
 
   const maxSliderWidth = Math.max(1280, croppedWidth * 2);
@@ -326,7 +326,7 @@ export default function SizeControls() {
                 step={1}
                 label="WIDTH"
                 value={currentCroppedW}
-                onChange={(newW) => setCustomWidth(newW + (crop.left || 0) + (crop.right || 0))}
+                onChange={setCustomWidth}
               />
               <SliderBundle
                 min={1}
@@ -335,7 +335,7 @@ export default function SizeControls() {
                 step={1}
                 label="HEIGHT"
                 value={currentCroppedH}
-                onChange={(newH) => setCustomHeight(newH + (crop.top || 0) + (crop.bottom || 0))}
+                onChange={setCustomHeight}
               />
             </>
           )}

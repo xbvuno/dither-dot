@@ -183,17 +183,14 @@ export async function countUniqueColorsFromImageSource(sourceImg) {
 
 export function getTargetDisplaySize() {
   const { size, customSize, crop } = useSizeStore.getState();
-  const width = Math.max(1, Math.floor(Number(customSize.customWidth) || Number(size.width) || 1));
-  const height = Math.max(1, Math.floor(Number(customSize.customHeight) || Number(size.height) || 1));
-
-  const left = crop?.left || 0;
-  const right = crop?.right || 0;
-  const top = crop?.top || 0;
-  const bottom = crop?.bottom || 0;
+  const origW = Number(size.width) || 1;
+  const origH = Number(size.height) || 1;
+  const croppedW = Math.max(1, origW - (crop?.left || 0) - (crop?.right || 0));
+  const croppedH = Math.max(1, origH - (crop?.top || 0) - (crop?.bottom || 0));
 
   return {
-    width: Math.max(1, width - left - right),
-    height: Math.max(1, height - top - bottom),
+    width: Math.max(1, Math.floor(Number(customSize.customWidth) || croppedW)),
+    height: Math.max(1, Math.floor(Number(customSize.customHeight) || croppedH)),
   };
 }
 

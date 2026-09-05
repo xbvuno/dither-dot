@@ -202,24 +202,27 @@ self.onmessage = async (event) => {
     tWasmInit = performance.now() - tWasmInitStart;
 
     const tSetupStart = performance.now();
-    // 1. Draw source ImageBitmap to scratch OffscreenCanvas to retrieve pixel data
-    const sCtx = getScratchContext(customWidth, customHeight);
+    const srcW = source.width;
+    const srcH = source.height;
+    const cropLeft = Math.max(0, Math.min(srcW - 1, Number(crop?.left) || 0));
+    const cropTop = Math.max(0, Math.min(srcH - 1, Number(crop?.top) || 0));
+    const cropRight = Math.max(0, Math.min(srcW - cropLeft - 1, Number(crop?.right) || 0));
+    const cropBottom = Math.max(0, Math.min(srcH - cropTop - 1, Number(crop?.bottom) || 0));
+
+    const sw = Math.max(1, srcW - cropLeft - cropRight);
+    const sh = Math.max(1, srcH - cropTop - cropBottom);
+
+    const outW = Math.max(1, Math.round(Number(customWidth) || sw));
+    const outH = Math.max(1, Math.round(Number(customHeight) || sh));
+
+    // 1. Draw cropped region of source ImageBitmap to scratch OffscreenCanvas scaled to outW x outH
+    const sCtx = getScratchContext(outW, outH);
     sCtx.imageSmoothingEnabled = false;
-    sCtx.drawImage(source, 0, 0, customWidth, customHeight);
-    const imgData = sCtx.getImageData(0, 0, customWidth, customHeight);
+    sCtx.drawImage(source, cropLeft, cropTop, sw, sh, 0, 0, outW, outH);
+    const imgData = sCtx.getImageData(0, 0, outW, outH);
 
     image = new WasmImage(imgData);
-
-    // Apply crop if settings are provided
-    if (crop && (crop.top > 0 || crop.bottom > 0 || crop.left > 0 || crop.right > 0)) {
-      croppedImage = Transform.Crop(image, {
-        top: crop.top,
-        left: crop.left,
-        right: crop.right,
-        bottom: crop.bottom
-      });
-    }
-    const activeImage = croppedImage || image;
+    const activeImage = image;
     tSetup = performance.now() - tSetupStart;
 
     if (!filtersCache) {
