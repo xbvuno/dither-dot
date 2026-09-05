@@ -86,32 +86,6 @@ export default function PinnedPage() {
   const maxSliderWidth = Math.max(1280, croppedWidth * 2);
   const maxSliderHeight = Math.max(720, croppedHeight * 2);
 
-  if (pinnedIds.length === 0) {
-    return (
-      <div>
-        <MacroSection title="PINNED">
-          <div className="bv-section">
-            <p className="bv-label" style={{ textAlign: 'center', opacity: 0.6, margin: '2rem 0 0.5rem' }}>
-              NO PINNED SLIDERS
-            </p>
-            <p
-              style={{
-                fontSize: '0.8rem',
-                color: 'var(--color-text-muted)',
-                textAlign: 'center',
-                margin: '0 auto 1.5rem',
-                maxWidth: '220px',
-                lineHeight: 1.4,
-              }}
-            >
-              Select any slider and click the pin button to add it here.
-            </p>
-          </div>
-        </MacroSection>
-      </div>
-    );
-  }
-
   // Check section memberships
   const pinnedColors = Object.entries(COLOR_CONTROLS).filter(([key]) =>
     pinnedIds.includes(`adjustments:colors:${key}`)
@@ -147,6 +121,37 @@ export default function PinnedPage() {
 
   return (
     <div>
+      <MacroSection title="PINNED">
+        <div className="bv-section">
+          {pinnedIds.length === 0 ? (
+            <>
+              <p className="bv-label" style={{ textAlign: 'center', opacity: 0.6, margin: '1.5rem 0 0.5rem' }}>
+                NO PINNED SLIDERS
+              </p>
+              <p
+                style={{
+                  fontSize: '0.8rem',
+                  color: 'var(--color-text-muted)',
+                  textAlign: 'center',
+                  margin: '0 auto 1.5rem',
+                  maxWidth: '220px',
+                  lineHeight: 1.4,
+                }}
+              >
+                Select any slider and click the pin button to add it here.
+              </p>
+            </>
+          ) : (
+            <div className="bv-controls-row">
+              <span className="bv-label">ACTIVE CONTROLS</span>
+              <span style={{ fontSize: '0.88rem', letterSpacing: '0.04em' }}>
+                {pinnedIds.length} {pinnedIds.length === 1 ? 'SLIDER' : 'SLIDERS'}
+              </span>
+            </div>
+          )}
+        </div>
+      </MacroSection>
+
       {/* COLORS */}
       {pinnedColors.length > 0 && (
         <MacroSection title="COLORS">
