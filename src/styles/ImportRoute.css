@@ -204,6 +204,8 @@ main.import-3col-layout,
   flex-direction: column;
   flex: 0 0 74px;
   width: 74px;
+  max-width: 74px;
+  min-width: 0;
   border: 1px solid var(--color-border-subtle);
   background: var(--btn-bg-default);
   cursor: pointer;
@@ -212,6 +214,7 @@ main.import-3col-layout,
   text-align: left;
   font-family: var(--font-mono);
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .import-route-preset-item:hover {
@@ -224,6 +227,22 @@ main.import-3col-layout,
   background: var(--color-bg-subtle-hover);
 }
 
+.import-route-history-btn {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  overflow: hidden;
+}
+
 .import-route-preset-thumb {
   width: 100%;
   height: 50px;
@@ -234,6 +253,10 @@ main.import-3col-layout,
 }
 
 .import-route-preset-label {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   font-size: 9px;
   margin-top: 3px;
   white-space: nowrap;
@@ -241,6 +264,7 @@ main.import-3col-layout,
   text-overflow: ellipsis;
   color: var(--color-text);
   line-height: 1.2;
+  box-sizing: border-box;
 }
 
 .import-route-history-item {

@@ -572,12 +572,16 @@ export default function ImportRoute() {
                           key={h.id}
                           className={`import-route-preset-item import-route-history-item${isSelected ? ' selected' : ''}`}
                         >
-                          <div onClick={() => handleSelectHistory(h)} style={{ cursor: 'pointer', width: '100%' }}>
+                          <button
+                            type='button'
+                            className='import-route-history-btn'
+                            onClick={() => handleSelectHistory(h)}
+                          >
                             <img src={h.src} alt={h.name} className='import-route-preset-thumb' />
                             <span className='import-route-preset-label'>
                               {h.kind === 'gif' ? '🎬 ' : ''}{h.name}
                             </span>
-                          </div>
+                          </button>
                           <button
                             type='button'
                             className='import-history-delete-btn'
