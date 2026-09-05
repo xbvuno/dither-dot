@@ -22,7 +22,7 @@ export default function GalleryThumbItem({ item, isActive, onSelect, onDelete, s
         <span className='gallery-thumb-label'>{item.name}</span>
         {isAnimated && (
           <span className='gallery-thumb-anim-badge' aria-hidden='true'>
-            <Film size={16} strokeWidth={2} />
+            <Film size={14} strokeWidth={1.5} />
           </span>
         )}
       </button>
@@ -34,7 +34,7 @@ export default function GalleryThumbItem({ item, isActive, onSelect, onDelete, s
           title={`Delete ${item.name}`}
           aria-label={`Delete ${item.name}`}
         >
-          <Trash2 size={12} strokeWidth={2} />
+          <Trash2 size={14} strokeWidth={1.5} />
         </button>
       )}
     </div>

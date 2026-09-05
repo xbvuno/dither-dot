@@ -759,7 +759,7 @@ export default function ImportStudio() {
                         </button>
                         {h.kind === 'gif' && (
                           <div className='import-preset-gif-badge' title='Animated GIF' aria-label='Animated GIF'>
-                            <Film size={10} strokeWidth={1.75} />
+                            <Film size={14} strokeWidth={1.5} />
                           </div>
                         )}
                         <button
@@ -775,7 +775,7 @@ export default function ImportStudio() {
                           title={`Remove ${h.name}`}
                           aria-label={`Remove ${h.name}`}
                         >
-                          <Trash2 size={10} />
+                          <Trash2 size={14} strokeWidth={1.5} />
                         </button>
                       </div>
                     );
@@ -834,7 +834,7 @@ export default function ImportStudio() {
                       <img src={p.src} alt={p.name} className='import-route-preset-thumb' />
                       {p.isGif && (
                         <div className='import-preset-gif-badge' title='Animated GIF' aria-label='Animated GIF'>
-                          <Film size={10} strokeWidth={1.75} />
+                          <Film size={14} strokeWidth={1.5} />
                         </div>
                       )}
                       <span className='import-route-preset-label'>{p.name}</span>
