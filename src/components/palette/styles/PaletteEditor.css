@@ -302,8 +302,8 @@
 
 .pe-slider-thumb {
   position: absolute;
-  top: -2px;
-  bottom: -2px;
+  top: -4px;
+  bottom: -4px;
   width: 3px;
   background-color: var(--color-text);
   transform: translateX(-50%);
