@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 import usePaletteStore, { EXTRACT_METHOD } from '../stores/data/paletteStore';
 import SliderBundle from '../components/ui/shared/SliderBundle';
 import MacroSection from '../components/ui/MacroSection';
@@ -227,8 +227,14 @@ function ColorsSection({ selectedIds, onToggleSelect, onSelectAll, onDeselectAll
       <div className="palette-row-inline">
         <p className="bv-label">COLORS</p>
         {isCustom && (
-          <button type="button" className="bv-option-btn" onClick={addColor}>
-            ADD COLOR
+          <button
+            type="button"
+            className="palette-add-color-btn"
+            onClick={addColor}
+            aria-label="Add Color"
+            title="Add Color"
+          >
+            <Plus size={14} strokeWidth={2} />
           </button>
         )}
       </div>
@@ -369,15 +375,13 @@ function PaletteLibrarySection({ onOpenImport, onOpenExport }) {
                   title={entry.name}
                 >
                   <div className="palette-library-head">
-                    <span>{entry.name}</span>
+                    <span className="palette-library-name">{entry.name}</span>
+                    <span className="palette-library-count">({entry.colors.length} {entry.colors.length === 1 ? 'color' : 'colors'})</span>
                   </div>
-                  <div className="palette-library-swatches-row">
-                    <span className="palette-library-count">{entry.colors.length}c</span>
-                    <div className="palette-library-swatches">
-                      {entry.colors.slice(0, 20).map((hex, index) => (
-                        <span key={`${entry.id}-${index}`} style={{ backgroundColor: hex }} />
-                      ))}
-                    </div>
+                  <div className="palette-library-swatches">
+                    {entry.colors.map((hex, index) => (
+                      <span key={`${entry.id}-${index}`} style={{ backgroundColor: hex }} />
+                    ))}
                   </div>
                 </button>
                 <button
@@ -405,15 +409,13 @@ function PaletteLibrarySection({ onOpenImport, onOpenExport }) {
                 title={entry.name}
               >
                 <div className="palette-library-head">
-                  <span>{entry.name}</span>
+                  <span className="palette-library-name">{entry.name}</span>
+                  <span className="palette-library-count">({entry.colors.length} {entry.colors.length === 1 ? 'color' : 'colors'})</span>
                 </div>
-                <div className="palette-library-swatches-row">
-                  <span className="palette-library-count">{entry.colors.length}c</span>
-                  <div className="palette-library-swatches">
-                    {entry.colors.slice(0, 20).map((hex, index) => (
-                      <span key={`${entry.id}-${index}`} style={{ backgroundColor: hex }} />
-                    ))}
-                  </div>
+                <div className="palette-library-swatches">
+                  {entry.colors.map((hex, index) => (
+                    <span key={`${entry.id}-${index}`} style={{ backgroundColor: hex }} />
+                  ))}
                 </div>
               </button>
             </div>
