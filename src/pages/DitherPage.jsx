@@ -207,7 +207,7 @@ export default function DitherPage() {
           <div className="bv-section">
             {showSierraVariants && (
               <div className="bv-controls-row">
-                <span className="bv-label">SIERRA TYPE</span>
+                <span className="bv-label">TYPE</span>
                 <div className="bv-option-group">
                   {SIERRA_VARIANTS.map((variant) => (
                     <button
