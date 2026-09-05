@@ -204,7 +204,7 @@
   background: var(--color-bg-subtle);
   color: var(--color-text);
   text-align: left;
-  padding: 0.65rem 0.75rem 1rem 0.75rem;
+  padding: 0.65rem 0.75rem 1.45rem 0.75rem;
   cursor: pointer;
   overflow: hidden;
   display: flex;
@@ -275,7 +275,7 @@
   left: 0;
   right: 0;
   width: 100%;
-  height: 8px;
+  height: 16px;
   display: flex;
   flex-direction: row;
 }
