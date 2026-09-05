@@ -2,7 +2,6 @@
 .bv-option-btn,
 .header-modal-close,
 .fullscreen-blocker-btn,
-.footer-preview-btn,
 .gif-timeline-btn {
     border: 1px solid var(--btn-border-default);
     background: var(--btn-bg-default);
@@ -15,7 +14,6 @@
 .bv-option-btn:hover,
 .header-modal-close:hover,
 .fullscreen-blocker-btn:hover,
-.footer-preview-btn:hover,
 .gif-timeline-btn:hover {
     background: var(--btn-bg-hover);
     border-color: var(--btn-border-hover);
@@ -25,7 +23,6 @@
 .bv-option-btn.active,
 .bv-option-btn[data-selected='true'],
 .header-modal-close[aria-pressed='true'],
-.footer-preview-btn--active,
 .gif-timeline-btn.active {
     background: var(--btn-bg-active);
     color: var(--btn-color-active);
@@ -36,7 +33,6 @@
 .bv-option-btn:disabled,
 .header-modal-close:disabled,
 .fullscreen-blocker-btn:disabled,
-.footer-preview-btn:disabled,
 .gif-timeline-btn:disabled {
     opacity: 0.45;
     cursor: not-allowed;
@@ -107,7 +103,7 @@ html {
 }
 
 footer {
-    padding: 0.6rem;
+    padding: 0.6rem 1.2rem;
 }
 
 .app-header {

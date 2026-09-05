@@ -30,6 +30,7 @@ function NoiseSlider({ controlKey, config, disabled }) {
       onChange={setter}
       tooltip={config.description}
       disabled={disabled}
+      pinId={`adjustments:noise:${controlKey}`}
     />
   );
 }

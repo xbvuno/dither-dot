@@ -21,6 +21,7 @@ function ParamSlider({ controlKey, config }) {
             value={value}
             onChange={setter}
             tooltip={config.description}
+            pinId={`adjustments:colors:${controlKey}`}
         />
     );
 }

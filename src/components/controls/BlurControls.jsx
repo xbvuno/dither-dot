@@ -31,6 +31,7 @@ function ParamSlider({ controlKey, config, disabled }) {
             onChange={setter}
             tooltip={config.description}
             disabled={disabled}
+            pinId={`adjustments:blur:${controlKey}`}
         />
     );
 }

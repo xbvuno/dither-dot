@@ -200,6 +200,7 @@ export default function DitherPage() {
                 value={amount}
                 onChange={setAmount}
                 tooltip={DITHER_CONTROLS.amount.description}
+                pinId="dither:amount"
               />
             )}
             {showMatrixScale && (
@@ -212,6 +213,7 @@ export default function DitherPage() {
                 value={matrixScale}
                 onChange={setMatrixScale}
                 tooltip={DITHER_CONTROLS.matrixScale.description}
+                pinId="dither:matrixScale"
               />
             )}
             {showSeed && (
@@ -224,6 +226,7 @@ export default function DitherPage() {
                 value={seed}
                 onChange={setSeed}
                 tooltip={DITHER_CONTROLS.seed.description}
+                pinId="dither:seed"
               />
             )}
           </div>

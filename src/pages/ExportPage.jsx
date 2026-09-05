@@ -84,7 +84,10 @@ export default function ExportPage() {
   const clearShoots = useWebcamStore((s) => s.clearShoots);
 
   const [exportName, setExportName] = useState(getDefaultExportName(sourceName));
-  const [upscale, setUpscale] = useState(1);
+  const exportUpscale = useImageStore(s => s.exportUpscale);
+  const setExportUpscale = useImageStore(s => s.setExportUpscale);
+  const upscale = exportUpscale;
+  const setUpscale = setExportUpscale;
   const [status, setStatus] = useState(null);
   const [gifExporting, setGifExporting] = useState(false);
   const [previewGenerating, setPreviewGenerating] = useState(false);
@@ -300,6 +303,7 @@ export default function ExportPage() {
             defaultValue={1}
             value={upscale}
             onChange={setUpscale}
+            pinId="export:upscale"
           />
         </div>
 

@@ -1,6 +1,8 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-import { Minus, Plus, RotateCcw } from "lucide-react";
+import { useState, useRef, useCallback, useEffect, useId } from "react";
+import { Minus, Plus, RotateCcw, Pin, PinOff } from "lucide-react";
 import { triggerHapticPulse } from "../../../utils/haptics";
+import usePinnedStore from "../../../stores/ui/pinnedStore";
+import useViewStore from "../../../stores/ui/viewStore";
 import Slider from "./Slider";
 import AutoResizingInput from "./AutoResizingInput";
 
@@ -23,9 +25,23 @@ export default function SliderBundle({
     name,
     id,
     disabled = false,
+    pinId,
+    isPinnedPage = false,
 }) {
     const value = _value ?? (defaultValue !== undefined ? defaultValue : min);
-    const [isSelected, setIsSelected] = useState(false);
+    const autoId = useId();
+    const sliderId = id || (pinId ? (isPinnedPage ? `${pinId}:pinned` : pinId) : autoId);
+
+    const activeSliderId = useViewStore((s) => s.activeSliderId);
+    const setActiveSliderId = useViewStore((s) => s.setActiveSliderId);
+    const clearActiveSlider = useViewStore((s) => s.clearActiveSlider);
+
+    const isSelected = Boolean(activeSliderId === sliderId);
+    const bundleRef = useRef(null);
+
+    const isPinned = usePinnedStore((s) => Boolean(pinId && s.pinnedIds?.includes(pinId)));
+    const togglePin = usePinnedStore((s) => s.togglePin);
+    const unpin = usePinnedStore((s) => s.unpin);
 
     const numMin = Number(min);
     const numMax = Number(max);
@@ -147,25 +163,57 @@ export default function SliderBundle({
     }, [clearRepeat]);
 
 
-    const handleFocus = () => {
-        if (disabled) return;
-        setIsSelected(true);
-    };
+    const handleSelect = useCallback(() => {
+        if (disabled && !isPinnedPage) return;
+        setActiveSliderId(sliderId);
+    }, [disabled, isPinnedPage, setActiveSliderId, sliderId]);
 
-    const handleBlur = (e) => {
-        if (!e.currentTarget.contains(e.relatedTarget)) {
-            setIsSelected(false);
+    const handleDeselect = useCallback(() => {
+        if (activeSliderId === sliderId) {
+            clearActiveSlider();
         }
-    };
+    }, [activeSliderId, clearActiveSlider, sliderId]);
+
+    useEffect(() => {
+        if (!isSelected) return;
+
+        const handleGlobalPointerDown = (e) => {
+            if (bundleRef.current && !bundleRef.current.contains(e.target)) {
+                if (!e.target.closest?.('.slider-bundle')) {
+                    clearActiveSlider();
+                }
+            }
+        };
+
+        const handleGlobalKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                clearActiveSlider();
+            }
+        };
+
+        window.addEventListener('pointerdown', handleGlobalPointerDown);
+        window.addEventListener('keydown', handleGlobalKeyDown);
+        return () => {
+            window.removeEventListener('pointerdown', handleGlobalPointerDown);
+            window.removeEventListener('keydown', handleGlobalKeyDown);
+        };
+    }, [isSelected, clearActiveSlider]);
 
     const effectiveDefault = defaultValue !== undefined ? defaultValue : (numMin <= 0 && numMax >= 0 ? 0 : numMin);
     const isModified = !Number.isNaN(numValue) && Math.abs(numValue - Number(effectiveDefault)) > 1e-5;
 
+    const showPin = Boolean(pinId && !isPinnedPage && (isSelected || isPinned));
+    const showUnpin = Boolean(pinId && isPinnedPage && isSelected);
+    const showStepControls = Boolean(isSelected && !disabled);
+    const showReset = Boolean(isModified && !disabled);
+    const showActions = Boolean(showStepControls || showReset || showPin || showUnpin);
+
     return (
         <div
-            className={`bv slider-bundle${disabled ? ' disabled' : ''}`}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
+            ref={bundleRef}
+            className={`bv slider-bundle${disabled ? ' disabled' : ''}${isSelected ? ' is-selected' : ''}`}
+            onFocus={handleSelect}
+            onClick={handleSelect}
         >
             <div className="flex-h">
                 <span className="slider-label-wrap" title={tooltip || undefined}>
@@ -176,9 +224,27 @@ export default function SliderBundle({
                 </span>
 
                 <div className="slider-bundle-controls">
-                    {(isSelected || isModified) && !disabled && (
+                    {showActions && (
                         <div className="slider-bundle-actions">
-                            {isSelected && (
+                            {showReset && (
+                                <button
+                                    type="button"
+                                    className="slider-step-btn slider-reset-btn"
+                                    aria-label={`Reset ${label}`}
+                                    title={`Reset ${label}`}
+                                    onPointerDown={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                    }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setInternalValue(effectiveDefault);
+                                    }}
+                                >
+                                    <RotateCcw size={12} strokeWidth={1.5} />
+                                </button>
+                            )}
+                            {showStepControls && (
                                 <>
                                     <button
                                         type="button"
@@ -208,18 +274,40 @@ export default function SliderBundle({
                                     </button>
                                 </>
                             )}
-                            {isModified && (
+                            {showPin && (
                                 <button
                                     type="button"
-                                    className="slider-step-btn slider-reset-btn"
-                                    aria-label={`Reset ${label}`}
-                                    title={`Reset ${label}`}
+                                    className={`slider-step-btn slider-pin-btn${isPinned ? ' is-pinned' : ''}`}
+                                    aria-label={isPinned ? `Unpin ${label}` : `Pin ${label}`}
+                                    title={isPinned ? `UNPIN ${label}` : `PIN ${label}`}
+                                    onPointerDown={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                    }}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        setInternalValue(effectiveDefault);
+                                        togglePin(pinId);
                                     }}
                                 >
-                                    <RotateCcw size={12} strokeWidth={1.5} />
+                                    {isPinned ? <PinOff size={12} strokeWidth={1.8} /> : <Pin size={12} strokeWidth={1.8} />}
+                                </button>
+                            )}
+                            {showUnpin && (
+                                <button
+                                    type="button"
+                                    className="slider-step-btn slider-unpin-btn"
+                                    aria-label={`Unpin ${label}`}
+                                    title={`UNPIN ${label}`}
+                                    onPointerDown={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                    }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        unpin(pinId);
+                                    }}
+                                >
+                                    <PinOff size={12} strokeWidth={1.8} />
                                 </button>
                             )}
                         </div>
@@ -247,8 +335,8 @@ export default function SliderBundle({
                 step={step}
                 onChange={onChange}
                 isSelected={isSelected && !disabled}
-                onSelect={() => !disabled && setIsSelected(true)}
-                onDeselect={() => setIsSelected(false)}
+                onSelect={handleSelect}
+                onDeselect={handleDeselect}
                 disabled={disabled}
             />
         </div>
