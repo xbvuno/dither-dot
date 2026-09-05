@@ -86,7 +86,7 @@
 }
 
 .bv.slider.selected .track {
-    background-color: var(--color-bg-subtle-hover);
+    background-color: transparent;
 }
 
 .bv.slider .thumb.default {
@@ -97,7 +97,35 @@
 
 .bv.slider-bundle {
     position: relative;
-    margin-bottom: 1rem;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.35rem;
+    padding-bottom: 0.45rem;
+    margin-bottom: 0.45rem;
+    transition: background-color 0.15s ease;
+}
+
+.bv.slider-bundle:last-child {
+    margin-bottom: 0;
+}
+
+.bv.slider-bundle.is-selected {
+    background-color: var(--color-bg-subtle-hover);
+}
+
+.bv.slider-bundle.is-selected .slider-bundle-controls,
+.bv.slider-bundle.is-selected .slider-bundle-actions,
+.bv.slider-bundle.is-selected .slider-step-btn {
+    background-color: var(--color-bg-subtle-hover);
+}
+
+.bv.slider-bundle.is-selected .slider-step-btn:hover:not(:disabled),
+.bv.slider-bundle.is-selected .slider-pin-btn:hover,
+.bv.slider-bundle.is-selected .slider-unpin-btn:hover {
+    background-color: color-mix(in srgb, var(--color-text) 14%, var(--color-bg-subtle-hover));
+    color: var(--color-text);
 }
 
 .slider-range-bounds {
