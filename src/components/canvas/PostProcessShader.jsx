@@ -31,8 +31,18 @@ export default function PostProcessShader() {
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.imageSmoothingEnabled = false;
-        const imgData = new ImageData(new Uint8ClampedArray(pixels), width, height);
-        ctx.putImageData(imgData, 0, 0);
+        try {
+          const expectedLength = width * height * 4;
+          if (pixels.length >= expectedLength) {
+            const clamped = pixels instanceof Uint8ClampedArray && pixels.length === expectedLength
+              ? pixels
+              : new Uint8ClampedArray(pixels.buffer || pixels, pixels.byteOffset || 0, expectedLength);
+            const imgData = new ImageData(clamped, width, height);
+            ctx.putImageData(imgData, 0, 0);
+          }
+        } catch {
+          // fallback if ImageData constructor fails
+        }
       }
     };
 
