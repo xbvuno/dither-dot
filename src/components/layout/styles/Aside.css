@@ -60,17 +60,17 @@ aside {
 }
 
 .resize-handle--left {
-    left: -12px;
+    left: 0;
 }
 
 .resize-handle--left::before {
     content: '';
     position: absolute;
     top: 50%;
-    right: 6px;
+    left: 6px;
     width: 1px;
     height: 2.8rem;
-    transform: translate(50%, -50%);
+    transform: translate(-50%, -50%);
     background: color-mix(in srgb, var(--color-text) 34%, transparent);
 }
 
