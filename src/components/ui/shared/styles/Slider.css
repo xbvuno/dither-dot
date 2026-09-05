@@ -11,7 +11,8 @@
     height: 1.5rem;
     width: 2px;
     background-color: var(--color-text);
-    top: -0.25rem;
+    top: 50%;
+    transform: translateY(-50%);
     left: 0;
 }
 
@@ -21,15 +22,29 @@
 
 .bv.slider .track {
     position: relative;
-    border: 1px solid var(--color-text);
+    border-left: 1px solid var(--color-text);
+    border-right: 1px solid var(--color-text);
+    border-top: none;
+    border-bottom: none;
     width: 100%;
     height: 1rem;
-    border-top: none;
     cursor: grab;
     margin-top: 0;
     overflow: visible;
     touch-action: pan-y;
     user-select: none;
+}
+
+.bv.slider .track::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--color-text);
+    transform: translateY(-50%);
+    pointer-events: none;
 }
 
 .bv.slider.selected:focus {
@@ -210,7 +225,8 @@
     .bv.slider .thumb {
         height: 1.8rem;
         width: 3px;
-        top: -0.25rem;
+        top: 50%;
+        transform: translateY(-50%);
     }
 }
 
