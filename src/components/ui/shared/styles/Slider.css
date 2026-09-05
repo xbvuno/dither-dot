@@ -107,6 +107,7 @@
     flex-shrink: 0;
     background: transparent;
     border: none;
+    border-radius: 0;
     outline: none;
     color: var(--color-text-subtle);
     cursor: pointer;

@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Minus, Plus } from "lucide-react";
+import { Minus, Plus, RotateCcw } from "lucide-react";
 import { triggerHapticPulse } from "../../../utils/haptics";
 import Slider from "./Slider";
 import AutoResizingInput from "./AutoResizingInput";
@@ -170,34 +170,52 @@ export default function SliderBundle({
                 </span>
 
                 <div className="slider-bundle-controls">
-                    {isSelected && !disabled && (
+                    {(isSelected || isModified) && !disabled && (
                         <div className="slider-bundle-actions">
-                            <button
-                                type="button"
-                                className="slider-step-btn slider-step-btn--dec"
-                                aria-label={`Decrease ${label}`}
-                                disabled={isAtMin}
-                                tabIndex={isAtMin ? -1 : 0}
-                                onPointerDown={(e) => handleStepPointerDown(e, "dec")}
-                                onPointerUp={handleStepPointerUp}
-                                onPointerCancel={handleStepPointerUp}
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <Minus size={12} strokeWidth={2.5} />
-                            </button>
-                            <button
-                                type="button"
-                                className="slider-step-btn slider-step-btn--inc"
-                                aria-label={`Increase ${label}`}
-                                disabled={isAtMax}
-                                tabIndex={isAtMax ? -1 : 0}
-                                onPointerDown={(e) => handleStepPointerDown(e, "inc")}
-                                onPointerUp={handleStepPointerUp}
-                                onPointerCancel={handleStepPointerUp}
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <Plus size={12} strokeWidth={2.5} />
-                            </button>
+                            {isSelected && (
+                                <>
+                                    <button
+                                        type="button"
+                                        className="slider-step-btn slider-step-btn--dec"
+                                        aria-label={`Decrease ${label}`}
+                                        disabled={isAtMin}
+                                        tabIndex={isAtMin ? -1 : 0}
+                                        onPointerDown={(e) => handleStepPointerDown(e, "dec")}
+                                        onPointerUp={handleStepPointerUp}
+                                        onPointerCancel={handleStepPointerUp}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <Minus size={12} strokeWidth={2.5} />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="slider-step-btn slider-step-btn--inc"
+                                        aria-label={`Increase ${label}`}
+                                        disabled={isAtMax}
+                                        tabIndex={isAtMax ? -1 : 0}
+                                        onPointerDown={(e) => handleStepPointerDown(e, "inc")}
+                                        onPointerUp={handleStepPointerUp}
+                                        onPointerCancel={handleStepPointerUp}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <Plus size={12} strokeWidth={2.5} />
+                                    </button>
+                                </>
+                            )}
+                            {isModified && (
+                                <button
+                                    type="button"
+                                    className="slider-step-btn slider-reset-btn"
+                                    aria-label={`Reset ${label}`}
+                                    title={`Reset ${label}`}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setInternalValue(defaultValue);
+                                    }}
+                                >
+                                    <RotateCcw size={12} strokeWidth={1.5} />
+                                </button>
+                            )}
                         </div>
                     )}
                     <AutoResizingInput
