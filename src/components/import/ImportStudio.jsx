@@ -465,16 +465,37 @@ export default function ImportStudio() {
       if (!clipboardData) return;
 
       const item = Array.from(clipboardData.items || []).find((entry) => entry.type.startsWith('image/'));
-      if (!item) return;
+      if (item) {
+        event.preventDefault();
+        const blob = item.getAsFile();
+        if (blob) {
+          await importFromFile(blob);
+          return;
+        }
+      }
 
-      event.preventDefault();
-      const blob = item.getAsFile();
-      if (!blob) return;
-
-      await importFromFile(blob);
+      const file = Array.from(clipboardData.files || []).find((f) => f.type.startsWith('image/'));
+      if (file) {
+        event.preventDefault();
+        await importFromFile(file);
+      }
     },
     [importFromFile]
   );
+
+  useEffect(() => {
+    const onGlobalPaste = (event) => {
+      const target = event.target;
+      const isInput = target instanceof HTMLInputElement && target.type === 'text';
+      const isTextarea = target instanceof HTMLTextAreaElement;
+      if (isInput || isTextarea) return;
+
+      handlePaste(event);
+    };
+
+    window.addEventListener('paste', onGlobalPaste);
+    return () => window.removeEventListener('paste', onGlobalPaste);
+  }, [handlePaste]);
 
   const importFromClipboardButton = async () => {
     if (!navigator.clipboard?.read) {
