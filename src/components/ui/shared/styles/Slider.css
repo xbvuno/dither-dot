@@ -218,17 +218,12 @@
     background: var(--color-hover);
 }
 
-.slider-pin-btn.is-pinned:hover {
-    color: var(--color-danger, #e43b44);
-    background: var(--color-hover);
-}
-
 .slider-unpin-btn {
     color: var(--color-text-subtle);
 }
 
 .slider-unpin-btn:hover {
-    color: var(--color-danger, #e43b44);
+    color: var(--color-text);
     background: var(--color-hover);
 }
 
