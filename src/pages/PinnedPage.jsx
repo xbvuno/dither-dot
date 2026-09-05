@@ -1,3 +1,4 @@
+import { Pin } from 'lucide-react';
 import MacroSection from '../components/ui/MacroSection';
 import SliderBundle from '../components/ui/shared/SliderBundle';
 import usePinnedStore from '../stores/ui/pinnedStore';
@@ -227,23 +228,25 @@ export default function PinnedPage() {
       <MacroSection title="PINNED">
         <div className="bv-section">
           {pinnedIds.length === 0 ? (
-            <>
-              <p className="bv-label" style={{ textAlign: 'center', opacity: 0.6, margin: '1.5rem 0 0.5rem' }}>
+            <div style={{ textAlign: 'center', padding: '1.25rem 0.5rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <Pin size={22} strokeWidth={1.5} style={{ opacity: 0.4, marginBottom: '0.75rem' }} />
+              <p className="bv-label" style={{ opacity: 0.7, margin: '0 0 0.5rem', letterSpacing: '0.06em' }}>
                 NO PINNED SLIDERS
               </p>
               <p
                 style={{
-                  fontSize: '0.8rem',
+                  fontSize: '0.75rem',
                   color: 'var(--color-text-muted)',
                   textAlign: 'center',
-                  margin: '0 auto 1.5rem',
+                  margin: '0 auto',
                   maxWidth: '220px',
-                  lineHeight: 1.4,
+                  lineHeight: 1.45,
+                  letterSpacing: '0.04em',
                 }}
               >
-                Select any slider and click the pin button to add it here.
+                SELECT ANY SLIDER AND CLICK THE PIN BUTTON TO ADD IT HERE
               </p>
-            </>
+            </div>
           ) : (
             <div className="bv-controls-row">
               <span className="bv-label">ACTIVE CONTROLS</span>
