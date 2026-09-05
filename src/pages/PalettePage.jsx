@@ -451,6 +451,33 @@ export default function PalettePage() {
     applyPaletteByHexes(importedHexes, importedName, true);
   };
 
+  useEffect(() => {
+    if (selectedIds.length === 0) return;
+
+    const handleOutsidePointerDown = (e) => {
+      // Check if click is inside the editor panel
+      if (e.target.closest?.('.palette-editor-panel')) {
+        return;
+      }
+      // Check if click is on a color swatch or add color button
+      if (e.target.closest?.('.palette-custom-swatch, .palette-color-chip, .palette-add-color-btn')) {
+        return;
+      }
+      // Check if click is inside modal or toast
+      if (e.target.closest?.('.modal-overlay, .palette-import-modal, .palette-export-modal')) {
+        return;
+      }
+
+      setSelectedIds([]);
+      setOriginalHexSnapshot({});
+    };
+
+    window.addEventListener('pointerdown', handleOutsidePointerDown);
+    return () => {
+      window.removeEventListener('pointerdown', handleOutsidePointerDown);
+    };
+  }, [selectedIds.length]);
+
   // live hex from store + frozen originalHex from snapshot
   const selectedColors = useMemo(() => {
     return colors
