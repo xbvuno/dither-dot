@@ -1,33 +1,21 @@
-.import-route-wrap {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+.import-main-scroll {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
   background-color: var(--color-bg);
-  color: var(--color-text);
-  font-family: var(--font-mono);
-}
-
-.import-route-header {
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  border-bottom: 1px solid var(--color-border);
-  background-color: var(--color-bg);
-  position: sticky;
-  top: 0;
-  z-index: 20;
+  position: relative;
 }
 
 .import-route-container {
-  max-width: 1000px;
+  max-width: 960px;
   margin: 0 auto;
   width: 100%;
-  padding: 24px 16px 80px 16px;
+  padding: 24px 20px 100px 20px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 28px;
 }
 
 .import-route-section {
@@ -255,9 +243,9 @@
 .import-route-launch-bar {
   position: fixed;
   bottom: 0;
-  left: 0;
+  left: 56px; /* Offset for app-nav */
   right: 0;
-  height: 64px;
+  height: 56px;
   background: var(--color-floating-bg);
   backdrop-filter: var(--filter-floating-blur);
   border-top: 1px solid var(--color-border);
@@ -268,20 +256,28 @@
   z-index: 30;
 }
 
+@media (max-width: 768px) {
+  .import-route-launch-bar {
+    left: 0;
+    bottom: 0;
+  }
+}
+
 .import-route-launch-summary {
   font-size: 12px;
   color: var(--color-text-subtle);
   display: flex;
-  gap: 16px;
+  align-items: center;
+  gap: 12px;
 }
 
 .import-route-launch-btn {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  height: 42px;
-  padding: 0 24px;
-  font-size: 13px;
+  height: 38px;
+  padding: 0 20px;
+  font-size: 12px;
   font-weight: 700;
   font-family: var(--font-mono);
   letter-spacing: 0.08em;
@@ -297,6 +293,6 @@
 }
 
 .import-route-launch-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
 }
