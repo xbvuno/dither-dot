@@ -15,6 +15,7 @@ import useWebcamStore, { WEBCAM_SOURCE } from '../../stores/media/webcamStore';
 import useTemplateStore, { buildCurrentTemplate } from '../../stores/data/templateStore';
 import { TEMPLATES } from '../../constants/templates';
 import { generateTemplatePreview } from '../../utils/templatePreviewGenerator';
+import { drawWebcamFrameToCanvas } from '../../utils/shaderHelpers';
 import ZoomableDiv from '../ui/shared/ZoomableDiv';
 import ImageShader from '../canvas/ImageShader';
 import WaveGridSpinner from '../ui/shared/WaveGridSpinner';
@@ -94,6 +95,7 @@ function OriginalMediaPreview({
 }) {
   const canvasRef = useRef(null);
   const videoRef = useRef(null);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     if (!webcamActive || !videoRef.current || !webcamStream) return;
@@ -103,6 +105,45 @@ function OriginalMediaPreview({
       video.play().catch(() => {});
     }
   }, [webcamActive, webcamStream]);
+
+  useEffect(() => {
+    if (!webcamActive || !webcamStream) return undefined;
+    let animId = null;
+
+    const renderWebcam = () => {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const container = containerRef.current;
+
+      if (video && canvas && video.readyState >= 2) {
+        const vw = video.videoWidth || 640;
+        const vh = video.videoHeight || 480;
+
+        if (canvas.width !== vw || canvas.height !== vh) {
+          canvas.width = vw;
+          canvas.height = vh;
+          canvas.style.width = `${vw}px`;
+          canvas.style.height = `${vh}px`;
+          if (container) {
+            container.style.width = `${vw}px`;
+            container.style.height = `${vh}px`;
+          }
+          window.dispatchEvent(new CustomEvent('dither-render-ready'));
+        }
+
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          drawWebcamFrameToCanvas(video, canvas, ctx, webcamMirrored);
+        }
+      }
+      animId = requestAnimationFrame(renderWebcam);
+    };
+
+    animId = requestAnimationFrame(renderWebcam);
+    return () => {
+      if (animId) cancelAnimationFrame(animId);
+    };
+  }, [webcamActive, webcamStream, webcamMirrored]);
 
   useEffect(() => {
     if (!isGif || !canvasRef.current || !frames || frames.length <= 1) return;
@@ -124,19 +165,25 @@ function OriginalMediaPreview({
 
   if (webcamActive && webcamStream) {
     return (
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        className='import-preview-source-img'
-        style={{
-          display: 'block',
-          transform: webcamMirrored ? 'scaleX(-1)' : 'none',
-          userSelect: 'none',
-          pointerEvents: 'none',
-        }}
-      />
+      <div ref={containerRef} style={{ position: 'relative' }} id='render'>
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          style={{ display: 'none' }}
+        />
+        <canvas
+          ref={canvasRef}
+          className='import-preview-source-img'
+          style={{
+            display: 'block',
+            imageRendering: 'pixelated',
+            userSelect: 'none',
+            pointerEvents: 'none',
+          }}
+        />
+      </div>
     );
   }
 
