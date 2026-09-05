@@ -12,7 +12,7 @@ const INITIAL_SIZE_STATE = {
   aspectOffset: 0.5,
 };
 
-export const computeAspectCrop = (width, height, preset, orientation, offset = 0.5) => {
+export const computeAspectCrop = (width, height, preset, orientation = 'landscape', offset = 0.5) => {
   const w = Number(width) || 1;
   const h = Number(height) || 1;
 
@@ -20,22 +20,25 @@ export const computeAspectCrop = (width, height, preset, orientation, offset = 0
     return null;
   }
 
+  const safeOrientation = orientation === 'portrait' ? 'portrait' : 'landscape';
+  const numOffset = typeof offset === 'number' && !Number.isNaN(offset) ? offset : 0.5;
+  const p = Math.max(0, Math.min(1.0, numOffset));
+
   let ratioW = 1;
   let ratioH = 1;
   if (preset === '1:1') {
     ratioW = 1;
     ratioH = 1;
   } else if (preset === '4:3') {
-    ratioW = orientation === 'portrait' ? 3 : 4;
-    ratioH = orientation === 'portrait' ? 4 : 3;
+    ratioW = safeOrientation === 'portrait' ? 3 : 4;
+    ratioH = safeOrientation === 'portrait' ? 4 : 3;
   } else if (preset === '16:9') {
-    ratioW = orientation === 'portrait' ? 9 : 16;
-    ratioH = orientation === 'portrait' ? 16 : 9;
+    ratioW = safeOrientation === 'portrait' ? 9 : 16;
+    ratioH = safeOrientation === 'portrait' ? 16 : 9;
   }
 
   const targetRatio = ratioW / ratioH;
   const imgRatio = w / h;
-  const p = Math.max(0, Math.min(1.0, Number(offset) ?? 0.5));
 
   if (imgRatio > targetRatio) {
     // Image is wider than target ratio -> crop left/right (X axis)
@@ -66,9 +69,17 @@ export const computeAspectCrop = (width, height, preset, orientation, offset = 0
 };
 
 const clampCrop = (crop, w, h) => {
-  const safeW = w || 1;
-  const safeH = h || 1;
-  let { top = 0, bottom = 0, left = 0, right = 0 } = crop || {};
+  const safeW = Number(w) || 1;
+  const safeH = Number(h) || 1;
+  let top = Number(crop?.top) || 0;
+  let bottom = Number(crop?.bottom) || 0;
+  let left = Number(crop?.left) || 0;
+  let right = Number(crop?.right) || 0;
+
+  if (Number.isNaN(top)) top = 0;
+  if (Number.isNaN(bottom)) bottom = 0;
+  if (Number.isNaN(left)) left = 0;
+  if (Number.isNaN(right)) right = 0;
 
   // Ensure left + right <= safeW - 1
   if (left + right > safeW - 1) {
@@ -93,10 +104,10 @@ const clampCrop = (crop, w, h) => {
   }
 
   return {
-    top: Math.max(0, top),
-    bottom: Math.max(0, bottom),
-    left: Math.max(0, left),
-    right: Math.max(0, right),
+    top: Math.max(0, Math.round(top)),
+    bottom: Math.max(0, Math.round(bottom)),
+    left: Math.max(0, Math.round(left)),
+    right: Math.max(0, Math.round(right)),
   };
 };
 
@@ -313,6 +324,8 @@ const useSizeStore = create(persist((set) => ({
     set((state) => {
       const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
       const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+      const orientation = state.aspectOrientation || 'landscape';
+      const offset = typeof state.aspectOffset === 'number' && !Number.isNaN(state.aspectOffset) ? state.aspectOffset : 0.5;
 
       if (preset === 'free') {
         return {
@@ -320,7 +333,7 @@ const useSizeStore = create(persist((set) => ({
         };
       }
 
-      const result = computeAspectCrop(w, h, preset, state.aspectOrientation, state.aspectOffset);
+      const result = computeAspectCrop(w, h, preset, orientation, offset);
       if (!result) return { aspectPreset: preset };
 
       const nextCrop = clampCrop(result.crop, w, h);
@@ -329,6 +342,8 @@ const useSizeStore = create(persist((set) => ({
 
       return {
         aspectPreset: preset,
+        aspectOrientation: orientation,
+        aspectOffset: offset,
         crop: nextCrop,
         ratio: curW / curH,
       };
@@ -338,20 +353,23 @@ const useSizeStore = create(persist((set) => ({
     set((state) => {
       const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
       const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+      const safeOrientation = orientation === 'portrait' ? 'portrait' : 'landscape';
+      const offset = typeof state.aspectOffset === 'number' && !Number.isNaN(state.aspectOffset) ? state.aspectOffset : 0.5;
+      const preset = state.aspectPreset || 'free';
 
-      if (state.aspectPreset === 'free') {
-        return { aspectOrientation: orientation };
+      if (preset === 'free') {
+        return { aspectOrientation: safeOrientation };
       }
 
-      const result = computeAspectCrop(w, h, state.aspectPreset, orientation, state.aspectOffset);
-      if (!result) return { aspectOrientation: orientation };
+      const result = computeAspectCrop(w, h, preset, safeOrientation, offset);
+      if (!result) return { aspectOrientation: safeOrientation };
 
       const nextCrop = clampCrop(result.crop, w, h);
       const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
       const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
 
       return {
-        aspectOrientation: orientation,
+        aspectOrientation: safeOrientation,
         crop: nextCrop,
         ratio: curW / curH,
       };
@@ -361,13 +379,15 @@ const useSizeStore = create(persist((set) => ({
     set((state) => {
       const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
       const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
-      const safeOffset = Math.max(0, Math.min(1.0, Number(offset) || 0));
+      const safeOffset = Math.max(0, Math.min(1.0, typeof offset === 'number' && !Number.isNaN(offset) ? offset : 0.5));
+      const orientation = state.aspectOrientation || 'landscape';
+      const preset = state.aspectPreset || 'free';
 
-      if (state.aspectPreset === 'free') {
+      if (preset === 'free') {
         return { aspectOffset: safeOffset };
       }
 
-      const result = computeAspectCrop(w, h, state.aspectPreset, state.aspectOrientation, safeOffset);
+      const result = computeAspectCrop(w, h, preset, orientation, safeOffset);
       if (!result) return { aspectOffset: safeOffset };
 
       const nextCrop = clampCrop(result.crop, w, h);
