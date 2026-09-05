@@ -32,7 +32,7 @@
 .bv-option-btn {
   background: var(--input-surface);
   padding: 0.44rem 0.8rem;
-  font-size: 1rem;
+  font-size: 14px;
   font-weight: 400;
   letter-spacing: 0.04em;
   line-height: 1.2;
