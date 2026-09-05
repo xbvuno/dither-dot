@@ -34,7 +34,6 @@ import { useRouter } from '../router/router';
 const ExportPage = lazy(() => import('./ExportPage'));
 
 const MAIN_NAV_ITEMS = [
-  { id: 'import', label: 'Media & Templates', Icon: FolderOpen, isRoute: true },
   { id: PAGE.PINNED, label: 'Pinned', Icon: Pin },
   { id: PAGE.RESIZING, label: 'Resizing', Icon: ImageUpscale },
   { id: PAGE.ADJUSTMENTS, label: 'Adjustments', Icon: SlidersHorizontal },
@@ -258,25 +257,31 @@ export default function EditorPage() {
 
       <div className='app-layout'>
         <nav ref={navRef} className='app-nav' aria-label='Main Navigation'>
+          <div className='nav-top-wrap'>
+            <button
+              type='button'
+              className='nav-icon-btn'
+              onClick={() => navigate('/import')}
+              data-tooltip='MEDIA & TEMPLATES [1]'
+              aria-label='MEDIA & TEMPLATES [1]'
+            >
+              <FolderOpen size={24} strokeWidth={2} aria-hidden='true' className='nav-icon-img' />
+            </button>
+          </div>
+
           <div className='nav-links-wrap'>
             {MAIN_NAV_ITEMS.map((item, index) => {
               const Icon = item.Icon;
-              const isSelected = item.isRoute ? false : currentPage === item.id;
-              const tooltipText = `${item.label.toUpperCase()} [${index + 1}]`;
+              const isSelected = currentPage === item.id;
+              const tooltipText = `${item.label.toUpperCase()} [${index + 2}]`;
               return (
                 <button
                   key={item.id}
                   type='button'
                   className={`nav-icon-btn${isSelected ? ' selected' : ''}`}
-                  onClick={() => {
-                    if (item.isRoute) {
-                      navigate('/import');
-                    } else {
-                      setPage(item.id);
-                    }
-                  }}
-                  onDragEnter={(event) => !item.isRoute && handleNavDragOver(event, item.id)}
-                  onDragOver={(event) => !item.isRoute && handleNavDragOver(event, item.id)}
+                  onClick={() => setPage(item.id)}
+                  onDragEnter={(event) => handleNavDragOver(event, item.id)}
+                  onDragOver={(event) => handleNavDragOver(event, item.id)}
                   data-tooltip={tooltipText}
                   aria-label={tooltipText}
                   aria-current={isSelected ? 'page' : undefined}

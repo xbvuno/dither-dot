@@ -383,7 +383,7 @@ export default function ImportRoute() {
       <div className='app-layout'>
         {/* NAV BAR: Exact same structure with disabled buttons */}
         <nav className='app-nav' aria-label='Main Navigation'>
-          <div className='nav-links-wrap'>
+          <div className='nav-top-wrap'>
             <button
               type='button'
               className='nav-icon-btn selected'
@@ -393,6 +393,9 @@ export default function ImportRoute() {
             >
               <FolderOpen size={24} strokeWidth={2} aria-hidden='true' className='nav-icon-img' />
             </button>
+          </div>
+
+          <div className='nav-links-wrap'>
 
             {DISABLED_NAV_ITEMS.map((item) => {
               const Icon = item.Icon;
