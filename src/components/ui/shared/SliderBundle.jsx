@@ -158,12 +158,11 @@ export default function SliderBundle({
             onBlur={handleBlur}
         >
             <div className="flex-h">
-                <span className="slider-label-wrap">
+                <span className="slider-label-wrap" title={tooltip || undefined}>
                     <span className="bv-label slider-bundle-label">{label}</span>
                     {isSelected && (
                         <span className="slider-range-bounds">[{formatBound(min)}, {formatBound(max)}]</span>
                     )}
-                    {tooltip && <span className="slider-tooltip">{tooltip}</span>}
                 </span>
 
                 <div className="slider-bundle-controls">

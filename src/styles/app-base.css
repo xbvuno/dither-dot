@@ -45,8 +45,7 @@
 /* Base Floating Panels Group */
 .palette-floating-editor,
 .histogram-floating-panel,
-.pipeline-timing-tooltip,
-.slider-tooltip {
+.pipeline-timing-tooltip {
     background: var(--color-floating-bg);
     backdrop-filter: var(--filter-floating-blur);
     border: 1px solid var(--color-floating-border);

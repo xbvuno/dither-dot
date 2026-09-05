@@ -63,35 +63,12 @@
   flex-wrap: nowrap;
 }
 
-/* --- Slider tooltip --- */
+/* --- Slider tooltip wrapper --- */
 
 .slider-label-wrap {
   position: relative;
   display: flex;
   align-items: center;
-}
-
-.slider-tooltip {
-  position: absolute;
-  left: calc(100% + 0.5rem);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--color-text-subtle);
-  font-size: 0.72rem;
-  letter-spacing: 0.02em;
-  line-height: 1.45;
-  padding: 0.45rem 0.6rem;
-  width: 14rem;
-  z-index: 40;
-  pointer-events: none;
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-
-.slider-label-wrap:hover .slider-tooltip {
-  visibility: visible;
-  opacity: 1;
 }
 
 /* --- Crop Preview --- */
