@@ -56,11 +56,11 @@ aside {
 }
 
 .resize-handle--right {
-    right: -6px;
+    right: -12px;
 }
 
 .resize-handle--left {
-    left: -6px;
+    left: 0;
 }
 
 .resize-handle:hover {
