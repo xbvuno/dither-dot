@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import { triggerHapticPulse } from "../../../utils/haptics";
 import "./styles/Slider.css";
 
@@ -66,6 +66,54 @@ export default function Slider({
   const numMax = Number(max);
   const numStep = Number(step);
   const numValue = Number(displayValue);
+
+  const ticks = useMemo(() => {
+    const range = numMax - numMin;
+    if (!Number.isFinite(range) || range <= 0) return [];
+
+    const isIntBounds =
+      Number.isInteger(numMin) &&
+      Number.isInteger(numMax) &&
+      Number.isInteger(numStep) &&
+      numStep >= 1;
+
+    if (isIntBounds) {
+      const totalSteps = Math.round(range / numStep);
+
+      // If few steps (<= 16), show tick at every discrete step
+      if (totalSteps <= 16) {
+        const result = [];
+        for (let i = 1; i < totalSteps; i++) {
+          const val = numMin + i * numStep;
+          result.push(((val - numMin) / range) * 100);
+        }
+        return result;
+      }
+
+      // Large integer range: determine nice round interval
+      let interval = 100;
+      if (range >= 500) interval = 100;
+      else if (range >= 200) interval = 50;
+      else if (range >= 100) interval = 25;
+      else if (range >= 40) interval = 10;
+      else interval = 5;
+
+      const result = [];
+      const start = Math.ceil((numMin + 0.0001) / interval) * interval;
+      for (let v = start; v < numMax - 0.0001; v += interval) {
+        result.push(((v - numMin) / range) * 100);
+      }
+      return result;
+    }
+
+    // Float or continuous range (e.g. 0 to 2, or floats) -> 8 subdivisions (7 intermediate ticks)
+    const numDivisions = 8;
+    const result = [];
+    for (let i = 1; i < numDivisions; i++) {
+      result.push((i / numDivisions) * 100);
+    }
+    return result;
+  }, [numMin, numMax, numStep]);
 
   const stateRef = useRef({});
   stateRef.current.value = numValue;
@@ -372,6 +420,15 @@ export default function Slider({
         ref={trackRef}
         onDoubleClick={disabled ? undefined : handleReset}
       >
+        <div className="slider-ticks" aria-hidden="true">
+          {ticks.map((pct, idx) => (
+            <div
+              key={idx}
+              className="slider-tick"
+              style={{ left: `${pct}%` }}
+            />
+          ))}
+        </div>
         <div className={`thumb${defaultValue !== undefined && numValue !== Number(defaultValue) ? ' modified' : ''}`} ref={thumbRef} />
         {defaultValue !== undefined && (
           <div className="thumb default" ref={defaultThumbRef} />

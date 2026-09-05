@@ -47,6 +47,22 @@
     pointer-events: none;
 }
 
+.slider-ticks {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.slider-tick {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 1px;
+    height: 0.45rem;
+    background-color: var(--color-text);
+    opacity: 0.4;
+}
+
 .bv.slider.selected:focus {
     outline: none;
 }
@@ -227,6 +243,10 @@
         width: 3px;
         top: 50%;
         transform: translateY(-50%);
+    }
+
+    .slider-tick {
+        height: 0.55rem;
     }
 }
 
