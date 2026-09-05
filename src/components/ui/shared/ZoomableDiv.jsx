@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useId } from "react";
 import "./styles/ZoomableDiv.css";
 
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
@@ -6,6 +6,8 @@ const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 export default function ZoomableDiv({ content }) {
   const outerRef = useRef(null);
   const innerRef = useRef(null);
+  const instanceId = useId();
+  const isSyncing = useRef(false);
 
   const state = useRef({
     scale: 1,
@@ -32,7 +34,70 @@ export default function ZoomableDiv({ content }) {
       return innerRef.current?.querySelector('#render') || innerRef.current?.firstElementChild;
     };
 
-    const zoomTo = (targetScale, focalX, focalY) => {
+    const dispatchSync = () => {
+      if (isSyncing.current) return;
+      window.dispatchEvent(
+        new CustomEvent('zoomable-sync-view', {
+          detail: {
+            id: instanceId,
+            scale: state.current.scale,
+            scrollLeft: outer.scrollLeft,
+            scrollTop: outer.scrollTop,
+          },
+        })
+      );
+    };
+
+    const applyScaleOnly = (targetScale) => {
+      const contentElem = getContentElem();
+      if (!contentElem) return;
+
+      const outerWidth = outer.clientWidth;
+      const outerHeight = outer.clientHeight;
+      if (!outerWidth || !outerHeight) return;
+
+      const contentWidth =
+        contentElem.scrollWidth ||
+        contentElem.offsetWidth ||
+        (contentElem.style.width ? parseFloat(contentElem.style.width) : 0);
+      const contentHeight =
+        contentElem.scrollHeight ||
+        contentElem.offsetHeight ||
+        (contentElem.style.height ? parseFloat(contentElem.style.height) : 0);
+
+      if (!contentWidth || !contentHeight) return;
+
+      const fitScale = Math.min(outerWidth / contentWidth, outerHeight / contentHeight);
+      const clampedScale = clamp(targetScale, ZOOM_MIN, ZOOM_MAX);
+
+      state.current.scale = clampedScale;
+      state.current.width = contentWidth;
+      state.current.height = contentHeight;
+
+      const newRenderScale = fitScale * clampedScale;
+      const newRenderWidth = Math.floor(contentWidth * newRenderScale);
+      const newRenderHeight = Math.floor(contentHeight * newRenderScale);
+      const newPadX = Math.max(0, (outerWidth - newRenderWidth) / 2);
+      const newPadY = Math.max(0, (outerHeight - newRenderHeight) / 2);
+
+      inner.style.width = `${newRenderWidth}px`;
+      inner.style.height = `${newRenderHeight}px`;
+      inner.style.marginLeft = `${Math.floor(newPadX)}px`;
+      inner.style.marginTop = `${Math.floor(newPadY)}px`;
+      inner.style.paddingLeft = '0px';
+      inner.style.paddingTop = '0px';
+      inner.style.boxSizing = 'content-box';
+
+      contentElem.style.transformOrigin = 'top left';
+      contentElem.style.scale = newRenderScale;
+
+      if (window.innerWidth <= 768) {
+        const isZoomed = clampedScale > (ZOOM_MIN + SCALE_EPSILON);
+        outer.style.overflow = isZoomed ? 'auto' : 'hidden';
+      }
+    };
+
+    const zoomTo = (targetScale, focalX, focalY, fromSync = false) => {
       const contentElem = getContentElem();
       if (!contentElem) return;
 
@@ -110,6 +175,9 @@ export default function ZoomableDiv({ content }) {
       }, 0);
 
       window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
+      if (!fromSync) {
+        dispatchSync();
+      }
     };
 
     const updateScale = () => {
@@ -156,6 +224,7 @@ export default function ZoomableDiv({ content }) {
       outer.scrollTop = state.current.startScrollTop - dy;
 
       window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
+      dispatchSync();
     };
 
     const handleMouseUp = (e) => {
@@ -231,6 +300,7 @@ export default function ZoomableDiv({ content }) {
         outer.scrollLeft = state.current.startScrollLeft - dx;
         outer.scrollTop = state.current.startScrollTop - dy;
         window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
+        dispatchSync();
       }
     };
 
@@ -248,6 +318,20 @@ export default function ZoomableDiv({ content }) {
       }
     };
 
+    const handleSyncView = (e) => {
+      if (!e.detail || e.detail.id === instanceId) return;
+      isSyncing.current = true;
+      const { scale: targetScale, scrollLeft, scrollTop } = e.detail;
+
+      applyScaleOnly(targetScale);
+      outer.scrollLeft = scrollLeft;
+      outer.scrollTop = scrollTop;
+
+      setTimeout(() => {
+        isSyncing.current = false;
+      }, 0);
+    };
+
     outer.addEventListener('wheel', handleWheel, { passive: false });
     outer.addEventListener('mousedown', handleMouseDown);
     outer.addEventListener('dblclick', handleDoubleClick);
@@ -257,6 +341,7 @@ export default function ZoomableDiv({ content }) {
     outer.addEventListener('touchmove', handleTouchMove, { passive: false });
     outer.addEventListener('touchend', handleTouchEnd);
     outer.addEventListener('touchcancel', handleTouchEnd);
+    window.addEventListener('zoomable-sync-view', handleSyncView);
 
     const handleRenderReady = () => {
       if (state.current.isUpdatingProgrammatically) return;
@@ -309,6 +394,7 @@ export default function ZoomableDiv({ content }) {
       outer.removeEventListener('touchmove', handleTouchMove);
       outer.removeEventListener('touchend', handleTouchEnd);
       outer.removeEventListener('touchcancel', handleTouchEnd);
+      window.removeEventListener('zoomable-sync-view', handleSyncView);
       window.removeEventListener('dither-render-ready', handleRenderReady);
       window.removeEventListener('split-compare-layout-changed', handleRenderReady);
       mutationObserver.disconnect();

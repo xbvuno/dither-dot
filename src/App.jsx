@@ -5,6 +5,7 @@ import Aside from './components/layout/Aside'
 import watermarkMini from './assets/watermark/watermark-mini.png'
 import ZoomableDiv from './components/ui/shared/ZoomableDiv'
 import ImageShader from './components/canvas/ImageShader'
+import PostProcessShader from './components/canvas/PostProcessShader'
 import AsideRouter from './components/layout/AsideRouter'
 import GifTimeline from './components/timeline/GifTimeline'
 import CameraControlsBar from './components/camera/CameraControlsBar'
@@ -51,6 +52,7 @@ function App() {
   const webcamActive = useWebcamStore(s => s.active)
   const watermarkEnabled = useWatermarkStore(s => s.enabled)
   const setWatermarkEnabled = useWatermarkStore(s => s.setEnabled)
+  const splitView = useViewStore(s => s.splitView)
 
   const navRef = useRef(null)
   const lastScrollTimeRef = useRef(0)
@@ -299,7 +301,21 @@ function App() {
           <div className='flex-v'>
             <div className='zoomable-wrap'>
               <PopupMessage />
-              <ZoomableDiv content={<ImageShader sourceImg={sourceImg} />} />
+              {splitView ? (
+                <div className='split-view-container'>
+                  <div className='split-view-pane'>
+                    <span className='split-view-badge'>POST-PROCESSING</span>
+                    <ZoomableDiv content={<PostProcessShader />} />
+                  </div>
+                  <div className='split-view-divider' />
+                  <div className='split-view-pane'>
+                    <span className='split-view-badge'>DITHERED</span>
+                    <ZoomableDiv content={<ImageShader sourceImg={sourceImg} />} />
+                  </div>
+                </div>
+              ) : (
+                <ZoomableDiv content={<ImageShader sourceImg={sourceImg} />} />
+              )}
               {(viewerLoading || renderProcessing) && !webcamActive && (
                 <div className='zoomable-loading-overlay' role='status' aria-live='polite' aria-label='Loading media'>
                   <WaveGridSpinner />

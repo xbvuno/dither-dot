@@ -7,6 +7,7 @@ import useGalleryStore from '../stores/data/galleryStore';
 import useGifStore from '../stores/media/gifStore';
 import useWebcamStore, { WEBCAM_SOURCE } from '../stores/media/webcamStore';
 import useParamsStore from '../stores/data/paramsStore';
+import useViewStore from '../stores/ui/viewStore';
 import { notify } from '../stores/ui/popupStore';
 
 import {
@@ -57,6 +58,8 @@ export default function ImportPage() {
   const setShowPipeline = useParamsStore((s) => s.setPipelineVisible);
   const forceCpu = useParamsStore((s) => s.forceCpu);
   const setForceCpu = useParamsStore((s) => s.setForceCpu);
+  const splitView = useViewStore((s) => s.splitView);
+  const setSplitView = useViewStore((s) => s.setSplitView);
 
   const doImport = useCallback(
     async (blob, name) => {
@@ -350,6 +353,21 @@ export default function ImportPage() {
       </MacroSection>
 
       <MacroSection title="SETTINGS">
+        <div className='bv-section split-view-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>SPLIT VIEW</span>
+            <OptionGroup
+              options={[
+                { value: true, label: 'ON' },
+                { value: false, label: 'OFF' },
+              ]}
+              value={splitView}
+              onChange={setSplitView}
+              ariaLabel="Split view comparison"
+            />
+          </div>
+        </div>
+
         <div className='bv-section pipeline-section'>
           <div className='bv-controls-row'>
             <span className='bv-label'>PIPELINE</span>
