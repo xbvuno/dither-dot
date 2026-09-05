@@ -108,6 +108,7 @@ export default function ExportPage() {
   const [previewUpscale, setPreviewUpscale] = useState(null);
 
   const isGifSource = gifFrames.length > 1;
+  const isLivePreviewActive = livePreview && !isGifSource;
   const exportFormat = isGifSource ? 'GIF' : 'PNG';
   const exportBaseName = getExportBaseName(exportName.trim() || getDefaultExportName(sourceName));
   const canvas = getOutputCanvas();
@@ -118,12 +119,12 @@ export default function ExportPage() {
   
   const isPreviewValid = isGifSource
     ? Boolean(previewUrl && previewJobId === lastRenderJobId && previewUpscale === upscale)
-    : Boolean(previewUrl && (previewJobId === lastRenderJobId || livePreview));
+    : Boolean(previewUrl && (previewJobId === lastRenderJobId || isLivePreviewActive));
 
   const handleToggleLivePreview = (val) => {
     const isLive = val === 'on' || val === true;
     setLivePreview(isLive);
-    if (isLive) {
+    if (isLive && !isGifSource) {
       setUpscale(1);
     }
     try {
@@ -136,7 +137,7 @@ export default function ExportPage() {
   const handleUpscaleChange = (newUpscale) => {
     const nextVal = Math.max(1, Math.floor(Number(newUpscale) || 1));
     setUpscale(nextVal);
-    if (nextVal > 1 && livePreview) {
+    if (nextVal > 1 && isLivePreviewActive) {
       setLivePreview(false);
       try {
         localStorage.setItem(LIVE_PREVIEW_STORAGE_KEY, 'false');
@@ -147,10 +148,10 @@ export default function ExportPage() {
   };
 
   useEffect(() => {
-    if (livePreview && upscale > 1) {
+    if (isLivePreviewActive && upscale > 1) {
       setUpscale(1);
     }
-  }, [livePreview, upscale, setUpscale]);
+  }, [isLivePreviewActive, upscale, setUpscale]);
 
   useEffect(() => {
     setExportName(getDefaultExportName(sourceName));
@@ -375,20 +376,22 @@ export default function ExportPage() {
           </div>
         </div>
 
-        <div className='bv-section'>
-          <div className='bv-controls-row'>
-            <span className='bv-label'>LIVE PREVIEW</span>
-            <OptionGroup
-              options={[
-                { value: true, label: 'ON' },
-                { value: false, label: 'OFF' },
-              ]}
-              value={livePreview}
-              onChange={handleToggleLivePreview}
-              ariaLabel="Live preview"
-            />
+        {!isGifSource && (
+          <div className='bv-section'>
+            <div className='bv-controls-row'>
+              <span className='bv-label'>LIVE PREVIEW</span>
+              <OptionGroup
+                options={[
+                  { value: true, label: 'ON' },
+                  { value: false, label: 'OFF' },
+                ]}
+                value={livePreview}
+                onChange={handleToggleLivePreview}
+                ariaLabel="Live preview"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         <div className='bv-section'>
           <SliderBundle
@@ -397,9 +400,9 @@ export default function ExportPage() {
             max={10}
             step={1}
             defaultValue={1}
-            value={livePreview ? 1 : upscale}
+            value={isLivePreviewActive ? 1 : upscale}
             onChange={setUpscale}
-            disabled={livePreview}
+            disabled={isLivePreviewActive}
             pinId="export:upscale"
           />
         </div>
@@ -410,8 +413,8 @@ export default function ExportPage() {
               type='button'
               className='bv-option-btn export-btn'
               onClick={handleGeneratePreview}
-              disabled={livePreview || gifExporting || previewGenerating}
-              title={livePreview ? 'Disabled while Live Preview is active' : 'Generate preview'}
+              disabled={isLivePreviewActive || gifExporting || previewGenerating}
+              title={isLivePreviewActive ? 'Disabled while Live Preview is active' : 'Generate preview'}
             >
               <Eye size={13} strokeWidth={1.5} />
               {previewGenerating ? 'GENERATING...' : 'GENERATE'}
