@@ -65,7 +65,10 @@ function getTemplateCacheKey(template) {
     const p = template.params || {};
     const d = template.dither || {};
     const pal = template.palette || {};
-    return `current:${p.gamma}_${p.blacks}_${p.whites}_${p.contrast}_${p.saturation}_${p.hue}_${p.noiseEnabled}_${p.noiseCoverage}_${p.noiseIntensity}_${p.blurEnabled}_${p.blurStrength}_${p.passes}_${d.enabled}_${d.method}_${d.amount}_${d.matrixScale}_${d.seed}_${pal.extractMethod}_${pal.id}_${(pal.colors || []).join(',')}`;
+    const colorsStr = Array.isArray(pal.colors)
+      ? pal.colors.map((c) => (typeof c === 'string' ? c : c?.hex)).filter(Boolean).join(',')
+      : '';
+    return `current:${p.gamma}_${p.blacks}_${p.whites}_${p.contrast}_${p.saturation}_${p.hue}_${p.noiseEnabled}_${p.noiseCoverage}_${p.noiseIntensity}_${p.noiseSaturation}_${p.blurEnabled}_${p.blurStrength}_${p.edgeStrength}_${p.passes}_${d.enabled}_${d.method}_${d.amount}_${d.matrixScale}_${d.seed}_${pal.extractMethod}_${pal.id}_${colorsStr}`;
   }
   return template.id;
 }
@@ -157,10 +160,32 @@ export async function generateTemplatePreview(template) {
           }
         }
 
-        // 4. Dithering
+        // 4. Dithering & Palette
         if (template.dither?.enabled) {
           try {
-            if (template.palette?.extractMethod) {
+            if (template.palette?.colors?.length) {
+              const colors = template.palette.colors
+                .map((hex) => {
+                  const hexStr = typeof hex === 'string' ? hex : hex?.hex;
+                  if (!hexStr || typeof hexStr !== 'string') return null;
+                  try {
+                    const [r, g, b] = hexToRgbUnit(hexStr);
+                    return {
+                      r: Math.round(r * 255) & 255,
+                      g: Math.round(g * 255) & 255,
+                      b: Math.round(b * 255) & 255,
+                      a: 255,
+                    };
+                  } catch {
+                    return null;
+                  }
+                })
+                .filter(Boolean);
+
+              if (colors.length > 0) {
+                wasmPalette = new WasmPalette(colors);
+              }
+            } else if (template.palette?.extractMethod) {
               const count = template.palette.colorCount || 8;
               const generators = Palettes.Generators;
               if (template.palette.extractMethod === 'octree') {
@@ -170,17 +195,6 @@ export async function generateTemplatePreview(template) {
               } else {
                 wasmPalette = generators.MedianCut.calculate(wasmImage, count);
               }
-            } else if (template.palette?.colors?.length) {
-              const colors = template.palette.colors.map((hex) => {
-                const [r, g, b] = hexToRgbUnit(hex);
-                return {
-                  r: Math.round(r * 255) & 255,
-                  g: Math.round(g * 255) & 255,
-                  b: Math.round(b * 255) & 255,
-                  a: 255,
-                };
-              });
-              wasmPalette = new WasmPalette(colors);
             }
 
             if (wasmPalette) {

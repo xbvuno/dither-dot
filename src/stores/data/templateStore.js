@@ -15,16 +15,22 @@ export function buildCurrentTemplate() {
   const paletteState = usePaletteStore.getState();
   const pinnedState = usePinnedStore.getState();
 
+  const colors = Array.isArray(paletteState.colors)
+    ? paletteState.colors
+        .map((c) => (typeof c === 'string' ? c : c?.hex))
+        .filter((hex) => typeof hex === 'string' && hex.length > 0)
+    : [];
+
   return {
     id: 'current',
     name: 'CURRENT',
     author: 'you',
     palette: {
       id: paletteState.selectedLibraryPaletteId || null,
-      name: paletteState.name || 'Custom',
+      name: paletteState.name || 'Current',
       extractMethod: paletteState.method !== 'custom' ? paletteState.method : null,
-      colors: Array.isArray(paletteState.colors) ? [...paletteState.colors] : [],
-      colorCount: paletteState.colorCount || 8,
+      colors,
+      colorCount: paletteState.colorCount || (colors.length || 8),
     },
     dither: {
       enabled: ditherState.enabled ?? true,
