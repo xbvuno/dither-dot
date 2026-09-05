@@ -2,13 +2,16 @@ import { useEffect, useRef } from "react";
 import { setupMobileResize } from "../../utils/mobileResize";
 import "./styles/Aside.css";
 
-const ASIDE_WIDTH_STORAGE_KEY = 'dither-dot:aside-width';
+const ASIDE_WIDTH_STORAGE_KEY_LEFT = 'dither-dot:aside-width';
+const ASIDE_WIDTH_STORAGE_KEY_RIGHT = 'dither-dot:export-aside-width';
 
-export default function Aside({ children }) {
+export default function Aside({ children, side = "left", storageKey, className = "" }) {
   const shellRef = useRef(null);
   const asideRef = useRef(null);
   const resizeHandleRef = useRef(null);
   const mobileHandleRef = useRef(null);
+
+  const key = storageKey || (side === "right" ? ASIDE_WIDTH_STORAGE_KEY_RIGHT : ASIDE_WIDTH_STORAGE_KEY_LEFT);
 
   useEffect(() => {
     const shell = shellRef.current;
@@ -24,7 +27,7 @@ export default function Aside({ children }) {
     const clampWidth = (value) => Math.min(maxW, Math.max(minW, value));
 
     try {
-      const storedWidth = Number(window.localStorage.getItem(ASIDE_WIDTH_STORAGE_KEY));
+      const storedWidth = Number(window.localStorage.getItem(key));
       if (Number.isFinite(storedWidth) && storedWidth > 0) {
         shell.style.width = clampWidth(storedWidth) + 'px';
       }
@@ -72,7 +75,7 @@ export default function Aside({ children }) {
 
       try {
         const currentWidth = shell.getBoundingClientRect().width;
-        window.localStorage.setItem(ASIDE_WIDTH_STORAGE_KEY, String(clampWidth(currentWidth)));
+        window.localStorage.setItem(key, String(clampWidth(currentWidth)));
       } catch {
         // Ignore storage write failures.
       }
@@ -80,7 +83,7 @@ export default function Aside({ children }) {
 
     const onMouseMove = (e) => {
       if (!isResizing) return;
-      const deltaX = e.clientX - startX;
+      const deltaX = side === "right" ? (startX - e.clientX) : (e.clientX - startX);
       let newWidth = startWidth + deltaX;
       newWidth = clampWidth(newWidth);
       pendingWidth = newWidth;
@@ -101,7 +104,7 @@ export default function Aside({ children }) {
       stopResize();
       root?.classList.remove('is-resizing-aside');
     };
-  }, []);
+  }, [key, side]);
 
   useEffect(() => {
     if (!mobileHandleRef.current) return;
@@ -110,7 +113,7 @@ export default function Aside({ children }) {
   }, []);
 
   return (
-    <div ref={shellRef} className="resizable-shell">
+    <div ref={shellRef} className={`resizable-shell resizable-shell--${side} ${className}`.trim()}>
       <div
         ref={mobileHandleRef}
         className="mobile-resize-handle"
@@ -119,14 +122,23 @@ export default function Aside({ children }) {
       >
         <span className="mobile-resize-pill" />
       </div>
+      {side === "right" && (
+        <div
+          ref={resizeHandleRef}
+          className="resize-handle resize-handle--left"
+          role="separator"
+        />
+      )}
       <aside ref={asideRef}>
         {children}
       </aside>
-      <div
-        ref={resizeHandleRef}
-        className="resize-handle"
-        role="separator"
-      />
+      {side !== "right" && (
+        <div
+          ref={resizeHandleRef}
+          className="resize-handle resize-handle--right"
+          role="separator"
+        />
+      )}
     </div>
   );
 }

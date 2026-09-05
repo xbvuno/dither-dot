@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense, lazy } from 'react'
 import { Smartphone, MonitorSmartphone, TriangleAlert, ArrowRight, Info, Heart, ScrollText, Cat, FileUp, Pin, ImageUpscale, SlidersHorizontal, Palette, SprayCan, Download, Maximize, Minimize } from 'lucide-react'
 import Aside from './components/layout/Aside'
 
@@ -18,14 +18,15 @@ import useWatermarkStore from './stores/media/watermarkStore'
 import useViewStore from './stores/ui/viewStore'
 import useWebcamStore from './stores/media/webcamStore'
 
-const ICONS = [
+const ExportPage = lazy(() => import('./pages/ExportPage'))
+
+const MAIN_NAV_ITEMS = [
   { id: PAGE.IMPORT, label: 'Import', Icon: FileUp },
   { id: PAGE.PINNED, label: 'Pinned', Icon: Pin },
   { id: PAGE.RESIZING, label: 'Resizing', Icon: ImageUpscale },
   { id: PAGE.ADJUSTMENTS, label: 'Adjustments', Icon: SlidersHorizontal },
   { id: PAGE.PALETTE, label: 'Palette', Icon: Palette },
   { id: PAGE.DITHER, label: 'Dither', Icon: SprayCan },
-  { id: PAGE.EXPORT, label: 'Export', Icon: Download },
 ]
 
 const IS_MOBILE = (() => {
@@ -42,6 +43,8 @@ function App() {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const currentPage = usePageStore(s => s.currentPage)
   const setPage = usePageStore(s => s.setPage)
+  const exportOpen = usePageStore(s => s.exportOpen)
+  const toggleExportOpen = usePageStore(s => s.toggleExportOpen)
   const sourceImg = useImageStore(s => s.sourceImg)
   const viewerLoading = useImageStore(s => s.viewerLoading)
   const renderProcessing = useProcessingStore(s => s.renderProcessing)
@@ -78,10 +81,25 @@ function App() {
       }
 
       const keyNum = parseInt(e.key, 10)
-      if (!isNaN(keyNum) && keyNum >= 1 && keyNum <= ICONS.length) {
-        e.preventDefault()
-        setPage(ICONS[keyNum - 1].id)
-        return
+      if (!isNaN(keyNum)) {
+        if (keyNum >= 1 && keyNum <= MAIN_NAV_ITEMS.length) {
+          e.preventDefault()
+          setPage(MAIN_NAV_ITEMS[keyNum - 1].id)
+          return
+        }
+        if (keyNum === 7) {
+          e.preventDefault()
+          toggleExportOpen()
+          return
+        }
+      }
+
+      if (e.key === 'e' || e.key === 'E') {
+        if (!e.repeat) {
+          e.preventDefault()
+          toggleExportOpen()
+          return
+        }
       }
 
       if (e.key === 'c' || e.key === 'C') {
@@ -114,7 +132,7 @@ function App() {
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
     }
-  }, [setPage])
+  }, [setPage, toggleExportOpen])
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -144,7 +162,7 @@ function App() {
       const delta = event.deltaY
       if (delta === 0) return
 
-      const pageIds = ICONS.map(item => item.id)
+      const pageIds = MAIN_NAV_ITEMS.map(item => item.id)
       const currentIndex = pageIds.indexOf(currentPageRef.current)
       if (currentIndex === -1) return
 
@@ -240,7 +258,7 @@ function App() {
       <div className='app-layout'>
         <nav ref={navRef} className='app-nav' aria-label='Main Navigation'>
           <div className='nav-links-wrap'>
-            {ICONS.map((item, index) => {
+            {MAIN_NAV_ITEMS.map((item, index) => {
               const Icon = item.Icon
               const isSelected = currentPage === item.id
               const tooltipText = `${item.label.toUpperCase()} [${index + 1}]`
@@ -261,9 +279,21 @@ function App() {
               )
             })}
           </div>
+          <div className='nav-export-wrap'>
+            <button
+              type='button'
+              className={`nav-icon-btn${exportOpen ? ' selected' : ''}`}
+              onClick={toggleExportOpen}
+              data-tooltip="EXPORT [7 / E]"
+              aria-label="EXPORT [7 / E]"
+              aria-pressed={exportOpen}
+            >
+              <Download size={24} strokeWidth={2} aria-hidden='true' className='nav-icon-img' />
+            </button>
+          </div>
         </nav>
         <main>
-          <Aside>
+          <Aside side="left">
             <AsideRouter />
           </Aside>
           <div className='flex-v'>
@@ -280,6 +310,13 @@ function App() {
             <CameraControlsBar />
             <Footer />
           </div>
+          {exportOpen && (
+            <Aside side="right">
+              <Suspense fallback={null}>
+                <ExportPage />
+              </Suspense>
+            </Aside>
+          )}
         </main>
       </div>
       {activeModal && (
