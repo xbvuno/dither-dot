@@ -895,9 +895,7 @@ export default function ImportStudio() {
             {/* Top: Source / Original Media Preview */}
             {(sourceImg || webcamActive) && (
               <div className='import-preview-source-wrap'>
-                <div className='import-preview-section-header'>
-                  <span className='import-preview-section-title'>ORIGINAL</span>
-                </div>
+                <span className='import-preview-badge'>ORIGINAL</span>
                 <div className='import-preview-source-canvas'>
                   <ZoomableDiv
                     content={
@@ -919,9 +917,7 @@ export default function ImportStudio() {
             {/* Bottom: Realtime Processed / Dithered Preview */}
             <div className='import-preview-canvas-wrap'>
               {(sourceImg || webcamActive) && (
-                <div className='import-preview-section-header'>
-                  <span className='import-preview-section-title'>DITHERED</span>
-                </div>
+                <span className='import-preview-badge'>DITHERED</span>
               )}
               <div className='import-preview-dither-canvas'>
                 <PopupMessage />
