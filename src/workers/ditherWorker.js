@@ -228,7 +228,7 @@ self.onmessage = async (event) => {
     const filters = filtersCache;
 
     const tNoiseStart = performance.now();
-    if (noise && noise.noiseCoverage > 0 && noise.noiseIntensity > 0) {
+    if (noise && noise.enabled && noise.noiseCoverage > 0 && noise.noiseIntensity > 0) {
       const noiseFilter = filters.noise;
       if (noiseFilter) {
         await noiseFilter.apply(activeImage, {
@@ -258,7 +258,7 @@ self.onmessage = async (event) => {
     tAdjust = performance.now() - tAdjustStart;
 
     const tBlurStart = performance.now();
-    if (blur && blur.blurStrength > 0 && blur.passes > 0) {
+    if (blur && blur.enabled && blur.blurStrength > 0 && blur.passes > 0) {
       const blurFilter = filters.kawase_blur;
       if (blurFilter) {
         await blurFilter.apply(activeImage, {

@@ -10,7 +10,7 @@ function formatLabel(key) {
 }
 
 const BLUR_ENTRIES = Object.entries(BLUR_CONTROLS);
-function ParamSlider({ controlKey, config }) {
+function ParamSlider({ controlKey, config, disabled }) {
     const value = useParamsStore(s => s[controlKey]);
     const setter = useParamsStore(s => s["set" + capitalize(controlKey)]);
 
@@ -24,21 +24,46 @@ function ParamSlider({ controlKey, config }) {
             value={value}
             onChange={setter}
             tooltip={config.description}
+            disabled={disabled}
         />
     );
 }
 
 export default function BlurControls({ showLabel = true }) {
+    const blurEnabled = useParamsStore(s => s.blurEnabled);
+    const setBlurEnabled = useParamsStore(s => s.setBlurEnabled);
 
     return (
         <div className="bv-section">
             {showLabel && <p className="bv-label">BLUR</p>}
+
+            <div className="bv-controls-row">
+                <span className="bv-label">ENABLED</span>
+                <div className="bv-option-group">
+                    <button
+                        type="button"
+                        className={`bv-option-btn${blurEnabled ? ' active' : ''}`}
+                        onClick={() => setBlurEnabled(true)}
+                    >
+                        ON
+                    </button>
+                    <button
+                        type="button"
+                        className={`bv-option-btn${!blurEnabled ? ' active' : ''}`}
+                        onClick={() => setBlurEnabled(false)}
+                    >
+                        OFF
+                    </button>
+                </div>
+            </div>
+
             {BLUR_ENTRIES.map(([key, cfg]) => {
                 return (
                     <ParamSlider
                         key={key}
                         controlKey={key}
                         config={cfg}
+                        disabled={!blurEnabled}
                     />
                 );
             })}

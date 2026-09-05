@@ -64,7 +64,7 @@ export const BLUR_CONTROLS = {
     min: 0.0,
     max: 4.0,
     step: 0.05,
-    default: 0,
+    default: 1.0,
     description: 'Radius of the Kawase blur applied before dithering. Higher values produce a stronger/wider blur.',
   },
 
@@ -90,7 +90,7 @@ export const NOISE_CONTROLS = {
     min: 0.0,
     max: 1.0,
     step: 0.01,
-    default: 0.0,
+    default: 0.25,
     description: 'Percentage of pixels affected by procedural noise before tonal/color corrections.',
   },
   noiseIntensity: {
@@ -145,6 +145,8 @@ const UI_DEFAULTS = {
   histogramVisible: false,
   pipelineVisible: false,
   forceCpu: false,
+  noiseEnabled: false,
+  blurEnabled: false,
 };
 
 /* ---------------------------------- */
@@ -168,11 +170,15 @@ const useParamsStore = create(persist((set) => {
     setHistogramVisible: (visible) => set(() => ({ histogramVisible: Boolean(visible) })),
     setPipelineVisible: (visible) => set(() => ({ pipelineVisible: Boolean(visible) })),
     setForceCpu: (forceCpu) => set(() => ({ forceCpu: Boolean(forceCpu) })),
+    setNoiseEnabled: (enabled) => set(() => ({ noiseEnabled: Boolean(enabled) })),
+    setBlurEnabled: (enabled) => set(() => ({ blurEnabled: Boolean(enabled) })),
     resetKeys: (keys) => set(() => {
       const updates = {};
       for (const key of keys) {
         if (initialValues[key] !== undefined) {
           updates[key] = initialValues[key];
+        } else if (UI_DEFAULTS[key] !== undefined) {
+          updates[key] = UI_DEFAULTS[key];
         }
       }
       return updates;

@@ -347,6 +347,8 @@ const action = this.debugEnabled ? "disable" : "enable";
       useParamsStore.subscribe((state) => {
         const prevParams = this.previousColorParams || {};
         const nextParams = {
+          noiseEnabled: state.noiseEnabled,
+          blurEnabled: state.blurEnabled,
           noiseCoverage: state.noiseCoverage,
           noiseIntensity: state.noiseIntensity,
           noiseSaturation: state.noiseSaturation,
@@ -359,6 +361,8 @@ const action = this.debugEnabled ? "disable" : "enable";
         };
 
         const colorParamsChanged = !this.previousColorParams || (
+          prevParams.noiseEnabled !== nextParams.noiseEnabled ||
+          prevParams.blurEnabled !== nextParams.blurEnabled ||
           prevParams.noiseCoverage !== nextParams.noiseCoverage ||
           prevParams.noiseIntensity !== nextParams.noiseIntensity ||
           prevParams.noiseSaturation !== nextParams.noiseSaturation ||
@@ -799,12 +803,14 @@ const action = this.debugEnabled ? "disable" : "enable";
             hue: paramsState.hue,
           },
           noise: {
+            enabled: paramsState.noiseEnabled,
             noiseCoverage: paramsState.noiseCoverage,
             noiseIntensity: paramsState.noiseIntensity,
             noiseSaturation: paramsState.noiseSaturation,
             noisePhase: this.noiseFrame % 100,
           },
           blur: {
+            enabled: paramsState.blurEnabled,
             blurStrength: paramsState.blurStrength,
             edgeStrength: paramsState.edgeStrength,
             passes: paramsState.passes,

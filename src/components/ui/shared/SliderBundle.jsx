@@ -22,6 +22,7 @@ export default function SliderBundle({
     tooltip,
     name,
     id,
+    disabled = false,
 }) {
     const value = _value ?? (defaultValue !== undefined ? defaultValue : min);
     const [isSelected, setIsSelected] = useState(false);
@@ -142,6 +143,7 @@ export default function SliderBundle({
 
 
     const handleFocus = () => {
+        if (disabled) return;
         setIsSelected(true);
     };
 
@@ -155,20 +157,20 @@ export default function SliderBundle({
 
     return (
         <div
-            className="bv slider-bundle"
+            className={`bv slider-bundle${disabled ? ' disabled' : ''}`}
             onFocus={handleFocus}
             onBlur={handleBlur}
         >
             <div className="flex-h">
                 <span className="slider-label-wrap" title={tooltip || undefined}>
                     <span className={`bv-label slider-bundle-label${isModified ? ' modified' : ''}`}>{label}</span>
-                    {isSelected && (
+                    {isSelected && !disabled && (
                         <span className="slider-range-bounds">[{formatBound(min)}, {formatBound(max)}]</span>
                     )}
                 </span>
 
                 <div className="slider-bundle-controls">
-                    {isSelected && (
+                    {isSelected && !disabled && (
                         <div className="slider-bundle-actions">
                             <button
                                 type="button"
@@ -208,6 +210,7 @@ export default function SliderBundle({
                         step={step}
                         value={value}
                         onChange={onChange}
+                        disabled={disabled}
                     />
                 </div>
             </div>
@@ -219,9 +222,10 @@ export default function SliderBundle({
                 defaultValue={defaultValue}
                 step={step}
                 onChange={onChange}
-                isSelected={isSelected}
-                onSelect={() => setIsSelected(true)}
+                isSelected={isSelected && !disabled}
+                onSelect={() => !disabled && setIsSelected(true)}
                 onDeselect={() => setIsSelected(false)}
+                disabled={disabled}
             />
         </div>
     );

@@ -12,7 +12,7 @@ function formatVal(v, step) {
     return String(Number(num.toFixed(3)));
 }
 
-export default function AutoResizingInput({ min, max, step, value: externalValue, onChange, label, 'aria-label': ariaLabelProp, name, id }) {
+export default function AutoResizingInput({ min, max, step, value: externalValue, onChange, label, 'aria-label': ariaLabelProp, name, id, disabled = false }) {
     const generatedId = useId()
     const ariaLabel = ariaLabelProp || label || name || 'Numeric input'
     const inputName = name || (label ? label.toLowerCase().replace(/\s+/g, '-') : 'numeric-input')
@@ -163,6 +163,7 @@ export default function AutoResizingInput({ min, max, step, value: externalValue
             onBlur={handleBlur}
             aria-invalid={!isValid}
             aria-label={ariaLabel}
+            disabled={disabled}
         />
     )
 }

@@ -53,8 +53,8 @@ export default function AdjustmentsPage() {
 
     // Check if sections are modified (differ from default values)
     const isColorModified = useParamsStore((s) => colorKeys.some((k) => s[k] !== COLOR_CONTROLS[k].default));
-    const isNoiseModified = useParamsStore((s) => noiseKeys.some((k) => s[k] !== NOISE_CONTROLS[k].default));
-    const isBlurModified = useParamsStore((s) => blurKeys.some((k) => s[k] !== BLUR_CONTROLS[k].default));
+    const isNoiseModified = useParamsStore((s) => Boolean(s.noiseEnabled) || noiseKeys.some((k) => s[k] !== NOISE_CONTROLS[k].default));
+    const isBlurModified = useParamsStore((s) => Boolean(s.blurEnabled) || blurKeys.some((k) => s[k] !== BLUR_CONTROLS[k].default));
 
     const setRootNode = useCallback((node) => {
         if (!node) return;
@@ -127,7 +127,7 @@ export default function AdjustmentsPage() {
                     isOpen={openSections.noise}
                     onToggle={() => toggleSection('noise')}
                     isModified={isNoiseModified}
-                    onReset={() => resetKeys(noiseKeys)}
+                    onReset={() => resetKeys([...noiseKeys, 'noiseEnabled'])}
                     onRandomize={() => randomizeKeys(noiseKeys, NOISE_CONTROLS)}
                 >
                     <NoiseControls showLabel={false} />
@@ -139,7 +139,7 @@ export default function AdjustmentsPage() {
                     isOpen={openSections.blur}
                     onToggle={() => toggleSection('blur')}
                     isModified={isBlurModified}
-                    onReset={() => resetKeys(blurKeys)}
+                    onReset={() => resetKeys([...blurKeys, 'blurEnabled'])}
                     onRandomize={() => randomizeKeys(blurKeys, BLUR_CONTROLS)}
                 >
                     <BlurControls showLabel={false} />

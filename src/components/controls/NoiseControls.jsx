@@ -9,7 +9,7 @@ function formatLabel(key) {
   return key.replace(/^noise/, '').replace(/([A-Z])/g, ' $1').trim().toUpperCase();
 }
 
-function NoiseSlider({ controlKey, config }) {
+function NoiseSlider({ controlKey, config, disabled }) {
   const value = useParamsStore(s => s[controlKey]);
   const setter = useParamsStore(s => s["set" + capitalize(controlKey)]);
 
@@ -23,19 +23,45 @@ function NoiseSlider({ controlKey, config }) {
       value={value}
       onChange={setter}
       tooltip={config.description}
+      disabled={disabled}
     />
   );
 }
 
 export default function NoiseControls({ showLabel = true }) {
+  const noiseEnabled = useParamsStore(s => s.noiseEnabled);
+  const setNoiseEnabled = useParamsStore(s => s.setNoiseEnabled);
+
   return (
     <div className="bv-section">
       {showLabel && <p className="bv-label">NOISE</p>}
+
+      <div className="bv-controls-row">
+        <span className="bv-label">ENABLED</span>
+        <div className="bv-option-group">
+          <button
+            type="button"
+            className={`bv-option-btn${noiseEnabled ? ' active' : ''}`}
+            onClick={() => setNoiseEnabled(true)}
+          >
+            ON
+          </button>
+          <button
+            type="button"
+            className={`bv-option-btn${!noiseEnabled ? ' active' : ''}`}
+            onClick={() => setNoiseEnabled(false)}
+          >
+            OFF
+          </button>
+        </div>
+      </div>
+
       {Object.entries(NOISE_CONTROLS).map(([key, cfg]) => (
         <NoiseSlider
           key={key}
           controlKey={key}
           config={cfg}
+          disabled={!noiseEnabled}
         />
       ))}
     </div>

@@ -175,6 +175,26 @@
     border: 1px solid var(--color-danger);
 }
 
+.bv.slider-bundle.disabled {
+    opacity: 0.45;
+}
+
+.bv.slider-bundle.disabled input {
+    cursor: not-allowed;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.bv.slider.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+.bv.slider.disabled .track {
+    cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
     .bv.slider {
         height: 1.6rem;

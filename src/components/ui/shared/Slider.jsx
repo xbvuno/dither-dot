@@ -38,6 +38,7 @@ export default function Slider({
   isSelected: isSelectedProp,
   onSelect,
   onDeselect,
+  disabled = false,
 }) {
   const ariaLabel = ariaLabelProp || label || 'Slider';
   const trackRef = useRef(null);
@@ -73,10 +74,12 @@ export default function Slider({
   stateRef.current.step = numStep;
   stateRef.current.isControlled = isControlled;
   stateRef.current.onChange = onChange;
+  stateRef.current.disabled = disabled;
 
   /* ---------- internal setter ---------- */
 
   const setInternalValue = (next) => {
+    if (stateRef.current.disabled) return;
     const s = stateRef.current;
     const currVal = Number(s.value);
     const sMin = Number(s.min);
@@ -181,6 +184,7 @@ export default function Slider({
     };
 
     const onPointerDown = (e) => {
+      if (stateRef.current.disabled) return;
       triggerHapticPulse(5);
       if (e.pointerType === "mouse") {
         if (e.button !== 0) return;
@@ -335,6 +339,7 @@ export default function Slider({
   };
 
   const handleSelect = () => {
+    if (disabled) return;
     selectedRef.current = true;
     setInternalSelected(true);
     onSelect?.();
@@ -350,13 +355,14 @@ export default function Slider({
   return (
     <div
       ref={containerRef}
-      className={`bv slider${isSelected ? ' selected' : ''}`}
+      className={`bv slider${isSelected ? ' selected' : ''}${disabled ? ' disabled' : ''}`}
       role="slider"
       aria-label={ariaLabel}
       aria-valuemin={numMin}
       aria-valuemax={numMax}
       aria-valuenow={numValue}
-      tabIndex={0}
+      aria-disabled={disabled || undefined}
+      tabIndex={disabled ? -1 : 0}
       onFocus={handleSelect}
       onBlur={handleDeselect}
       onPointerDown={handleSelect}
@@ -364,7 +370,7 @@ export default function Slider({
       <div
         className="track"
         ref={trackRef}
-        onDoubleClick={handleReset}
+        onDoubleClick={disabled ? undefined : handleReset}
       >
         <div className={`thumb${defaultValue !== undefined && numValue !== Number(defaultValue) ? ' modified' : ''}`} ref={thumbRef} />
         {defaultValue !== undefined && (
