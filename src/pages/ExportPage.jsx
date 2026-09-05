@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Save, Copy, Eye, Trash2 } from 'lucide-react';
 import MacroSection from '../components/ui/MacroSection';
+import OptionGroup from '../components/ui/shared/OptionGroup';
 import useImageStore from '../stores/media/imageStore';
 import useGifStore from '../stores/media/gifStore';
 import useWebcamStore from '../stores/media/webcamStore';
@@ -375,16 +376,35 @@ export default function ExportPage() {
         </div>
 
         <div className='bv-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>LIVE PREVIEW</span>
+            <OptionGroup
+              options={[
+                { value: true, label: 'ON' },
+                { value: false, label: 'OFF' },
+              ]}
+              value={livePreview}
+              onChange={handleToggleLivePreview}
+              ariaLabel="Live preview"
+            />
+          </div>
+        </div>
+
+        <div className='bv-section'>
+          <SliderBundle
+            label='UPSCALE'
+            min={1}
+            max={10}
+            step={1}
+            defaultValue={1}
+            value={upscale}
+            onChange={handleUpscaleChange}
+            pinId="export:upscale"
+          />
+        </div>
+
+        <div className='bv-section'>
           <div className='bv-option-group'>
-            <button
-              type='button'
-              className={`bv-option-btn export-btn${livePreview ? ' active' : ''}`}
-              onClick={() => handleToggleLivePreview(!livePreview)}
-              aria-pressed={livePreview}
-              title={livePreview ? 'Live Preview is ON (auto updates)' : 'Live Preview is OFF'}
-            >
-              LIVE PREVIEW
-            </button>
             <button
               type='button'
               className='bv-option-btn export-btn'
@@ -415,19 +435,6 @@ export default function ExportPage() {
             </button>
           </div>
           {status && <p className='import-export-status'>{status}</p>}
-        </div>
-
-        <div className='bv-section'>
-          <SliderBundle
-            label='UPSCALE'
-            min={1}
-            max={10}
-            step={1}
-            defaultValue={1}
-            value={upscale}
-            onChange={handleUpscaleChange}
-            pinId="export:upscale"
-          />
         </div>
 
         {isGifSource && !isPreviewValid && (
