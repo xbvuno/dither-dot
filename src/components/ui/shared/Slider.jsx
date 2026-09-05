@@ -263,6 +263,7 @@ export default function Slider({
     let pointerDown = false;
     let dragging = false;
     let touchPending = false;
+    let wasSelectedOnDown = false;
     let startX = 0;
     let startY = 0;
     let activePointerId = null;
@@ -281,13 +282,33 @@ export default function Slider({
       startY = e.clientY;
       activePointerId = e.pointerId;
       pointerDown = true;
-      dragging = false;
+      wasSelectedOnDown = selectedRef.current;
 
       if (e.pointerType === "mouse") {
         touchPending = false;
+        if (wasSelectedOnDown) {
+          // If already selected, clicking directly jumps value and starts drag
+          dragging = true;
+          try {
+            track.setPointerCapture?.(e.pointerId);
+          } catch {
+            /* ignore pointer capture error */
+          }
+          const s = stateRef.current;
+          const pct = getPercent(e.clientX);
+          setInternalValue(percentToValue(pct, s.min, s.max, s.step));
+        } else {
+          // If not selected, select only on pointerdown (do not jump value)
+          dragging = false;
+          handleSelect();
+        }
       } else {
-        // Touch pointer: wait for gesture direction to avoid accidental slider edits during vertical page scroll
+        // Touch pointer: wait for gesture direction or tap release
         touchPending = true;
+        dragging = false;
+        if (!wasSelectedOnDown) {
+          handleSelect();
+        }
       }
     };
 
@@ -317,7 +338,7 @@ export default function Slider({
           }
         }
       } else if (!dragging) {
-        // For mouse pointer: require a minimum movement threshold before dragging
+        // For mouse pointer when not initially selected: drag starts if moved >= 3px
         if (dx >= 3) {
           dragging = true;
           try {
@@ -345,10 +366,17 @@ export default function Slider({
     };
 
     const onPointerUp = (e) => {
-      if (pointerDown && dragging) {
-        const s = stateRef.current;
-        const pct = getPercent(e.clientX);
-        setInternalValue(percentToValue(pct, s.min, s.max, s.step));
+      if (pointerDown) {
+        if (dragging) {
+          const s = stateRef.current;
+          const pct = getPercent(e.clientX);
+          setInternalValue(percentToValue(pct, s.min, s.max, s.step));
+        } else if (touchPending && wasSelectedOnDown) {
+          // Tap on touch when already selected -> jump to tapped value
+          const s = stateRef.current;
+          const pct = getPercent(e.clientX);
+          setInternalValue(percentToValue(pct, s.min, s.max, s.step));
+        }
       }
 
       pointerDown = false;
