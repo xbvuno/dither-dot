@@ -212,12 +212,21 @@ self.onmessage = async (event) => {
 
     // Apply crop if settings are provided
     if (crop && (crop.top > 0 || crop.bottom > 0 || crop.left > 0 || crop.right > 0)) {
-      croppedImage = Transform.Crop(image, {
-        top: crop.top,
-        left: crop.left,
-        right: crop.right,
-        bottom: crop.bottom
-      });
+      const cropX1 = Math.max(0, Math.min(customWidth - 1, crop.left || 0));
+      const cropY1 = Math.max(0, Math.min(customHeight - 1, crop.top || 0));
+      const cropX2 = Math.max(cropX1 + 1, Math.min(customWidth, customWidth - (crop.right || 0)));
+      const cropY2 = Math.max(cropY1 + 1, Math.min(customHeight, customHeight - (crop.bottom || 0)));
+
+      try {
+        croppedImage = Transform.Crop(image, {
+          top: cropY1,
+          left: cropX1,
+          right: cropX2,
+          bottom: cropY2,
+        });
+      } catch (err) {
+        console.error('Failed to crop image in worker:', err);
+      }
     }
     const activeImage = croppedImage || image;
     tSetup = performance.now() - tSetupStart;
