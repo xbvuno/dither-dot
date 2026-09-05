@@ -1,12 +1,24 @@
 import { useEffect, useState } from 'react';
 import { Save, Copy, Eye, Trash2 } from 'lucide-react';
 import MacroSection from '../components/ui/MacroSection';
+import OptionGroup from '../components/ui/shared/OptionGroup';
 import useImageStore from '../stores/media/imageStore';
 import useGifStore from '../stores/media/gifStore';
 import useWebcamStore from '../stores/media/webcamStore';
 import { getOutputCanvas } from '../utils/canvasRegistry';
 import { exportCurrentGif } from '../utils/exportGif';
 import SliderBundle from '../components/ui/shared/SliderBundle';
+
+const LIVE_PREVIEW_STORAGE_KEY = 'dither-dot:export-live-preview';
+
+function getStoredLivePreview() {
+  try {
+    const val = localStorage.getItem(LIVE_PREVIEW_STORAGE_KEY);
+    return val !== null ? val === 'true' : true;
+  } catch {
+    return true;
+  }
+}
 
 function getExportBaseName(sourceName = '') {
   return sourceName.replace(/\.[^.]+$/, '').trim() || 'export';
@@ -88,6 +100,7 @@ export default function ExportPage() {
   const setExportUpscale = useImageStore(s => s.setExportUpscale);
   const upscale = exportUpscale;
   const setUpscale = setExportUpscale;
+  const [livePreview, setLivePreview] = useState(getStoredLivePreview);
   const [status, setStatus] = useState(null);
   const [gifExporting, setGifExporting] = useState(false);
   const [previewGenerating, setPreviewGenerating] = useState(false);
@@ -103,11 +116,19 @@ export default function ExportPage() {
   const finalWidth = baseWidth * upscale;
   const finalHeight = baseHeight * upscale;
   
-  const isPreviewValid = Boolean(
-    previewUrl &&
-    previewJobId === lastRenderJobId &&
-    previewUpscale === upscale
-  );
+  const isPreviewValid = isGifSource
+    ? Boolean(previewUrl && previewJobId === lastRenderJobId && previewUpscale === upscale)
+    : Boolean(previewUrl && (previewJobId === lastRenderJobId || livePreview));
+
+  const handleToggleLivePreview = (val) => {
+    const isLive = val === 'on' || val === true;
+    setLivePreview(isLive);
+    try {
+      localStorage.setItem(LIVE_PREVIEW_STORAGE_KEY, String(isLive));
+    } catch {
+      // ignore
+    }
+  };
 
   useEffect(() => {
     setExportName(getDefaultExportName(sourceName));
@@ -158,13 +179,51 @@ export default function ExportPage() {
   };
 
   useEffect(() => {
-    const canvasExists = !!getOutputCanvas();
-    const canGenerate = canvasExists && !isGifSource;
-    if (canGenerate) {
-      handleGeneratePreview();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isGifSource, sourceName, upscale]);
+    if (!livePreview) return;
+    if (isGifSource) return;
+
+    let canceled = false;
+    let idleHandle = null;
+
+    const generateLazy = async () => {
+      if (canceled) return;
+      const outputCanvas = getOutputCanvas();
+      if (!outputCanvas) return;
+
+      try {
+        // Force upscale to 1 for lightweight, non-blocking lazy live preview
+        const dataUrl = await canvasToDataUrl(outputCanvas);
+        if (!canceled) {
+          setExportPreviewUrl(dataUrl);
+          setPreviewJobId(useImageStore.getState().lastRenderJobId);
+          setPreviewUpscale(1);
+        }
+      } catch {
+        // silent fail on discarded frame
+      }
+    };
+
+    const timer = setTimeout(() => {
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        idleHandle = window.requestIdleCallback(
+          () => {
+            generateLazy();
+          },
+          { timeout: 1000 }
+        );
+      } else {
+        generateLazy();
+      }
+    }, 250);
+
+    return () => {
+      canceled = true;
+      clearTimeout(timer);
+      if (idleHandle && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+        window.cancelIdleCallback(idleHandle);
+      }
+    };
+  }, [livePreview, lastRenderJobId, sourceName, isGifSource, setExportPreviewUrl]);
 
   const handleCopy = async () => {
     try {
@@ -304,6 +363,19 @@ export default function ExportPage() {
             value={upscale}
             onChange={setUpscale}
             pinId="export:upscale"
+          />
+        </div>
+
+        <div className='bv-section'>
+          <span className='bv-label' style={{ display: 'block' }}>LIVE PREVIEW</span>
+          <OptionGroup
+            options={[
+              { value: 'off', label: 'OFF' },
+              { value: 'on', label: 'ON' },
+            ]}
+            value={livePreview ? 'on' : 'off'}
+            onChange={handleToggleLivePreview}
+            ariaLabel='Live preview mode'
           />
         </div>
 
