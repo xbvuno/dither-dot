@@ -190,36 +190,6 @@ export default function DitherPage() {
         </div>
       </MacroSection>
 
-      <MacroSection
-        title="METHODS"
-        collapsible
-        isOpen={openSections.methods}
-        onToggle={() => toggleSection('methods')}
-      >
-        <div className="bv-section">
-          <div className="dither-method-list">
-            {ALL_DITHER_METHODS.map((item) => {
-              const isSelected = item.id === 'disabled' ? !enabled : (enabled && method === item.id);
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  className={`dither-method-card${isSelected ? ' active' : ''}`}
-                  onClick={() => handleSelectMethod(item.id)}
-                  title={item.name}
-                >
-                  <DitherMethodPreview methodId={item.id} />
-                  <div className="dither-method-head">
-                    <span className="dither-method-name">{item.name}</span>
-                    <span className="dither-method-category">{item.category}</span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </MacroSection>
-
       {showControls && (
         <MacroSection
           title="CONTROLS"
@@ -269,6 +239,36 @@ export default function DitherPage() {
           </div>
         </MacroSection>
       )}
+
+      <MacroSection
+        title="METHODS"
+        collapsible
+        isOpen={openSections.methods}
+        onToggle={() => toggleSection('methods')}
+      >
+        <div className="bv-section">
+          <div className="dither-method-list">
+            {ALL_DITHER_METHODS.map((item) => {
+              const isSelected = item.id === 'disabled' ? !enabled : (enabled && method === item.id);
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`dither-method-card${isSelected ? ' active' : ''}`}
+                  onClick={() => handleSelectMethod(item.id)}
+                  title={item.name}
+                >
+                  <DitherMethodPreview methodId={item.id} />
+                  <div className="dither-method-head">
+                    <span className="dither-method-name">{item.name}</span>
+                    <span className="dither-method-category">{item.category}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </MacroSection>
     </div>
   );
 }
