@@ -94,12 +94,11 @@ main.import-3col-layout,
   display: flex;
   flex-direction: column;
   gap: 8px;
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 0 0 auto;
   width: 100%;
 }
 
-/* Dropzone: expands in height when space is available */
+/* Dropzone: capped at max-height 12rem */
 .import-route-dropzone {
   border: 2px dashed var(--color-border);
   padding: 14px;
@@ -110,8 +109,8 @@ main.import-3col-layout,
   background: var(--color-bg-subtle);
   cursor: pointer;
   transition: all 0.15s ease;
-  flex: 1 1 auto;
-  min-height: 64px;
+  min-height: 56px;
+  max-height: 12rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -154,15 +153,14 @@ main.import-3col-layout,
   border-color: var(--color-danger, #ff6b6b) !important;
 }
 
-/* Full-width Media Preview: Edge-to-edge 100% width, expands to maximum available height (max 52%) with object-fit cover and footer */
+/* Full-width Media Preview: Priority vertical expansion, complete image visibility (object-fit: contain), and clean footer */
 .import-route-media-preview-card {
   display: flex;
   flex-direction: column;
   width: calc(100% + 28px);
   margin: 0 -14px;
   flex: 1 1 auto;
-  max-height: 52%;
-  min-height: 150px;
+  min-height: 140px;
   background: transparent;
   border-top: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
@@ -191,7 +189,7 @@ main.import-3col-layout,
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   image-rendering: pixelated;
   display: block;
 }
