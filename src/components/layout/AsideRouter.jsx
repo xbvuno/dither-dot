@@ -2,6 +2,7 @@ import { Suspense, lazy } from "react";
 import usePageStore, { PAGE } from "../../stores/ui/pageStore";
 
 const ImportPage = lazy(() => import("../../pages/ImportPage"));
+const PinnedPage = lazy(() => import("../../pages/PinnedPage"));
 const ResizingPage = lazy(() => import("../../pages/ResizingPage"));
 const AdjustmentsPage = lazy(() => import("../../pages/AdjustmentsPage"));
 const DitherPage = lazy(() => import("../../pages/DitherPage"));
@@ -10,6 +11,7 @@ const PalettePage = lazy(() => import("../../pages/PalettePage"));
 
 const PAGES = {
   [PAGE.IMPORT]: ImportPage,
+  [PAGE.PINNED]: PinnedPage,
   [PAGE.RESIZING]: ResizingPage,
   [PAGE.ADJUSTMENTS]: AdjustmentsPage,
   [PAGE.DITHER]: DitherPage,

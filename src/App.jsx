@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Smartphone, MonitorSmartphone, TriangleAlert, ArrowRight, Info, Heart, ScrollText, Cat, FileUp, ImageUpscale, SlidersHorizontal, Palette, SprayCan, Download, Maximize, Minimize } from 'lucide-react'
+import { Smartphone, MonitorSmartphone, TriangleAlert, ArrowRight, Info, Heart, ScrollText, Cat, FileUp, Pin, ImageUpscale, SlidersHorizontal, Palette, SprayCan, Download, Maximize, Minimize } from 'lucide-react'
 import Aside from './components/layout/Aside'
 
 import watermarkMini from './assets/watermark/watermark-mini.png'
@@ -20,6 +20,7 @@ import useWebcamStore from './stores/media/webcamStore'
 
 const ICONS = [
   { id: PAGE.IMPORT, label: 'Import', Icon: FileUp },
+  { id: PAGE.PINNED, label: 'Pinned', Icon: Pin },
   { id: PAGE.RESIZING, label: 'Resizing', Icon: ImageUpscale },
   { id: PAGE.ADJUSTMENTS, label: 'Adjustments', Icon: SlidersHorizontal },
   { id: PAGE.PALETTE, label: 'Palette', Icon: Palette },

@@ -203,6 +203,28 @@
     flex-shrink: 0;
 }
 
+.slider-pin-btn {
+    color: var(--color-text-subtle);
+}
+
+.slider-pin-btn.is-pinned {
+    color: var(--color-text);
+}
+
+.slider-pin-btn:hover {
+    color: var(--color-text);
+    background: var(--color-hover);
+}
+
+.slider-unpin-btn {
+    color: var(--color-text-subtle);
+}
+
+.slider-unpin-btn:hover {
+    color: var(--color-danger, #e43b44);
+    background: var(--color-hover);
+}
+
 .bv.slider-bundle input {
     background-color: var(--input-surface);
     border: none;

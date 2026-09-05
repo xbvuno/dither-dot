@@ -28,6 +28,7 @@ function ColorCountSection() {
         defaultValue={8}
         value={colorCount}
         onChange={setColorCount}
+        pinId="palette:colorCount"
       />
     </div>
   );

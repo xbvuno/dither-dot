@@ -176,6 +176,7 @@ export default function SizeControls() {
             value={aspectOffset}
             onChange={setAspectOffset}
             disabled={isFree}
+            pinId="resizing:aspectOffset"
           />
         </div>
       </MacroSection>
@@ -214,6 +215,7 @@ export default function SizeControls() {
             value={crop.top}
             onChange={setCropTop}
             disabled={isTopBottomDisabled}
+            pinId="resizing:cropTop"
           />
           <SliderBundle
             min={0}
@@ -224,6 +226,7 @@ export default function SizeControls() {
             value={crop.bottom}
             onChange={setCropBottom}
             disabled={isTopBottomDisabled}
+            pinId="resizing:cropBottom"
           />
           <SliderBundle
             min={0}
@@ -234,6 +237,7 @@ export default function SizeControls() {
             value={crop.left}
             onChange={setCropLeft}
             disabled={isLeftRightDisabled}
+            pinId="resizing:cropLeft"
           />
           <SliderBundle
             min={0}
@@ -244,6 +248,7 @@ export default function SizeControls() {
             value={crop.right}
             onChange={setCropRight}
             disabled={isLeftRightDisabled}
+            pinId="resizing:cropRight"
           />
         </div>
       </MacroSection>
@@ -279,6 +284,7 @@ export default function SizeControls() {
               label="SCALE"
               value={currentScale}
               onChange={setScale}
+              pinId="resizing:scale"
             />
           ) : (
             <>
@@ -290,6 +296,7 @@ export default function SizeControls() {
                 label="WIDTH"
                 value={currentCroppedW}
                 onChange={setCustomWidth}
+                pinId="resizing:width"
               />
               <SliderBundle
                 min={1}
@@ -299,6 +306,7 @@ export default function SizeControls() {
                 label="HEIGHT"
                 value={currentCroppedH}
                 onChange={setCustomHeight}
+                pinId="resizing:height"
               />
             </>
           )}
