@@ -7,6 +7,62 @@ const INITIAL_SIZE_STATE = {
   ratioLocked: true,
   customSize: { customWidth: null, customHeight: null },
   crop: { top: 0, bottom: 0, left: 0, right: 0 },
+  aspectPreset: 'free',
+  aspectOrientation: 'landscape',
+  aspectOffset: 0.5,
+};
+
+export const computeAspectCrop = (width, height, preset, orientation, offset = 0.5) => {
+  const w = Number(width) || 1;
+  const h = Number(height) || 1;
+
+  if (!preset || preset === 'free') {
+    return null;
+  }
+
+  let ratioW = 1;
+  let ratioH = 1;
+  if (preset === '1:1') {
+    ratioW = 1;
+    ratioH = 1;
+  } else if (preset === '4:3') {
+    ratioW = orientation === 'portrait' ? 3 : 4;
+    ratioH = orientation === 'portrait' ? 4 : 3;
+  } else if (preset === '16:9') {
+    ratioW = orientation === 'portrait' ? 9 : 16;
+    ratioH = orientation === 'portrait' ? 16 : 9;
+  }
+
+  const targetRatio = ratioW / ratioH;
+  const imgRatio = w / h;
+  const p = Math.max(0, Math.min(1.0, Number(offset) ?? 0.5));
+
+  if (imgRatio > targetRatio) {
+    // Image is wider than target ratio -> crop left/right (X axis)
+    const targetW = Math.max(1, Math.min(w, Math.round(h * targetRatio)));
+    const totalCropX = Math.max(0, w - targetW);
+    const cropLeft = Math.round(totalCropX * p);
+    const cropRight = totalCropX - cropLeft;
+    return {
+      crop: { top: 0, bottom: 0, left: cropLeft, right: cropRight },
+      croppedAxis: 'x',
+    };
+  } else if (imgRatio < targetRatio) {
+    // Image is taller than target ratio -> crop top/bottom (Y axis)
+    const targetH = Math.max(1, Math.min(h, Math.round(w / targetRatio)));
+    const totalCropY = Math.max(0, h - targetH);
+    const cropTop = Math.round(totalCropY * p);
+    const cropBottom = totalCropY - cropTop;
+    return {
+      crop: { top: cropTop, bottom: cropBottom, left: 0, right: 0 },
+      croppedAxis: 'y',
+    };
+  }
+
+  return {
+    crop: { top: 0, bottom: 0, left: 0, right: 0 },
+    croppedAxis: null,
+  };
 };
 
 const clampCrop = (crop, w, h) => {
@@ -108,6 +164,9 @@ const useSizeStore = create(persist((set) => ({
           },
           ratio: (safeWidth && safeHeight) ? safeWidth / safeHeight : state.ratio,
           crop: { top: 0, bottom: 0, left: 0, right: 0 },
+          aspectPreset: 'free',
+          aspectOrientation: 'landscape',
+          aspectOffset: 0.5,
         };
       }
 
@@ -250,11 +309,85 @@ const useSizeStore = create(persist((set) => ({
       };
     }),
 
+  setAspectPreset: (preset) =>
+    set((state) => {
+      const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
+      const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+
+      if (preset === 'free') {
+        return {
+          aspectPreset: 'free',
+        };
+      }
+
+      const result = computeAspectCrop(w, h, preset, state.aspectOrientation, state.aspectOffset);
+      if (!result) return { aspectPreset: preset };
+
+      const nextCrop = clampCrop(result.crop, w, h);
+      const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
+      const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+
+      return {
+        aspectPreset: preset,
+        crop: nextCrop,
+        ratio: curW / curH,
+      };
+    }),
+
+  setAspectOrientation: (orientation) =>
+    set((state) => {
+      const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
+      const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+
+      if (state.aspectPreset === 'free') {
+        return { aspectOrientation: orientation };
+      }
+
+      const result = computeAspectCrop(w, h, state.aspectPreset, orientation, state.aspectOffset);
+      if (!result) return { aspectOrientation: orientation };
+
+      const nextCrop = clampCrop(result.crop, w, h);
+      const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
+      const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+
+      return {
+        aspectOrientation: orientation,
+        crop: nextCrop,
+        ratio: curW / curH,
+      };
+    }),
+
+  setAspectOffset: (offset) =>
+    set((state) => {
+      const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
+      const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+      const safeOffset = Math.max(0, Math.min(1.0, Number(offset) || 0));
+
+      if (state.aspectPreset === 'free') {
+        return { aspectOffset: safeOffset };
+      }
+
+      const result = computeAspectCrop(w, h, state.aspectPreset, state.aspectOrientation, safeOffset);
+      if (!result) return { aspectOffset: safeOffset };
+
+      const nextCrop = clampCrop(result.crop, w, h);
+      const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
+      const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+
+      return {
+        aspectOffset: safeOffset,
+        crop: nextCrop,
+        ratio: curW / curH,
+      };
+    }),
+
   resetCrop: () =>
     set((state) => {
       const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
       const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
       return {
+        aspectPreset: 'free',
+        aspectOffset: 0.5,
         crop: { top: 0, bottom: 0, left: 0, right: 0 },
         ratio: w / h,
       };
@@ -272,6 +405,9 @@ const useSizeStore = create(persist((set) => ({
         },
         ratio: (width && height) ? width / height : state.ratio,
         crop: { top: 0, bottom: 0, left: 0, right: 0 },
+        aspectPreset: 'free',
+        aspectOrientation: 'landscape',
+        aspectOffset: 0.5,
       };
     }),
 
@@ -285,6 +421,9 @@ const useSizeStore = create(persist((set) => ({
     ratio: state.ratio,
     ratioLocked: state.ratioLocked,
     crop: state.crop,
+    aspectPreset: state.aspectPreset,
+    aspectOrientation: state.aspectOrientation,
+    aspectOffset: state.aspectOffset,
   }),
 }));
 

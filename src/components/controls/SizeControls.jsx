@@ -35,8 +35,17 @@ export default function SizeControls() {
   const setCropLeft = useSizeStore(s => s.setCropLeft);
   const setCropRight = useSizeStore(s => s.setCropRight);
 
+  const aspectPreset = useSizeStore(s => s.aspectPreset) || 'free';
+  const aspectOrientation = useSizeStore(s => s.aspectOrientation) || 'landscape';
+  const aspectOffset = useSizeStore(s => s.aspectOffset) ?? 0.5;
+  const setAspectPreset = useSizeStore(s => s.setAspectPreset);
+  const setAspectOrientation = useSizeStore(s => s.setAspectOrientation);
+  const setAspectOffset = useSizeStore(s => s.setAspectOffset);
+
   const resetSizeToCurrent = useSizeStore(s => s.resetSizeToCurrent);
   const resetCrop = useSizeStore(s => s.resetCrop);
+
+  const isFree = aspectPreset === 'free';
 
   // Accordion state loaded from and saved to localStorage
   const [openSections, setOpenSections] = useState(() => {
@@ -49,6 +58,7 @@ export default function SizeControls() {
       console.error("Error parsing open resizing sections", e);
     }
     return {
+      aspectRatio: true,
       cropping: true,
       resize: true
     };
@@ -99,8 +109,11 @@ export default function SizeControls() {
   }
 
   // Modified checks for underline and reset buttons
+  const isAspectModified = !isFree || aspectOrientation !== 'landscape' || Math.abs(aspectOffset - 0.5) > 1e-4;
   const isResizeModified = currentCroppedW !== croppedWidth || currentCroppedH !== croppedHeight || !ratioLocked;
   const isCroppingModified = crop.top !== 0 || crop.bottom !== 0 || crop.left !== 0 || crop.right !== 0;
+
+  const resetAspectRatio = () => setAspectPreset('free');
 
   return (
     <>
@@ -124,6 +137,70 @@ export default function SizeControls() {
               {currentCroppedH}px
             </span>
           </div>
+        </div>
+      </MacroSection>
+
+      <MacroSection
+        title="ASPECT RATIO"
+        collapsible
+        isOpen={openSections.aspectRatio}
+        onToggle={() => toggleSection('aspectRatio')}
+        isModified={isAspectModified}
+        onReset={resetAspectRatio}
+      >
+        <div className="bv-section">
+          <div className="bv-controls-row">
+            <span className="bv-label">RATIO</span>
+            <div className="bv-option-group histogram-toggle-group">
+              {['free', '1:1', '4:3', '16:9'].map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  className={`bv-option-btn${aspectPreset === preset ? ' active' : ''}`}
+                  onClick={() => setAspectPreset(preset)}
+                >
+                  {preset.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="bv-section">
+          <div className="bv-controls-row">
+            <span className="bv-label">ORIENTATION</span>
+            <div className="bv-option-group histogram-toggle-group">
+              <button
+                type="button"
+                className={`bv-option-btn${aspectOrientation === 'landscape' ? ' active' : ''}`}
+                disabled={isFree}
+                onClick={() => setAspectOrientation('landscape')}
+              >
+                LANDSCAPE
+              </button>
+              <button
+                type="button"
+                className={`bv-option-btn${aspectOrientation === 'portrait' ? ' active' : ''}`}
+                disabled={isFree}
+                onClick={() => setAspectOrientation('portrait')}
+              >
+                PORTRAIT
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="bv-section">
+          <SliderBundle
+            label="POSITION"
+            min={0}
+            max={1}
+            step={0.01}
+            defaultValue={0.5}
+            value={aspectOffset}
+            onChange={setAspectOffset}
+            disabled={isFree}
+          />
         </div>
       </MacroSection>
 
@@ -160,6 +237,7 @@ export default function SizeControls() {
             label="TOP"
             value={crop.top}
             onChange={setCropTop}
+            disabled={!isFree}
           />
           <SliderBundle
             min={0}
@@ -169,6 +247,7 @@ export default function SizeControls() {
             label="BOTTOM"
             value={crop.bottom}
             onChange={setCropBottom}
+            disabled={!isFree}
           />
           <SliderBundle
             min={0}
@@ -178,6 +257,7 @@ export default function SizeControls() {
             label="LEFT"
             value={crop.left}
             onChange={setCropLeft}
+            disabled={!isFree}
           />
           <SliderBundle
             min={0}
@@ -187,6 +267,7 @@ export default function SizeControls() {
             label="RIGHT"
             value={crop.right}
             onChange={setCropRight}
+            disabled={!isFree}
           />
         </div>
       </MacroSection>
