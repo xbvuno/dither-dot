@@ -111,6 +111,15 @@ export default function AutoResizingInput({ min, max, step, value: externalValue
         const newValue = input.value
         setDraftValue(newValue)
 
+        if (newValue === '-' || newValue === '-.' || newValue === '.') {
+            if (invalidTimerRef.current) {
+                clearTimeout(invalidTimerRef.current)
+                invalidTimerRef.current = null
+            }
+            setIsValid(true)
+            return
+        }
+
         const num = input.valueAsNumber
 
         if (Number.isNaN(num)) {

@@ -77,6 +77,8 @@ export default function Slider({
       Number.isInteger(numStep) &&
       numStep >= 1;
 
+    const toPct = (val) => ((val - numMin) / range) * 100;
+
     if (isIntBounds) {
       const totalSteps = Math.round(range / numStep);
 
@@ -85,12 +87,12 @@ export default function Slider({
         const result = [];
         for (let i = 1; i < totalSteps; i++) {
           const val = numMin + i * numStep;
-          result.push(((val - numMin) / range) * 100);
+          result.push(toPct(val));
         }
         return result;
       }
 
-      // Large integer range: determine nice round interval
+      // Large integer range: determine round interval
       let interval = 100;
       if (range >= 500) interval = 100;
       else if (range >= 200) interval = 50;
@@ -98,15 +100,67 @@ export default function Slider({
       else if (range >= 40) interval = 10;
       else interval = 5;
 
+      // Range spans negative to positive: anchor ticks on 0
+      if (numMin < 0 && numMax > 0) {
+        const result = [];
+        // Negative ticks radiating left from 0
+        for (let v = -interval; v > numMin + 1e-4; v -= interval) {
+          result.unshift(toPct(v));
+        }
+        // Zero tick
+        result.push(toPct(0));
+        // Positive ticks radiating right from 0
+        for (let v = interval; v < numMax - 1e-4; v += interval) {
+          result.push(toPct(v));
+        }
+        return result;
+      }
+
+      // Single sign integer range (all positive or all negative)
       const result = [];
-      const start = Math.ceil((numMin + 0.0001) / interval) * interval;
-      for (let v = start; v < numMax - 0.0001; v += interval) {
-        result.push(((v - numMin) / range) * 100);
+      const start = Math.ceil((numMin + 1e-4) / interval) * interval;
+      for (let v = start; v < numMax - 1e-4; v += interval) {
+        result.push(toPct(v));
       }
       return result;
     }
 
-    // Float or continuous range (e.g. 0 to 2, or floats) -> 8 subdivisions (7 intermediate ticks)
+    // Float or continuous range
+    // Range spans negative to positive (e.g. blacks [-0.5, 0.5], hue [-3.14, 3.14], etc.)
+    if (numMin < 0 && numMax > 0) {
+      if (Math.abs(numMin + numMax) < 1e-4) {
+        // Symmetric around 0: 4 subdivisions each side, 0 in exact center (50%)
+        const halfDivisions = 4;
+        const result = [];
+        for (let i = 1; i < halfDivisions; i++) {
+          const val = numMin + (i / halfDivisions) * (-numMin);
+          result.push(toPct(val));
+        }
+        result.push(50);
+        for (let i = 1; i < halfDivisions; i++) {
+          const val = (i / halfDivisions) * numMax;
+          result.push(toPct(val));
+        }
+        return result;
+      } else {
+        // Asymmetric spanning 0: anchor on 0
+        const result = [];
+        const negDivs = 4;
+        const posDivs = 4;
+        for (let i = 1; i < negDivs; i++) {
+          const val = numMin * (1 - i / negDivs);
+          result.push(toPct(val));
+        }
+        result.push(toPct(0));
+        for (let i = 1; i < posDivs; i++) {
+          const val = numMax * (i / posDivs);
+          result.push(toPct(val));
+        }
+        return result;
+      }
+    }
+
+    // Single sign float range: 8 subdivisions (7 intermediate ticks)
     const numDivisions = 8;
     const result = [];
     for (let i = 1; i < numDivisions; i++) {
