@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { setupMobileResize } from "../../utils/mobileResize";
+import "./styles/Aside.css";
 
 const ASIDE_WIDTH_STORAGE_KEY = 'dither-dot:aside-width';
 

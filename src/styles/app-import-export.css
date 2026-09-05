@@ -1,5 +1,5 @@
 .import-current-file {
-  font-size: 0.78rem;
+  font-size: 1rem;
   color: var(--color-text-subtle);
   overflow-wrap: anywhere;
 }
@@ -7,8 +7,8 @@
 .import-dropzone {
   border: 1px dashed var(--color-border-hover);
   background: var(--color-bg-subtle);
-  padding: 1rem 0.8rem;
-  font-size: 0.78rem;
+  padding: 0.85rem 0.6rem;
+  font-size: 1rem;
   letter-spacing: 0.04em;
   text-align: center;
   transition: background-color 0.15s ease, border-color 0.15s ease;
@@ -21,10 +21,11 @@
 
 .import-name-input {
   width: 100%;
-  font-family: 'Google Sans Code';
-  font-size: 0.78rem;
+  height: 2.2rem;
+  font-family: var(--font-mono, 'Sono', monospace);
+  font-size: 1rem;
   letter-spacing: 0.03em;
-  padding: 0.35rem 0.9rem;
+  padding: 0.35rem 0.6rem;
   outline: none;
 }
 
@@ -40,7 +41,7 @@
 }
 
 .export-name-format {
-  font-size: 0.74rem;
+  font-size: 1rem;
   letter-spacing: 0.08em;
   color: var(--color-text-muted);
   flex-shrink: 0;
@@ -99,21 +100,21 @@
 }
 
 .large-file-dialog-title {
-  font-size: 0.78rem;
+  font-size: 1.1rem;
   letter-spacing: 0.09em;
   color: var(--color-text);
   margin-bottom: 0.7rem;
 }
 
 .large-file-dialog-dims {
-  font-size: 0.74rem;
+  font-size: 0.95rem;
   letter-spacing: 0.05em;
   color: var(--color-text-muted);
   margin-bottom: 0.55rem;
 }
 
 .large-file-dialog-body {
-  font-size: 0.74rem;
+  font-size: 1rem;
   line-height: 1.55;
   color: var(--color-text-subtle);
   margin-bottom: 1.1rem;
@@ -153,6 +154,47 @@
   letter-spacing: 0.03em;
 }
 
+.camera-shoots-section {
+  margin-top: 1.5rem;
+}
+
+.camera-shoots-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.camera-shoots-vertical-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.camera-shoot-card {
+  border: 1px solid var(--color-border);
+  padding: 0.85rem;
+  background: var(--input-surface);
+}
+
+.camera-shoot-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.camera-shoot-label {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+.camera-shoot-img {
+  width: 100%;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
 @media (max-width: 768px) {
   .import-dropzone-section,
   .pipeline-section,
@@ -160,6 +202,7 @@
     display: none;
   }
 }
+
 
 
 

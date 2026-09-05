@@ -1,18 +1,18 @@
 .bv.slider {
     width: 100%;
-    height: 1.2rem;
+    height: 1.5rem;
     display: flex;
-    gap: 0.3rem;
+    align-items: center;
     margin-top: 0.4rem;
-    margin-bottom: 1rem;
 }
 
 .bv.slider .thumb {
     position: absolute;
-    height: 1.2rem;
+    height: 1.5rem;
     width: 2px;
     background-color: var(--color-text);
-    top: -0.2rem;
+    top: 50%;
+    transform: translateY(-50%);
     left: 0;
 }
 
@@ -22,19 +22,63 @@
 
 .bv.slider .track {
     position: relative;
-    border: 1px solid var(--color-text);
-    width: 100%;
-    height: 1rem;
+    border-left: 1px solid var(--color-text);
+    border-right: 1px solid var(--color-text);
     border-top: none;
+    border-bottom: none;
+    width: 100%;
+    height: 1.5rem;
     cursor: grab;
-    margin-top: 0.2rem;
-    overflow: hidden;
+    margin-top: 0;
+    overflow: visible;
     touch-action: pan-y;
     user-select: none;
 }
 
-.bv.slider sub {
-    margin-top: 4px;
+.bv.slider .track::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--color-text);
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.slider-ticks {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.slider-tick {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 1px;
+    pointer-events: none;
+}
+
+.slider-tick::before,
+.slider-tick::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 1px;
+    height: 4px;
+    background-color: var(--color-text);
+    opacity: 0.5;
+}
+
+.slider-tick::before {
+    top: 0;
+}
+
+.slider-tick::after {
+    bottom: 0;
 }
 
 .bv.slider.selected:focus {
@@ -51,48 +95,112 @@
     pointer-events: none;
 }
 
-.bv [role=button] {
-    padding: 0.5rem 0.1rem;
-    line-height: 0.3;
-    cursor: pointer;
-    font-weight: 100;
-    font-size: smaller;
-    touch-action: manipulation;
-}
-
-.bv [role="button"][disabled] {
-    opacity: 0.5;
-}
-
-.bv [role=button]:hover:not([disabled]) {
-    background-color: var(--color-hover);
-}
-
 .bv.slider-bundle {
     position: relative;
     margin-bottom: 1rem;
 }
 
-.bv.slider-bundle sub {
-    position: absolute;
-    opacity: 0.5;
-    translate: 0 100%;
-    top: calc(2.2rem + 4px);
-    --distance: 0rem;
-}
-
-.bv.slider-bundle sub.min {
-    left: var(--distance);
-}
-
-.bv.slider-bundle sub.max {
-    right: var(--distance);
+.slider-range-bounds {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    margin-left: 0.45rem;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    user-select: none;
+    opacity: 0.7;
 }
 
 .bv.slider-bundle .slider-bundle-label {
-    margin-right: 1rem;
+    margin-right: 0;
     margin-bottom: 0;
     color: var(--color-text);
+}
+
+.bv.slider-bundle .slider-bundle-label.modified::after {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: var(--color-modified, #e43b44);
+    margin-left: 0.4rem;
+    vertical-align: middle;
+    transform: translateY(-1px);
+}
+
+.bv.slider-bundle .flex-h {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.slider-bundle-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.slider-bundle-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+/* Step Buttons (- / +) */
+.slider-step-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    margin: 0;
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    outline: none;
+    color: var(--color-text-subtle);
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    transition: background-color 0.12s ease, color 0.12s ease, transform 0.08s ease;
+}
+
+.slider-step-btn:hover:not(:disabled) {
+    background: var(--color-hover);
+    color: var(--color-text);
+}
+
+.slider-step-btn:active:not(:disabled) {
+    background: var(--btn-bg-active);
+    color: var(--btn-color-active);
+    transform: scale(0.9);
+}
+
+.slider-step-btn:focus-visible {
+    outline: none;
+    background: var(--color-hover);
+    color: var(--color-text);
+}
+
+.slider-step-btn:disabled {
+    opacity: 0.2;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+    transform: none;
+}
+
+.slider-step-btn svg {
+    display: block;
+    pointer-events: none;
+    flex-shrink: 0;
 }
 
 .bv.slider-bundle input {
@@ -100,57 +208,71 @@
     border: none;
     color: var(--color-text);
     text-align: right;
-    padding: 0.1rem 1rem;
-    width: 4ch;
+    padding: 0.1rem 0.5rem;
+    width: 6.5ch;
+    box-sizing: content-box;
     border: 1px solid transparent;
-
     margin-left: auto;
-    flex-shrink: 1;
-    transition: 0.2s;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .bv.slider-bundle input:hover {
     background-color: var(--input-surface-hover);
-}
-.bv.slider-bundle [aria-label="reset"] {
-    margin-left: auto;
-}
-
-.bv.slider-bundle:has([aria-label="reset"]) input {
-    margin-left: 0.5rem;
 }
 
 .bv.slider-bundle input:focus-visible {
     outline: none;
     border: 1px solid var(--color-border-focus);
     background-color: var(--input-surface-focus);
-    
 }
 
 .bv.slider-bundle input[aria-invalid="true"] {
     border: 1px solid var(--color-danger);
 }
 
+.bv.slider-bundle.disabled {
+    opacity: 0.45;
+}
+
+.bv.slider-bundle.disabled input {
+    cursor: not-allowed;
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.bv.slider.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+.bv.slider.disabled .track {
+    cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
     .bv.slider {
-        height: 1.6rem;
+        height: 1.8rem;
         align-items: center;
         touch-action: pan-y;
     }
 
     .bv.slider .track {
-        height: 1.3rem;
+        height: 1.8rem;
         touch-action: pan-y;
     }
 
     .bv.slider .thumb {
-        height: 1.5rem;
+        height: 1.8rem;
         width: 3px;
-        top: -0.1rem;
+        top: 50%;
+        transform: translateY(-50%);
     }
 
-    .bv.slider > [role=button] {
-        display: none;
+    .slider-tick::before,
+    .slider-tick::after {
+        height: 5px;
     }
 }
 

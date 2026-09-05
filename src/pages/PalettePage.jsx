@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 import usePaletteStore, { EXTRACT_METHOD } from '../stores/data/paletteStore';
 import SliderBundle from '../components/ui/shared/SliderBundle';
+import OptionGroup from '../components/ui/shared/OptionGroup';
+import MacroSection from '../components/ui/MacroSection';
 import PaletteImportModal from '../components/palette/PaletteImportModal';
 import PaletteExportModal from '../components/palette/PaletteExportModal';
 import PaletteEditorPanel from '../components/palette/PaletteEditorPanel';
+import useAccordion from '../hooks/useAccordion';
 
 /* ---------------------------------- */
-/* COLOR COUNT                         */
+/* PALETTE SIZE                        */
 /* ---------------------------------- */
 
 function ColorCountSection() {
@@ -31,35 +34,63 @@ function ColorCountSection() {
 }
 
 /* ---------------------------------- */
-/* METHOD SELECTOR                    */
+/* PALETTE TYPE & METHOD SELECTOR     */
 /* ---------------------------------- */
 
-const METHODS = [
-  { id: EXTRACT_METHOD.MEDIAN_CUT, label: 'MEDIAN CUT' },
-  { id: EXTRACT_METHOD.OCTREE, label: 'OCTREE' },
-  { id: EXTRACT_METHOD.KMEANS, label: 'K-MEANS' },
-  { id: EXTRACT_METHOD.CUSTOM, label: 'CUSTOM' },
+const PALETTE_TYPE_OPTIONS = [
+  { value: 'generated', label: 'GENERATED' },
+  { value: 'custom', label: 'CUSTOM' },
 ];
 
-function MethodSection() {
+const GENERATED_METHODS = [
+  { value: EXTRACT_METHOD.MEDIAN_CUT, label: 'MEDIAN CUT' },
+  { value: EXTRACT_METHOD.OCTREE, label: 'OCTREE' },
+  { value: EXTRACT_METHOD.KMEANS, label: 'K-MEANS' },
+];
+
+function PaletteTypeAndMethodSection() {
   const method = usePaletteStore(s => s.method);
   const setMethod = usePaletteStore(s => s.setMethod);
+  const isCustom = method === EXTRACT_METHOD.CUSTOM;
+
+  const handleSelectType = (targetType) => {
+    if (targetType === 'custom') {
+      if (!isCustom) {
+        setMethod(EXTRACT_METHOD.CUSTOM);
+      }
+    } else {
+      if (isCustom) {
+        setMethod(EXTRACT_METHOD.OCTREE);
+      }
+    }
+  };
 
   return (
-    <div className="bv-section">
-      <p className="bv-label">METHOD</p>
-      <div className="bv-option-group">
-        {METHODS.map(m => (
-          <button
-            key={m.id}
-            className={`bv-option-btn${method === m.id ? ' active' : ''}`}
-            onClick={() => setMethod(m.id)}
-          >
-            {m.label}
-          </button>
-        ))}
+    <>
+      <div className="bv-section">
+        <div className="bv-controls-row">
+          <span className="bv-label">TYPE</span>
+          <OptionGroup
+            options={PALETTE_TYPE_OPTIONS}
+            value={isCustom ? 'custom' : 'generated'}
+            onChange={handleSelectType}
+            ariaLabel="Palette type"
+          />
+        </div>
       </div>
-    </div>
+
+      {!isCustom && (
+        <div className="bv-section">
+          <p className="bv-label">METHOD</p>
+          <OptionGroup
+            options={GENERATED_METHODS}
+            value={method}
+            onChange={setMethod}
+            ariaLabel="Palette generation method"
+          />
+        </div>
+      )}
+    </>
   );
 }
 
@@ -139,35 +170,16 @@ function CustomColorSwatch({ color, selected, onSelect, onRemoveColor, onDropCol
   );
 }
 
-function ColorsSection({ selectedIds, onToggleSelect, onSelectAll, onDeselectAll }) {
+function ColorsSection({ selectedIds, onToggleSelect }) {
   const method = usePaletteStore(s => s.method);
-  const customPaletteName = usePaletteStore(s => s.customPaletteName);
-  const setCustomPaletteName = usePaletteStore(s => s.setCustomPaletteName);
   const colors = usePaletteStore(s => s.colors);
   const removeColor = usePaletteStore(s => s.removeColor);
   const addColor = usePaletteStore(s => s.addColor);
   const moveColorCustom = usePaletteStore(s => s.moveColorCustom);
-  const saveCurrentPaletteToLibrary = usePaletteStore(s => s.saveCurrentPaletteToLibrary);
-  const sortCustomColors = usePaletteStore(s => s.sortCustomColors);
-
-  const [isSortOpen, setIsSortOpen] = useState(false);
-  const sortRef = useRef(null);
 
   const isCustom = method === EXTRACT_METHOD.CUSTOM;
   const active = colors.filter(c => !c.hidden);
   const hidden = colors.filter(c => c.hidden);
-
-  useEffect(() => {
-    const handleOutsideClick = (e) => {
-      if (sortRef.current && !sortRef.current.contains(e.target)) {
-        setIsSortOpen(false);
-      }
-    };
-    if (isSortOpen) {
-      window.addEventListener('pointerdown', handleOutsideClick);
-    }
-    return () => window.removeEventListener('pointerdown', handleOutsideClick);
-  }, [isSortOpen]);
 
   const handleDropColor = (fromId, toId) => {
     if (!fromId || !toId) return;
@@ -178,20 +190,19 @@ function ColorsSection({ selectedIds, onToggleSelect, onSelectAll, onDeselectAll
     removeColor(id);
   };
 
-  const handleSortOption = (criteria) => {
-    sortCustomColors(criteria);
-    setIsSortOpen(false);
-  };
-
-  const hasSelection = selectedIds.length > 0;
-
   return (
     <div className="bv-section">
       <div className="palette-row-inline">
         <p className="bv-label">COLORS</p>
         {isCustom && (
-          <button type="button" className="bv-option-btn" onClick={addColor}>
-            ADD COLOR
+          <button
+            type="button"
+            className="palette-add-color-btn"
+            onClick={addColor}
+            aria-label="Add Color"
+            title="Add Color"
+          >
+            <Plus size={14} strokeWidth={2} />
           </button>
         )}
       </div>
@@ -214,47 +225,6 @@ function ColorsSection({ selectedIds, onToggleSelect, onSelectAll, onDeselectAll
 
       {isCustom && (
         <>
-          {/* Sort & Select Tools */}
-          <div className="palette-sort-row">
-            <div ref={sortRef} style={{ position: 'relative' }}>
-              <button
-                type="button"
-                className="palette-link-btn"
-                onClick={() => setIsSortOpen(prev => !prev)}
-              >
-                SORT ▾
-              </button>
-              {isSortOpen && (
-                <div className="palette-sort-dropdown">
-                  <button type="button" className="palette-sort-item" onClick={() => handleSortOption('hue')}>
-                    HUE
-                  </button>
-                  <button type="button" className="palette-sort-item" onClick={() => handleSortOption('luminance')}>
-                    LUMINANCE
-                  </button>
-                  <button type="button" className="palette-sort-item" onClick={() => handleSortOption('saturation')}>
-                    SATURATION
-                  </button>
-                  <button type="button" className="palette-sort-item" onClick={() => handleSortOption('brightness')}>
-                    BRIGHTNESS
-                  </button>
-                  <div className="pe-slider-divider" style={{ margin: '2px 0' }} />
-                  <button type="button" className="palette-sort-item" onClick={() => handleSortOption('reverse')}>
-                    REVERSE
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <button
-              type="button"
-              className="palette-link-btn"
-              onClick={hasSelection ? onDeselectAll : onSelectAll}
-            >
-              {hasSelection ? 'DESELECT ALL' : 'SELECT ALL'}
-            </button>
-          </div>
-
           <div className="palette-color-grid">
             {active.map((c) => (
               <CustomColorSwatch
@@ -285,28 +255,6 @@ function ColorsSection({ selectedIds, onToggleSelect, onSelectAll, onDeselectAll
               </div>
             </>
           )}
-
-          <label htmlFor="custom-palette-name-input" className="bv-label" style={{ display: 'block', marginTop: '0.65rem' }}>CUSTOM PALETTE</label>
-          <div className="bv-option-group palette-save-row">
-            <input
-              type="text"
-              name="customPaletteName"
-              id="custom-palette-name-input"
-              className="palette-name-input"
-              value={customPaletteName}
-              onChange={(event) => setCustomPaletteName(event.target.value)}
-              spellCheck={false}
-              maxLength={64}
-              aria-label="Custom Palette Name"
-            />
-            <button
-              type="button"
-              className="bv-option-btn"
-              onClick={saveCurrentPaletteToLibrary}
-            >
-              SAVE TO LIBRARY
-            </button>
-          </div>
         </>
       )}
     </div>
@@ -324,7 +272,6 @@ function PaletteLibrarySection({ onOpenImport, onOpenExport }) {
 
   return (
     <div className="bv-section">
-      <p className="bv-label">PALETTE LIBRARY</p>
       <div className="bv-option-group">
         <button
           type="button"
@@ -355,15 +302,13 @@ function PaletteLibrarySection({ onOpenImport, onOpenExport }) {
                   title={entry.name}
                 >
                   <div className="palette-library-head">
-                    <span>{entry.name}</span>
+                    <span className="palette-library-name">{entry.name}</span>
+                    <span className="palette-library-count">({entry.colors.length} {entry.colors.length === 1 ? 'color' : 'colors'})</span>
                   </div>
-                  <div className="palette-library-swatches-row">
-                    <span className="palette-library-count">{entry.colors.length}c</span>
-                    <div className="palette-library-swatches">
-                      {entry.colors.slice(0, 20).map((hex, index) => (
-                        <span key={`${entry.id}-${index}`} style={{ backgroundColor: hex }} />
-                      ))}
-                    </div>
+                  <div className="palette-library-swatches">
+                    {entry.colors.map((hex, index) => (
+                      <span key={`${entry.id}-${index}`} style={{ backgroundColor: hex }} />
+                    ))}
                   </div>
                 </button>
                 <button
@@ -381,7 +326,7 @@ function PaletteLibrarySection({ onOpenImport, onOpenExport }) {
         )}
 
         <div className="palette-library-group">
-          <p className="palette-library-group-title">PRESET</p>
+          <p className="palette-library-group-title">PRESETS</p>
           {builtinPalettes.map((entry) => (
             <div key={entry.id} className="palette-library-card">
               <button
@@ -391,15 +336,13 @@ function PaletteLibrarySection({ onOpenImport, onOpenExport }) {
                 title={entry.name}
               >
                 <div className="palette-library-head">
-                  <span>{entry.name}</span>
+                  <span className="palette-library-name">{entry.name}</span>
+                  <span className="palette-library-count">({entry.colors.length} {entry.colors.length === 1 ? 'color' : 'colors'})</span>
                 </div>
-                <div className="palette-library-swatches-row">
-                  <span className="palette-library-count">{entry.colors.length}c</span>
-                  <div className="palette-library-swatches">
-                    {entry.colors.slice(0, 20).map((hex, index) => (
-                      <span key={`${entry.id}-${index}`} style={{ backgroundColor: hex }} />
-                    ))}
-                  </div>
+                <div className="palette-library-swatches">
+                  {entry.colors.map((hex, index) => (
+                    <span key={`${entry.id}-${index}`} style={{ backgroundColor: hex }} />
+                  ))}
                 </div>
               </button>
             </div>
@@ -425,6 +368,11 @@ export default function PalettePage() {
   const [shellHost, setShellHost] = useState(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
+  // Accordion state
+  const [openSections, toggleSection] = useAccordion('dither-dot:open-sections-palette', {
+    library: true,
+  });
 
   const setRootNode = useCallback((node) => {
     if (!node) return;
@@ -467,22 +415,36 @@ export default function PalettePage() {
     }
   }, [colors]);
 
-  const handleSelectAll = useCallback(() => {
-    const active = colors.filter(c => !c.hidden);
-    const snap = {};
-    active.forEach(c => { snap[c.id] = c.hex; });
-    setOriginalHexSnapshot(snap);
-    setSelectedIds(active.map(c => c.id));
-  }, [colors]);
-
-  const handleDeselectAll = () => {
-    setSelectedIds([]);
-    setOriginalHexSnapshot({});
-  };
-
   const handleImportPalette = (importedHexes, importedName) => {
     applyPaletteByHexes(importedHexes, importedName, true);
   };
+
+  useEffect(() => {
+    if (selectedIds.length === 0) return;
+
+    const handleOutsidePointerDown = (e) => {
+      // Check if click is inside the editor panel
+      if (e.target.closest?.('.palette-editor-panel')) {
+        return;
+      }
+      // Check if click is on a color swatch or add color button
+      if (e.target.closest?.('.palette-custom-swatch, .palette-color-chip, .palette-add-color-btn')) {
+        return;
+      }
+      // Check if click is inside modal or toast
+      if (e.target.closest?.('.modal-overlay, .palette-import-modal, .palette-export-modal')) {
+        return;
+      }
+
+      setSelectedIds([]);
+      setOriginalHexSnapshot({});
+    };
+
+    window.addEventListener('pointerdown', handleOutsidePointerDown);
+    return () => {
+      window.removeEventListener('pointerdown', handleOutsidePointerDown);
+    };
+  }, [selectedIds.length]);
 
   // live hex from store + frozen originalHex from snapshot
   const selectedColors = useMemo(() => {
@@ -497,30 +459,30 @@ export default function PalettePage() {
 
   return (
     <div ref={setRootNode}>
-      <div className="bv-macro-section">
-        <h2>PALETTE</h2>
-        <MethodSection />
+      <MacroSection title="PALETTE">
         <ColorCountSection />
-      </div>
+        <PaletteTypeAndMethodSection />
+      </MacroSection>
 
-      <div className="bv-macro-section">
-        <h2>COLORS</h2>
+      <MacroSection title="COLORS">
         <ColorsSection
           selectedIds={selectedIds}
           onToggleSelect={handleToggleSelect}
-          onSelectAll={handleSelectAll}
-          onDeselectAll={handleDeselectAll}
         />
-      </div>
+      </MacroSection>
 
       {method === EXTRACT_METHOD.CUSTOM && (
-        <div className="bv-macro-section">
-          <h2>LIBRARY</h2>
+        <MacroSection
+          title="LIBRARY"
+          collapsible
+          isOpen={openSections.library !== false}
+          onToggle={() => toggleSection('library')}
+        >
           <PaletteLibrarySection
             onOpenImport={() => setIsImportModalOpen(true)}
             onOpenExport={() => setIsExportModalOpen(true)}
           />
-        </div>
+        </MacroSection>
       )}
 
       {method === EXTRACT_METHOD.CUSTOM && selectedColors.length > 0 && (

@@ -55,10 +55,45 @@ const useDitherStore = create(persist((set) => ({
   setAmount: (amount) => set({ amount }),
   setMatrixScale: (matrixScale) => set({ matrixScale }),
   setSeed: (seed) => set({ seed }),
+  resetControls: () =>
+    set((state) => {
+      const isSierra =
+        state.method === DITHER_METHOD.SIERRA ||
+        state.method === DITHER_METHOD.TWO_ROW_SIERRA ||
+        state.method === DITHER_METHOD.SIERRA_LITE;
+
+      return {
+        amount: DITHER_CONTROLS.amount.default,
+        matrixScale: DITHER_CONTROLS.matrixScale.default,
+        seed: DITHER_CONTROLS.seed.default,
+        method: isSierra ? DITHER_METHOD.SIERRA : state.method,
+      };
+    }),
   resetDither: () => set({ ...INITIAL_DITHER_STATE }),
 }), {
   name: 'dither-dot:dither',
   storage: createJSONStorage(() => localStorage),
 }));
 
+export const selectIsDitherControlsModified = (state) => {
+  const { enabled, method, amount, matrixScale, seed } = state;
+  const isSierra =
+    method === DITHER_METHOD.SIERRA ||
+    method === DITHER_METHOD.TWO_ROW_SIERRA ||
+    method === DITHER_METHOD.SIERRA_LITE;
+
+  const showAmount = enabled && method !== DITHER_METHOD.ONLY_PALETTE;
+  const showMatrixScale = enabled && method === DITHER_METHOD.ORDERED_BAYER;
+  const showSeed = enabled && method === DITHER_METHOD.RANDOM;
+  const showSierraVariants = enabled && isSierra;
+
+  return (
+    (showAmount && amount !== DITHER_CONTROLS.amount.default) ||
+    (showMatrixScale && matrixScale !== DITHER_CONTROLS.matrixScale.default) ||
+    (showSeed && seed !== DITHER_CONTROLS.seed.default) ||
+    (showSierraVariants && method !== DITHER_METHOD.SIERRA)
+  );
+};
+
 export default useDitherStore;
+

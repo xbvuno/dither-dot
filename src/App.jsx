@@ -193,76 +193,74 @@ function App() {
   return (
     <>
       <h1 className='sr-only'>DITHER-DOT - Browser Image &amp; GIF Dithering Studio</h1>
+      <header className='app-header'>
+        <span className='app-header-title'>
+          <img src={watermarkMini} alt='DITHER-DOT Logo' className='header-logo-img' />
+          <span className='app-header-title-name'>DITHER-DOT</span>
+        </span>
+        <div className='app-header-links'>
+          <button
+            type='button'
+            className='header-link-btn'
+            onClick={() => setModalType('support')}
+            aria-label='Support project'
+            title='SUPPORT'
+          >
+            <Heart size={14} strokeWidth={2} aria-hidden='true' />
+            <span className='header-link-label'>SUPPORT</span>
+          </button>
+          <a
+            href='https://github.com/xbvuno/dither-dot'
+            target='_blank'
+            rel='noopener noreferrer'
+            className='header-link-btn'
+            aria-label='GitHub Repository (opens in new tab)'
+            title='GITHUB'
+          >
+            <Cat size={14} strokeWidth={2} aria-hidden='true' />
+            <span className='header-link-label'>GITHUB</span>
+          </a>
+          <button
+            type='button'
+            className='header-link-btn header-btn--mobile-only'
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+            title={isFullscreen ? 'EXIT FULLSCREEN' : 'FULLSCREEN'}
+          >
+            {isFullscreen ? (
+              <Minimize size={14} strokeWidth={2} aria-hidden='true' />
+            ) : (
+              <Maximize size={14} strokeWidth={2} aria-hidden='true' />
+            )}
+            <span className='header-link-label'>FULLSCREEN</span>
+          </button>
+        </div>
+      </header>
       <div className='app-layout'>
         <nav ref={navRef} className='app-nav' aria-label='Main Navigation'>
-        <img src={watermarkMini} alt='DITHER-DOT Logo' className='nav-logo-img' />
-        <div className='nav-links-wrap'>
-          {ICONS.map((item, index) => {
-            const Icon = item.Icon
-            const isSelected = currentPage === item.id
-            const tooltipText = `${item.label.toUpperCase()} [${index + 1}]`
-            return (
-              <button
-                key={item.id}
-                type='button'
-                className={`nav-icon-btn${isSelected ? ' selected' : ''}`}
-                onClick={() => setPage(item.id)}
-                onDragEnter={(event) => handleNavDragOver(event, item.id)}
-                onDragOver={(event) => handleNavDragOver(event, item.id)}
-                data-tooltip={tooltipText}
-                aria-label={tooltipText}
-                aria-current={isSelected ? 'page' : undefined}
-              >
-                <Icon size={24} strokeWidth={2} aria-hidden='true' className='nav-icon-img' />
-              </button>
-            )
-          })}
-        </div>
-      </nav>
-      <div className='app-body-container'>
-        <header className='app-header'>
-          <span className='app-header-title'>
-            <img src={watermarkMini} alt='DITHER-DOT Logo' className='header-logo-img' />
-            <span className='app-header-title-name'>DITHER-DOT</span>
-          </span>
-          <div className='app-header-links'>
-            <button
-              type='button'
-              className='header-link-btn'
-              onClick={() => setModalType('support')}
-              aria-label='Support project'
-              title='SUPPORT'
-            >
-              <Heart size={14} strokeWidth={2} aria-hidden='true' />
-              <span className='header-link-label'>SUPPORT</span>
-            </button>
-            <a
-              href='https://github.com/xbvuno/dither-dot'
-              target='_blank'
-              rel='noopener noreferrer'
-              className='header-link-btn'
-              aria-label='GitHub Repository (opens in new tab)'
-              title='GITHUB'
-            >
-              <Cat size={14} strokeWidth={2} aria-hidden='true' />
-              <span className='header-link-label'>GITHUB</span>
-            </a>
-            <button
-              type='button'
-              className='header-link-btn header-btn--mobile-only'
-              onClick={toggleFullscreen}
-              aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-              title={isFullscreen ? 'EXIT FULLSCREEN' : 'FULLSCREEN'}
-            >
-              {isFullscreen ? (
-                <Minimize size={14} strokeWidth={2} aria-hidden='true' />
-              ) : (
-                <Maximize size={14} strokeWidth={2} aria-hidden='true' />
-              )}
-              <span className='header-link-label'>FULLSCREEN</span>
-            </button>
+          <div className='nav-links-wrap'>
+            {ICONS.map((item, index) => {
+              const Icon = item.Icon
+              const isSelected = currentPage === item.id
+              const tooltipText = `${item.label.toUpperCase()} [${index + 1}]`
+              return (
+                <button
+                  key={item.id}
+                  type='button'
+                  className={`nav-icon-btn${isSelected ? ' selected' : ''}`}
+                  onClick={() => setPage(item.id)}
+                  onDragEnter={(event) => handleNavDragOver(event, item.id)}
+                  onDragOver={(event) => handleNavDragOver(event, item.id)}
+                  data-tooltip={tooltipText}
+                  aria-label={tooltipText}
+                  aria-current={isSelected ? 'page' : undefined}
+                >
+                  <Icon size={24} strokeWidth={2} aria-hidden='true' className='nav-icon-img' />
+                </button>
+              )
+            })}
           </div>
-        </header>
+        </nav>
         <main>
           <Aside>
             <AsideRouter />
@@ -283,7 +281,6 @@ function App() {
           </div>
         </main>
       </div>
-    </div>
       {activeModal && (
         <div className='header-modal-backdrop' onClick={() => setModalType(null)}>
           <section

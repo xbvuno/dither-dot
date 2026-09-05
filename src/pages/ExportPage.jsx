@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Save, Copy, Eye, Trash2 } from 'lucide-react';
+import MacroSection from '../components/ui/MacroSection';
 import useImageStore from '../stores/media/imageStore';
 import useGifStore from '../stores/media/gifStore';
 import useWebcamStore from '../stores/media/webcamStore';
@@ -271,8 +272,7 @@ export default function ExportPage() {
 
   return (
     <div>
-      <div className='bv-macro-section'>
-        <h2>EXPORT</h2>
+      <MacroSection title="EXPORT">
         <div className='bv-section'>
           <label htmlFor='export-name-input' className='bv-label' style={{ display: 'block' }}>EXPORT NAME</label>
           <div className='export-name-input-row'>
@@ -345,8 +345,8 @@ export default function ExportPage() {
         </div>
 
         {shoots.length > 0 ? (
-          <div className='bv-section' style={{ marginTop: '1.5rem' }}>
-            <div className='bv-controls-row' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+          <div className='bv-section camera-shoots-section'>
+            <div className='bv-controls-row camera-shoots-header'>
               <span className='bv-label' style={{ margin: 0 }}>CAMERA SHOOTS ({shoots.length})</span>
               <button
                 type='button'
@@ -358,11 +358,11 @@ export default function ExportPage() {
               </button>
             </div>
 
-            <div className='camera-shoots-vertical-list' style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div className='camera-shoots-vertical-list'>
               {shoots.map((shoot, index) => (
-                <div key={shoot.id} className='camera-shoot-card' style={{ border: '1px solid var(--color-border)', padding: '0.85rem', borderRadius: 0, background: 'var(--color-bg-alt, #141414)' }}>
-                  <div className='camera-shoot-card-top' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                    <span className='bv-label' style={{ fontSize: '0.7rem', color: '#aaaaaa' }}>
+                <div key={shoot.id} className='camera-shoot-card'>
+                  <div className='camera-shoot-card-top'>
+                    <span className='bv-label camera-shoot-label'>
                       SHOT #{shoots.length - index} • {new Date(shoot.timestamp).toLocaleTimeString()}
                     </span>
                     <button
@@ -377,9 +377,8 @@ export default function ExportPage() {
 
                   <img
                     src={shoot.dataUrl}
-                    className='export-preview-floating'
+                    className='export-preview-floating camera-shoot-img'
                     alt={`camera shoot ${index + 1}`}
-                    style={{ width: '100%', display: 'block', marginBottom: '0.75rem', borderRadius: 0 }}
                   />
 
                   <div className='bv-option-group'>
@@ -417,7 +416,7 @@ export default function ExportPage() {
             </div>
           )
         )}
-      </div>
+      </MacroSection>
     </div>
   );
 }

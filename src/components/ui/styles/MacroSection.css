@@ -1,0 +1,157 @@
+.bv-macro-section {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+  width: 100%;
+}
+
+.bv-macro-section:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.bv-macro-section > h2,
+.bv-macro-section-header {
+  background-color: var(--color-macro-section-bg);
+  border-top: 1px solid var(--color-border-subtle);
+  border-bottom: 1px solid var(--color-border-subtle);
+  border-left: none;
+  border-right: none;
+  padding: 0 1rem;
+  min-height: 2.15rem;
+  margin-bottom: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* First macro section on a page: thicker bar and no top border (flush with top of aside) */
+aside > .bv-macro-section:first-child > h2,
+aside > .bv-macro-section:first-child > .bv-macro-section-header,
+aside > div > .bv-macro-section:first-child > h2,
+aside > div > .bv-macro-section:first-child > .bv-macro-section-header,
+.bv-macro-section:first-of-type > h2,
+.bv-macro-section:first-of-type > .bv-macro-section-header {
+  min-height: 2.65rem;
+  border-top: none;
+}
+
+aside > .bv-macro-section:first-child > h2,
+aside > .bv-macro-section:first-child .bv-macro-section-title h2,
+aside > div > .bv-macro-section:first-child > h2,
+aside > div > .bv-macro-section:first-child .bv-macro-section-title h2,
+.bv-macro-section:first-of-type > h2,
+.bv-macro-section:first-of-type .bv-macro-section-title h2 {
+  font-size: 1.08rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+.bv-macro-section > h2 {
+  display: flex;
+  align-items: center;
+  line-height: 1.2;
+}
+
+.bv-macro-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.bv-macro-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bv-macro-section-title h2 {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: normal;
+  word-spacing: normal;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.bv-macro-section-header.modified .bv-macro-section-title h2::after {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--color-modified, #e43b44);
+  margin-left: 0.45rem;
+  vertical-align: middle;
+  transform: translateY(-1px);
+}
+
+.bv-macro-section-chevron {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.bv-macro-section-chevron.collapsed {
+  transform: rotate(-90deg);
+}
+
+.bv-macro-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.bv-macro-section-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem;
+  border-radius: 0;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.bv-macro-section-btn:hover {
+  color: var(--color-text);
+  background-color: var(--color-hover);
+}
+
+.bv-macro-section-body,
+.bv-macro-section > .bv-section {
+  padding: 0.75rem 1rem 0.85rem 1rem;
+}
+
+.bv-macro-section-content {
+  max-height: 1000px;
+  opacity: 1;
+  padding-bottom: 0;
+  transition: max-height 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+}
+
+.bv-macro-section-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Ensure no trailing margin at the bottom of the section content */
+.bv-macro-section-body > .bv-section:last-child,
+.bv-macro-section-body > .slider-bundle:last-child,
+.bv-macro-section-body > div > .bv-section:last-child,
+.bv-macro-section > .bv-section:last-child {
+  margin-bottom: 0;
+}
+
+.bv-macro-section-body > .bv-section:last-child > .slider-bundle:last-child,
+.bv-macro-section-body > .bv-section:last-child > .bv-slider:last-child,
+.bv-macro-section > .bv-section:last-child > .slider-bundle:last-child {
+  margin-bottom: 0;
+}

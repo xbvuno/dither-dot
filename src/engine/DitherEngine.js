@@ -347,6 +347,8 @@ const action = this.debugEnabled ? "disable" : "enable";
       useParamsStore.subscribe((state) => {
         const prevParams = this.previousColorParams || {};
         const nextParams = {
+          noiseEnabled: state.noiseEnabled,
+          blurEnabled: state.blurEnabled,
           noiseCoverage: state.noiseCoverage,
           noiseIntensity: state.noiseIntensity,
           noiseSaturation: state.noiseSaturation,
@@ -359,6 +361,8 @@ const action = this.debugEnabled ? "disable" : "enable";
         };
 
         const colorParamsChanged = !this.previousColorParams || (
+          prevParams.noiseEnabled !== nextParams.noiseEnabled ||
+          prevParams.blurEnabled !== nextParams.blurEnabled ||
           prevParams.noiseCoverage !== nextParams.noiseCoverage ||
           prevParams.noiseIntensity !== nextParams.noiseIntensity ||
           prevParams.noiseSaturation !== nextParams.noiseSaturation ||
@@ -480,10 +484,7 @@ const action = this.debugEnabled ? "disable" : "enable";
           return;
         }
 
-        const croppedW = Math.max(1, w - left - right);
-        const croppedH = Math.max(1, h - top - bottom);
-
-        this.applyDisplaySize(croppedW, croppedH);
+        this.applyDisplaySize(w, h);
         this.syncSplitOverlay();
 
         if (!this.internalFrameSwap) {
@@ -799,12 +800,14 @@ const action = this.debugEnabled ? "disable" : "enable";
             hue: paramsState.hue,
           },
           noise: {
+            enabled: paramsState.noiseEnabled,
             noiseCoverage: paramsState.noiseCoverage,
             noiseIntensity: paramsState.noiseIntensity,
             noiseSaturation: paramsState.noiseSaturation,
             noisePhase: this.noiseFrame % 100,
           },
           blur: {
+            enabled: paramsState.blurEnabled,
             blurStrength: paramsState.blurStrength,
             edgeStrength: paramsState.edgeStrength,
             passes: paramsState.passes,
@@ -1154,6 +1157,7 @@ const action = this.debugEnabled ? "disable" : "enable";
     this.canvasHost.appendChild(viewportCanvas);
     this.viewportCanvas = viewportCanvas;
     this.log('Canvas', 'viewportCanvas created and added to DOM');
+    this.applyDisplaySize(displaySize.width, displaySize.height);
 
     // Also recreate the splitCompare overlay canvas
     const overlayCanvas = document.createElement('canvas');
@@ -1191,6 +1195,11 @@ const action = this.debugEnabled ? "disable" : "enable";
     if (this.canvasHost) {
       this.canvasHost.style.width = `${safeWidth}px`;
       this.canvasHost.style.height = `${safeHeight}px`;
+      const parent = this.canvasHost.parentElement;
+      if (parent && parent.id === 'render') {
+        parent.style.width = `${safeWidth}px`;
+        parent.style.height = `${safeHeight}px`;
+      }
     }
 
     const viewportCanvas = this.viewportCanvas;
@@ -1207,6 +1216,7 @@ const action = this.debugEnabled ? "disable" : "enable";
       overlayCanvas.style.imageRendering = 'pixelated';
     }
 
+    window.dispatchEvent(new CustomEvent('dither-render-ready', { detail: { width: safeWidth, height: safeHeight } }));
     window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
     return { width: safeWidth, height: safeHeight };
   }
@@ -1303,29 +1313,25 @@ const action = this.debugEnabled ? "disable" : "enable";
     }
 
     const sizeState = useSizeStore.getState();
-    const customW = sizeState.customSize.customWidth || sourceDims.width;
-    const customH = sizeState.customSize.customHeight || sourceDims.height;
     const left = sizeState.crop?.left || 0;
     const right = sizeState.crop?.right || 0;
     const top = sizeState.crop?.top || 0;
     const bottom = sizeState.crop?.bottom || 0;
 
-    const scaleX = customW ? (sourceDims.width / customW) : 1;
-    const scaleY = customH ? (sourceDims.height / customH) : 1;
-    const nativeLeft = Math.round(left * scaleX);
-    const nativeRight = Math.round(right * scaleX);
-    const nativeTop = Math.round(top * scaleY);
-    const nativeBottom = Math.round(bottom * scaleY);
+    const nativeLeft = Math.max(0, Math.min(sourceDims.width - 1, left));
+    const nativeTop = Math.max(0, Math.min(sourceDims.height - 1, top));
+    const sw = Math.max(1, sourceDims.width - nativeLeft - (right || 0));
+    const sh = Math.max(1, sourceDims.height - nativeTop - (bottom || 0));
 
-    const displayWidth = Math.max(1, sourceDims.width - nativeLeft - nativeRight);
-    const displayHeight = Math.max(1, sourceDims.height - nativeTop - nativeBottom);
+    const outW = Math.max(1, Math.round(Number(sizeState.customSize?.customWidth) || sw));
+    const outH = Math.max(1, Math.round(Number(sizeState.customSize?.customHeight) || sh));
 
-    if (overlayCanvas.width !== displayWidth || overlayCanvas.height !== displayHeight) {
-      overlayCanvas.width = displayWidth;
-      overlayCanvas.height = displayHeight;
+    if (overlayCanvas.width !== outW || overlayCanvas.height !== outH) {
+      overlayCanvas.width = outW;
+      overlayCanvas.height = outH;
     }
 
-    ctx.clearRect(0, 0, displayWidth, displayHeight);
+    ctx.clearRect(0, 0, outW, outH);
 
     ctx.save();
     ctx.imageSmoothingEnabled = false;
@@ -1334,12 +1340,12 @@ const action = this.debugEnabled ? "disable" : "enable";
       overlayImage,
       nativeLeft,
       nativeTop,
-      displayWidth,
-      displayHeight,
+      sw,
+      sh,
       0,
       0,
-      displayWidth,
-      displayHeight
+      outW,
+      outH
     );
     ctx.restore();
 
@@ -1347,13 +1353,6 @@ const action = this.debugEnabled ? "disable" : "enable";
   }
 
   syncVisibleLayer() {
-    const sizeState = useSizeStore.getState();
-    const left = sizeState.crop?.left || 0;
-    const right = sizeState.crop?.right || 0;
-    const top = sizeState.crop?.top || 0;
-    const bottom = sizeState.crop?.bottom || 0;
-    const hasCrop = left > 0 || right > 0 || top > 0 || bottom > 0;
-
     if (this.previewingOriginal) {
       this.syncSplitOverlay();
     } else {
@@ -1364,21 +1363,17 @@ const action = this.debugEnabled ? "disable" : "enable";
 
     const source = this.activeSource;
     if (source) {
+      const sizeState = useSizeStore.getState();
       const sourceW = source.naturalWidth || source.width || 1;
       const sourceH = source.naturalHeight || source.height || 1;
+      const crop = sizeState.crop || { top: 0, bottom: 0, left: 0, right: 0 };
+      const croppedW = Math.max(1, sourceW - (crop.left || 0) - (crop.right || 0));
+      const croppedH = Math.max(1, sourceH - (crop.top || 0) - (crop.bottom || 0));
 
-      const customW = sizeState.customSize.customWidth || sourceW;
-      const customH = sizeState.customSize.customHeight || sourceH;
+      const customW = sizeState.customSize.customWidth || croppedW;
+      const customH = sizeState.customSize.customHeight || croppedH;
 
-      const cropLeft = hasCrop ? left : 0;
-      const cropTop = hasCrop ? top : 0;
-      const cropRight = hasCrop ? right : 0;
-      const cropBottom = hasCrop ? bottom : 0;
-
-      const displayWidth = Math.max(1, customW - cropLeft - cropRight);
-      const displayHeight = Math.max(1, customH - cropTop - cropBottom);
-
-      this.applyDisplaySize(displayWidth, displayHeight);
+      this.applyDisplaySize(customW, customH);
     }
   }
 

@@ -28,10 +28,9 @@ export default function ZoomableDiv({ content }) {
     const inner = innerRef.current;
     if (!outer || !inner) return;
 
-    const getContentElem = () => innerRef.current?.firstElementChild;
-    const getRenderElem = () => innerRef.current?.querySelector('#render');
-
-    if (!getContentElem()) return;
+    const getContentElem = () => {
+      return innerRef.current?.querySelector('#render') || innerRef.current?.firstElementChild;
+    };
 
     const zoomTo = (targetScale, focalX, focalY) => {
       const contentElem = getContentElem();
@@ -41,10 +40,24 @@ export default function ZoomableDiv({ content }) {
 
       const outerWidth = outer.clientWidth;
       const outerHeight = outer.clientHeight;
-      const contentWidth = contentElem.scrollWidth || contentElem.offsetWidth;
-      const contentHeight = contentElem.scrollHeight || contentElem.offsetHeight;
+      if (!outerWidth || !outerHeight) {
+        state.current.isUpdatingProgrammatically = false;
+        return;
+      }
 
-      if (!contentWidth || !contentHeight) return;
+      const contentWidth =
+        contentElem.scrollWidth ||
+        contentElem.offsetWidth ||
+        (contentElem.style.width ? parseFloat(contentElem.style.width) : 0);
+      const contentHeight =
+        contentElem.scrollHeight ||
+        contentElem.offsetHeight ||
+        (contentElem.style.height ? parseFloat(contentElem.style.height) : 0);
+
+      if (!contentWidth || !contentHeight) {
+        state.current.isUpdatingProgrammatically = false;
+        return;
+      }
 
       const fitScale = Math.min(outerWidth / contentWidth, outerHeight / contentHeight);
       const prevScale = state.current.scale;
@@ -108,7 +121,9 @@ export default function ZoomableDiv({ content }) {
       }
       const outerWidth = outer.clientWidth;
       const outerHeight = outer.clientHeight;
-      zoomTo(state.current.scale, outerWidth / 2, outerHeight / 2);
+      if (outerWidth && outerHeight) {
+        zoomTo(state.current.scale, outerWidth / 2, outerHeight / 2);
+      }
     };
 
     updateScale();
@@ -243,10 +258,15 @@ export default function ZoomableDiv({ content }) {
     outer.addEventListener('touchend', handleTouchEnd);
     outer.addEventListener('touchcancel', handleTouchEnd);
 
-    const mutationObserver = new MutationObserver(() => {
+    const handleRenderReady = () => {
       if (state.current.isUpdatingProgrammatically) return;
-      updateScale();
-    });
+      requestAnimationFrame(() => {
+        updateScale();
+      });
+    };
+
+    window.addEventListener('dither-render-ready', handleRenderReady);
+    window.addEventListener('split-compare-layout-changed', handleRenderReady);
 
     const resizeObserver = new ResizeObserver(() => {
       if (state.current.isUpdatingProgrammatically) return;
@@ -254,16 +274,30 @@ export default function ZoomableDiv({ content }) {
     });
 
     resizeObserver.observe(outer);
+
+    const reobserveContent = () => {
+      const render = innerRef.current?.querySelector('#render');
+      if (render) resizeObserver.observe(render);
+      const layer = innerRef.current?.querySelector('.render-canvas-layer');
+      if (layer) resizeObserver.observe(layer);
+      const canvas = innerRef.current?.querySelector('canvas');
+      if (canvas) resizeObserver.observe(canvas);
+    };
+
+    reobserveContent();
+
+    const mutationObserver = new MutationObserver(() => {
+      if (state.current.isUpdatingProgrammatically) return;
+      reobserveContent();
+      updateScale();
+    });
+
     mutationObserver.observe(inner, {
       childList: true,
       subtree: true,
-      attributeFilter: ["height", "width"],
+      attributes: true,
+      attributeFilter: ['style', 'width', 'height', 'class'],
     });
-
-    const renderElem = getRenderElem();
-    if (renderElem) {
-      resizeObserver.observe(renderElem);
-    }
 
     return () => {
       outer.removeEventListener('wheel', handleWheel);
@@ -275,6 +309,8 @@ export default function ZoomableDiv({ content }) {
       outer.removeEventListener('touchmove', handleTouchMove);
       outer.removeEventListener('touchend', handleTouchEnd);
       outer.removeEventListener('touchcancel', handleTouchEnd);
+      window.removeEventListener('dither-render-ready', handleRenderReady);
+      window.removeEventListener('split-compare-layout-changed', handleRenderReady);
       mutationObserver.disconnect();
       resizeObserver.disconnect();
     };

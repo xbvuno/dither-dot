@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import { triggerHapticPulse } from "../../../utils/haptics";
 import "./styles/Slider.css";
 
@@ -11,17 +11,20 @@ const valueToPercent = (v, min, max) => {
   return ((v - min) / range) * 100;
 };
 
-const percentToValue = (p, min, max, step) => {
-  const range = Math.max(0.00001, max - min);
-  const raw = min + (p / 100) * range;
-  const stepped = Math.round((raw - min) / step) * step + min;
-
+const snapValue = (v, min, max, step) => {
+  let stepped;
+  if (min < 0 && max > 0) {
+    stepped = Math.round(v / step) * step;
+  } else {
+    stepped = Math.round((v - min) / step) * step + min;
+  }
   return clamp(Number(stepped.toFixed(10)), min, max);
 };
 
-const snapValue = (v, min, max, step) => {
-  const stepped = Math.round((v - min) / step) * step + min;
-  return clamp(Number(stepped.toFixed(10)), min, max);
+const percentToValue = (p, min, max, step) => {
+  const range = Math.max(0.00001, max - min);
+  const raw = min + (p / 100) * range;
+  return snapValue(raw, min, max, step);
 };
 
 /* ---------------- component ---------------- */
@@ -31,63 +34,157 @@ export default function Slider({
   max = 10,
   step = 0.01,
   value: controlledValue,
-  defaultValue = 0,
+  defaultValue,
   onChange,
   label,
   'aria-label': ariaLabelProp,
+  isSelected: isSelectedProp,
+  onSelect,
+  onDeselect,
+  disabled = false,
 }) {
   const ariaLabel = ariaLabelProp || label || 'Slider';
   const trackRef = useRef(null);
   const containerRef = useRef(null);
   const thumbRef = useRef(null);
   const defaultThumbRef = useRef(null);
-  const decRef = useRef(null);
-  const incRef = useRef(null);
 
   const rafRef = useRef(null);
   const selectedRef = useRef(false);
 
-  const [isSelected, setIsSelected] = useState(false);
+  const [internalSelected, setInternalSelected] = useState(false);
+  const isSelected = isSelectedProp !== undefined ? isSelectedProp : internalSelected;
+  selectedRef.current = isSelected;
 
   const isControlled = controlledValue !== undefined;
 
   const [value, setValue] = useState(() =>
     isControlled
       ? controlledValue
-      : snapValue(defaultValue ?? min, min, max, step)
+      : snapValue(defaultValue ?? (min <= 0 && max >= 0 ? 0 : min), min, max, step)
   );
   const displayValue = isControlled ? controlledValue : value;
 
+  const numMin = Number(min);
+  const numMax = Number(max);
+  const numStep = Number(step);
+  const numValue = Number(displayValue);
+
+  const ticks = useMemo(() => {
+    const range = numMax - numMin;
+    if (!Number.isFinite(range) || range <= 0 || !Number.isFinite(numStep) || numStep <= 0) return [];
+
+    const totalSteps = Math.round(range / numStep);
+
+    // If total steps <= 64, show all discrete steps snapped
+    if (totalSteps <= 64) {
+      const result = [];
+      const seen = new Set();
+      for (let i = 1; i < totalSteps; i++) {
+        const val = numMin + i * numStep;
+        const snapped = snapValue(val, numMin, numMax, numStep);
+        if (snapped > numMin + 1e-5 && snapped < numMax - 1e-5) {
+          const key = snapped.toFixed(8);
+          if (!seen.has(key)) {
+            seen.add(key);
+            result.push(((snapped - numMin) / range) * 100);
+          }
+        }
+      }
+      return result;
+    }
+
+    const isIntBounds =
+      Number.isInteger(numMin) &&
+      Number.isInteger(numMax) &&
+      Number.isInteger(numStep) &&
+      numStep >= 1;
+
+    let rawValues = [];
+
+    if (isIntBounds) {
+      // Large integer range (> 64 steps): determine round interval
+      let interval = 100;
+      if (range >= 500) interval = 100;
+      else if (range >= 200) interval = 50;
+      else if (range >= 100) interval = 25;
+      else interval = 10;
+
+      // Range spans negative to positive: anchor on 0
+      if (numMin < 0 && numMax > 0) {
+        for (let v = -interval; v > numMin + 1e-4; v -= interval) {
+          rawValues.unshift(v);
+        }
+        rawValues.push(0);
+        for (let v = interval; v < numMax - 1e-4; v += interval) {
+          rawValues.push(v);
+        }
+      } else {
+        const start = Math.ceil((numMin + 1e-4) / interval) * interval;
+        for (let v = start; v < numMax - 1e-4; v += interval) {
+          rawValues.push(v);
+        }
+      }
+    } else {
+      // Float or continuous range (> 64 steps)
+      if (numMin < 0 && numMax > 0) {
+        const negDivs = 4;
+        const posDivs = 4;
+        for (let i = 1; i < negDivs; i++) {
+          rawValues.push(numMin * (1 - i / negDivs));
+        }
+        rawValues.push(0);
+        for (let i = 1; i < posDivs; i++) {
+          rawValues.push(numMax * (i / posDivs));
+        }
+      } else {
+        const numDivisions = 8;
+        for (let i = 1; i < numDivisions; i++) {
+          rawValues.push(numMin + (i / numDivisions) * range);
+        }
+      }
+    }
+
+    // Snap every raw tick value to the nearest valid step and convert to percentage
+    const seen = new Set();
+    const result = [];
+
+    for (const raw of rawValues) {
+      const snapped = snapValue(raw, numMin, numMax, numStep);
+      // Ensure strictly inside (min, max)
+      if (snapped > numMin + 1e-5 && snapped < numMax - 1e-5) {
+        const key = snapped.toFixed(8);
+        if (!seen.has(key)) {
+          seen.add(key);
+          result.push(((snapped - numMin) / range) * 100);
+        }
+      }
+    }
+
+    return result;
+  }, [numMin, numMax, numStep]);
+
   const stateRef = useRef({});
-
-  /* ---------- sync ref state ---------- */
-
-  useEffect(() => {
-    stateRef.current = {
-      value: displayValue,
-      min,
-      max,
-      step,
-      isControlled,
-      onChange,
-    };
-  }, [displayValue, isControlled, max, min, onChange, step]);
+  stateRef.current.value = numValue;
+  stateRef.current.min = numMin;
+  stateRef.current.max = numMax;
+  stateRef.current.step = numStep;
+  stateRef.current.isControlled = isControlled;
+  stateRef.current.onChange = onChange;
+  stateRef.current.disabled = disabled;
 
   /* ---------- internal setter ---------- */
 
   const setInternalValue = (next) => {
+    if (stateRef.current.disabled) return;
     const s = stateRef.current;
+    const currVal = Number(s.value);
+    const sMin = Number(s.min);
+    const sMax = Number(s.max);
+    const sStep = Number(s.step);
 
-    const base = typeof next === "function" ? next(s.value) : next;
-
-    const stepped =
-      Math.round((base - s.min) / s.step) * s.step + s.min;
-
-    const clamped = clamp(
-      Number(stepped.toFixed(10)),
-      s.min,
-      s.max
-    );
+    const base = typeof next === "function" ? next(currVal) : Number(next);
+    const clamped = snapValue(base, sMin, sMax, sStep);
 
     // update local only if needed
     if (!s.isControlled) {
@@ -95,17 +192,30 @@ export default function Slider({
     }
 
     // notify only if changed
-    if (typeof s.onChange === "function" && clamped !== s.value) {
+    if (typeof s.onChange === "function" && Math.abs(clamped - currVal) > 1e-7) {
       triggerHapticPulse(5);
+      s.value = clamped;
       s.onChange(clamped);
     }
   };
 
-  const stepUp = (t = 1) =>
-    setInternalValue((v) => v + stateRef.current.step * t);
+  const stepUp = (t = 1) => {
+    const s = stateRef.current;
+    const curr = Number(s.value);
+    const mx = Number(s.max);
+    const stp = Number(s.step);
+    if (!Number.isNaN(curr) && !Number.isNaN(mx) && curr >= mx - 1e-5) return;
+    setInternalValue(curr + stp * t);
+  };
 
-  const stepDown = (t = 1) =>
-    setInternalValue((v) => v - stateRef.current.step * t);
+  const stepDown = (t = 1) => {
+    const s = stateRef.current;
+    const curr = Number(s.value);
+    const mn = Number(s.min);
+    const stp = Number(s.step);
+    if (!Number.isNaN(curr) && !Number.isNaN(mn) && curr <= mn + 1e-5) return;
+    setInternalValue(curr - stp * t);
+  };
 
   /* ---------- thumb position ---------- */
 
@@ -163,6 +273,7 @@ export default function Slider({
     };
 
     const onPointerDown = (e) => {
+      if (stateRef.current.disabled) return;
       triggerHapticPulse(5);
       if (e.pointerType === "mouse") {
         if (e.button !== 0) return;
@@ -286,78 +397,85 @@ export default function Slider({
     };
   }, []);
 
-  /* ---------- reset key ---------- */
+  /* ---------- keyboard navigation & reset key ---------- */
 
   useEffect(() => {
     const onKey = (e) => {
-      if (defaultValue === undefined) return;
+      if (!selectedRef.current) return;
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.isContentEditable) return;
 
-      if (e.key.toLowerCase() === "r") {
-        setInternalValue(
-          snapValue(defaultValue, min, max, step)
-        );
+      if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
         e.preventDefault();
+        stepDown();
+      } else if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+        e.preventDefault();
+        stepUp();
+      } else if (e.key.toLowerCase() === "r") {
+        e.preventDefault();
+        const resetTarget = defaultValue !== undefined ? defaultValue : (numMin <= 0 && numMax >= 0 ? 0 : numMin);
+        setInternalValue(snapValue(resetTarget, min, max, step));
       }
     };
 
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [defaultValue, max, min, step]);
+  }, [defaultValue, max, min, numMax, numMin, step]);
 
   /* ---------- UI ---------- */
 
   const handleReset = () => {
-    if (defaultValue === undefined) return;
-    setInternalValue(defaultValue);
+    const resetTarget = defaultValue !== undefined ? defaultValue : (numMin <= 0 && numMax >= 0 ? 0 : numMin);
+    setInternalValue(resetTarget);
   };
 
   const handleSelect = () => {
+    if (disabled) return;
     selectedRef.current = true;
-    setIsSelected(true);
+    setInternalSelected(true);
+    onSelect?.();
     containerRef.current?.focus();
   };
 
   const handleDeselect = () => {
     selectedRef.current = false;
-    setIsSelected(false);
+    setInternalSelected(false);
+    onDeselect?.();
   };
 
   return (
     <div
       ref={containerRef}
-      className={`bv slider${isSelected ? ' selected' : ''}`}
+      className={`bv slider${isSelected ? ' selected' : ''}${disabled ? ' disabled' : ''}`}
       role="slider"
       aria-label={ariaLabel}
-      aria-valuemin={min}
-      aria-valuemax={max}
-      aria-valuenow={displayValue}
-      tabIndex={0}
+      aria-valuemin={numMin}
+      aria-valuemax={numMax}
+      aria-valuenow={numValue}
+      aria-disabled={disabled || undefined}
+      tabIndex={disabled ? -1 : 0}
       onFocus={handleSelect}
       onBlur={handleDeselect}
       onPointerDown={handleSelect}
     >
-      <span ref={decRef} onPointerDown={() => stepDown()} role="button" aria-label={`Decrease ${ariaLabel}`} disabled={value === min}>
-        [-]
-      </span>
-
-      <sub className="min">{min.toString().slice(0,5)}</sub>
-
       <div
         className="track"
         ref={trackRef}
-        onDoubleClick={handleReset}
+        onDoubleClick={disabled ? undefined : handleReset}
       >
-        <div className={`thumb${defaultValue !== undefined && displayValue !== defaultValue ? ' modified' : ''}`} ref={thumbRef} />
+        <div className="slider-ticks" aria-hidden="true">
+          {ticks.map((pct, idx) => (
+            <div
+              key={idx}
+              className="slider-tick"
+              style={{ left: `${pct}%` }}
+            />
+          ))}
+        </div>
+        <div className={`thumb${defaultValue !== undefined && numValue !== Number(defaultValue) ? ' modified' : ''}`} ref={thumbRef} />
         {defaultValue !== undefined && (
           <div className="thumb default" ref={defaultThumbRef} />
         )}
       </div>
-
-      <sub className="max">{max.toString().slice(0,5)}</sub>
-
-      <span ref={incRef} onPointerDown={() => stepUp()} role="button" aria-label={`Increase ${ariaLabel}`} disabled={value === max}>
-        [+]
-      </span>
     </div>
   );
 }

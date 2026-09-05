@@ -1,7 +1,5 @@
 import { useState, useCallback } from 'react';
 import PaletteColorSlider from './PaletteColorSlider';
-import ColorWheel from './ColorWheel';
-import CurveEditor from './CurveEditor';
 import {
   cleanHex,
   hexToRgb,
@@ -11,7 +9,6 @@ import {
   hsvToHex,
   applyTonalAdjustments,
 } from '../../utils/colorConversions';
-import { DEFAULT_CURVE_POINTS, applyRgbCurves } from '../../utils/curveUtils';
 
 function initFromHex(hex) {
   const r = hexToRgb(hex);
@@ -38,11 +35,6 @@ export default function SingleColorEditor({
   const [hexInput, setHexInput] = useState(() => cleanHex(color));
   const [gamma, setGamma] = useState(1.0);
   const [contrast, setContrast] = useState(0);
-  const [curves, setCurves] = useState({
-    r: DEFAULT_CURVE_POINTS,
-    g: DEFAULT_CURVE_POINTS,
-    b: DEFAULT_CURVE_POINTS,
-  });
 
   // When the selected colorId changes, reinitialise all local state from new color.
   if (colorId !== lastColorId) {
@@ -53,11 +45,6 @@ export default function SingleColorEditor({
     setHexInput(init.hexInput);
     setGamma(1.0);
     setContrast(0);
-    setCurves({
-      r: DEFAULT_CURVE_POINTS,
-      g: DEFAULT_CURVE_POINTS,
-      b: DEFAULT_CURVE_POINTS,
-    });
   }
 
   const notify = useCallback((newHex) => {
@@ -86,40 +73,23 @@ export default function SingleColorEditor({
     notify(nextHex);
   };
 
-  const handleWheelChange = ({ h, s }) => {
-    const nextHsv = { ...hsv, h, s };
-    const nextRgb = hsvToRgb(nextHsv.h, nextHsv.s, nextHsv.v);
-    const nextHex = rgbToHex(nextRgb.r, nextRgb.g, nextRgb.b);
-    setHsv(nextHsv);
-    setRgb(nextRgb);
-    setHexInput(nextHex);
-    notify(nextHex);
-  };
-
-  const applyTonalAndCurves = (baseHex, g, c, cur) => {
+  const applyTonal = (baseHex, g, c) => {
     const adjustedHex = applyTonalAdjustments(baseHex, { gamma: g, contrast: c });
-    const uncurvedRgb = hexToRgb(adjustedHex);
-    const curvedRgb = applyRgbCurves(uncurvedRgb.r, uncurvedRgb.g, uncurvedRgb.b, cur);
-    const finalHex = rgbToHex(curvedRgb.r, curvedRgb.g, curvedRgb.b);
-    setRgb(curvedRgb);
-    setHsv(rgbToHsv(curvedRgb.r, curvedRgb.g, curvedRgb.b));
-    setHexInput(finalHex);
-    notify(finalHex);
+    const nextRgb = hexToRgb(adjustedHex);
+    setRgb(nextRgb);
+    setHsv(rgbToHsv(nextRgb.r, nextRgb.g, nextRgb.b));
+    setHexInput(adjustedHex);
+    notify(adjustedHex);
   };
 
   const handleGammaChange = (val) => {
     setGamma(val);
-    applyTonalAndCurves(originalColor || color, val, contrast, curves);
+    applyTonal(originalColor || color, val, contrast);
   };
 
   const handleContrastChange = (val) => {
     setContrast(val);
-    applyTonalAndCurves(originalColor || color, gamma, val, curves);
-  };
-
-  const handleCurveChange = (nextCurves) => {
-    setCurves(nextCurves);
-    applyTonalAndCurves(originalColor || color, gamma, contrast, nextCurves);
+    applyTonal(originalColor || color, gamma, val);
   };
 
   const handleHexInputChange = (e) => {
@@ -164,17 +134,6 @@ export default function SingleColorEditor({
             aria-label="Hex color"
           />
         </div>
-      </div>
-
-      {/* Color Wheel */}
-      <div className="pe-wheel-section">
-        <ColorWheel
-          hue={hsv.h}
-          saturation={hsv.s}
-          value={hsv.v}
-          onChange={handleWheelChange}
-          size={154}
-        />
       </div>
 
       {/* HSV + RGB Sliders */}
@@ -239,12 +198,9 @@ export default function SingleColorEditor({
           onChange={(val) => handleRgbChange('b', val)}
           gradient={`linear-gradient(to right, rgb(${rgb.r},${rgb.g},0), rgb(${rgb.r},${rgb.g},255))`}
         />
-      </div>
 
-      <div className="pe-slider-divider" />
+        <div className="pe-slider-divider" />
 
-      {/* Tonal Grading */}
-      <div className="pe-slider-group">
         <PaletteColorSlider
           label="GAMMA"
           min={0.2}
@@ -265,14 +221,6 @@ export default function SingleColorEditor({
           gradient="linear-gradient(to right, #444 0%, #888 50%, #fff 100%)"
         />
       </div>
-
-      <div className="pe-slider-divider" />
-
-      {/* RGB Curves */}
-      <CurveEditor
-        curves={curves}
-        onChangeCurves={handleCurveChange}
-      />
     </div>
   );
 }

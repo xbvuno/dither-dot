@@ -47,9 +47,9 @@ export const COLOR_CONTROLS = {
   },
 
   hue: {
-    min: -Math.PI,
-    max: Math.PI,
-    step: 0.01,
+    min: -3.14,
+    max: 3.14,
+    step: 0.05,
     default: 0.0,
     description: 'Rotates all colors around the color wheel. At ±π the full spectrum is cycled.',
   }
@@ -64,7 +64,7 @@ export const BLUR_CONTROLS = {
     min: 0.0,
     max: 4.0,
     step: 0.05,
-    default: 0,
+    default: 1.0,
     description: 'Radius of the Kawase blur applied before dithering. Higher values produce a stronger/wider blur.',
   },
 
@@ -90,7 +90,7 @@ export const NOISE_CONTROLS = {
     min: 0.0,
     max: 1.0,
     step: 0.01,
-    default: 0.0,
+    default: 0.25,
     description: 'Percentage of pixels affected by procedural noise before tonal/color corrections.',
   },
   noiseIntensity: {
@@ -120,8 +120,12 @@ function clamp(v, min, max) {
 }
 
 function snap(v, min, max, step) {
-  const stepped =
-    Math.round((v - min) / step) * step + min;
+  let stepped;
+  if (min < 0 && max > 0) {
+    stepped = Math.round(v / step) * step;
+  } else {
+    stepped = Math.round((v - min) / step) * step + min;
+  }
 
   return clamp(
     Number(stepped.toFixed(6)), // evita floating drift
@@ -145,6 +149,8 @@ const UI_DEFAULTS = {
   histogramVisible: false,
   pipelineVisible: false,
   forceCpu: false,
+  noiseEnabled: false,
+  blurEnabled: false,
 };
 
 /* ---------------------------------- */
@@ -168,11 +174,15 @@ const useParamsStore = create(persist((set) => {
     setHistogramVisible: (visible) => set(() => ({ histogramVisible: Boolean(visible) })),
     setPipelineVisible: (visible) => set(() => ({ pipelineVisible: Boolean(visible) })),
     setForceCpu: (forceCpu) => set(() => ({ forceCpu: Boolean(forceCpu) })),
+    setNoiseEnabled: (enabled) => set(() => ({ noiseEnabled: Boolean(enabled) })),
+    setBlurEnabled: (enabled) => set(() => ({ blurEnabled: Boolean(enabled) })),
     resetKeys: (keys) => set(() => {
       const updates = {};
       for (const key of keys) {
         if (initialValues[key] !== undefined) {
           updates[key] = initialValues[key];
+        } else if (UI_DEFAULTS[key] !== undefined) {
+          updates[key] = UI_DEFAULTS[key];
         }
       }
       return updates;
@@ -186,6 +196,54 @@ const useParamsStore = create(persist((set) => {
           const random = cfg.min + Math.random() * range;
           updates[key] = snap(random, cfg.min, cfg.max, cfg.step);
         }
+      }
+      return updates;
+    }),
+    resetColors: () => set(() => {
+      const updates = {};
+      for (const key of Object.keys(COLOR_CONTROLS)) {
+        updates[key] = COLOR_CONTROLS[key].default;
+      }
+      return updates;
+    }),
+    randomizeColors: () => set(() => {
+      const updates = {};
+      for (const [key, cfg] of Object.entries(COLOR_CONTROLS)) {
+        const range = cfg.max - cfg.min;
+        const random = cfg.min + Math.random() * range;
+        updates[key] = snap(random, cfg.min, cfg.max, cfg.step);
+      }
+      return updates;
+    }),
+    resetNoise: () => set(() => {
+      const updates = { noiseEnabled: false };
+      for (const key of Object.keys(NOISE_CONTROLS)) {
+        updates[key] = NOISE_CONTROLS[key].default;
+      }
+      return updates;
+    }),
+    randomizeNoise: () => set(() => {
+      const updates = {};
+      for (const [key, cfg] of Object.entries(NOISE_CONTROLS)) {
+        const range = cfg.max - cfg.min;
+        const random = cfg.min + Math.random() * range;
+        updates[key] = snap(random, cfg.min, cfg.max, cfg.step);
+      }
+      return updates;
+    }),
+    resetBlur: () => set(() => {
+      const updates = { blurEnabled: false };
+      for (const key of Object.keys(BLUR_CONTROLS)) {
+        updates[key] = BLUR_CONTROLS[key].default;
+      }
+      return updates;
+    }),
+    randomizeBlur: () => set(() => {
+      const updates = {};
+      for (const [key, cfg] of Object.entries(BLUR_CONTROLS)) {
+        const range = cfg.max - cfg.min;
+        const random = cfg.min + Math.random() * range;
+        updates[key] = snap(random, cfg.min, cfg.max, cfg.step);
       }
       return updates;
     }),
@@ -208,4 +266,16 @@ const useParamsStore = create(persist((set) => {
   storage: createJSONStorage(() => localStorage),
 }));
 
-export default useParamsStore;
+export const selectIsColorModified = (state) => {
+  return Object.keys(COLOR_CONTROLS).some((k) => state[k] !== COLOR_CONTROLS[k].default);
+};
+
+export const selectIsNoiseModified = (state) => {
+  return Boolean(state.noiseEnabled) || Object.keys(NOISE_CONTROLS).some((k) => state[k] !== NOISE_CONTROLS[k].default);
+};
+
+export const selectIsBlurModified = (state) => {
+  return Boolean(state.blurEnabled) || Object.keys(BLUR_CONTROLS).some((k) => state[k] !== BLUR_CONTROLS[k].default);
+};
+
+export default useParamsStore;

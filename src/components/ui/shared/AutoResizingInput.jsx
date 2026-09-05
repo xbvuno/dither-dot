@@ -1,19 +1,31 @@
 import { useEffect, useRef, useState, useId } from "react"
 
-export default function AutoResizingInput({ min, max, step, value: externalValue, onChange, label, 'aria-label': ariaLabelProp, name, id }) {
+function formatVal(v, step) {
+    if (v === undefined || v === null || v === '') return '';
+    const num = Number(v);
+    if (Number.isNaN(num)) return String(v);
+    const numStep = Number(step);
+    if (!Number.isNaN(numStep) && numStep >= 1) {
+        return String(Math.round(num));
+    }
+    // Round to max 3 decimal digits and strip trailing zeroes
+    return String(Number(num.toFixed(3)));
+}
+
+export default function AutoResizingInput({ min, max, step, value: externalValue, onChange, label, 'aria-label': ariaLabelProp, name, id, disabled = false }) {
     const generatedId = useId()
     const ariaLabel = ariaLabelProp || label || name || 'Numeric input'
     const inputName = name || (label ? label.toLowerCase().replace(/\s+/g, '-') : 'numeric-input')
     const inputId = id || `input-${inputName}-${generatedId.replace(/:/g, '')}`
-    const [draftValue, setDraftValue] = useState(String(externalValue ?? ''))
+    const [draftValue, setDraftValue] = useState(formatVal(externalValue, step))
     const [isValid, setIsValid] = useState(true)
     const [isEditing, setIsEditing] = useState(false)
 
     const inputRef = useRef(null)
-    const lastValidRef = useRef(String(externalValue ?? ''))
+    const lastValidRef = useRef(formatVal(externalValue, step))
     const lastValidNumRef = useRef(Number(externalValue ?? min))
     const invalidTimerRef = useRef(null)
-    const externalString = String(externalValue ?? '')
+    const externalString = formatVal(externalValue, step)
     const displayedValue = isEditing ? draftValue : externalString
 
     // ---- resize ----
@@ -59,7 +71,9 @@ export default function AutoResizingInput({ min, max, step, value: externalValue
         }
 
         const stepped =
-            Math.round((num - min) / step) * step + min
+            (min < 0 && max > 0)
+                ? Math.round(num / step) * step
+                : Math.round((num - min) / step) * step + min
 
         const steppedNum =
             Math.round(stepped * 1e10) / 1e10
@@ -68,7 +82,7 @@ export default function AutoResizingInput({ min, max, step, value: externalValue
             return false
         }
 
-        lastValidRef.current = String(steppedNum)
+        lastValidRef.current = formatVal(steppedNum, step)
         lastValidNumRef.current = steppedNum
         return true
     }
@@ -99,6 +113,15 @@ export default function AutoResizingInput({ min, max, step, value: externalValue
         const newValue = input.value
         setDraftValue(newValue)
 
+        if (newValue === '-' || newValue === '-.' || newValue === '.') {
+            if (invalidTimerRef.current) {
+                clearTimeout(invalidTimerRef.current)
+                invalidTimerRef.current = null
+            }
+            setIsValid(true)
+            return
+        }
+
         const num = input.valueAsNumber
 
         if (Number.isNaN(num)) {
@@ -108,7 +131,9 @@ export default function AutoResizingInput({ min, max, step, value: externalValue
         }
 
         const stepped =
-            Math.round((num - min) / step) * step + min
+            (min < 0 && max > 0)
+                ? Math.round(num / step) * step
+                : Math.round((num - min) / step) * step + min
 
         const steppedNum =
             Math.round(stepped * 1e10) / 1e10
@@ -119,7 +144,7 @@ export default function AutoResizingInput({ min, max, step, value: externalValue
             return
         }
 
-        const steppedStr = String(steppedNum)
+        const steppedStr = formatVal(steppedNum, step)
 
         if (steppedStr !== newValue)
             setDraftValue(steppedStr)
@@ -151,6 +176,7 @@ export default function AutoResizingInput({ min, max, step, value: externalValue
             onBlur={handleBlur}
             aria-invalid={!isValid}
             aria-label={ariaLabel}
+            disabled={disabled}
         />
     )
 }
