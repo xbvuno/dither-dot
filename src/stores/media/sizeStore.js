@@ -12,7 +12,31 @@ const INITIAL_SIZE_STATE = {
   aspectOffset: 0.5,
 };
 
-export const computeAspectCrop = (width, height, preset, orientation = 'landscape', offset = 0.5) => {
+export const getAspectCroppedAxis = (width, height, preset, orientation = 'landscape') => {
+  if (!preset || preset === 'free') return null;
+  const w = Number(width) || 1;
+  const h = Number(height) || 1;
+  const safeOrientation = orientation === 'portrait' ? 'portrait' : 'landscape';
+
+  let ratioW = 1;
+  let ratioH = 1;
+  if (preset === '1:1') {
+    ratioW = 1;
+    ratioH = 1;
+  } else if (preset === '4:3') {
+    ratioW = safeOrientation === 'portrait' ? 3 : 4;
+    ratioH = safeOrientation === 'portrait' ? 4 : 3;
+  } else if (preset === '16:9') {
+    ratioW = safeOrientation === 'portrait' ? 9 : 16;
+    ratioH = safeOrientation === 'portrait' ? 16 : 9;
+  }
+
+  const targetRatio = ratioW / ratioH;
+  const imgRatio = w / h;
+  return imgRatio >= targetRatio ? 'x' : 'y';
+};
+
+export const computeAspectCrop = (width, height, preset, orientation = 'landscape', offset = 0.5, currentCrop = {}) => {
   const w = Number(width) || 1;
   const h = Number(height) || 1;
 
@@ -40,32 +64,41 @@ export const computeAspectCrop = (width, height, preset, orientation = 'landscap
   const targetRatio = ratioW / ratioH;
   const imgRatio = w / h;
 
-  if (imgRatio > targetRatio) {
-    // Image is wider than target ratio -> crop left/right (X axis)
-    const targetW = Math.max(1, Math.min(w, Math.round(h * targetRatio)));
+  if (imgRatio >= targetRatio) {
+    // Image is wider than or equal to target ratio -> X (left/right) is dependent
+    // Independent axis is Y (top/bottom)
+    const top = Math.max(0, Math.min(h - 1, Number(currentCrop?.top) || 0));
+    const maxBottom = Math.max(0, h - top - 1);
+    const bottom = Math.max(0, Math.min(maxBottom, Number(currentCrop?.bottom) || 0));
+    const hAvail = Math.max(1, h - top - bottom);
+
+    const targetW = Math.max(1, Math.min(w, Math.round(hAvail * targetRatio)));
     const totalCropX = Math.max(0, w - targetW);
     const cropLeft = Math.round(totalCropX * p);
     const cropRight = totalCropX - cropLeft;
+
     return {
-      crop: { top: 0, bottom: 0, left: cropLeft, right: cropRight },
+      crop: { top, bottom, left: cropLeft, right: cropRight },
       croppedAxis: 'x',
     };
-  } else if (imgRatio < targetRatio) {
-    // Image is taller than target ratio -> crop top/bottom (Y axis)
-    const targetH = Math.max(1, Math.min(h, Math.round(w / targetRatio)));
+  } else {
+    // Image is taller than target ratio -> Y (top/bottom) is dependent
+    // Independent axis is X (left/right)
+    const left = Math.max(0, Math.min(w - 1, Number(currentCrop?.left) || 0));
+    const maxRight = Math.max(0, w - left - 1);
+    const right = Math.max(0, Math.min(maxRight, Number(currentCrop?.right) || 0));
+    const wAvail = Math.max(1, w - left - right);
+
+    const targetH = Math.max(1, Math.min(h, Math.round(wAvail / targetRatio)));
     const totalCropY = Math.max(0, h - targetH);
     const cropTop = Math.round(totalCropY * p);
     const cropBottom = totalCropY - cropTop;
+
     return {
-      crop: { top: cropTop, bottom: cropBottom, left: 0, right: 0 },
+      crop: { top: cropTop, bottom: cropBottom, left, right },
       croppedAxis: 'y',
     };
   }
-
-  return {
-    crop: { top: 0, bottom: 0, left: 0, right: 0 },
-    croppedAxis: null,
-  };
 };
 
 const clampCrop = (crop, w, h) => {
@@ -270,9 +303,23 @@ const useSizeStore = create(persist((set) => ({
 
   setCropTop: (val) =>
     set((state) => {
-      const nextCrop = clampCrop({ ...state.crop, top: val }, state.customSize.customWidth, state.customSize.customHeight);
       const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
       const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+
+      if (state.aspectPreset && state.aspectPreset !== 'free') {
+        const result = computeAspectCrop(w, h, state.aspectPreset, state.aspectOrientation, state.aspectOffset, { ...state.crop, top: val });
+        if (result) {
+          const nextCrop = clampCrop(result.crop, w, h);
+          const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
+          const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+          return {
+            crop: nextCrop,
+            ratio: curW / curH,
+          };
+        }
+      }
+
+      const nextCrop = clampCrop({ ...state.crop, top: val }, state.customSize.customWidth, state.customSize.customHeight);
       const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
       const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
       return {
@@ -283,9 +330,23 @@ const useSizeStore = create(persist((set) => ({
 
   setCropBottom: (val) =>
     set((state) => {
-      const nextCrop = clampCrop({ ...state.crop, bottom: val }, state.customSize.customWidth, state.customSize.customHeight);
       const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
       const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+
+      if (state.aspectPreset && state.aspectPreset !== 'free') {
+        const result = computeAspectCrop(w, h, state.aspectPreset, state.aspectOrientation, state.aspectOffset, { ...state.crop, bottom: val });
+        if (result) {
+          const nextCrop = clampCrop(result.crop, w, h);
+          const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
+          const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+          return {
+            crop: nextCrop,
+            ratio: curW / curH,
+          };
+        }
+      }
+
+      const nextCrop = clampCrop({ ...state.crop, bottom: val }, state.customSize.customWidth, state.customSize.customHeight);
       const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
       const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
       return {
@@ -296,9 +357,23 @@ const useSizeStore = create(persist((set) => ({
 
   setCropLeft: (val) =>
     set((state) => {
-      const nextCrop = clampCrop({ ...state.crop, left: val }, state.customSize.customWidth, state.customSize.customHeight);
       const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
       const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+
+      if (state.aspectPreset && state.aspectPreset !== 'free') {
+        const result = computeAspectCrop(w, h, state.aspectPreset, state.aspectOrientation, state.aspectOffset, { ...state.crop, left: val });
+        if (result) {
+          const nextCrop = clampCrop(result.crop, w, h);
+          const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
+          const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+          return {
+            crop: nextCrop,
+            ratio: curW / curH,
+          };
+        }
+      }
+
+      const nextCrop = clampCrop({ ...state.crop, left: val }, state.customSize.customWidth, state.customSize.customHeight);
       const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
       const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
       return {
@@ -309,9 +384,23 @@ const useSizeStore = create(persist((set) => ({
 
   setCropRight: (val) =>
     set((state) => {
-      const nextCrop = clampCrop({ ...state.crop, right: val }, state.customSize.customWidth, state.customSize.customHeight);
       const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
       const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+
+      if (state.aspectPreset && state.aspectPreset !== 'free') {
+        const result = computeAspectCrop(w, h, state.aspectPreset, state.aspectOrientation, state.aspectOffset, { ...state.crop, right: val });
+        if (result) {
+          const nextCrop = clampCrop(result.crop, w, h);
+          const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
+          const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+          return {
+            crop: nextCrop,
+            ratio: curW / curH,
+          };
+        }
+      }
+
+      const nextCrop = clampCrop({ ...state.crop, right: val }, state.customSize.customWidth, state.customSize.customHeight);
       const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
       const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
       return {
@@ -333,7 +422,7 @@ const useSizeStore = create(persist((set) => ({
         };
       }
 
-      const result = computeAspectCrop(w, h, preset, orientation, offset);
+      const result = computeAspectCrop(w, h, preset, orientation, offset, { top: 0, bottom: 0, left: 0, right: 0 });
       if (!result) return { aspectPreset: preset };
 
       const nextCrop = clampCrop(result.crop, w, h);
@@ -361,7 +450,7 @@ const useSizeStore = create(persist((set) => ({
         return { aspectOrientation: safeOrientation };
       }
 
-      const result = computeAspectCrop(w, h, preset, safeOrientation, offset);
+      const result = computeAspectCrop(w, h, preset, safeOrientation, offset, { top: 0, bottom: 0, left: 0, right: 0 });
       if (!result) return { aspectOrientation: safeOrientation };
 
       const nextCrop = clampCrop(result.crop, w, h);
@@ -387,7 +476,7 @@ const useSizeStore = create(persist((set) => ({
         return { aspectOffset: safeOffset };
       }
 
-      const result = computeAspectCrop(w, h, preset, orientation, safeOffset);
+      const result = computeAspectCrop(w, h, preset, orientation, safeOffset, state.crop);
       if (!result) return { aspectOffset: safeOffset };
 
       const nextCrop = clampCrop(result.crop, w, h);

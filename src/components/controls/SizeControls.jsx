@@ -1,7 +1,7 @@
 import { useState } from "react";
 import MacroSection from "../ui/MacroSection";
 import SliderBundle from "../ui/shared/SliderBundle";
-import useSizeStore from "../../stores/media/sizeStore";
+import useSizeStore, { getAspectCroppedAxis } from "../../stores/media/sizeStore";
 import useWebcamStore from "../../stores/media/webcamStore";
 
 function gcd(a, b) {
@@ -46,6 +46,9 @@ export default function SizeControls() {
   const resetCrop = useSizeStore(s => s.resetCrop);
 
   const isFree = aspectPreset === 'free';
+  const croppedAxis = !isFree ? getAspectCroppedAxis(width, height, aspectPreset, aspectOrientation) : null;
+  const isTopBottomDisabled = croppedAxis === 'y';
+  const isLeftRightDisabled = croppedAxis === 'x';
 
   // Accordion state loaded from and saved to localStorage
   const [openSections, setOpenSections] = useState(() => {
@@ -237,7 +240,7 @@ export default function SizeControls() {
             label="TOP"
             value={crop.top}
             onChange={setCropTop}
-            disabled={!isFree}
+            disabled={isTopBottomDisabled}
           />
           <SliderBundle
             min={0}
@@ -247,7 +250,7 @@ export default function SizeControls() {
             label="BOTTOM"
             value={crop.bottom}
             onChange={setCropBottom}
-            disabled={!isFree}
+            disabled={isTopBottomDisabled}
           />
           <SliderBundle
             min={0}
@@ -257,7 +260,7 @@ export default function SizeControls() {
             label="LEFT"
             value={crop.left}
             onChange={setCropLeft}
-            disabled={!isFree}
+            disabled={isLeftRightDisabled}
           />
           <SliderBundle
             min={0}
@@ -267,7 +270,7 @@ export default function SizeControls() {
             label="RIGHT"
             value={crop.right}
             onChange={setCropRight}
-            disabled={!isFree}
+            disabled={isLeftRightDisabled}
           />
         </div>
       </MacroSection>
