@@ -323,11 +323,13 @@ const action = this.debugEnabled ? "disable" : "enable";
       
       this.clearViewerLoadingTimer();
       useImageStore.getState().setViewerLoading(false);
+      useImageStore.getState().setEngineReady(true);
     } catch (error) {
       if (this.lifecycleToken === lifecycleToken && !this.disposed) {
         useProcessingStore.getState().setRenderProcessing(false);
         this.clearViewerLoadingTimer();
         useImageStore.getState().setViewerLoading(false);
+        useImageStore.getState().setEngineReady(true);
         this.setEngineState('ERROR');
         this.error('Pipeline', 'Error during initialization: %o', error);
         alert('Unable to load the selected image. Please try another file.');

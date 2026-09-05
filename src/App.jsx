@@ -1,12 +1,31 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useState, useEffect } from 'react';
 import { RouterProvider, useRouter } from './router/router';
 import WaveGridSpinner from './components/ui/shared/WaveGridSpinner';
+import useImageStore from './stores/media/imageStore';
 
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const EditorPage = lazy(() => import('./pages/EditorPage'));
 
 function AppRoutes() {
   const { path } = useRouter();
+  const [appReady, setAppReady] = useState(() => path === '/');
+
+  useEffect(() => {
+    if (path === '/') {
+      setAppReady(true);
+      return;
+    }
+    if (useImageStore.getState().engineReady) {
+      setAppReady(true);
+      return;
+    }
+    const unsub = useImageStore.subscribe((state) => {
+      if (state.engineReady) {
+        setAppReady(true);
+      }
+    });
+    return () => unsub();
+  }, [path]);
 
   let Component = LandingPage;
   if (path === '/editor' || path.startsWith('/editor/') || path === '/import' || path.startsWith('/import/')) {
@@ -16,15 +35,29 @@ function AppRoutes() {
   }
 
   return (
-    <Suspense
-      fallback={
-        <div className='zoomable-loading-overlay' style={{ position: 'fixed', inset: 0, zIndex: 9999 }}>
+    <>
+      <Suspense
+        fallback={
+          <div className='static-loader-container'>
+            <WaveGridSpinner />
+          </div>
+        }
+      >
+        <Component />
+      </Suspense>
+      {!appReady && (
+        <div
+          className='static-loader-container'
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 99999,
+          }}
+        >
           <WaveGridSpinner />
         </div>
-      }
-    >
-      <Component />
-    </Suspense>
+      )}
+    </>
   );
 }
 

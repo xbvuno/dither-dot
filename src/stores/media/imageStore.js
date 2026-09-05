@@ -42,9 +42,12 @@ const useImageStore = create(
     (set, get) => ({
       ...DEFAULT_IMAGE_STATE,
       viewerLoading: false,
+      engineReady: false,
       exportPreviewUrl: null,
       exportUpscale: 1,
       lastRenderJobId: null,
+
+      setEngineReady: (ready) => set({ engineReady: Boolean(ready) }),
 
       setExportUpscale: (upscale) => set({ exportUpscale: Math.max(1, Math.floor(Number(upscale) || 1)) }),
 
