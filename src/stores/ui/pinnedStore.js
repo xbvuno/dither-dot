@@ -1,10 +1,22 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { PIN_ID } from '../../constants/pinnedRegistry';
+
+export const DEFAULT_PINNED_IDS = [
+  PIN_ID.COLOR_GAMMA,
+  PIN_ID.COLOR_BLACKS,
+  PIN_ID.COLOR_WHITES,
+  PIN_ID.COLOR_CONTRAST,
+  PIN_ID.COLOR_SATURATION,
+  PIN_ID.COLOR_HUE,
+  PIN_ID.RESIZE_SCALE,
+  PIN_ID.DITHER_AMOUNT,
+];
 
 const usePinnedStore = create(
   persist(
     (set, get) => ({
-      pinnedIds: [],
+      pinnedIds: DEFAULT_PINNED_IDS,
 
       isPinned: (id) => {
         if (!id) return false;
@@ -34,6 +46,10 @@ const usePinnedStore = create(
         } else {
           get().pin(id);
         }
+      },
+
+      resetToDefault: () => {
+        set({ pinnedIds: DEFAULT_PINNED_IDS });
       },
     }),
     {
