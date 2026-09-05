@@ -122,12 +122,34 @@ export default function ExportPage() {
   const handleToggleLivePreview = (val) => {
     const isLive = val === 'on' || val === true;
     setLivePreview(isLive);
+    if (isLive) {
+      setUpscale(1);
+    }
     try {
       localStorage.setItem(LIVE_PREVIEW_STORAGE_KEY, String(isLive));
     } catch {
       // ignore
     }
   };
+
+  const handleUpscaleChange = (newUpscale) => {
+    const nextVal = Math.max(1, Math.floor(Number(newUpscale) || 1));
+    setUpscale(nextVal);
+    if (nextVal > 1 && livePreview) {
+      setLivePreview(false);
+      try {
+        localStorage.setItem(LIVE_PREVIEW_STORAGE_KEY, 'false');
+      } catch {
+        // ignore
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (livePreview && upscale > 1) {
+      setUpscale(1);
+    }
+  }, [livePreview, upscale, setUpscale]);
 
   useEffect(() => {
     setExportName(getDefaultExportName(sourceName));
@@ -403,7 +425,7 @@ export default function ExportPage() {
             step={1}
             defaultValue={1}
             value={upscale}
-            onChange={setUpscale}
+            onChange={handleUpscaleChange}
             pinId="export:upscale"
           />
         </div>
