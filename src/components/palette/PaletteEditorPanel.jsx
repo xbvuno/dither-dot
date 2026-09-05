@@ -23,10 +23,7 @@ export default function PaletteEditorPanel({
       <div className="palette-editor-header">
         <div className="palette-editor-header-actions">
           <span className="palette-editor-title">
-            {isSingle ? 'COLOR EDITOR' : 'MULTI COLOR'}
-          </span>
-          <span className="palette-editor-count-tag">
-            {isSingle ? (singleColor.hex || '').toUpperCase() : `${selectedColors.length} COLORS SELECTED`}
+            COLOR EDITOR
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>

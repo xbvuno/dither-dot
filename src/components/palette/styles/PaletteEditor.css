@@ -58,15 +58,6 @@
   gap: 0.4rem;
 }
 
-.palette-editor-count-tag {
-  font-size: 0.65rem;
-  letter-spacing: 0.05em;
-  padding: 0.15rem 0.45rem;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-subtle);
-  color: var(--color-text-subtle);
-}
-
 .palette-editor-close-btn {
   border: none;
   background: transparent;
