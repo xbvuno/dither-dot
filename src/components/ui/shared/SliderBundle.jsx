@@ -151,6 +151,8 @@ export default function SliderBundle({
         }
     };
 
+    const isModified = defaultValue !== undefined && !Number.isNaN(numValue) && Math.abs(numValue - Number(defaultValue)) > 1e-5;
+
     return (
         <div
             className="bv slider-bundle"
@@ -159,7 +161,7 @@ export default function SliderBundle({
         >
             <div className="flex-h">
                 <span className="slider-label-wrap" title={tooltip || undefined}>
-                    <span className="bv-label slider-bundle-label">{label}</span>
+                    <span className={`bv-label slider-bundle-label${isModified ? ' modified' : ''}`}>{label}</span>
                     {isSelected && (
                         <span className="slider-range-bounds">[{formatBound(min)}, {formatBound(max)}]</span>
                     )}

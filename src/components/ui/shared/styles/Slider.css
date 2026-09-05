@@ -69,6 +69,11 @@
     color: var(--color-text);
 }
 
+.bv.slider-bundle .slider-bundle-label.modified {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
 .bv.slider-bundle .flex-h {
     display: flex;
     align-items: center;
