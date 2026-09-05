@@ -500,7 +500,8 @@ const action = this.debugEnabled ? "disable" : "enable";
       useWatermarkStore.subscribe((state) => {
         this.watermarkEnabled = Boolean(state.enabled);
         this.syncWatermarkPalette();
-        this.syncVisibleLayer();
+        this.markGifFramesPending();
+        this.queueProcessing(false);
       })
     );
 
