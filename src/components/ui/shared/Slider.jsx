@@ -69,7 +69,20 @@ export default function Slider({
 
   const ticks = useMemo(() => {
     const range = numMax - numMin;
-    if (!Number.isFinite(range) || range <= 0) return [];
+    if (!Number.isFinite(range) || range <= 0 || !Number.isFinite(numStep) || numStep <= 0) return [];
+
+    const toPct = (val) => ((val - numMin) / range) * 100;
+    const totalSteps = Math.round(range / numStep);
+
+    // If total steps <= 64, show all discrete ticks!
+    if (totalSteps <= 64) {
+      const result = [];
+      for (let i = 1; i < totalSteps; i++) {
+        const val = numMin + i * numStep;
+        result.push(toPct(val));
+      }
+      return result;
+    }
 
     const isIntBounds =
       Number.isInteger(numMin) &&
@@ -77,28 +90,13 @@ export default function Slider({
       Number.isInteger(numStep) &&
       numStep >= 1;
 
-    const toPct = (val) => ((val - numMin) / range) * 100;
-
     if (isIntBounds) {
-      const totalSteps = Math.round(range / numStep);
-
-      // If few steps (<= 16), show tick at every discrete step
-      if (totalSteps <= 16) {
-        const result = [];
-        for (let i = 1; i < totalSteps; i++) {
-          const val = numMin + i * numStep;
-          result.push(toPct(val));
-        }
-        return result;
-      }
-
-      // Large integer range: determine round interval
+      // Large integer range (> 64 steps): determine round interval
       let interval = 100;
       if (range >= 500) interval = 100;
       else if (range >= 200) interval = 50;
       else if (range >= 100) interval = 25;
-      else if (range >= 40) interval = 10;
-      else interval = 5;
+      else interval = 10;
 
       // Range spans negative to positive: anchor ticks on 0
       if (numMin < 0 && numMax > 0) {
@@ -125,7 +123,7 @@ export default function Slider({
       return result;
     }
 
-    // Float or continuous range
+    // Dense float or continuous range (> 64 steps)
     // Range spans negative to positive (e.g. blacks [-0.5, 0.5], hue [-3.14, 3.14], etc.)
     if (numMin < 0 && numMax > 0) {
       if (Math.abs(numMin + numMax) < 1e-4) {
