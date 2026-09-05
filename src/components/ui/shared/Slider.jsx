@@ -11,17 +11,20 @@ const valueToPercent = (v, min, max) => {
   return ((v - min) / range) * 100;
 };
 
-const percentToValue = (p, min, max, step) => {
-  const range = Math.max(0.00001, max - min);
-  const raw = min + (p / 100) * range;
-  const stepped = Math.round((raw - min) / step) * step + min;
-
+const snapValue = (v, min, max, step) => {
+  let stepped;
+  if (min < 0 && max > 0) {
+    stepped = Math.round(v / step) * step;
+  } else {
+    stepped = Math.round((v - min) / step) * step + min;
+  }
   return clamp(Number(stepped.toFixed(10)), min, max);
 };
 
-const snapValue = (v, min, max, step) => {
-  const stepped = Math.round((v - min) / step) * step + min;
-  return clamp(Number(stepped.toFixed(10)), min, max);
+const percentToValue = (p, min, max, step) => {
+  const range = Math.max(0.00001, max - min);
+  const raw = min + (p / 100) * range;
+  return snapValue(raw, min, max, step);
 };
 
 /* ---------------- component ---------------- */
@@ -58,7 +61,7 @@ export default function Slider({
   const [value, setValue] = useState(() =>
     isControlled
       ? controlledValue
-      : snapValue(defaultValue ?? min, min, max, step)
+      : snapValue(defaultValue ?? (min <= 0 && max >= 0 ? 0 : min), min, max, step)
   );
   const displayValue = isControlled ? controlledValue : value;
 
@@ -71,15 +74,22 @@ export default function Slider({
     const range = numMax - numMin;
     if (!Number.isFinite(range) || range <= 0 || !Number.isFinite(numStep) || numStep <= 0) return [];
 
-    const toPct = (val) => ((val - numMin) / range) * 100;
     const totalSteps = Math.round(range / numStep);
 
-    // If total steps <= 64, show all discrete ticks!
+    // If total steps <= 64, show all discrete steps snapped
     if (totalSteps <= 64) {
       const result = [];
+      const seen = new Set();
       for (let i = 1; i < totalSteps; i++) {
         const val = numMin + i * numStep;
-        result.push(toPct(val));
+        const snapped = snapValue(val, numMin, numMax, numStep);
+        if (snapped > numMin + 1e-5 && snapped < numMax - 1e-5) {
+          const key = snapped.toFixed(8);
+          if (!seen.has(key)) {
+            seen.add(key);
+            result.push(((snapped - numMin) / range) * 100);
+          }
+        }
       }
       return result;
     }
@@ -90,6 +100,8 @@ export default function Slider({
       Number.isInteger(numStep) &&
       numStep >= 1;
 
+    let rawValues = [];
+
     if (isIntBounds) {
       // Large integer range (> 64 steps): determine round interval
       let interval = 100;
@@ -98,72 +110,57 @@ export default function Slider({
       else if (range >= 100) interval = 25;
       else interval = 10;
 
-      // Range spans negative to positive: anchor ticks on 0
+      // Range spans negative to positive: anchor on 0
       if (numMin < 0 && numMax > 0) {
-        const result = [];
-        // Negative ticks radiating left from 0
         for (let v = -interval; v > numMin + 1e-4; v -= interval) {
-          result.unshift(toPct(v));
+          rawValues.unshift(v);
         }
-        // Zero tick
-        result.push(toPct(0));
-        // Positive ticks radiating right from 0
+        rawValues.push(0);
         for (let v = interval; v < numMax - 1e-4; v += interval) {
-          result.push(toPct(v));
+          rawValues.push(v);
         }
-        return result;
-      }
-
-      // Single sign integer range (all positive or all negative)
-      const result = [];
-      const start = Math.ceil((numMin + 1e-4) / interval) * interval;
-      for (let v = start; v < numMax - 1e-4; v += interval) {
-        result.push(toPct(v));
-      }
-      return result;
-    }
-
-    // Dense float or continuous range (> 64 steps)
-    // Range spans negative to positive (e.g. blacks [-0.5, 0.5], hue [-3.14, 3.14], etc.)
-    if (numMin < 0 && numMax > 0) {
-      if (Math.abs(numMin + numMax) < 1e-4) {
-        // Symmetric around 0: 4 subdivisions each side, 0 in exact center (50%)
-        const halfDivisions = 4;
-        const result = [];
-        for (let i = 1; i < halfDivisions; i++) {
-          const val = numMin + (i / halfDivisions) * (-numMin);
-          result.push(toPct(val));
-        }
-        result.push(50);
-        for (let i = 1; i < halfDivisions; i++) {
-          const val = (i / halfDivisions) * numMax;
-          result.push(toPct(val));
-        }
-        return result;
       } else {
-        // Asymmetric spanning 0: anchor on 0
-        const result = [];
+        const start = Math.ceil((numMin + 1e-4) / interval) * interval;
+        for (let v = start; v < numMax - 1e-4; v += interval) {
+          rawValues.push(v);
+        }
+      }
+    } else {
+      // Float or continuous range (> 64 steps)
+      if (numMin < 0 && numMax > 0) {
         const negDivs = 4;
         const posDivs = 4;
         for (let i = 1; i < negDivs; i++) {
-          const val = numMin * (1 - i / negDivs);
-          result.push(toPct(val));
+          rawValues.push(numMin * (1 - i / negDivs));
         }
-        result.push(toPct(0));
+        rawValues.push(0);
         for (let i = 1; i < posDivs; i++) {
-          const val = numMax * (i / posDivs);
-          result.push(toPct(val));
+          rawValues.push(numMax * (i / posDivs));
         }
-        return result;
+      } else {
+        const numDivisions = 8;
+        for (let i = 1; i < numDivisions; i++) {
+          rawValues.push(numMin + (i / numDivisions) * range);
+        }
       }
     }
 
-    // Single sign float range: 8 subdivisions (7 intermediate ticks)
-    const numDivisions = 8;
+    // Snap every raw tick value to the nearest valid step and convert to percentage
+    const seen = new Set();
     const result = [];
-    for (let i = 1; i < numDivisions; i++) {
-      result.push((i / numDivisions) * 100);
+
+    for (const raw of rawValues) {
+      const snapped = snapValue(raw, numMin, numMax, numStep);
+      // Ensure strictly inside (min, max)
+      if (snapped > numMin + 1e-5 && snapped < numMax - 1e-5) {
+        const key = snapped.toFixed(8);
+        if (!seen.has(key)) {
+          seen.add(key);
+          result.push(((snapped - numMin) / range) * 100);
+        }
+      }
     }
+
     return result;
   }, [numMin, numMax, numStep]);
 
@@ -421,21 +418,22 @@ export default function Slider({
       } else if (e.key === "ArrowRight" || e.key === "ArrowUp") {
         e.preventDefault();
         stepUp();
-      } else if (e.key.toLowerCase() === "r" && defaultValue !== undefined) {
+      } else if (e.key.toLowerCase() === "r") {
         e.preventDefault();
-        setInternalValue(snapValue(defaultValue, min, max, step));
+        const resetTarget = defaultValue !== undefined ? defaultValue : (numMin <= 0 && numMax >= 0 ? 0 : numMin);
+        setInternalValue(snapValue(resetTarget, min, max, step));
       }
     };
 
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [defaultValue, max, min, step]);
+  }, [defaultValue, max, min, numMax, numMin, step]);
 
   /* ---------- UI ---------- */
 
   const handleReset = () => {
-    if (defaultValue === undefined) return;
-    setInternalValue(defaultValue);
+    const resetTarget = defaultValue !== undefined ? defaultValue : (numMin <= 0 && numMax >= 0 ? 0 : numMin);
+    setInternalValue(resetTarget);
   };
 
   const handleSelect = () => {

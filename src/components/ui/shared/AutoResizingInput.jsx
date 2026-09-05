@@ -71,7 +71,9 @@ export default function AutoResizingInput({ min, max, step, value: externalValue
         }
 
         const stepped =
-            Math.round((num - min) / step) * step + min
+            (min < 0 && max > 0)
+                ? Math.round(num / step) * step
+                : Math.round((num - min) / step) * step + min
 
         const steppedNum =
             Math.round(stepped * 1e10) / 1e10
@@ -129,7 +131,9 @@ export default function AutoResizingInput({ min, max, step, value: externalValue
         }
 
         const stepped =
-            Math.round((num - min) / step) * step + min
+            (min < 0 && max > 0)
+                ? Math.round(num / step) * step
+                : Math.round((num - min) / step) * step + min
 
         const steppedNum =
             Math.round(stepped * 1e10) / 1e10

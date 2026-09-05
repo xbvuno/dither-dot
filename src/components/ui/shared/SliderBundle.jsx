@@ -46,7 +46,12 @@ export default function SliderBundle({
         const sStep = Number(s.step);
 
         const base = typeof next === "function" ? next(currVal) : Number(next);
-        const stepped = Math.round((base - sMin) / sStep) * sStep + sMin;
+        let stepped;
+        if (sMin < 0 && sMax > 0) {
+            stepped = Math.round(base / sStep) * sStep;
+        } else {
+            stepped = Math.round((base - sMin) / sStep) * sStep + sMin;
+        }
         const clamped = Math.min(sMax, Math.max(sMin, Number(stepped.toFixed(10))));
 
         if (typeof s.onChange === "function" && Math.abs(clamped - currVal) > 1e-7) {
@@ -153,7 +158,8 @@ export default function SliderBundle({
         }
     };
 
-    const isModified = defaultValue !== undefined && !Number.isNaN(numValue) && Math.abs(numValue - Number(defaultValue)) > 1e-5;
+    const effectiveDefault = defaultValue !== undefined ? defaultValue : (numMin <= 0 && numMax >= 0 ? 0 : numMin);
+    const isModified = !Number.isNaN(numValue) && Math.abs(numValue - Number(effectiveDefault)) > 1e-5;
 
     return (
         <div
@@ -210,7 +216,7 @@ export default function SliderBundle({
                                     title={`Reset ${label}`}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        setInternalValue(defaultValue);
+                                        setInternalValue(effectiveDefault);
                                     }}
                                 >
                                     <RotateCcw size={12} strokeWidth={1.5} />
