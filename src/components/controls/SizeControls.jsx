@@ -222,22 +222,19 @@ export default function SizeControls() {
         </div>
 
         <div className="bv-section">
+          <p className="bv-label">SIZE</p>
           {ratioLocked ? (
-            <>
-              <p className="bv-label">SCALE</p>
-              <SliderBundle
-                min={0}
-                max={1.0}
-                defaultValue={1.0}
-                step={0.01}
-                label="SCALE"
-                value={currentScale}
-                onChange={setScale}
-              />
-            </>
+            <SliderBundle
+              min={0}
+              max={1.0}
+              defaultValue={1.0}
+              step={0.01}
+              label="SCALE"
+              value={currentScale}
+              onChange={setScale}
+            />
           ) : (
             <>
-              <p className="bv-label">SIZE</p>
               <SliderBundle
                 min={1}
                 max={maxSliderWidth}
