@@ -26,6 +26,7 @@ export default function SizeControls() {
   const ratioLocked  = useSizeStore(s => s.ratioLocked);
   const setCustomWidth  = useSizeStore(s => s.setCustomWidth);
   const setCustomHeight = useSizeStore(s => s.setCustomHeight);
+  const setScale        = useSizeStore(s => s.setScale);
   const setRatioLocked  = useSizeStore(s => s.setRatioLocked);
 
   const crop = useSizeStore(s => s.crop) || { top: 0, bottom: 0, left: 0, right: 0 };
@@ -70,10 +71,14 @@ export default function SizeControls() {
   const croppedWidth = Math.max(1, width - (crop.left || 0) - (crop.right || 0));
   const croppedHeight = Math.max(1, height - (crop.top || 0) - (crop.bottom || 0));
 
+  const currentCroppedW = Math.max(1, (customWidth != null ? customWidth : width) - (crop.left || 0) - (crop.right || 0));
+  const currentCroppedH = Math.max(1, (customHeight != null ? customHeight : height) - (crop.top || 0) - (crop.bottom || 0));
+  const currentScale = Number(Math.min(1.0, Math.max(0, currentCroppedW / croppedWidth)).toFixed(3));
+
   const maxSliderWidth = Math.max(1280, croppedWidth * 2);
   const maxSliderHeight = Math.max(720, croppedHeight * 2);
 
-  const currentRatioLabel = formatRatio(customWidth || croppedWidth, customHeight || croppedHeight);
+  const currentRatioLabel = formatRatio(currentCroppedW, currentCroppedH);
 
   // Percent calculations for preview box based on original image
   const pctLeft = width ? (crop.left / width) * 100 : 0;
@@ -94,7 +99,7 @@ export default function SizeControls() {
   }
 
   // Modified checks for underline and reset buttons
-  const isResizeModified = customWidth !== croppedWidth || customHeight !== croppedHeight || !ratioLocked;
+  const isResizeModified = currentCroppedW !== croppedWidth || currentCroppedH !== croppedHeight || !ratioLocked;
   const isCroppingModified = crop.top !== 0 || crop.bottom !== 0 || crop.left !== 0 || crop.right !== 0;
 
   return (
@@ -110,13 +115,13 @@ export default function SizeControls() {
           <div className="bv-controls-row" style={{ marginTop: '0.45rem' }}>
             <span className="bv-label">WIDTH</span>
             <span style={{ fontSize: '0.88rem', letterSpacing: '0.04em' }}>
-              {customWidth || croppedWidth}px
+              {currentCroppedW}px
             </span>
           </div>
           <div className="bv-controls-row" style={{ marginTop: '0.45rem' }}>
             <span className="bv-label">HEIGHT</span>
             <span style={{ fontSize: '0.88rem', letterSpacing: '0.04em' }}>
-              {customHeight || croppedHeight}px
+              {currentCroppedH}px
             </span>
           </div>
         </div>
@@ -195,28 +200,6 @@ export default function SizeControls() {
         onReset={resetSizeToCurrent}
       >
         <div className="bv-section">
-          <p className="bv-label">SIZE</p>
-          <SliderBundle
-            min={1}
-            max={maxSliderWidth}
-            defaultValue={croppedWidth}
-            step={1}
-            label="WIDTH"
-            value={customWidth}
-            onChange={setCustomWidth}
-          />
-          <SliderBundle
-            min={1}
-            max={maxSliderHeight}
-            defaultValue={croppedHeight}
-            step={1}
-            label="HEIGHT"
-            value={customHeight}
-            onChange={setCustomHeight}
-          />
-        </div>
-
-        <div className="bv-section">
           <div className="bv-controls-row">
             <span className="bv-label">RATIO</span>
             <div className="bv-option-group histogram-toggle-group size-controls-ratio-buttons">
@@ -236,6 +219,45 @@ export default function SizeControls() {
               </button>
             </div>
           </div>
+        </div>
+
+        <div className="bv-section">
+          {ratioLocked ? (
+            <>
+              <p className="bv-label">SCALE</p>
+              <SliderBundle
+                min={0}
+                max={1.0}
+                defaultValue={1.0}
+                step={0.01}
+                label="SCALE"
+                value={currentScale}
+                onChange={setScale}
+              />
+            </>
+          ) : (
+            <>
+              <p className="bv-label">SIZE</p>
+              <SliderBundle
+                min={1}
+                max={maxSliderWidth}
+                defaultValue={croppedWidth}
+                step={1}
+                label="WIDTH"
+                value={currentCroppedW}
+                onChange={(newW) => setCustomWidth(newW + (crop.left || 0) + (crop.right || 0))}
+              />
+              <SliderBundle
+                min={1}
+                max={maxSliderHeight}
+                defaultValue={croppedHeight}
+                step={1}
+                label="HEIGHT"
+                value={currentCroppedH}
+                onChange={(newH) => setCustomHeight(newH + (crop.top || 0) + (crop.bottom || 0))}
+              />
+            </>
+          )}
         </div>
       </MacroSection>
     </>

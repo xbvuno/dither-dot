@@ -49,12 +49,33 @@ const useSizeStore = create(persist((set) => ({
 
   setRatioLocked: (locked) =>
     set((state) => {
-      if (!locked) return { ratioLocked: false };
-      // Switching to KEEP: recompute ratio from current custom dimensions
-      const w = state.customSize.customWidth;
-      const h = state.customSize.customHeight;
-      const newRatio = (w && h) ? w / h : state.ratio;
-      return { ratioLocked: true, ratio: newRatio };
+      const origW = Number(state.size.width) || 1;
+      const origH = Number(state.size.height) || 1;
+      const crop = state.crop || { top: 0, bottom: 0, left: 0, right: 0 };
+      const curW = Math.max(1, origW - (crop.left || 0) - (crop.right || 0));
+      const curH = Math.max(1, origH - (crop.top || 0) - (crop.bottom || 0));
+
+      if (locked) {
+        // Switching to KEEP: start clean at 100% scale (scale: 1.0)
+        return {
+          ratioLocked: true,
+          ratio: curW / curH,
+          customSize: {
+            customWidth: origW,
+            customHeight: origH,
+          },
+        };
+      }
+
+      // Switching to FREE: start clean with current dimensions
+      return {
+        ratioLocked: false,
+        ratio: curW / curH,
+        customSize: {
+          customWidth: origW,
+          customHeight: origH,
+        },
+      };
     }),
   setWidth: (newWidth) =>
     set((state) => ({
@@ -151,30 +172,93 @@ const useSizeStore = create(persist((set) => ({
       crop: clampCrop(state.crop, newSize.customWidth, newSize.customHeight),
     })),
 
+  setScale: (scale) =>
+    set((state) => {
+      const origW = Number(state.size.width);
+      const origH = Number(state.size.height);
+      if (!origW || !origH) return {};
+
+      const crop = state.crop || { top: 0, bottom: 0, left: 0, right: 0 };
+      const croppedOrigW = Math.max(1, origW - (crop.left || 0) - (crop.right || 0));
+      const croppedOrigH = Math.max(1, origH - (crop.top || 0) - (crop.bottom || 0));
+
+      const s = Math.max(0, Math.min(1.0, Number(scale) || 0));
+      const targetCroppedW = s === 0 ? 1 : Math.max(1, Math.round(croppedOrigW * s));
+      const targetCroppedH = s === 0 ? 1 : Math.max(1, Math.round(croppedOrigH * s));
+
+      const newCustomW = targetCroppedW + (crop.left || 0) + (crop.right || 0);
+      const newCustomH = targetCroppedH + (crop.top || 0) + (crop.bottom || 0);
+
+      return {
+        ratio: targetCroppedW / targetCroppedH,
+        customSize: {
+          customWidth: newCustomW,
+          customHeight: newCustomH,
+        },
+      };
+    }),
+
   setCropTop: (val) =>
-    set((state) => ({
-      crop: clampCrop({ ...state.crop, top: val }, state.customSize.customWidth, state.customSize.customHeight),
-    })),
+    set((state) => {
+      const nextCrop = clampCrop({ ...state.crop, top: val }, state.customSize.customWidth, state.customSize.customHeight);
+      const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
+      const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+      const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
+      const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+      return {
+        crop: nextCrop,
+        ratio: curW / curH,
+      };
+    }),
 
   setCropBottom: (val) =>
-    set((state) => ({
-      crop: clampCrop({ ...state.crop, bottom: val }, state.customSize.customWidth, state.customSize.customHeight),
-    })),
+    set((state) => {
+      const nextCrop = clampCrop({ ...state.crop, bottom: val }, state.customSize.customWidth, state.customSize.customHeight);
+      const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
+      const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+      const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
+      const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+      return {
+        crop: nextCrop,
+        ratio: curW / curH,
+      };
+    }),
 
   setCropLeft: (val) =>
-    set((state) => ({
-      crop: clampCrop({ ...state.crop, left: val }, state.customSize.customWidth, state.customSize.customHeight),
-    })),
+    set((state) => {
+      const nextCrop = clampCrop({ ...state.crop, left: val }, state.customSize.customWidth, state.customSize.customHeight);
+      const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
+      const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+      const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
+      const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+      return {
+        crop: nextCrop,
+        ratio: curW / curH,
+      };
+    }),
 
   setCropRight: (val) =>
-    set((state) => ({
-      crop: clampCrop({ ...state.crop, right: val }, state.customSize.customWidth, state.customSize.customHeight),
-    })),
+    set((state) => {
+      const nextCrop = clampCrop({ ...state.crop, right: val }, state.customSize.customWidth, state.customSize.customHeight);
+      const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
+      const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+      const curW = Math.max(1, w - nextCrop.left - nextCrop.right);
+      const curH = Math.max(1, h - nextCrop.top - nextCrop.bottom);
+      return {
+        crop: nextCrop,
+        ratio: curW / curH,
+      };
+    }),
 
   resetCrop: () =>
-    set(() => ({
-      crop: { top: 0, bottom: 0, left: 0, right: 0 },
-    })),
+    set((state) => {
+      const w = Number(state.size.width) || Number(state.customSize.customWidth) || 1;
+      const h = Number(state.size.height) || Number(state.customSize.customHeight) || 1;
+      return {
+        crop: { top: 0, bottom: 0, left: 0, right: 0 },
+        ratio: w / h,
+      };
+    }),
 
   resetSizeToCurrent: () =>
     set((state) => {
