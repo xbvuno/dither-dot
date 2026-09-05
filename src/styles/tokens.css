@@ -34,10 +34,11 @@
     --color-border-hover: color-mix(in srgb, var(--color-text) 48%, transparent);
     --color-border-focus: var(--color-text);
     
-    /* Inputs */
+    /* Inputs & Surfaces */
     --input-surface: color-mix(in srgb, var(--color-bg) 50%, black);
     --input-surface-hover: var(--color-hover);
     --input-surface-focus: rgb(9, 9, 9);
+    --color-macro-section-bg: rgba(0, 0, 0, 0.45);
     
     /* Floating Panels / Tooltips */
     --color-backdrop: rgba(0, 0, 0, 0.58);
