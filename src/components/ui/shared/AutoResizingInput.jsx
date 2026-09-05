@@ -28,13 +28,6 @@ export default function AutoResizingInput({ min, max, step, value: externalValue
     const externalString = formatVal(externalValue, step)
     const displayedValue = isEditing ? draftValue : externalString
 
-    // ---- resize ----
-    useEffect(() => {
-        const input = inputRef.current
-        if (!input) return
-        input.style.width = `min(100%, ${displayedValue.length + 6 - (displayedValue < 0 ? -1 : 0)}ch)`
-    }, [displayedValue])
-
     // ---- cleanup timer on unmount ----
     useEffect(() => {
         return () => {
