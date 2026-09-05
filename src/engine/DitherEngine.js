@@ -215,6 +215,10 @@ const action = this.debugEnabled ? "disable" : "enable";
     this.log('Pipeline', 'init() entered. sourceImg type/details: %s', typeof sourceImg === 'string' ? sourceImg.slice(0, 50) + "..." : typeof sourceImg);
     this.canvasHost = canvasHost;
     this.disposed = false;
+    this.activeJobs = 0;
+    this.processingQueued = false;
+    this.pendingPaletteRefresh = false;
+    this.processingVisible = false;
     const lifecycleToken = ++this.lifecycleToken;
     
     this.clearViewerLoadingTimer();
@@ -616,6 +620,8 @@ const action = this.debugEnabled ? "disable" : "enable";
       window.clearTimeout(this.processingVisibilityTimer);
       this.processingVisibilityTimer = null;
     }
+    this.activeJobs = 0;
+    this.processingVisible = false;
     this.processingQueued = false;
     this.pendingPaletteRefresh = false;
 
