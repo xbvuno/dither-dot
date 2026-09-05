@@ -33,7 +33,7 @@ export default function SingleColorEditor({
     return rgbToHsv(r.r, r.g, r.b);
   });
   const [hexInput, setHexInput] = useState(() => cleanHex(color));
-  const [gamma, setGamma] = useState(1.0);
+  const [brightness, setBrightness] = useState(0);
   const [contrast, setContrast] = useState(0);
 
   // When the selected colorId changes, reinitialise all local state from new color.
@@ -43,7 +43,7 @@ export default function SingleColorEditor({
     setRgb(init.rgb);
     setHsv(init.hsv);
     setHexInput(init.hexInput);
-    setGamma(1.0);
+    setBrightness(0);
     setContrast(0);
   }
 
@@ -73,8 +73,8 @@ export default function SingleColorEditor({
     notify(nextHex);
   };
 
-  const applyTonal = (baseHex, g, c) => {
-    const adjustedHex = applyTonalAdjustments(baseHex, { gamma: g, contrast: c });
+  const applyTonal = (baseHex, b, c) => {
+    const adjustedHex = applyTonalAdjustments(baseHex, { brightness: b, contrast: c });
     const nextRgb = hexToRgb(adjustedHex);
     setRgb(nextRgb);
     setHsv(rgbToHsv(nextRgb.r, nextRgb.g, nextRgb.b));
@@ -82,14 +82,14 @@ export default function SingleColorEditor({
     notify(adjustedHex);
   };
 
-  const handleGammaChange = (val) => {
-    setGamma(val);
+  const handleBrightnessChange = (val) => {
+    setBrightness(val);
     applyTonal(originalColor || color, val, contrast);
   };
 
   const handleContrastChange = (val) => {
     setContrast(val);
-    applyTonal(originalColor || color, gamma, val);
+    applyTonal(originalColor || color, brightness, val);
   };
 
   const handleHexInputChange = (e) => {
@@ -202,13 +202,14 @@ export default function SingleColorEditor({
         <div className="pe-slider-divider" />
 
         <PaletteColorSlider
-          label="GAMMA"
-          min={0.2}
-          max={3.0}
-          step={0.01}
-          value={gamma}
-          onChange={handleGammaChange}
-          gradient="linear-gradient(to right, #222 0%, #888 50%, #fff 100%)"
+          label="BRIGHTNESS"
+          min={-100}
+          max={100}
+          step={1}
+          value={brightness}
+          unit="%"
+          onChange={handleBrightnessChange}
+          gradient="linear-gradient(to right, #000 0%, #888 50%, #fff 100%)"
         />
         <PaletteColorSlider
           label="CONTRAST"

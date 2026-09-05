@@ -74,7 +74,7 @@ export default function MultiColorEditor({
   const [deltaS, setDeltaS] = useState(0);
   const [deltaV, setDeltaV] = useState(0);
 
-  const [gamma, setGamma] = useState(1.0);
+  const [brightness, setBrightness] = useState(0);
   const [contrast, setContrast] = useState(0);
 
   const points = selectedColors.map((item) => {
@@ -95,7 +95,7 @@ export default function MultiColorEditor({
   const desatColor = hsvToHex(currentHue, 0, 85);
   const fullSatColor = hsvToHex(currentHue, 100, 100);
 
-  const recalculateColors = (dH, dS, dV, g, c) => {
+  const recalculateColors = (dH, dS, dV, b, c) => {
     const updates = {};
     selectedColors.forEach((item) => {
       const base = baseMap[item.id] || {
@@ -108,7 +108,7 @@ export default function MultiColorEditor({
       const hsvHex = hsvToHex(h, s, v);
 
       const tonedHex = applyTonalAdjustments(hsvHex, {
-        gamma: g,
+        brightness: b,
         contrast: c,
       });
 
@@ -128,27 +128,27 @@ export default function MultiColorEditor({
 
   const handleHueChange = (val) => {
     setDeltaH(val);
-    recalculateColors(val, deltaS, deltaV, gamma, contrast);
+    recalculateColors(val, deltaS, deltaV, brightness, contrast);
   };
 
   const handleSaturationChange = (val) => {
     setDeltaS(val);
-    recalculateColors(deltaH, val, deltaV, gamma, contrast);
+    recalculateColors(deltaH, val, deltaV, brightness, contrast);
   };
 
   const handleValueChange = (val) => {
     setDeltaV(val);
-    recalculateColors(deltaH, deltaS, val, gamma, contrast);
+    recalculateColors(deltaH, deltaS, val, brightness, contrast);
   };
 
-  const handleGammaChange = (val) => {
-    setGamma(val);
+  const handleBrightnessChange = (val) => {
+    setBrightness(val);
     recalculateColors(deltaH, deltaS, deltaV, val, contrast);
   };
 
   const handleContrastChange = (val) => {
     setContrast(val);
-    recalculateColors(deltaH, deltaS, deltaV, gamma, val);
+    recalculateColors(deltaH, deltaS, deltaV, brightness, val);
   };
 
   return (
@@ -202,13 +202,14 @@ export default function MultiColorEditor({
         <div className="pe-slider-divider" />
 
         <PaletteColorSlider
-          label="GAMMA"
-          min={0.2}
-          max={3.0}
-          step={0.01}
-          value={gamma}
-          onChange={handleGammaChange}
-          gradient="linear-gradient(to right, #222 0%, #888 50%, #fff 100%)"
+          label="BRIGHTNESS"
+          min={-100}
+          max={100}
+          step={1}
+          value={brightness}
+          unit="%"
+          onChange={handleBrightnessChange}
+          gradient="linear-gradient(to right, #000 0%, #888 50%, #fff 100%)"
         />
         <PaletteColorSlider
           label="CONTRAST"

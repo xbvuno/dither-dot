@@ -131,13 +131,21 @@ export function sortColors(colors, criteria) {
   }
 }
 
-export function applyTonalAdjustments(hex, { gamma = 1, blacks = 0, whites = 0, contrast = 0 }) {
+export function applyTonalAdjustments(hex, { brightness = 0, gamma = 1, blacks = 0, whites = 0, contrast = 0 }) {
   const { r, g, b } = hexToRgb(hex);
   let rNorm = r / 255;
   let gNorm = g / 255;
   let bNorm = b / 255;
 
-  // 1. Blacks adjustment (-100 to +100): shifts shadow floor
+  // 1. Brightness adjustment (-100 to +100): linear shift
+  if (brightness !== 0) {
+    const bOffset = brightness / 100;
+    rNorm = Math.max(0, Math.min(1, rNorm + bOffset));
+    gNorm = Math.max(0, Math.min(1, gNorm + bOffset));
+    bNorm = Math.max(0, Math.min(1, bNorm + bOffset));
+  }
+
+  // 2. Blacks adjustment (-100 to +100): shifts shadow floor
   if (blacks !== 0) {
     const bOffset = (blacks / 100) * 0.3;
     rNorm = Math.max(0, Math.min(1, rNorm + bOffset * (1 - rNorm)));
@@ -145,7 +153,7 @@ export function applyTonalAdjustments(hex, { gamma = 1, blacks = 0, whites = 0, 
     bNorm = Math.max(0, Math.min(1, bNorm + bOffset * (1 - bNorm)));
   }
 
-  // 2. Whites adjustment (-100 to +100): shifts highlight ceiling
+  // 3. Whites adjustment (-100 to +100): shifts highlight ceiling
   if (whites !== 0) {
     const wFactor = 1 + (whites / 100) * 0.5;
     rNorm = Math.max(0, Math.min(1, rNorm * wFactor));
@@ -153,7 +161,7 @@ export function applyTonalAdjustments(hex, { gamma = 1, blacks = 0, whites = 0, 
     bNorm = Math.max(0, Math.min(1, bNorm * wFactor));
   }
 
-  // 3. Contrast adjustment (-100 to +100): midpoint pivot curve
+  // 4. Contrast adjustment (-100 to +100): midpoint pivot curve
   if (contrast !== 0) {
     const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
     rNorm = Math.max(0, Math.min(1, factor * (rNorm - 0.5) + 0.5));
@@ -161,7 +169,7 @@ export function applyTonalAdjustments(hex, { gamma = 1, blacks = 0, whites = 0, 
     bNorm = Math.max(0, Math.min(1, factor * (bNorm - 0.5) + 0.5));
   }
 
-  // 4. Gamma adjustment (0.2 to 3.0, default 1.0)
+  // 5. Gamma adjustment (0.2 to 3.0, default 1.0)
   if (gamma !== 1 && gamma > 0) {
     const gExp = 1 / gamma;
     rNorm = Math.pow(Math.max(0, rNorm), gExp);
