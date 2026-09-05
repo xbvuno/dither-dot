@@ -310,7 +310,10 @@ const usePaletteStore = create(persist((set, get) => ({
 
         if (nextCount < used.length) {
           const keepUsed = used.slice(0, nextCount);
-          const movedToUnused = used.slice(nextCount).map((c) => ({ ...c, hidden: true }));
+          const trimmed = used.slice(nextCount);
+          const movedToUnused = trimmed
+            .filter((c) => !c.isPadded)
+            .map((c) => ({ ...c, hidden: true }));
           return { colorCount: nextCount, colors: [...keepUsed, ...movedToUnused, ...unused] };
         }
 
@@ -319,7 +322,11 @@ const usePaletteStore = create(persist((set, get) => ({
           const reveal = unused.slice(0, need).map((c) => ({ ...c, hidden: false }));
           const remainingUnused = unused.slice(need);
           const missing = Math.max(0, need - reveal.length);
-          const padded = Array.from({ length: missing }, () => ({ ...makeColor('#000000'), hidden: false }));
+          const padded = Array.from({ length: missing }, () => ({
+            ...makeColor('#000000'),
+            isPadded: true,
+            hidden: false,
+          }));
           return { colorCount: nextCount, colors: [...used, ...reveal, ...padded, ...remainingUnused] };
         }
 
@@ -441,14 +448,14 @@ const usePaletteStore = create(persist((set, get) => ({
   },
 
   setColor: (id, hex) => set(s => ({
-    colors: s.colors.map(c => c.id === id ? { ...c, hex: normalizeHex(hex) || c.hex } : c),
+    colors: s.colors.map(c => c.id === id ? { ...c, hex: normalizeHex(hex) || c.hex, isPadded: false } : c),
   })),
 
   updateMultipleColors: (updates) => set((s) => ({
     colors: s.colors.map((c) => {
       const nextHex = updates[c.id];
       if (!nextHex) return c;
-      return { ...c, hex: normalizeHex(nextHex) || c.hex };
+      return { ...c, hex: normalizeHex(nextHex) || c.hex, isPadded: false };
     }),
   })),
 
