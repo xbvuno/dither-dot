@@ -12,7 +12,7 @@ import useImageStore from '../../stores/media/imageStore';
 import useGalleryStore, { GALLERY_PRESETS } from '../../stores/data/galleryStore';
 import useGifStore from '../../stores/media/gifStore';
 import useWebcamStore, { WEBCAM_SOURCE } from '../../stores/media/webcamStore';
-import useTemplateStore from '../../stores/data/templateStore';
+import useTemplateStore, { buildCurrentTemplate } from '../../stores/data/templateStore';
 import { TEMPLATES } from '../../constants/templates';
 import { generateTemplatePreview } from '../../utils/templatePreviewGenerator';
 import ZoomableDiv from '../ui/shared/ZoomableDiv';
@@ -227,15 +227,22 @@ export default function ImportStudio() {
 
   const selectedTemplateId = useTemplateStore((s) => s.selectedTemplateId);
   const applyTemplate = useTemplateStore((s) => s.applyTemplate);
-  const hasCustom = useTemplateStore((s) => s.hasCustom);
-  const customTemplate = useTemplateStore((s) => s.customTemplate);
+  const currentTemplate = useTemplateStore((s) => s.currentTemplate);
+  const snapshotCurrentTemplate = useTemplateStore((s) => s.snapshotCurrentTemplate);
+
+  useEffect(() => {
+    if (!currentTemplate) {
+      snapshotCurrentTemplate();
+    }
+  }, [currentTemplate, snapshotCurrentTemplate]);
+
+  const activeCurrentTemplate = useMemo(() => {
+    return currentTemplate || buildCurrentTemplate();
+  }, [currentTemplate]);
 
   const templatesList = useMemo(() => {
-    if (hasCustom && customTemplate) {
-      return [customTemplate, ...TEMPLATES];
-    }
-    return TEMPLATES;
-  }, [hasCustom, customTemplate]);
+    return [activeCurrentTemplate, ...TEMPLATES];
+  }, [activeCurrentTemplate]);
 
 
   const mediaColRef = useRef(null);

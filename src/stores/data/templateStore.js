@@ -5,19 +5,20 @@ import usePaletteStore from './paletteStore';
 import useDitherStore from '../engine/ditherStore';
 import useParamsStore from './paramsStore';
 import usePinnedStore from '../ui/pinnedStore';
+import usePageStore, { PAGE } from '../ui/pageStore';
 
 let isApplyingTemplate = false;
 
-function buildCustomTemplate() {
+export function buildCurrentTemplate() {
   const paramsState = useParamsStore.getState();
   const ditherState = useDitherStore.getState();
   const paletteState = usePaletteStore.getState();
   const pinnedState = usePinnedStore.getState();
 
   return {
-    id: 'custom',
-    name: 'CUSTOM',
-    author: 'USER',
+    id: 'current',
+    name: 'CURRENT',
+    author: 'you',
     palette: {
       id: paletteState.selectedLibraryPaletteId || null,
       name: paletteState.name || 'Custom',
@@ -55,18 +56,21 @@ function buildCustomTemplate() {
 const useTemplateStore = create(
   persist(
     (set, get) => ({
-      selectedTemplateId: 'default',
+      selectedTemplateId: 'current',
       templates: TEMPLATES,
-      hasCustom: false,
-      customTemplate: null,
+      currentTemplate: null,
 
       setSelectedTemplateId: (id) => set({ selectedTemplateId: id }),
 
-      setCustomTemplate: (custom) =>
+      snapshotCurrentTemplate: () => {
+        const current = buildCurrentTemplate();
+        set({ currentTemplate: current });
+        return current;
+      },
+
+      setCurrentTemplate: (current) =>
         set({
-          hasCustom: true,
-          customTemplate: custom,
-          selectedTemplateId: 'custom',
+          currentTemplate: current,
         }),
 
       applyTemplate: (templateId) => {
@@ -74,8 +78,8 @@ const useTemplateStore = create(
         try {
           const state = get();
           let template = null;
-          if (templateId === 'custom' && state.customTemplate) {
-            template = state.customTemplate;
+          if (templateId === 'current' || templateId === 'custom') {
+            template = state.currentTemplate || buildCurrentTemplate();
           } else {
             template = TEMPLATES.find((t) => t.id === templateId) || TEMPLATES[0];
           }
@@ -92,7 +96,7 @@ const useTemplateStore = create(
               selectedLibraryPaletteId: null,
             });
             paletteState.generatePalette?.();
-          } else if (template.palette?.id && template.palette.id.startsWith('builtin-')) {
+          } else if (template.palette?.id && template.palette.id.startsWith('builtin-') && template.id !== 'current') {
             paletteState.applyLibraryPaletteById?.(template.palette.id);
           } else if (template.palette?.colors && template.palette.colors.length) {
             paletteState.applyPaletteByHexes?.(template.palette.colors, template.palette.name || 'Palette');
@@ -137,8 +141,15 @@ const useTemplateStore = create(
 
 function onParameterModified() {
   if (isApplyingTemplate) return;
-  const custom = buildCustomTemplate();
-  useTemplateStore.getState().setCustomTemplate(custom);
+  const currentPage = usePageStore.getState().currentPage;
+  // If modifying parameters outside the import studio, update CURRENT
+  if (currentPage !== PAGE.IMPORT) {
+    const current = buildCurrentTemplate();
+    useTemplateStore.setState({
+      currentTemplate: current,
+      selectedTemplateId: 'current',
+    });
+  }
 }
 
 useParamsStore.subscribe(() => onParameterModified());
@@ -146,4 +157,15 @@ useDitherStore.subscribe(() => onParameterModified());
 usePaletteStore.subscribe(() => onParameterModified());
 usePinnedStore.subscribe(() => onParameterModified());
 
+// When user navigates between sections (pages), snapshot active parameters as new CURRENT
+usePageStore.subscribe((state, prevState) => {
+  if (state.currentPage !== prevState.currentPage) {
+    const current = buildCurrentTemplate();
+    useTemplateStore.setState({
+      currentTemplate: current,
+    });
+  }
+});
+
 export default useTemplateStore;
+

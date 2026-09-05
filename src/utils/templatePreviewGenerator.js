@@ -61,11 +61,11 @@ async function loadBaseImageData() {
 
 function getTemplateCacheKey(template) {
   if (!template) return '';
-  if (template.id === 'custom') {
+  if (template.id === 'custom' || template.id === 'current') {
     const p = template.params || {};
     const d = template.dither || {};
     const pal = template.palette || {};
-    return `custom:${p.gamma}_${p.blacks}_${p.whites}_${p.contrast}_${p.saturation}_${p.hue}_${p.noiseEnabled}_${p.noiseCoverage}_${p.noiseIntensity}_${p.blurEnabled}_${p.blurStrength}_${p.passes}_${d.enabled}_${d.method}_${d.amount}_${d.matrixScale}_${d.seed}_${pal.extractMethod}_${pal.id}_${(pal.colors || []).join(',')}`;
+    return `current:${p.gamma}_${p.blacks}_${p.whites}_${p.contrast}_${p.saturation}_${p.hue}_${p.noiseEnabled}_${p.noiseCoverage}_${p.noiseIntensity}_${p.blurEnabled}_${p.blurStrength}_${p.passes}_${d.enabled}_${d.method}_${d.amount}_${d.matrixScale}_${d.seed}_${pal.extractMethod}_${pal.id}_${(pal.colors || []).join(',')}`;
   }
   return template.id;
 }
