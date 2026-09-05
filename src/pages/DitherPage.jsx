@@ -208,11 +208,11 @@ export default function DitherPage() {
                   onClick={() => handleSelectMethod(item.id)}
                   title={item.name}
                 >
+                  <DitherMethodPreview methodId={item.id} />
                   <div className="dither-method-head">
                     <span className="dither-method-name">{item.name}</span>
                     <span className="dither-method-category">{item.category}</span>
                   </div>
-                  <DitherMethodPreview methodId={item.id} />
                 </button>
               );
             })}

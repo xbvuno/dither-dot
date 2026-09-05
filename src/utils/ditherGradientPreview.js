@@ -1,7 +1,7 @@
 import { DITHER_METHOD } from '../stores/engine/ditherStore';
 
-const PREVIEW_WIDTH = 140;
-const PREVIEW_HEIGHT = 18;
+const PREVIEW_WIDTH = 280;
+const PREVIEW_HEIGHT = 44;
 
 const BAYER_8X8 = [
    0, 32,  8, 40,  2, 34, 10, 42,
