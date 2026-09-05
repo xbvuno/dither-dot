@@ -99,7 +99,7 @@ aside::-webkit-scrollbar-corner {
         user-select: none !important;
         -webkit-user-select: none !important;
         z-index: 30;
-        background-color: var(--color-bg) !important;
+        background-color: var(--color-macro-section-bg) !important;
         border-top: 1px solid var(--color-border) !important;
         box-sizing: border-box;
         flex-shrink: 0;
