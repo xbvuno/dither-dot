@@ -1157,6 +1157,7 @@ const action = this.debugEnabled ? "disable" : "enable";
     this.canvasHost.appendChild(viewportCanvas);
     this.viewportCanvas = viewportCanvas;
     this.log('Canvas', 'viewportCanvas created and added to DOM');
+    this.applyDisplaySize(displaySize.width, displaySize.height);
 
     // Also recreate the splitCompare overlay canvas
     const overlayCanvas = document.createElement('canvas');
@@ -1194,6 +1195,11 @@ const action = this.debugEnabled ? "disable" : "enable";
     if (this.canvasHost) {
       this.canvasHost.style.width = `${safeWidth}px`;
       this.canvasHost.style.height = `${safeHeight}px`;
+      const parent = this.canvasHost.parentElement;
+      if (parent && parent.id === 'render') {
+        parent.style.width = `${safeWidth}px`;
+        parent.style.height = `${safeHeight}px`;
+      }
     }
 
     const viewportCanvas = this.viewportCanvas;
@@ -1210,6 +1216,7 @@ const action = this.debugEnabled ? "disable" : "enable";
       overlayCanvas.style.imageRendering = 'pixelated';
     }
 
+    window.dispatchEvent(new CustomEvent('dither-render-ready', { detail: { width: safeWidth, height: safeHeight } }));
     window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
     return { width: safeWidth, height: safeHeight };
   }
