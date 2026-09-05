@@ -58,6 +58,8 @@ export default function ImportPage() {
   const setShowPipeline = useParamsStore((s) => s.setPipelineVisible);
   const forceCpu = useParamsStore((s) => s.forceCpu);
   const setForceCpu = useParamsStore((s) => s.setForceCpu);
+  const excludeAlpha = useParamsStore((s) => s.excludeAlpha);
+  const setExcludeAlpha = useParamsStore((s) => s.setExcludeAlpha);
   const splitView = useViewStore((s) => s.splitView);
   const setSplitView = useViewStore((s) => s.setSplitView);
 
@@ -394,6 +396,21 @@ export default function ImportPage() {
               value={forceCpu}
               onChange={setForceCpu}
               ariaLabel="Force CPU execution"
+            />
+          </div>
+        </div>
+
+        <div className='bv-section exclude-alpha-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>EXCLUDE ALPHA</span>
+            <OptionGroup
+              options={[
+                { value: true, label: 'ON' },
+                { value: false, label: 'OFF' },
+              ]}
+              value={excludeAlpha}
+              onChange={setExcludeAlpha}
+              ariaLabel="Exclude alpha transparency"
             />
           </div>
         </div>

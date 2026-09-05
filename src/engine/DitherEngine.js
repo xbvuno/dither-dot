@@ -358,6 +358,7 @@ const action = this.debugEnabled ? "disable" : "enable";
           contrast: state.contrast,
           saturation: state.saturation,
           hue: state.hue,
+          excludeAlpha: state.excludeAlpha,
         };
 
         const colorParamsChanged = !this.previousColorParams || (
@@ -371,7 +372,8 @@ const action = this.debugEnabled ? "disable" : "enable";
           prevParams.whites !== nextParams.whites ||
           prevParams.contrast !== nextParams.contrast ||
           prevParams.saturation !== nextParams.saturation ||
-          prevParams.hue !== nextParams.hue
+          prevParams.hue !== nextParams.hue ||
+          prevParams.excludeAlpha !== nextParams.excludeAlpha
         );
 
         this.previousColorParams = nextParams;
@@ -776,6 +778,7 @@ const action = this.debugEnabled ? "disable" : "enable";
           customHeight,
           paletteRgb,
           forceCpu: paramsState.forceCpu,
+          excludeAlpha: Boolean(paramsState.excludeAlpha),
           watermarkEnabled: this.watermarkEnabled,
           skipStats: frameIndex >= 0 && (gifState.playing || gifState.exporting || frameIndex !== gifState.currentFrameIndex),
           dither: {

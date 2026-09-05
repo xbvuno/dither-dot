@@ -90,10 +90,10 @@ function getScratchContext(width, height) {
   return scratchCtx;
 }
 
-function countUniqueColors(pixels) {
+function countUniqueColors(pixels, excludeAlpha = false) {
   const unique = new Set();
   for (let index = 0; index < pixels.length; index += 4) {
-    if (pixels[index + 3] === 0) continue;
+    if (!excludeAlpha && pixels[index + 3] === 0) continue;
     unique.add((pixels[index] << 16) | (pixels[index + 1] << 8) | pixels[index + 2]);
   }
   return unique.size;
@@ -171,6 +171,7 @@ self.onmessage = async (event) => {
     noise,
     blur,
     forceCpu,
+    excludeAlpha,
     watermarkEnabled,
     skipStats,
   } = event.data;
@@ -218,8 +219,20 @@ self.onmessage = async (event) => {
     // 1. Draw cropped region of source ImageBitmap to scratch OffscreenCanvas scaled to outW x outH
     const sCtx = getScratchContext(outW, outH);
     sCtx.imageSmoothingEnabled = false;
+    if (excludeAlpha) {
+      sCtx.fillStyle = '#000000';
+      sCtx.fillRect(0, 0, outW, outH);
+    } else {
+      sCtx.clearRect(0, 0, outW, outH);
+    }
     sCtx.drawImage(source, cropLeft, cropTop, sw, sh, 0, 0, outW, outH);
     const imgData = sCtx.getImageData(0, 0, outW, outH);
+    if (excludeAlpha) {
+      const data = imgData.data;
+      for (let i = 3; i < data.length; i += 4) {
+        data[i] = 255;
+      }
+    }
 
     image = new WasmImage(imgData);
     const activeImage = image;
@@ -314,7 +327,13 @@ self.onmessage = async (event) => {
     outputPixels = new Uint8ClampedArray(outputBuffer.buffer);
 
     if (dither.enabled) {
-      applyBinaryAlphaThreshold(outputPixels);
+      if (!excludeAlpha) {
+        applyBinaryAlphaThreshold(outputPixels);
+      } else {
+        for (let index = 3; index < outputPixels.length; index += 4) {
+          outputPixels[index] = 255;
+        }
+      }
     }
     tFinal = performance.now() - tFinalStart;
 
@@ -403,7 +422,7 @@ self.onmessage = async (event) => {
         const tHistogram = performance.now() - tHistogramStart;
 
         const tColorsStart = performance.now();
-        const uniqueColorCount = countUniqueColors(outputPixels);
+        const uniqueColorCount = countUniqueColors(outputPixels, excludeAlpha);
         const tColors = performance.now() - tColorsStart;
 
         const statsElapsed = performance.now() - tStatsStart;
