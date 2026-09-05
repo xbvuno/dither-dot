@@ -329,7 +329,7 @@ main.import-3col-layout,
   width: 100%;
   min-width: 0;
   border: 1px solid var(--color-border-subtle);
-  background: var(--btn-bg-default);
+  background: var(--color-surface);
   cursor: pointer;
   transition: border-color 0.15s ease, background-color 0.15s ease;
   padding: 0;
@@ -341,7 +341,7 @@ main.import-3col-layout,
 
 .import-route-preset-item:hover {
   border-color: var(--color-border-hover);
-  background: var(--btn-bg-hover);
+  background: var(--color-surface-hover);
 }
 
 .import-route-preset-item.selected {
@@ -388,6 +388,7 @@ main.import-3col-layout,
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--color-text);
+  background-color: var(--color-surface);
   line-height: 1.2;
   box-sizing: border-box;
 }
@@ -405,9 +406,9 @@ main.import-3col-layout,
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.75);
+  background: var(--color-floating-bg, rgba(0, 0, 0, 0.85));
   color: var(--color-text-subtle);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--color-floating-border, rgba(255, 255, 255, 0.12));
   cursor: pointer;
   opacity: 0;
   pointer-events: none;
@@ -442,7 +443,7 @@ main.import-3col-layout,
   width: 100%;
   min-width: 0;
   border: 1px solid var(--color-border-subtle);
-  background: var(--input-surface);
+  background: var(--color-surface);
   cursor: pointer;
   transition: border-color 0.15s ease, background-color 0.15s ease;
   padding: 0;
@@ -454,7 +455,7 @@ main.import-3col-layout,
 
 .import-route-template-card:hover {
   border-color: var(--color-border-hover);
-  background: var(--input-surface-hover);
+  background: var(--color-surface-hover);
 }
 
 .import-route-template-card.selected {
@@ -504,7 +505,7 @@ main.import-3col-layout,
   display: flex;
   flex-direction: column;
   gap: 2px;
-  background-color: var(--color-bg);
+  background-color: var(--color-surface);
   box-sizing: border-box;
 }
 
@@ -582,7 +583,7 @@ main.import-3col-layout,
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  background-color: var(--color-bg);
+  background-color: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
   font-size: 14px;
@@ -648,7 +649,7 @@ main.import-3col-layout,
 .import-preview-launch-bar {
   height: 52px;
   border-top: 1px solid var(--color-border);
-  background-color: var(--color-bg);
+  background-color: var(--color-surface);
   display: flex;
   align-items: center;
   justify-content: flex-end;

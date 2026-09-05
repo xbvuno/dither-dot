@@ -5,7 +5,7 @@
   gap: 0.5rem;
   padding: 0 0.75rem;
   height: 3.2rem;
-  background-color: var(--color-bg);
+  background-color: var(--color-surface);
   border-top: 1px solid var(--color-border);
   box-sizing: border-box;
   flex-shrink: 0;
@@ -17,9 +17,9 @@
   height: 2.0rem;
   padding: 0 0.85rem;
   justify-content: center;
-  background-color: var(--color-bg-alt, #181818);
+  background-color: var(--btn-bg-default);
   border: 1px solid var(--color-border);
-  color: var(--color-text-main, #ffffff);
+  color: var(--color-text);
   display: inline-flex;
   align-items: center;
   cursor: pointer;
@@ -28,8 +28,8 @@
 }
 
 .camera-snap-btn:hover:not(:disabled) {
-  background-color: var(--color-bg-hover, #222222);
-  border-color: var(--color-border-hover, #444444);
+  background-color: var(--btn-bg-hover);
+  border-color: var(--color-border-hover);
 }
 
 .camera-snap-btn:disabled {
@@ -41,9 +41,9 @@
   height: 2.0rem;
   padding: 0 0.6rem;
   justify-content: center;
-  background-color: var(--color-bg-alt, #181818);
+  background-color: var(--btn-bg-default);
   border: 1px solid var(--color-border);
-  color: var(--color-text-main, #ffffff);
+  color: var(--color-text);
   display: inline-flex;
   align-items: center;
   cursor: pointer;
@@ -52,13 +52,13 @@
 }
 
 .camera-torch-btn:hover {
-  background-color: var(--color-bg-hover, #222222);
-  border-color: var(--color-border-hover, #444444);
+  background-color: var(--btn-bg-hover);
+  border-color: var(--color-border-hover);
 }
 
 .camera-torch-btn.active {
-  background-color: var(--color-bg-hover, #222222);
-  border-color: var(--color-text-main, #ffffff);
+  background-color: var(--btn-bg-hover);
+  border-color: var(--color-text);
   color: #f59e0b;
 }
 
