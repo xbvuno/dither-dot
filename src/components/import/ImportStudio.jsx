@@ -13,7 +13,6 @@ import useGalleryStore, { GALLERY_PRESETS } from '../../stores/data/galleryStore
 import useGifStore from '../../stores/media/gifStore';
 import useWebcamStore, { WEBCAM_SOURCE } from '../../stores/media/webcamStore';
 import useTemplateStore from '../../stores/data/templateStore';
-import usePageStore, { PAGE } from '../../stores/ui/pageStore';
 import { TEMPLATES } from '../../constants/templates';
 import { generateTemplatePreview } from '../../utils/templatePreviewGenerator';
 import ZoomableDiv from '../ui/shared/ZoomableDiv';
@@ -852,18 +851,6 @@ export default function ImportStudio() {
                   </div>
                 )}
               </div>
-            </div>
-
-            {/* Bottom Action Bar */}
-            <div className='import-preview-launch-bar'>
-              <button
-                type='button'
-                className='import-preview-launch-btn'
-                onClick={() => setPage(PAGE.PINNED)}
-                disabled={!hasValidMedia}
-              >
-                <span>EDIT</span>
-              </button>
             </div>
           </div>
         </div>
