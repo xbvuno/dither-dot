@@ -152,82 +152,74 @@ export default function MultiColorEditor({
   };
 
   return (
-    <div className="pe-body-columns">
-      {/* Preview Column */}
-      <div className="pe-preview-column">
-        <div className="pe-multi-hex-list">
-          {selectedColors.map((item) => (
-            <MultiHexRow
-              key={item.id}
-              id={item.id}
-              originalColor={item.originalHex || item.hex}
-              currentColor={item.hex || '#000000'}
-              onUpdate={handleSingleHexChange}
-            />
-          ))}
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+      {/* Multi-hex list at the top */}
+      <div className="pe-multi-hex-list">
+        {selectedColors.map((item) => (
+          <MultiHexRow
+            key={item.id}
+            id={item.id}
+            originalColor={item.originalHex || item.hex}
+            currentColor={item.hex || '#000000'}
+            onUpdate={handleSingleHexChange}
+          />
+        ))}
       </div>
 
-      {/* Vertical Divider */}
-      <div className="pe-vertical-divider" />
+      {/* Relative HSV Sliders */}
+      <div className="pe-slider-group">
+        <PaletteColorSlider
+          label="Δ HUE"
+          min={-180}
+          max={180}
+          step={1}
+          value={deltaH}
+          unit="°"
+          onChange={handleHueChange}
+          gradient="linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)"
+        />
+        <PaletteColorSlider
+          label="Δ SATURATION"
+          min={-100}
+          max={100}
+          step={1}
+          value={deltaS}
+          unit="%"
+          onChange={handleSaturationChange}
+          gradient={`linear-gradient(to right, ${desatColor}, ${fullSatColor})`}
+        />
+        <PaletteColorSlider
+          label="Δ VALUE / BRIGHTNESS"
+          min={-100}
+          max={100}
+          step={1}
+          value={deltaV}
+          unit="%"
+          onChange={handleValueChange}
+          gradient="linear-gradient(to right, #000000, #777777 50%, #ffffff 100%)"
+        />
 
-      {/* Sliders Column */}
-      <div className="pe-controls-column">
-        {/* Relative HSV Sliders */}
-        <div className="pe-slider-group">
-          <PaletteColorSlider
-            label="Δ HUE"
-            min={-180}
-            max={180}
-            step={1}
-            value={deltaH}
-            unit="°"
-            onChange={handleHueChange}
-            gradient="linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)"
-          />
-          <PaletteColorSlider
-            label="Δ SATURATION"
-            min={-100}
-            max={100}
-            step={1}
-            value={deltaS}
-            unit="%"
-            onChange={handleSaturationChange}
-            gradient={`linear-gradient(to right, ${desatColor}, ${fullSatColor})`}
-          />
-          <PaletteColorSlider
-            label="Δ VALUE / BRIGHTNESS"
-            min={-100}
-            max={100}
-            step={1}
-            value={deltaV}
-            unit="%"
-            onChange={handleValueChange}
-            gradient="linear-gradient(to right, #000000, #777777 50%, #ffffff 100%)"
-          />
+        <div className="pe-slider-divider" />
 
-          <div className="pe-slider-divider" />
-
-          <PaletteColorSlider
-            label="GAMMA"
-            min={0.2}
-            max={3.0}
-            step={0.01}
-            value={gamma}
-            onChange={handleGammaChange}
-            gradient="linear-gradient(to right, #222 0%, #888 50%, #fff 100%)"
-          />
-          <PaletteColorSlider
-            label="CONTRAST"
-            min={-100}
-            max={100}
-            step={1}
-            value={contrast}
-            unit="%"
-            onChange={handleContrastChange}
-            gradient="linear-gradient(to right, #444 0%, #888 50%, #fff 100%)"
-          />
-        </div>
+        <PaletteColorSlider
+          label="GAMMA"
+          min={0.2}
+          max={3.0}
+          step={0.01}
+          value={gamma}
+          onChange={handleGammaChange}
+          gradient="linear-gradient(to right, #222 0%, #888 50%, #fff 100%)"
+        />
+        <PaletteColorSlider
+          label="CONTRAST"
+          min={-100}
+          max={100}
+          step={1}
+          value={contrast}
+          unit="%"
+          onChange={handleContrastChange}
+          gradient="linear-gradient(to right, #444 0%, #888 50%, #fff 100%)"
+        />
       </div>
     </div>
   );

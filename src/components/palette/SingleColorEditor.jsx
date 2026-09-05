@@ -109,28 +109,19 @@ export default function SingleColorEditor({
   const currentHex = cleanHex(hexInput);
 
   return (
-    <div className="pe-body-columns">
-      {/* Preview Column */}
-      <div className="pe-preview-column">
-        <div className="pe-swatches-stacked">
-          <div className="pe-swatch-box">
-            <span className="pe-swatch-label">CURRENT</span>
-            <div
-              className="pe-editor-swatch-display"
-              style={{ backgroundColor: currentHex }}
-              title={`Current: ${currentHex}`}
-            />
-          </div>
-          <div className="pe-swatch-box">
-            <span className="pe-swatch-label">ORIGINAL</span>
-            <div
-              className="pe-editor-swatch-display"
-              style={{ backgroundColor: originalColor || color }}
-              title={`Original: ${originalColor || color}`}
-            />
-          </div>
-        </div>
-
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+      {/* Swatches & Hex input */}
+      <div className="pe-swatches-row">
+        <div
+          className="pe-editor-swatch-large"
+          style={{ backgroundColor: originalColor || color }}
+          title={`Original: ${originalColor || color}`}
+        />
+        <div
+          className="pe-editor-swatch-large"
+          style={{ backgroundColor: currentHex }}
+          title={`Modified: ${currentHex}`}
+        />
         <div className="pe-hex-input-box">
           <span className="pe-hex-prefix">#</span>
           <input
@@ -145,95 +136,90 @@ export default function SingleColorEditor({
         </div>
       </div>
 
-      {/* Vertical Divider */}
-      <div className="pe-vertical-divider" />
+      {/* HSV + RGB Sliders */}
+      <div className="pe-slider-group">
+        <PaletteColorSlider
+          label="HUE"
+          min={0}
+          max={360}
+          step={1}
+          value={hsv.h}
+          unit="°"
+          onChange={(val) => handleHsvChange('h', val)}
+          gradient="linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)"
+        />
+        <PaletteColorSlider
+          label="SATURATION"
+          min={0}
+          max={100}
+          step={1}
+          value={hsv.s}
+          unit="%"
+          onChange={(val) => handleHsvChange('s', val)}
+          gradient={`linear-gradient(to right, ${hsvToHex(hsv.h, 0, 85)}, ${hsvToHex(hsv.h, 100, 100)})`}
+        />
+        <PaletteColorSlider
+          label="VALUE / BRIGHTNESS"
+          min={0}
+          max={100}
+          step={1}
+          value={hsv.v}
+          unit="%"
+          onChange={(val) => handleHsvChange('v', val)}
+          gradient={`linear-gradient(to right, #000000, ${hsvToHex(hsv.h, hsv.s, 100)})`}
+        />
 
-      {/* Sliders Column */}
-      <div className="pe-controls-column">
-        <div className="pe-slider-group">
-          <PaletteColorSlider
-            label="HUE"
-            min={0}
-            max={360}
-            step={1}
-            value={hsv.h}
-            unit="°"
-            onChange={(val) => handleHsvChange('h', val)}
-            gradient="linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)"
-          />
-          <PaletteColorSlider
-            label="SATURATION"
-            min={0}
-            max={100}
-            step={1}
-            value={hsv.s}
-            unit="%"
-            onChange={(val) => handleHsvChange('s', val)}
-            gradient={`linear-gradient(to right, ${hsvToHex(hsv.h, 0, 85)}, ${hsvToHex(hsv.h, 100, 100)})`}
-          />
-          <PaletteColorSlider
-            label="VALUE / BRIGHTNESS"
-            min={0}
-            max={100}
-            step={1}
-            value={hsv.v}
-            unit="%"
-            onChange={(val) => handleHsvChange('v', val)}
-            gradient={`linear-gradient(to right, #000000, ${hsvToHex(hsv.h, hsv.s, 100)})`}
-          />
+        <div className="pe-slider-divider" />
 
-          <div className="pe-slider-divider" />
+        <PaletteColorSlider
+          label="RED"
+          min={0}
+          max={255}
+          step={1}
+          value={rgb.r}
+          onChange={(val) => handleRgbChange('r', val)}
+          gradient={`linear-gradient(to right, rgb(0,${rgb.g},${rgb.b}), rgb(255,${rgb.g},${rgb.b}))`}
+        />
+        <PaletteColorSlider
+          label="GREEN"
+          min={0}
+          max={255}
+          step={1}
+          value={rgb.g}
+          onChange={(val) => handleRgbChange('g', val)}
+          gradient={`linear-gradient(to right, rgb(${rgb.r},0,${rgb.b}), rgb(${rgb.r},255,${rgb.b}))`}
+        />
+        <PaletteColorSlider
+          label="BLUE"
+          min={0}
+          max={255}
+          step={1}
+          value={rgb.b}
+          onChange={(val) => handleRgbChange('b', val)}
+          gradient={`linear-gradient(to right, rgb(${rgb.r},${rgb.g},0), rgb(${rgb.r},${rgb.g},255))`}
+        />
 
-          <PaletteColorSlider
-            label="RED"
-            min={0}
-            max={255}
-            step={1}
-            value={rgb.r}
-            onChange={(val) => handleRgbChange('r', val)}
-            gradient={`linear-gradient(to right, rgb(0,${rgb.g},${rgb.b}), rgb(255,${rgb.g},${rgb.b}))`}
-          />
-          <PaletteColorSlider
-            label="GREEN"
-            min={0}
-            max={255}
-            step={1}
-            value={rgb.g}
-            onChange={(val) => handleRgbChange('g', val)}
-            gradient={`linear-gradient(to right, rgb(${rgb.r},0,${rgb.b}), rgb(${rgb.r},255,${rgb.b}))`}
-          />
-          <PaletteColorSlider
-            label="BLUE"
-            min={0}
-            max={255}
-            step={1}
-            value={rgb.b}
-            onChange={(val) => handleRgbChange('b', val)}
-            gradient={`linear-gradient(to right, rgb(${rgb.r},${rgb.g},0), rgb(${rgb.r},${rgb.g},255))`}
-          />
+        <div className="pe-slider-divider" />
 
-          <div className="pe-slider-divider" />
-
-          <PaletteColorSlider
-            label="GAMMA"
-            min={0.2}
-            max={3.0}
-            step={0.01}
-            value={gamma}
-            onChange={handleGammaChange}
-            gradient="linear-gradient(to right, #222 0%, #888 50%, #fff 100%)"
-          />
-          <PaletteColorSlider
-            label="CONTRAST"
-            min={-100}
-            max={100}
-            step={1}
-            value={contrast}
-            unit="%"
-            onChange={handleContrastChange}
-            gradient="linear-gradient(to right, #444 0%, #888 50%, #fff 100%)"
-          />
-        </div>
+        <PaletteColorSlider
+          label="GAMMA"
+          min={0.2}
+          max={3.0}
+          step={0.01}
+          value={gamma}
+          onChange={handleGammaChange}
+          gradient="linear-gradient(to right, #222 0%, #888 50%, #fff 100%)"
+        />
+        <PaletteColorSlider
+          label="CONTRAST"
+          min={-100}
+          max={100}
+          step={1}
+          value={contrast}
+          unit="%"
+          onChange={handleContrastChange}
+          gradient="linear-gradient(to right, #444 0%, #888 50%, #fff 100%)"
+        />
       </div>
     </div>
   );
