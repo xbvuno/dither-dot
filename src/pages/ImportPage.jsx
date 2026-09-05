@@ -8,6 +8,7 @@ import useGifStore from '../stores/media/gifStore';
 import useWebcamStore, { WEBCAM_SOURCE } from '../stores/media/webcamStore';
 import useParamsStore from '../stores/data/paramsStore';
 import useViewStore from '../stores/ui/viewStore';
+import useWatermarkStore from '../stores/media/watermarkStore';
 import { notify } from '../stores/ui/popupStore';
 
 import {
@@ -60,6 +61,8 @@ export default function ImportPage() {
   const setForceCpu = useParamsStore((s) => s.setForceCpu);
   const excludeAlpha = useParamsStore((s) => s.excludeAlpha);
   const setExcludeAlpha = useParamsStore((s) => s.setExcludeAlpha);
+  const watermarkEnabled = useWatermarkStore((s) => s.enabled);
+  const setWatermarkEnabled = useWatermarkStore((s) => s.setEnabled);
   const splitView = useViewStore((s) => s.splitView);
   const setSplitView = useViewStore((s) => s.setSplitView);
 
@@ -411,6 +414,21 @@ export default function ImportPage() {
               value={excludeAlpha}
               onChange={setExcludeAlpha}
               ariaLabel="Exclude alpha transparency"
+            />
+          </div>
+        </div>
+
+        <div className='bv-section watermark-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>WATERMARK</span>
+            <OptionGroup
+              options={[
+                { value: true, label: 'ON' },
+                { value: false, label: 'OFF' },
+              ]}
+              value={watermarkEnabled}
+              onChange={setWatermarkEnabled}
+              ariaLabel="Watermark display"
             />
           </div>
         </div>
