@@ -660,4 +660,28 @@ const useSizeStore = create(persist((set) => ({
   }),
 }));
 
-export default useSizeStore;
+export const selectIsAspectModified = (state) => {
+  return (
+    state.aspectPreset !== 'free' ||
+    state.aspectOrientation !== 'landscape' ||
+    Math.abs((state.aspectOffset ?? 0.5) - 0.5) > 1e-4
+  );
+};
+
+export const selectIsCropModified = (state) => {
+  const c = state.crop;
+  return Boolean(c && (c.top !== 0 || c.bottom !== 0 || c.left !== 0 || c.right !== 0));
+};
+
+export const selectIsResizeModified = (state) => {
+  const origW = Number(state.size.width) || 0;
+  const origH = Number(state.size.height) || 0;
+  const crop = state.crop || { top: 0, bottom: 0, left: 0, right: 0 };
+  const croppedW = Math.max(1, origW - (crop.left || 0) - (crop.right || 0));
+  const croppedH = Math.max(1, origH - (crop.top || 0) - (crop.bottom || 0));
+  const curW = state.customSize.customWidth != null ? state.customSize.customWidth : croppedW;
+  const curH = state.customSize.customHeight != null ? state.customSize.customHeight : croppedH;
+  return curW !== croppedW || curH !== croppedH || !state.ratioLocked;
+};
+
+export default useSizeStore;

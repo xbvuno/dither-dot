@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Save, Copy, FlipHorizontal, SwitchCamera, Zap } from 'lucide-react';
+import OptionGroup from '../ui/shared/OptionGroup';
 import useWebcamStore from '../../stores/media/webcamStore';
 import {
   compositeWithWatermark,
@@ -7,6 +8,8 @@ import {
   saveCanvasAsPng,
   copyCanvasToClipboard,
 } from '../../utils/importUtils';
+
+const FPS_OPTIONS = [5, 10, 15, 20, 30];
 
 export default function WebcamSection() {
   const starting = useWebcamStore((s) => s.starting);
@@ -111,18 +114,12 @@ export default function WebcamSection() {
 
       <div className='bv-section'>
         <p className='bv-label'>TARGET FPS</p>
-        <div className='bv-option-group'>
-          {[5, 10, 15, 20, 30].map((fps) => (
-            <button
-              key={fps}
-              type='button'
-              className={`bv-option-btn${targetFps === fps ? ' active' : ''}`}
-              onClick={() => setTargetFps(fps)}
-            >
-              {fps}
-            </button>
-          ))}
-        </div>
+        <OptionGroup
+          options={FPS_OPTIONS}
+          value={targetFps}
+          onChange={setTargetFps}
+          ariaLabel="Target camera FPS"
+        />
       </div>
     </>
   );

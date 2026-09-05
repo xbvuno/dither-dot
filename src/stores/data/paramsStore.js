@@ -199,6 +199,54 @@ const useParamsStore = create(persist((set) => {
       }
       return updates;
     }),
+    resetColors: () => set(() => {
+      const updates = {};
+      for (const key of Object.keys(COLOR_CONTROLS)) {
+        updates[key] = COLOR_CONTROLS[key].default;
+      }
+      return updates;
+    }),
+    randomizeColors: () => set(() => {
+      const updates = {};
+      for (const [key, cfg] of Object.entries(COLOR_CONTROLS)) {
+        const range = cfg.max - cfg.min;
+        const random = cfg.min + Math.random() * range;
+        updates[key] = snap(random, cfg.min, cfg.max, cfg.step);
+      }
+      return updates;
+    }),
+    resetNoise: () => set(() => {
+      const updates = { noiseEnabled: false };
+      for (const key of Object.keys(NOISE_CONTROLS)) {
+        updates[key] = NOISE_CONTROLS[key].default;
+      }
+      return updates;
+    }),
+    randomizeNoise: () => set(() => {
+      const updates = {};
+      for (const [key, cfg] of Object.entries(NOISE_CONTROLS)) {
+        const range = cfg.max - cfg.min;
+        const random = cfg.min + Math.random() * range;
+        updates[key] = snap(random, cfg.min, cfg.max, cfg.step);
+      }
+      return updates;
+    }),
+    resetBlur: () => set(() => {
+      const updates = { blurEnabled: false };
+      for (const key of Object.keys(BLUR_CONTROLS)) {
+        updates[key] = BLUR_CONTROLS[key].default;
+      }
+      return updates;
+    }),
+    randomizeBlur: () => set(() => {
+      const updates = {};
+      for (const [key, cfg] of Object.entries(BLUR_CONTROLS)) {
+        const range = cfg.max - cfg.min;
+        const random = cfg.min + Math.random() * range;
+        updates[key] = snap(random, cfg.min, cfg.max, cfg.step);
+      }
+      return updates;
+    }),
   };
 
   // genera automaticamente tutti i setter
@@ -218,4 +266,16 @@ const useParamsStore = create(persist((set) => {
   storage: createJSONStorage(() => localStorage),
 }));
 
-export default useParamsStore;
+export const selectIsColorModified = (state) => {
+  return Object.keys(COLOR_CONTROLS).some((k) => state[k] !== COLOR_CONTROLS[k].default);
+};
+
+export const selectIsNoiseModified = (state) => {
+  return Boolean(state.noiseEnabled) || Object.keys(NOISE_CONTROLS).some((k) => state[k] !== NOISE_CONTROLS[k].default);
+};
+
+export const selectIsBlurModified = (state) => {
+  return Boolean(state.blurEnabled) || Object.keys(BLUR_CONTROLS).some((k) => state[k] !== BLUR_CONTROLS[k].default);
+};
+
+export default useParamsStore;

@@ -1,5 +1,11 @@
 import SliderBundle from "../ui/shared/SliderBundle";
+import OptionGroup from "../ui/shared/OptionGroup";
 import useParamsStore, { BLUR_CONTROLS } from "../../stores/data/paramsStore";
+
+const ENABLED_OPTIONS = [
+    { value: true, label: "ON" },
+    { value: false, label: "OFF" },
+];
 
 function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
@@ -39,22 +45,12 @@ export default function BlurControls({ showLabel = true }) {
 
             <div className="bv-controls-row">
                 <span className="bv-label">ENABLED</span>
-                <div className="bv-option-group">
-                    <button
-                        type="button"
-                        className={`bv-option-btn${blurEnabled ? ' active' : ''}`}
-                        onClick={() => setBlurEnabled(true)}
-                    >
-                        ON
-                    </button>
-                    <button
-                        type="button"
-                        className={`bv-option-btn${!blurEnabled ? ' active' : ''}`}
-                        onClick={() => setBlurEnabled(false)}
-                    >
-                        OFF
-                    </button>
-                </div>
+                <OptionGroup
+                    options={ENABLED_OPTIONS}
+                    value={blurEnabled}
+                    onChange={setBlurEnabled}
+                    ariaLabel="Blur enabled"
+                />
             </div>
 
             {BLUR_ENTRIES.map(([key, cfg]) => {

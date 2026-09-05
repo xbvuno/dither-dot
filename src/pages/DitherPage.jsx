@@ -1,7 +1,13 @@
 import { useState, useEffect } from 'react';
 import MacroSection from '../components/ui/MacroSection';
 import SliderBundle from '../components/ui/shared/SliderBundle';
-import useDitherStore, { DITHER_CONTROLS, DITHER_METHOD } from '../stores/engine/ditherStore';
+import OptionGroup from '../components/ui/shared/OptionGroup';
+import useAccordion from '../hooks/useAccordion';
+import useDitherStore, {
+  DITHER_CONTROLS,
+  DITHER_METHOD,
+  selectIsDitherControlsModified,
+} from '../stores/engine/ditherStore';
 import { getDitherPreview } from '../utils/ditherGradientPreview';
 import '../styles/app-dither.css';
 
@@ -49,9 +55,9 @@ const ALL_DITHER_METHODS = [
 ];
 
 const SIERRA_VARIANTS = [
-  { id: DITHER_METHOD.SIERRA, label: 'NORMAL' },
-  { id: DITHER_METHOD.TWO_ROW_SIERRA, label: '2 ROW' },
-  { id: DITHER_METHOD.SIERRA_LITE, label: 'LITE' },
+  { value: DITHER_METHOD.SIERRA, label: 'NORMAL' },
+  { value: DITHER_METHOD.TWO_ROW_SIERRA, label: '2 ROW' },
+  { value: DITHER_METHOD.SIERRA_LITE, label: 'LITE' },
 ];
 
 const isSierraMethod = (m) =>
@@ -111,33 +117,14 @@ export default function DitherPage() {
   const setAmount = useDitherStore(s => s.setAmount);
   const setMatrixScale = useDitherStore(s => s.setMatrixScale);
   const setSeed = useDitherStore(s => s.setSeed);
+  const resetControls = useDitherStore(s => s.resetControls);
 
-  // Accordion state
-  const [openSections, setOpenSections] = useState(() => {
-    try {
-      const saved = localStorage.getItem('dither-dot:open-sections-dither');
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (e) {
-      console.error('Error parsing open dither sections', e);
-    }
-    return {
-      methods: true,
-      controls: true,
-    };
+  const isControlsModified = useDitherStore(selectIsDitherControlsModified);
+
+  const [openSections, toggleSection] = useAccordion('dither-dot:open-sections-dither', {
+    methods: true,
+    controls: true,
   });
-
-  const toggleSection = (section) => {
-    setOpenSections((prev) => {
-      const next = {
-        ...prev,
-        [section]: !prev[section],
-      };
-      localStorage.setItem('dither-dot:open-sections-dither', JSON.stringify(next));
-      return next;
-    });
-  };
 
   const handleSelectMethod = (selectedId) => {
     if (selectedId === 'disabled') {
@@ -169,19 +156,6 @@ export default function DitherPage() {
   const showAmount = enabled && method !== DITHER_METHOD.ONLY_PALETTE;
   const showControls = enabled && (showAmount || showMatrixScale || showSeed || showSierraVariants);
 
-  const isControlsModified =
-    (showAmount && amount !== DITHER_CONTROLS.amount.default) ||
-    (showMatrixScale && matrixScale !== DITHER_CONTROLS.matrixScale.default) ||
-    (showSeed && seed !== DITHER_CONTROLS.seed.default) ||
-    (showSierraVariants && method !== DITHER_METHOD.SIERRA);
-
-  const resetControls = () => {
-    if (showAmount) setAmount(DITHER_CONTROLS.amount.default);
-    if (showMatrixScale) setMatrixScale(DITHER_CONTROLS.matrixScale.default);
-    if (showSeed) setSeed(DITHER_CONTROLS.seed.default);
-    if (showSierraVariants) setMethod(DITHER_METHOD.SIERRA);
-  };
-
   return (
     <div>
       <MacroSection title="DITHER">
@@ -208,18 +182,12 @@ export default function DitherPage() {
             {showSierraVariants && (
               <div className="bv-controls-row">
                 <span className="bv-label">TYPE</span>
-                <div className="bv-option-group">
-                  {SIERRA_VARIANTS.map((variant) => (
-                    <button
-                      key={variant.id}
-                      type="button"
-                      className={`bv-option-btn${method === variant.id ? ' active' : ''}`}
-                      onClick={() => setMethod(variant.id)}
-                    >
-                      {variant.label}
-                    </button>
-                  ))}
-                </div>
+                <OptionGroup
+                  options={SIERRA_VARIANTS}
+                  value={method}
+                  onChange={setMethod}
+                  ariaLabel="Sierra algorithm variant"
+                />
               </div>
             )}
             {showAmount && (

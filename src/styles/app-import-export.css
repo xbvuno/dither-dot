@@ -154,6 +154,47 @@
   letter-spacing: 0.03em;
 }
 
+.camera-shoots-section {
+  margin-top: 1.5rem;
+}
+
+.camera-shoots-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.camera-shoots-vertical-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.camera-shoot-card {
+  border: 1px solid var(--color-border);
+  padding: 0.85rem;
+  background: var(--input-surface);
+}
+
+.camera-shoot-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.camera-shoot-label {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+.camera-shoot-img {
+  width: 100%;
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
 @media (max-width: 768px) {
   .import-dropzone-section,
   .pipeline-section,
@@ -161,6 +202,7 @@
     display: none;
   }
 }
+
 
 
 

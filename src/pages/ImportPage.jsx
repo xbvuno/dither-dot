@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FileUp, Clipboard, Camera, CameraOff, Dices } from 'lucide-react';
 import MacroSection from '../components/ui/MacroSection';
+import OptionGroup from '../components/ui/shared/OptionGroup';
 import useImageStore from '../stores/media/imageStore';
 import useGalleryStore from '../stores/data/galleryStore';
 import useGifStore from '../stores/media/gifStore';
@@ -352,44 +353,30 @@ export default function ImportPage() {
         <div className='bv-section pipeline-section'>
           <div className='bv-controls-row'>
             <span className='bv-label'>PIPELINE</span>
-            <div className='bv-option-group histogram-toggle-group'>
-              <button
-                type='button'
-                className={`bv-option-btn${showPipeline ? ' active' : ''}`}
-                onClick={() => setShowPipeline(true)}
-              >
-                SHOW
-              </button>
-              <button
-                type='button'
-                className={`bv-option-btn${!showPipeline ? ' active' : ''}`}
-                onClick={() => setShowPipeline(false)}
-              >
-                HIDE
-              </button>
-            </div>
+            <OptionGroup
+              options={[
+                { value: true, label: 'SHOW' },
+                { value: false, label: 'HIDE' },
+              ]}
+              value={showPipeline}
+              onChange={setShowPipeline}
+              ariaLabel="Pipeline visibility"
+            />
           </div>
         </div>
 
         <div className='bv-section force-cpu-section'>
           <div className='bv-controls-row'>
             <span className='bv-label'>FORCE CPU</span>
-            <div className='bv-option-group histogram-toggle-group'>
-              <button
-                type='button'
-                className={`bv-option-btn${forceCpu ? ' active' : ''}`}
-                onClick={() => setForceCpu(true)}
-              >
-                ON
-              </button>
-              <button
-                type='button'
-                className={`bv-option-btn${!forceCpu ? ' active' : ''}`}
-                onClick={() => setForceCpu(false)}
-              >
-                OFF
-              </button>
-            </div>
+            <OptionGroup
+              options={[
+                { value: true, label: 'ON' },
+                { value: false, label: 'OFF' },
+              ]}
+              value={forceCpu}
+              onChange={setForceCpu}
+              ariaLabel="Force CPU execution"
+            />
           </div>
         </div>
       </MacroSection>

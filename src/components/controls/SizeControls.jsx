@@ -1,8 +1,23 @@
-import { useState } from "react";
 import MacroSection from "../ui/MacroSection";
 import SliderBundle from "../ui/shared/SliderBundle";
-import useSizeStore, { getAspectCroppedAxis } from "../../stores/media/sizeStore";
-import useWebcamStore from "../../stores/media/webcamStore";
+import OptionGroup from "../ui/shared/OptionGroup";
+import useSizeStore, {
+  getAspectCroppedAxis,
+  selectIsAspectModified,
+  selectIsCropModified,
+  selectIsResizeModified,
+} from "../../stores/media/sizeStore";
+import useAccordion from "../../hooks/useAccordion";
+
+const ASPECT_PRESET_OPTIONS = ['free', '1:1', '4:3', '16:9'];
+const ORIENTATION_OPTIONS = [
+  { value: 'landscape', label: 'LANDSCAPE' },
+  { value: 'portrait', label: 'PORTRAIT' },
+];
+const RESIZE_RATIO_OPTIONS = [
+  { value: true, label: 'KEEP' },
+  { value: false, label: 'FREE' },
+];
 
 function gcd(a, b) {
   a = Math.abs(Math.round(a));
@@ -10,7 +25,6 @@ function gcd(a, b) {
   while (b) { const t = b; b = a % b; a = t; }
   return a || 1;
 }
-
 
 function formatRatio(w, h) {
   if (!w || !h) return null;
@@ -46,38 +60,20 @@ export default function SizeControls() {
   const resetCrop = useSizeStore(s => s.resetCrop);
   const resetAspectRatio = useSizeStore(s => s.resetAspectRatio);
 
+  const isAspectModified = useSizeStore(selectIsAspectModified);
+  const isCroppingModified = useSizeStore(selectIsCropModified);
+  const isResizeModified = useSizeStore(selectIsResizeModified);
+
   const isFree = aspectPreset === 'free';
   const croppedAxis = !isFree ? getAspectCroppedAxis(width, height, aspectPreset, aspectOrientation) : null;
   const isTopBottomDisabled = croppedAxis === 'y';
   const isLeftRightDisabled = croppedAxis === 'x';
 
-  // Accordion state loaded from and saved to localStorage
-  const [openSections, setOpenSections] = useState(() => {
-    try {
-      const saved = localStorage.getItem("dither-dot:open-sections-resizing");
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (e) {
-      console.error("Error parsing open resizing sections", e);
-    }
-    return {
-      aspectRatio: true,
-      cropping: true,
-      resize: true
-    };
+  const [openSections, toggleSection] = useAccordion('dither-dot:open-sections-resizing', {
+    aspectRatio: true,
+    cropping: true,
+    resize: true,
   });
-
-  const toggleSection = (section) => {
-    setOpenSections((prev) => {
-      const next = {
-        ...prev,
-        [section]: !prev[section]
-      };
-      localStorage.setItem("dither-dot:open-sections-resizing", JSON.stringify(next));
-      return next;
-    });
-  };
 
   if (width == null || height == null) return null;
 
@@ -111,11 +107,6 @@ export default function SizeControls() {
   } else {
     frameW = maxH * aspect;
   }
-
-  // Modified checks for underline and reset buttons
-  const isAspectModified = aspectPreset !== 'free' || aspectOrientation !== 'landscape' || Math.abs(aspectOffset - 0.5) > 1e-4;
-  const isResizeModified = currentCroppedW !== croppedWidth || currentCroppedH !== croppedHeight || !ratioLocked;
-  const isCroppingModified = crop.top !== 0 || crop.bottom !== 0 || crop.left !== 0 || crop.right !== 0;
 
   return (
     <>
@@ -153,42 +144,25 @@ export default function SizeControls() {
         <div className="bv-section">
           <div className="bv-controls-row">
             <span className="bv-label">RATIO</span>
-            <div className="bv-option-group histogram-toggle-group">
-              {['free', '1:1', '4:3', '16:9'].map((preset) => (
-                <button
-                  key={preset}
-                  type="button"
-                  className={`bv-option-btn${aspectPreset === preset ? ' active' : ''}`}
-                  onClick={() => setAspectPreset(preset)}
-                >
-                  {preset.toUpperCase()}
-                </button>
-              ))}
-            </div>
+            <OptionGroup
+              options={ASPECT_PRESET_OPTIONS}
+              value={aspectPreset}
+              onChange={setAspectPreset}
+              ariaLabel="Aspect ratio preset"
+            />
           </div>
         </div>
 
         <div className="bv-section">
           <div className="bv-controls-row">
             <span className="bv-label">ORIENTATION</span>
-            <div className="bv-option-group histogram-toggle-group">
-              <button
-                type="button"
-                className={`bv-option-btn${aspectOrientation === 'landscape' ? ' active' : ''}`}
-                disabled={isFree}
-                onClick={() => setAspectOrientation('landscape')}
-              >
-                LANDSCAPE
-              </button>
-              <button
-                type="button"
-                className={`bv-option-btn${aspectOrientation === 'portrait' ? ' active' : ''}`}
-                disabled={isFree}
-                onClick={() => setAspectOrientation('portrait')}
-              >
-                PORTRAIT
-              </button>
-            </div>
+            <OptionGroup
+              options={ORIENTATION_OPTIONS}
+              value={aspectOrientation}
+              onChange={setAspectOrientation}
+              disabled={isFree}
+              ariaLabel="Aspect ratio orientation"
+            />
           </div>
         </div>
 
@@ -285,22 +259,12 @@ export default function SizeControls() {
         <div className="bv-section">
           <div className="bv-controls-row">
             <span className="bv-label">RATIO</span>
-            <div className="bv-option-group histogram-toggle-group size-controls-ratio-buttons">
-              <button
-                type="button"
-                className={`bv-option-btn${ratioLocked ? ' active' : ''}`}
-                onClick={() => setRatioLocked(true)}
-              >
-                KEEP
-              </button>
-              <button
-                type="button"
-                className={`bv-option-btn${!ratioLocked ? ' active' : ''}`}
-                onClick={() => setRatioLocked(false)}
-              >
-                FREE
-              </button>
-            </div>
+            <OptionGroup
+              options={RESIZE_RATIO_OPTIONS}
+              value={ratioLocked}
+              onChange={setRatioLocked}
+              ariaLabel="Resize ratio lock mode"
+            />
           </div>
         </div>
 

@@ -2,10 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { X, Plus } from 'lucide-react';
 import usePaletteStore, { EXTRACT_METHOD } from '../stores/data/paletteStore';
 import SliderBundle from '../components/ui/shared/SliderBundle';
+import OptionGroup from '../components/ui/shared/OptionGroup';
 import MacroSection from '../components/ui/MacroSection';
 import PaletteImportModal from '../components/palette/PaletteImportModal';
 import PaletteExportModal from '../components/palette/PaletteExportModal';
 import PaletteEditorPanel from '../components/palette/PaletteEditorPanel';
+import useAccordion from '../hooks/useAccordion';
 
 /* ---------------------------------- */
 /* PALETTE SIZE                        */
@@ -35,10 +37,15 @@ function ColorCountSection() {
 /* PALETTE TYPE & METHOD SELECTOR     */
 /* ---------------------------------- */
 
+const PALETTE_TYPE_OPTIONS = [
+  { value: 'generated', label: 'GENERATED' },
+  { value: 'custom', label: 'CUSTOM' },
+];
+
 const GENERATED_METHODS = [
-  { id: EXTRACT_METHOD.MEDIAN_CUT, label: 'MEDIAN CUT' },
-  { id: EXTRACT_METHOD.OCTREE, label: 'OCTREE' },
-  { id: EXTRACT_METHOD.KMEANS, label: 'K-MEANS' },
+  { value: EXTRACT_METHOD.MEDIAN_CUT, label: 'MEDIAN CUT' },
+  { value: EXTRACT_METHOD.OCTREE, label: 'OCTREE' },
+  { value: EXTRACT_METHOD.KMEANS, label: 'K-MEANS' },
 ];
 
 function PaletteTypeAndMethodSection() {
@@ -63,40 +70,24 @@ function PaletteTypeAndMethodSection() {
       <div className="bv-section">
         <div className="bv-controls-row">
           <span className="bv-label">TYPE</span>
-          <div className="bv-option-group histogram-toggle-group">
-            <button
-              type="button"
-              className={`bv-option-btn${!isCustom ? ' active' : ''}`}
-              onClick={() => handleSelectType('generated')}
-            >
-              GENERATED
-            </button>
-            <button
-              type="button"
-              className={`bv-option-btn${isCustom ? ' active' : ''}`}
-              onClick={() => handleSelectType('custom')}
-            >
-              CUSTOM
-            </button>
-          </div>
+          <OptionGroup
+            options={PALETTE_TYPE_OPTIONS}
+            value={isCustom ? 'custom' : 'generated'}
+            onChange={handleSelectType}
+            ariaLabel="Palette type"
+          />
         </div>
       </div>
 
       {!isCustom && (
         <div className="bv-section">
           <p className="bv-label">METHOD</p>
-          <div className="bv-option-group">
-            {GENERATED_METHODS.map(m => (
-              <button
-                key={m.id}
-                type="button"
-                className={`bv-option-btn${method === m.id ? ' active' : ''}`}
-                onClick={() => setMethod(m.id)}
-              >
-                {m.label}
-              </button>
-            ))}
-          </div>
+          <OptionGroup
+            options={GENERATED_METHODS}
+            value={method}
+            onChange={setMethod}
+            ariaLabel="Palette generation method"
+          />
         </div>
       )}
     </>
@@ -379,32 +370,9 @@ export default function PalettePage() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   // Accordion state
-  const [openSections, setOpenSections] = useState(() => {
-    try {
-      const saved = localStorage.getItem("dither-dot:open-sections-palette");
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (e) {
-      console.error("Error parsing open palette sections", e);
-    }
-    return {
-      library: true,
-    };
+  const [openSections, toggleSection] = useAccordion('dither-dot:open-sections-palette', {
+    library: true,
   });
-
-  const toggleSection = (section) => {
-    setOpenSections((prev) => {
-      const next = {
-        ...prev,
-        [section]: !prev[section],
-      };
-      try {
-        localStorage.setItem("dither-dot:open-sections-palette", JSON.stringify(next));
-      } catch {}
-      return next;
-    });
-  };
 
   const setRootNode = useCallback((node) => {
     if (!node) return;

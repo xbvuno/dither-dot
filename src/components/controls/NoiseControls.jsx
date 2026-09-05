@@ -1,5 +1,11 @@
 import SliderBundle from "../ui/shared/SliderBundle";
+import OptionGroup from "../ui/shared/OptionGroup";
 import useParamsStore, { NOISE_CONTROLS } from "../../stores/data/paramsStore";
+
+const ENABLED_OPTIONS = [
+  { value: true, label: "ON" },
+  { value: false, label: "OFF" },
+];
 
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -38,22 +44,12 @@ export default function NoiseControls({ showLabel = true }) {
 
       <div className="bv-controls-row">
         <span className="bv-label">ENABLED</span>
-        <div className="bv-option-group">
-          <button
-            type="button"
-            className={`bv-option-btn${noiseEnabled ? ' active' : ''}`}
-            onClick={() => setNoiseEnabled(true)}
-          >
-            ON
-          </button>
-          <button
-            type="button"
-            className={`bv-option-btn${!noiseEnabled ? ' active' : ''}`}
-            onClick={() => setNoiseEnabled(false)}
-          >
-            OFF
-          </button>
-        </div>
+        <OptionGroup
+          options={ENABLED_OPTIONS}
+          value={noiseEnabled}
+          onChange={setNoiseEnabled}
+          ariaLabel="Noise enabled"
+        />
       </div>
 
       {Object.entries(NOISE_CONTROLS).map(([key, cfg]) => (
