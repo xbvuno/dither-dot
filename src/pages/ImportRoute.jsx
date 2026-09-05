@@ -570,8 +570,7 @@ export default function ImportRoute() {
                       return (
                         <div
                           key={h.id}
-                          className={`import-route-preset-item${isSelected ? ' selected' : ''}`}
-                          style={{ position: 'relative' }}
+                          className={`import-route-preset-item import-route-history-item${isSelected ? ' selected' : ''}`}
                         >
                           <div onClick={() => handleSelectHistory(h)} style={{ cursor: 'pointer', width: '100%' }}>
                             <img src={h.src} alt={h.name} className='import-route-preset-thumb' />
@@ -581,13 +580,13 @@ export default function ImportRoute() {
                           </div>
                           <button
                             type='button'
-                            className='header-link-btn'
+                            className='import-history-delete-btn'
                             onClick={(e) => {
                               e.stopPropagation();
                               removeHistoryItem(h.id);
                             }}
-                            style={{ position: 'absolute', top: 4, right: 4, padding: 2, background: 'rgba(0,0,0,0.6)' }}
-                            title='Remove'
+                            title={`Remove ${h.name}`}
+                            aria-label={`Remove ${h.name}`}
                           >
                             <Trash2 size={10} />
                           </button>
