@@ -6,6 +6,7 @@ import {
   CameraOff,
   Dices,
   Trash2,
+  Film,
 } from 'lucide-react';
 import useImageStore from '../../stores/media/imageStore';
 import useGalleryStore, { GALLERY_PRESETS } from '../../stores/data/galleryStore';
@@ -541,10 +542,8 @@ export default function ImportStudio() {
         const firstFrameBlob = await rgbaFrameToPngBlob(decoded.frames[0]);
         await setSourceFromBlob(firstFrameBlob, preset.name, { skipHistory: true });
 
-        const previewSrc = await blobToDataUrl(firstFrameBlob);
         const gifDataUrl = await blobToDataUrl(blob);
         setGifSourceUrl(gifDataUrl);
-        pushGifHistory(previewSrc, preset.name, gifDataUrl);
       } catch (err) {
         console.error('Failed to load preset GIF:', err);
       } finally {
@@ -713,6 +712,11 @@ export default function ImportStudio() {
                       onClick={() => handleSelectPreset(p)}
                     >
                       <img src={p.src} alt={p.name} className='import-route-preset-thumb' />
+                      {p.isGif && (
+                        <div className='import-preset-gif-badge' title='Animated GIF' aria-label='Animated GIF'>
+                          <Film size={10} strokeWidth={1.75} />
+                        </div>
+                      )}
                       <span className='import-route-preset-label'>{p.name}</span>
                     </button>
                   );
@@ -751,10 +755,13 @@ export default function ImportStudio() {
                             onClick={() => handleSelectHistory(h)}
                           >
                             <img src={h.src} alt={h.name} className='import-route-preset-thumb' />
-                            <span className='import-route-preset-label'>
-                              {h.kind === 'gif' ? '🎬 ' : ''}{h.name}
-                            </span>
+                            <span className='import-route-preset-label'>{h.name}</span>
                           </button>
+                          {h.kind === 'gif' && (
+                            <div className='import-preset-gif-badge' title='Animated GIF' aria-label='Animated GIF'>
+                              <Film size={10} strokeWidth={1.75} />
+                            </div>
+                          )}
                           <button
                             type='button'
                             className='import-history-delete-btn'

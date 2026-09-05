@@ -36,6 +36,17 @@ function normalizeHistoryEntry(entry) {
   };
 }
 
+function isPresetItem(src, name, gifDataUrl) {
+  const normName = String(name || '').trim().toUpperCase();
+  return GALLERY_PRESETS.some((p) => {
+    const pName = p.name.toUpperCase();
+    if (pName === normName) return true;
+    if (src && p.src === src) return true;
+    if (gifDataUrl && p.src === gifDataUrl) return true;
+    return false;
+  });
+}
+
 const useGalleryStore = create((set) => ({
   history: [],
   hasHydratedHistory: false,
@@ -45,16 +56,18 @@ const useGalleryStore = create((set) => ({
     const normalized = Array.isArray(storedHistory)
       ? storedHistory.map(normalizeHistoryEntry).filter(Boolean)
       : [];
+    const filtered = normalized.filter((entry) => !isPresetItem(entry.src, entry.name, entry.gifDataUrl));
     set({
-      history: normalized.slice(0, MAX_HISTORY_ITEMS),
+      history: filtered.slice(0, MAX_HISTORY_ITEMS),
       hasHydratedHistory: true,
     });
   },
 
   pushHistory: (src, name) => {
+    if (isPresetItem(src, name)) return;
     let nextHistory = [];
     set((state) => {
-      const deduped = state.history.filter((e) => e.src !== src);
+      const deduped = state.history.filter((e) => e.src !== src && e.name.toUpperCase() !== String(name || '').toUpperCase());
       const entry = {
         id: `hist-${Date.now()}`,
         src,
@@ -69,9 +82,10 @@ const useGalleryStore = create((set) => ({
   },
 
   pushGifHistory: (previewSrc, name, gifDataUrl) => {
+    if (isPresetItem(previewSrc, name, gifDataUrl)) return;
     let nextHistory = [];
     set((state) => {
-      const deduped = state.history.filter((e) => e.gifDataUrl !== gifDataUrl);
+      const deduped = state.history.filter((e) => e.gifDataUrl !== gifDataUrl && e.name.toUpperCase() !== String(name || '').toUpperCase());
       const entry = {
         id: `hist-${Date.now()}`,
         src: previewSrc,
