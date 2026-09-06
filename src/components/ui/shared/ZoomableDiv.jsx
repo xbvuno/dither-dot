@@ -11,6 +11,7 @@ export default function ZoomableDiv({ content }) {
 
   const state = useRef({
     scale: 1,
+    renderScale: null,
     dragging: false,
     startX: 0,
     startY: 0,
@@ -81,6 +82,7 @@ export default function ZoomableDiv({ content }) {
       state.current.height = contentHeight;
 
       const newRenderScale = fitScale * clampedScale;
+      state.current.renderScale = newRenderScale;
       const newRenderWidth = Math.floor(contentWidth * newRenderScale);
       const newRenderHeight = Math.floor(contentHeight * newRenderScale);
       const newPadX = Math.max(0, (outerWidth - newRenderWidth) / 2);
@@ -104,7 +106,7 @@ export default function ZoomableDiv({ content }) {
       }
     };
 
-    const zoomTo = (targetScale, focalX, focalY, fromSync = false) => {
+    const zoomTo = (targetScale, focalX, focalY, fromSync = false, prevFocal = null) => {
       const contentElem = getContentElem();
       if (!contentElem) return;
 
@@ -138,24 +140,30 @@ export default function ZoomableDiv({ content }) {
       }
 
       const fitScale = Math.min(outerWidth / contentWidth, outerHeight / contentHeight);
-      const prevScale = state.current.scale;
       const clampedScale = clamp(targetScale, ZOOM_MIN, ZOOM_MAX);
 
-      const prevRenderScale = fitScale * prevScale;
+      const pOuterW = prevFocal?.outerW ?? outerWidth;
+      const pOuterH = prevFocal?.outerH ?? outerHeight;
+      const pFocalX = prevFocal?.x ?? focalX;
+      const pFocalY = prevFocal?.y ?? focalY;
+
+      const prevRenderScale = state.current.renderScale || (fitScale * state.current.scale);
       const prevRenderWidth = contentWidth * prevRenderScale;
       const prevRenderHeight = contentHeight * prevRenderScale;
-      const prevPadX = Math.max(0, (outerWidth - prevRenderWidth) / 2);
-      const prevPadY = Math.max(0, (outerHeight - prevRenderHeight) / 2);
+      const prevPadX = Math.max(0, (pOuterW - prevRenderWidth) / 2);
+      const prevPadY = Math.max(0, (pOuterH - prevRenderHeight) / 2);
 
       // Content space coordinates under current focal point (focalX, focalY)
-      const xF = (focalX - prevPadX + outer.scrollLeft) / (prevRenderScale || 1);
-      const yF = (focalY - prevPadY + outer.scrollTop) / (prevRenderScale || 1);
+      const xF = (pFocalX - prevPadX + outer.scrollLeft) / (prevRenderScale || 1);
+      const yF = (pFocalY - prevPadY + outer.scrollTop) / (prevRenderScale || 1);
 
       state.current.scale = clampedScale;
       state.current.width = contentWidth;
       state.current.height = contentHeight;
 
       const newRenderScale = fitScale * clampedScale;
+      state.current.renderScale = newRenderScale;
+
       const newRenderWidth = Math.floor(contentWidth * newRenderScale);
       const newRenderHeight = Math.floor(contentHeight * newRenderScale);
       const newPadX = Math.max(0, (outerWidth - newRenderWidth) / 2);
@@ -249,6 +257,17 @@ export default function ZoomableDiv({ content }) {
           return;
         }
 
+        const contentChanged =
+          lastLayout.contentW > 0 &&
+          lastLayout.contentH > 0 &&
+          (Math.abs(lastLayout.contentW - contentWidth) > 0.5 ||
+            Math.abs(lastLayout.contentH - contentHeight) > 0.5);
+
+        if (contentChanged) {
+          state.current.scale = ZOOM_MIN;
+          state.current.renderScale = null;
+        }
+
         const atBaseZoom = Math.abs(state.current.scale - ZOOM_MIN) < SCALE_EPSILON;
         if (atBaseZoom) {
           state.current.scale = ZOOM_MIN;
@@ -267,13 +286,37 @@ export default function ZoomableDiv({ content }) {
           return;
         }
 
+        const prevFocal =
+          lastLayout.outerW > 0 && lastLayout.outerH > 0
+            ? {
+                x: lastLayout.outerW / 2,
+                y: lastLayout.outerH / 2,
+                outerW: lastLayout.outerW,
+                outerH: lastLayout.outerH,
+              }
+            : null;
+
         lastLayout.outerW = outerWidth;
         lastLayout.outerH = outerHeight;
         lastLayout.contentW = contentWidth;
         lastLayout.contentH = contentHeight;
-        lastLayout.scale = state.current.scale;
 
-        zoomTo(state.current.scale, outerWidth / 2, outerHeight / 2);
+        if (atBaseZoom) {
+          lastLayout.scale = ZOOM_MIN;
+          zoomTo(ZOOM_MIN, outerWidth / 2, outerHeight / 2);
+        } else {
+          // User has manually zoomed in.
+          // Maintain visual scale (renderScale) so resizing the window does NOT change the photo's zoom!
+          const newFitScale = Math.min(outerWidth / contentWidth, outerHeight / contentHeight);
+          if (newFitScale > 0 && state.current.renderScale) {
+            const preservedTargetScale = state.current.renderScale / newFitScale;
+            lastLayout.scale = clamp(preservedTargetScale, ZOOM_MIN, ZOOM_MAX);
+            zoomTo(preservedTargetScale, outerWidth / 2, outerHeight / 2, false, prevFocal);
+          } else {
+            lastLayout.scale = state.current.scale;
+            zoomTo(state.current.scale, outerWidth / 2, outerHeight / 2, false, prevFocal);
+          }
+        }
       });
     };
 
