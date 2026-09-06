@@ -224,7 +224,7 @@ export default function SettingsPage() {
         <div className='bv-section' style={{ gap: '0.75rem' }}>
           <div>
             <span className='bv-label' style={{ fontWeight: 600, color: 'var(--color-text)' }}>
-              DITHER-DOT v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.4.3'}
+              DITHER-DOT v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.4.4'}
             </span>
             <p className='bv-label' style={{ margin: '0.35rem 0 0 0', lineHeight: 1.4 }}>
               A FAST, OPEN-SOURCE BROWSER DITHERING STUDIO FOR IMAGES AND GIFS — RUNNING ENTIRELY IN YOUR BROWSER WITH CLIENT-SIDE WEBGL SHADERS AND WEBASSEMBLY. 10+ ALGORITHMS, PALETTES &amp; WEBCAM SUPPORT.
