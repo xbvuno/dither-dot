@@ -7,12 +7,12 @@ const LandingPage = lazy(() => import('./pages/LandingPage'));
 const EditorPage = lazy(() => import('./pages/EditorPage'));
 
 function AppRoutes() {
-  const { path } = useRouter();
+  const { path, navigate } = useRouter();
   const [appReady, setAppReady] = useState(() => path === '/');
 
   useEffect(() => {
     if (path === '/') {
-      setAppReady(true);
+      navigate('/editor', { replace: true });
       return;
     }
     if (useImageStore.getState().engineReady) {

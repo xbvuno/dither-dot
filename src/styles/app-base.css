@@ -757,6 +757,11 @@ h3 {
         display: none;
     }
 
+    .nav-icon-btn[data-tooltip*="SETTINGS"],
+    .nav-icon-btn[aria-label*="SETTINGS"] {
+        display: none !important;
+    }
+
 
     main {
         flex-direction: column-reverse;

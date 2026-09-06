@@ -165,4 +165,15 @@ aside::-webkit-scrollbar-corner {
         overflow-x: hidden !important;
         -webkit-overflow-scrolling: touch;
     }
+
+    .aside-mobile-settings {
+        display: block !important;
+        margin-top: 1rem;
+        border-top: 1px solid var(--color-border);
+        padding-top: 0.5rem;
+    }
+}
+
+.aside-mobile-settings {
+    display: none;
 }

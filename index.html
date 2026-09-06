@@ -19,23 +19,34 @@
 
   <title>DITHER-DOT - Browser Image &amp; GIF Dithering Studio</title>
   <meta name="description"
-    content="A fast, open-source dithering studio for images and GIFs - running entirely in your browser.">
+    content="A fast, open-source dithering studio for images and GIFs — running entirely in your browser with WebGL shaders &amp; WebAssembly.">
+  <meta name="keywords"
+    content="dithering, image dithering, gif dithering, dither studio, floyd-steinberg, bayer matrix, retro pixel art, 1-bit dithering, palette generator, webgl shader, webassembly, client-side image processing">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://dither.xbvuno.dev/editor">
+
+  <!-- Immediate Redirect from Landing to Editor -->
+  <script>
+    if (window.location.pathname === '/' || window.location.pathname === '') {
+      window.location.replace('/editor');
+    }
+  </script>
 
   <!-- Facebook Meta Tags -->
-  <meta property="og:url" content="https://dither.xbvuno.dev/">
+  <meta property="og:url" content="https://dither.xbvuno.dev/editor">
   <meta property="og:type" content="website">
   <meta property="og:title" content="DITHER-DOT - Browser Image &amp; GIF Dithering Studio">
   <meta property="og:description"
-    content="A fast, open-source dithering studio for images and GIFs - running entirely in your browser.">
+    content="A fast, open-source dithering studio for images and GIFs — running entirely in your browser with WebGL shaders &amp; WebAssembly.">
   <meta property="og:image" content="https://dither.xbvuno.dev/wallpaper.png">
 
   <!-- Twitter Meta Tags -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="twitter:domain" content="dither.xbvuno.dev">
-  <meta property="twitter:url" content="https://dither.xbvuno.dev/">
+  <meta property="twitter:url" content="https://dither.xbvuno.dev/editor">
   <meta name="twitter:title" content="DITHER-DOT - Browser Image &amp; GIF Dithering Studio">
   <meta name="twitter:description"
-    content="A fast, open-source dithering studio for images and GIFs - running entirely in your browser.">
+    content="A fast, open-source dithering studio for images and GIFs — running entirely in your browser with WebGL shaders &amp; WebAssembly.">
   <meta name="twitter:image" content="https://dither.xbvuno.dev/wallpaper.png">
 
   <meta name="twitter:site" content="@xbvuno">
@@ -47,9 +58,18 @@
       "@type": "WebApplication",
       "name": "DITHER-DOT",
       "url": "https://dither.xbvuno.dev/",
-      "description": "A fast, open-source dithering studio for images and GIFs running entirely in your browser.",
+      "description": "A fast, open-source dithering studio for images and GIFs running entirely in your browser with WebGL & WebAssembly.",
       "applicationCategory": "MultimediaApplication",
       "operatingSystem": "All",
+      "browserRequirements": "Requires WebGL & WebAssembly support",
+      "featureList": [
+        "Realtime GPU WebGL Dithering",
+        "WASM Palette Generation (Median-Cut, Octree, K-Means)",
+        "Animated GIF Dithering with frame-by-frame rendering",
+        "Live Camera & Webcam Dithering",
+        "10+ Dithering Algorithms including Floyd-Steinberg, Bayer Matrix, Atkinson",
+        "Export to PNG, Animated GIF, Custom Palettes"
+      ],
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -178,6 +198,15 @@
       </svg>
     </div>
   </div>
+  <noscript>
+    <meta http-equiv="refresh" content="0; url=/editor">
+    <div style="padding: 2rem; font-family: monospace; color: #EEEEDF; background: #12120F; max-width: 600px; margin: 2rem auto; border: 1px solid #333;">
+      <h1>DITHER-DOT — Browser Image &amp; GIF Dithering Studio</h1>
+      <p>A fast, open-source dithering studio for images and GIFs running entirely in your browser with WebGL &amp; WebAssembly.</p>
+      <p>Features: 10+ dithering algorithms (Floyd-Steinberg, Bayer Matrix, Atkinson, etc.), color palette extraction and quantization, animated GIF frame-by-frame dithering, live webcam support, and lossless client-side export.</p>
+      <p><a href="/editor" style="color: #56a8ff; font-weight: bold;">Open DITHER-DOT Editor &rarr;</a></p>
+    </div>
+  </noscript>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 

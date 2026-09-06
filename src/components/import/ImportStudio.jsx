@@ -110,7 +110,6 @@ function TemplateContextMenu({ x, y, tpl, onClose, onApplyTemplate }) {
       };
 
       onApplyTemplate(normalized);
-      notify('TEMPLATE APPLIED', 'success');
     } catch (err) {
       console.error('[PASTE TEMPLATE JSON ERROR]', err);
       notify('INVALID TEMPLATE JSON', 'error');
