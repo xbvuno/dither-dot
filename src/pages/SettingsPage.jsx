@@ -10,6 +10,7 @@ import useWatermarkStore from '../stores/media/watermarkStore';
 export default function SettingsPage() {
   const [openSections, toggleSection] = useAccordion('dither-dot:open-sections-settings', {
     settings: true,
+    splitView: true,
     storage: false,
     about: true,
   });
@@ -24,6 +25,12 @@ export default function SettingsPage() {
   const setWatermarkEnabled = useWatermarkStore((s) => s.setEnabled);
   const splitView = useViewStore((s) => s.splitView);
   const setSplitView = useViewStore((s) => s.setSplitView);
+  const splitDirection = useViewStore((s) => s.splitDirection || 'vertical');
+  const setSplitDirection = useViewStore((s) => s.setSplitDirection);
+  const splitFirstView = useViewStore((s) => s.splitFirstView || 'post_process');
+  const setSplitFirstView = useViewStore((s) => s.setSplitFirstView);
+  const previewScrollbars = useViewStore((s) => s.previewScrollbars ?? true);
+  const setPreviewScrollbars = useViewStore((s) => s.setPreviewScrollbars);
 
   const handleClearCache = () => {
     if (window.confirm('Reset all saved settings and reload DITHER-DOT?')) {
@@ -46,21 +53,6 @@ export default function SettingsPage() {
         isOpen={openSections.settings}
         onToggle={() => toggleSection('settings')}
       >
-        <div className='bv-section split-view-section'>
-          <div className='bv-controls-row'>
-            <span className='bv-label'>SPLIT VIEW</span>
-            <OptionGroup
-              options={[
-                { value: true, label: 'ON' },
-                { value: false, label: 'OFF' },
-              ]}
-              value={splitView}
-              onChange={setSplitView}
-              ariaLabel="Split view comparison"
-            />
-          </div>
-        </div>
-
         <div className='bv-section pipeline-section'>
           <div className='bv-controls-row'>
             <span className='bv-label'>PIPELINE</span>
@@ -72,6 +64,21 @@ export default function SettingsPage() {
               value={showPipeline}
               onChange={setShowPipeline}
               ariaLabel="Pipeline visibility"
+            />
+          </div>
+        </div>
+
+        <div className='bv-section preview-scrollbars-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>PREVIEW SCROLLBARS</span>
+            <OptionGroup
+              options={[
+                { value: true, label: 'SHOW' },
+                { value: false, label: 'HIDE' },
+              ]}
+              value={previewScrollbars}
+              onChange={setPreviewScrollbars}
+              ariaLabel="Preview scrollbars visibility"
             />
           </div>
         </div>
@@ -122,7 +129,62 @@ export default function SettingsPage() {
         </div>
       </MacroSection>
 
-      {/* 2. STORAGE & PREFERENCES */}
+      {/* 2. SPLIT VIEW SETTINGS */}
+      <MacroSection
+        title="SPLIT VIEW"
+        collapsible
+        isOpen={openSections.splitView}
+        onToggle={() => toggleSection('splitView')}
+      >
+        <div className='bv-section split-view-enabled-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>ENABLED</span>
+            <OptionGroup
+              options={[
+                { value: true, label: 'ON' },
+                { value: false, label: 'OFF' },
+              ]}
+              value={splitView}
+              onChange={setSplitView}
+              ariaLabel="Split view enabled"
+            />
+          </div>
+        </div>
+
+        <div className='bv-section split-view-direction-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>DIRECTION</span>
+            <OptionGroup
+              options={[
+                { value: 'vertical', label: 'VERT.' },
+                { value: 'horizontal', label: 'HORIZ.' },
+              ]}
+              value={splitDirection}
+              onChange={setSplitDirection}
+              disabled={!splitView}
+              ariaLabel="Split view direction"
+            />
+          </div>
+        </div>
+
+        <div className='bv-section split-view-first-view-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>FIRST VIEW</span>
+            <OptionGroup
+              options={[
+                { value: 'original', label: 'ORIGINAL' },
+                { value: 'post_process', label: 'POST P.' },
+              ]}
+              value={splitFirstView}
+              onChange={setSplitFirstView}
+              disabled={!splitView}
+              ariaLabel="Split view first pane source"
+            />
+          </div>
+        </div>
+      </MacroSection>
+
+      {/* 3. STORAGE & PREFERENCES */}
       <MacroSection
         title="STORAGE"
         collapsible
@@ -162,7 +224,7 @@ export default function SettingsPage() {
         <div className='bv-section' style={{ gap: '0.75rem' }}>
           <div>
             <span className='bv-label' style={{ fontWeight: 600, color: 'var(--color-text)' }}>
-              DITHER-DOT v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.4.3'}
+              DITHER-DOT v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.4.4'}
             </span>
             <p className='bv-label' style={{ margin: '0.35rem 0 0 0', lineHeight: 1.4 }}>
               A FAST, OPEN-SOURCE BROWSER DITHERING STUDIO FOR IMAGES AND GIFS — RUNNING ENTIRELY IN YOUR BROWSER WITH CLIENT-SIDE WEBGL SHADERS AND WEBASSEMBLY. 10+ ALGORITHMS, PALETTES &amp; WEBCAM SUPPORT.

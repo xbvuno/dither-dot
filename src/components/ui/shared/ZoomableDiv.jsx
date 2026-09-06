@@ -1,4 +1,5 @@
 import { useEffect, useRef, useId } from "react";
+import useViewStore from "../../../stores/ui/viewStore";
 import "./styles/ZoomableDiv.css";
 
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
@@ -8,6 +9,7 @@ export default function ZoomableDiv({ content }) {
   const innerRef = useRef(null);
   const instanceId = useId();
   const isSyncing = useRef(false);
+  const previewScrollbars = useViewStore((s) => s.previewScrollbars ?? true);
 
   const state = useRef({
     scale: 1,
@@ -557,7 +559,10 @@ export default function ZoomableDiv({ content }) {
   }, []);
 
   return (
-    <div ref={outerRef} className="zoomable-outer">
+    <div
+      ref={outerRef}
+      className={`zoomable-outer${!previewScrollbars ? ' no-scrollbars' : ''}`}
+    >
       <div ref={innerRef} className="zoomable-inner">
         {content}
       </div>

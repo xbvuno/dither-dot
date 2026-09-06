@@ -17,6 +17,21 @@ const useViewStore = create(
         window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
       },
 
+      splitDirection: 'vertical',
+      setSplitDirection: (d) => {
+        set({ splitDirection: d || 'vertical' });
+        window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
+      },
+
+      splitFirstView: 'post_process',
+      setSplitFirstView: (v) => {
+        set({ splitFirstView: v || 'post_process' });
+        window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
+      },
+
+      previewScrollbars: true,
+      setPreviewScrollbars: (v) => set({ previewScrollbars: Boolean(v) }),
+
       activeSliderId: null,
       setActiveSliderId: (id) => set({ activeSliderId: id }),
       clearActiveSlider: () => set({ activeSliderId: null }),
@@ -26,6 +41,9 @@ const useViewStore = create(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         splitView: state.splitView,
+        splitDirection: state.splitDirection,
+        splitFirstView: state.splitFirstView,
+        previewScrollbars: state.previewScrollbars,
       }),
     }
   )
