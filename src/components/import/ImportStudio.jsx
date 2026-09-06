@@ -24,6 +24,7 @@ import WaveGridSpinner from '../ui/shared/WaveGridSpinner';
 import PopupMessage from '../ui/shared/PopupMessage';
 import WebcamSection from './WebcamSection';
 import LargeImageDialog from './LargeImageDialog';
+import statuePreviewUrl from '../../assets/STATUE_PREVIEW.png';
 import { setupMobileResize } from '../../utils/mobileResize';
 import '../../styles/ImportRoute.css';
 
