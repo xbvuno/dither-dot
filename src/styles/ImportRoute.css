@@ -771,8 +771,6 @@ main.import-3col-layout,
     overflow-x: hidden;
     height: 100%;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: color-mix(in srgb, var(--color-text) 35%, transparent) var(--color-surface);
   }
 
   .import-col {
@@ -916,30 +914,6 @@ main.import-3col-layout,
     max-width: 100%;
     min-width: 0;
     padding-bottom: 6px;
-    scrollbar-width: thin;
-    scrollbar-color: color-mix(in srgb, var(--color-text) 35%, transparent) var(--color-surface);
-  }
-
-  .import-route-presets-grid::-webkit-scrollbar,
-  .import-route-presets-row::-webkit-scrollbar {
-    height: 6px;
-    background-color: var(--color-surface);
-  }
-
-  .import-route-presets-grid::-webkit-scrollbar-track,
-  .import-route-presets-row::-webkit-scrollbar-track {
-    background-color: var(--color-surface);
-  }
-
-  .import-route-presets-grid::-webkit-scrollbar-thumb,
-  .import-route-presets-row::-webkit-scrollbar-thumb {
-    background-color: color-mix(in srgb, var(--color-text) 35%, transparent);
-    border-radius: 0px;
-  }
-
-  .import-route-presets-grid::-webkit-scrollbar-thumb:hover,
-  .import-route-presets-row::-webkit-scrollbar-thumb:hover {
-    background-color: var(--color-text);
   }
 
   .import-route-preset-item {

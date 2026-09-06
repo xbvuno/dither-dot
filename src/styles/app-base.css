@@ -613,14 +613,16 @@ h3 {
     letter-spacing: 0.08em;
 }
 
-* {
-    scrollbar-color: color-mix(in srgb, var(--color-text) 35%, transparent) var(--color-surface);
-    scrollbar-width: thin;
+@supports not selector(::-webkit-scrollbar) {
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-text) var(--color-surface);
+    }
 }
 
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
     background-color: var(--color-surface);
 }
 
@@ -629,8 +631,8 @@ h3 {
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: color-mix(in srgb, var(--color-text) 35%, transparent);
-    border-radius: 0px;
+    background-color: var(--color-text);
+    opacity: 0.2;
 }
 
 ::-webkit-scrollbar-thumb:hover {
