@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { X, Plus } from 'lucide-react';
 import usePaletteStore, { EXTRACT_METHOD } from '../stores/data/paletteStore';
 import SliderBundle from '../components/ui/shared/SliderBundle';

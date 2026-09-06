@@ -54,7 +54,9 @@ export default function Slider({
 
   const [internalSelected, setInternalSelected] = useState(false);
   const isSelected = isSelectedProp !== undefined ? isSelectedProp : internalSelected;
-  selectedRef.current = isSelected;
+  useEffect(() => {
+    selectedRef.current = isSelected;
+  }, [isSelected]);
 
   const isControlled = controlledValue !== undefined;
 
@@ -164,14 +166,24 @@ export default function Slider({
     return result;
   }, [numMin, numMax, numStep]);
 
-  const stateRef = useRef({});
-  stateRef.current.value = numValue;
-  stateRef.current.min = numMin;
-  stateRef.current.max = numMax;
-  stateRef.current.step = numStep;
-  stateRef.current.isControlled = isControlled;
-  stateRef.current.onChange = onChange;
-  stateRef.current.disabled = disabled;
+  const stateRef = useRef({
+    value: numValue,
+    min: numMin,
+    max: numMax,
+    step: numStep,
+    isControlled,
+    onChange,
+    disabled,
+  });
+  useEffect(() => {
+    stateRef.current.value = numValue;
+    stateRef.current.min = numMin;
+    stateRef.current.max = numMax;
+    stateRef.current.step = numStep;
+    stateRef.current.isControlled = isControlled;
+    stateRef.current.onChange = onChange;
+    stateRef.current.disabled = disabled;
+  });
 
   /* ---------- internal setter ---------- */
 
@@ -252,6 +264,20 @@ export default function Slider({
     const pct = valueToPercent(snapped, min, max);
     dt.style.left = `calc(${pct}% - 1px)`;
   }, [defaultValue, min, max, step]);
+
+  const handleSelect = () => {
+    if (disabled) return;
+    selectedRef.current = true;
+    setInternalSelected(true);
+    onSelect?.();
+    containerRef.current?.focus();
+  };
+
+  const handleDeselect = () => {
+    selectedRef.current = false;
+    setInternalSelected(false);
+    onDeselect?.();
+  };
 
   /* ---------- pointer logic (RAF THROTTLED) ---------- */
 
@@ -460,20 +486,6 @@ export default function Slider({
   const handleReset = () => {
     const resetTarget = defaultValue !== undefined ? defaultValue : (numMin <= 0 && numMax >= 0 ? 0 : numMin);
     setInternalValue(resetTarget);
-  };
-
-  const handleSelect = () => {
-    if (disabled) return;
-    selectedRef.current = true;
-    setInternalSelected(true);
-    onSelect?.();
-    containerRef.current?.focus();
-  };
-
-  const handleDeselect = () => {
-    selectedRef.current = false;
-    setInternalSelected(false);
-    onDeselect?.();
   };
 
   return (

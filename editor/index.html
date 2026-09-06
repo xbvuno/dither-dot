@@ -23,17 +23,10 @@
   <meta name="keywords"
     content="dithering, image dithering, gif dithering, dither studio, floyd-steinberg, bayer matrix, retro pixel art, 1-bit dithering, palette generator, webgl shader, webassembly, client-side image processing">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://dither.xbvuno.dev/editor">
-
-  <!-- Immediate Redirect from Landing to Editor -->
-  <script>
-    if (window.location.pathname === '/' || window.location.pathname === '') {
-      window.location.replace('/editor/');
-    }
-  </script>
+  <link rel="canonical" href="https://dither.xbvuno.dev/editor/">
 
   <!-- Facebook Meta Tags -->
-  <meta property="og:url" content="https://dither.xbvuno.dev/editor">
+  <meta property="og:url" content="https://dither.xbvuno.dev/editor/">
   <meta property="og:type" content="website">
   <meta property="og:title" content="DITHER-DOT - Browser Image &amp; GIF Dithering Studio">
   <meta property="og:description"
@@ -43,7 +36,7 @@
   <!-- Twitter Meta Tags -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="twitter:domain" content="dither.xbvuno.dev">
-  <meta property="twitter:url" content="https://dither.xbvuno.dev/editor">
+  <meta property="twitter:url" content="https://dither.xbvuno.dev/editor/">
   <meta name="twitter:title" content="DITHER-DOT - Browser Image &amp; GIF Dithering Studio">
   <meta name="twitter:description"
     content="A fast, open-source dithering studio for images and GIFs — running entirely in your browser with WebGL shaders &amp; WebAssembly.">
@@ -199,14 +192,14 @@
     </div>
   </div>
   <noscript>
-    <meta http-equiv="refresh" content="0; url=/editor/">
     <div style="padding: 2rem; font-family: monospace; color: #EEEEDF; background: #12120F; max-width: 600px; margin: 2rem auto; border: 1px solid #333;">
       <h1>DITHER-DOT — Browser Image &amp; GIF Dithering Studio</h1>
       <p>A fast, open-source dithering studio for images and GIFs running entirely in your browser with WebGL &amp; WebAssembly.</p>
       <p>Features: 10+ dithering algorithms (Floyd-Steinberg, Bayer Matrix, Atkinson, etc.), color palette extraction and quantization, animated GIF frame-by-frame dithering, live webcam support, and lossless client-side export.</p>
-      <p><a href="/editor/" style="color: #56a8ff; font-weight: bold;">Open DITHER-DOT Editor &rarr;</a></p>
+      <p>Please enable JavaScript to run DITHER-DOT.</p>
     </div>
   </noscript>
+  <script type="module" src="/editor/main.jsx"></script>
 </body>
 
 </html>

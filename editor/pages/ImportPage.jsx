@@ -7,7 +7,6 @@ import useGalleryStore from '../stores/data/galleryStore';
 import useGifStore from '../stores/media/gifStore';
 import useWebcamStore, { WEBCAM_SOURCE } from '../stores/media/webcamStore';
 import useParamsStore from '../stores/data/paramsStore';
-import useViewStore from '../stores/ui/viewStore';
 import useWatermarkStore from '../stores/media/watermarkStore';
 import { notify } from '../stores/ui/popupStore';
 
@@ -63,8 +62,6 @@ export default function ImportPage() {
   const setExcludeAlpha = useParamsStore((s) => s.setExcludeAlpha);
   const watermarkEnabled = useWatermarkStore((s) => s.enabled);
   const setWatermarkEnabled = useWatermarkStore((s) => s.setEnabled);
-  const splitView = useViewStore((s) => s.splitView);
-  const setSplitView = useViewStore((s) => s.setSplitView);
 
   const doImport = useCallback(
     async (blob, name) => {

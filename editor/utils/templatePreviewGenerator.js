@@ -239,10 +239,10 @@ export async function generateTemplatePreview(template) {
         return statuePreviewUrl;
       } finally {
         if (wasmPalette) {
-          try { wasmPalette.free(); } catch (_) {}
+          try { wasmPalette.free(); } catch { /* ignore */ }
         }
         if (wasmImage) {
-          try { wasmImage.free(); } catch (_) {}
+          try { wasmImage.free(); } catch { /* ignore */ }
         }
       }
     }).catch((err) => {
