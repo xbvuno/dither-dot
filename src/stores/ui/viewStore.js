@@ -23,6 +23,12 @@ const useViewStore = create(
         window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
       },
 
+      splitFirstView: 'post_process',
+      setSplitFirstView: (v) => {
+        set({ splitFirstView: v || 'post_process' });
+        window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
+      },
+
       previewScrollbars: true,
       setPreviewScrollbars: (v) => set({ previewScrollbars: Boolean(v) }),
 
@@ -36,6 +42,7 @@ const useViewStore = create(
       partialize: (state) => ({
         splitView: state.splitView,
         splitDirection: state.splitDirection,
+        splitFirstView: state.splitFirstView,
         previewScrollbars: state.previewScrollbars,
       }),
     }

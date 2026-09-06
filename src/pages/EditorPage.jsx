@@ -18,6 +18,7 @@ import watermarkMini from '../assets/watermark/watermark-mini.png';
 import ZoomableDiv from '../components/ui/shared/ZoomableDiv';
 import ImageShader from '../components/canvas/ImageShader';
 import PostProcessShader from '../components/canvas/PostProcessShader';
+import OriginalMediaPreview from '../components/ui/shared/OriginalMediaPreview';
 import AsideRouter from '../components/layout/AsideRouter';
 import GifTimeline from '../components/timeline/GifTimeline';
 import CameraControlsBar from '../components/camera/CameraControlsBar';
@@ -64,6 +65,7 @@ export default function EditorPage() {
   const setWatermarkEnabled = useWatermarkStore((s) => s.setEnabled);
   const splitView = useViewStore((s) => s.splitView);
   const splitDirection = useViewStore((s) => s.splitDirection || 'vertical');
+  const splitFirstView = useViewStore((s) => s.splitFirstView || 'post_process');
 
   const navRef = useRef(null);
   const lastScrollTimeRef = useRef(0);
@@ -305,8 +307,18 @@ export default function EditorPage() {
                   {splitView ? (
                     <div className={`split-view-container split-view-container--${splitDirection}`}>
                       <div className='split-view-pane'>
-                        <span className='split-view-badge'>POST-PROCESSING</span>
-                        <ZoomableDiv content={<PostProcessShader />} />
+                        <span className='split-view-badge'>
+                          {splitFirstView === 'original' ? 'ORIGINAL' : 'POST-PROCESSING'}
+                        </span>
+                        <ZoomableDiv
+                          content={
+                            splitFirstView === 'original' ? (
+                              <OriginalMediaPreview />
+                            ) : (
+                              <PostProcessShader />
+                            )
+                          }
+                        />
                       </div>
                       <div className='split-view-divider' />
                       <div className='split-view-pane'>

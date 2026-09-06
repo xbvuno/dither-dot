@@ -27,6 +27,8 @@ export default function SettingsPage() {
   const setSplitView = useViewStore((s) => s.setSplitView);
   const splitDirection = useViewStore((s) => s.splitDirection || 'vertical');
   const setSplitDirection = useViewStore((s) => s.setSplitDirection);
+  const splitFirstView = useViewStore((s) => s.splitFirstView || 'post_process');
+  const setSplitFirstView = useViewStore((s) => s.setSplitFirstView);
   const previewScrollbars = useViewStore((s) => s.previewScrollbars ?? true);
   const setPreviewScrollbars = useViewStore((s) => s.setPreviewScrollbars);
 
@@ -161,6 +163,22 @@ export default function SettingsPage() {
               onChange={setSplitDirection}
               disabled={!splitView}
               ariaLabel="Split view direction"
+            />
+          </div>
+        </div>
+
+        <div className='bv-section split-view-first-view-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>FIRST VIEW</span>
+            <OptionGroup
+              options={[
+                { value: 'original', label: 'ORIGINAL' },
+                { value: 'post_process', label: 'POST P.' },
+              ]}
+              value={splitFirstView}
+              onChange={setSplitFirstView}
+              disabled={!splitView}
+              ariaLabel="Split view first pane source"
             />
           </div>
         </div>
