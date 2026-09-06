@@ -23,6 +23,9 @@ const useViewStore = create(
         window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
       },
 
+      previewScrollbars: true,
+      setPreviewScrollbars: (v) => set({ previewScrollbars: Boolean(v) }),
+
       activeSliderId: null,
       setActiveSliderId: (id) => set({ activeSliderId: id }),
       clearActiveSlider: () => set({ activeSliderId: null }),
@@ -33,6 +36,7 @@ const useViewStore = create(
       partialize: (state) => ({
         splitView: state.splitView,
         splitDirection: state.splitDirection,
+        previewScrollbars: state.previewScrollbars,
       }),
     }
   )

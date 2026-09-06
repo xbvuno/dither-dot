@@ -27,6 +27,8 @@ export default function SettingsPage() {
   const setSplitView = useViewStore((s) => s.setSplitView);
   const splitDirection = useViewStore((s) => s.splitDirection || 'vertical');
   const setSplitDirection = useViewStore((s) => s.setSplitDirection);
+  const previewScrollbars = useViewStore((s) => s.previewScrollbars ?? true);
+  const setPreviewScrollbars = useViewStore((s) => s.setPreviewScrollbars);
 
   const handleClearCache = () => {
     if (window.confirm('Reset all saved settings and reload DITHER-DOT?')) {
@@ -60,6 +62,21 @@ export default function SettingsPage() {
               value={showPipeline}
               onChange={setShowPipeline}
               ariaLabel="Pipeline visibility"
+            />
+          </div>
+        </div>
+
+        <div className='bv-section preview-scrollbars-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>PREVIEW SCROLLBARS</span>
+            <OptionGroup
+              options={[
+                { value: true, label: 'SHOW' },
+                { value: false, label: 'HIDE' },
+              ]}
+              value={previewScrollbars}
+              onChange={setPreviewScrollbars}
+              ariaLabel="Preview scrollbars visibility"
             />
           </div>
         </div>
