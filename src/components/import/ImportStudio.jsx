@@ -343,6 +343,9 @@ function OriginalMediaPreview({
       className='import-preview-source-img'
       src={sourceImg}
       alt='Original Media'
+      onLoad={() => {
+        window.dispatchEvent(new CustomEvent('dither-render-ready'));
+      }}
       style={{
         display: 'block',
         imageRendering: 'pixelated',
@@ -1116,7 +1119,14 @@ export default function ImportStudio() {
               )}
               <div className='import-preview-dither-canvas'>
                 <PopupMessage />
-                <ZoomableDiv content={<ImageShader sourceImg={sourceImg} />} />
+                {hasValidMedia ? (
+                  <ZoomableDiv content={<ImageShader sourceImg={sourceImg} />} />
+                ) : (
+                  <div className='import-preview-empty-state'>
+                    <p>NO MEDIA LOADED</p>
+                    <span>DROP AN IMAGE OR SELECT A PRESET</span>
+                  </div>
+                )}
                 {viewerLoading && !webcamActive && (
                   <div className='zoomable-loading-overlay' role='status' aria-live='polite' aria-label='Loading preview'>
                     <WaveGridSpinner />

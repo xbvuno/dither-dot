@@ -609,9 +609,14 @@ h3 {
     letter-spacing: 0.08em;
 }
 
+* {
+    scrollbar-color: color-mix(in srgb, var(--color-text) 35%, transparent) var(--color-surface);
+    scrollbar-width: thin;
+}
+
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     background-color: var(--color-surface);
 }
 
@@ -620,9 +625,8 @@ h3 {
 }
 
 ::-webkit-scrollbar-thumb {
-    /* background-color: color-mix(in srgb, var(--color-text) 50%, transparent); */
-    background-color: var(--color-text);
-    opacity: 0.2;
+    background-color: color-mix(in srgb, var(--color-text) 35%, transparent);
+    border-radius: 0px;
 }
 
 ::-webkit-scrollbar-thumb:hover {

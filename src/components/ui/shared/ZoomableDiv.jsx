@@ -59,12 +59,14 @@ export default function ZoomableDiv({ content }) {
       const contentWidth =
         contentElem.videoWidth ||
         contentElem.naturalWidth ||
+        contentElem.width ||
         contentElem.scrollWidth ||
         contentElem.offsetWidth ||
         (contentElem.style.width ? parseFloat(contentElem.style.width) : 0);
       const contentHeight =
         contentElem.videoHeight ||
         contentElem.naturalHeight ||
+        contentElem.height ||
         contentElem.scrollHeight ||
         contentElem.offsetHeight ||
         (contentElem.style.height ? parseFloat(contentElem.style.height) : 0);
@@ -93,6 +95,7 @@ export default function ZoomableDiv({ content }) {
       inner.style.boxSizing = 'content-box';
 
       contentElem.style.transformOrigin = 'top left';
+      contentElem.style.transform = `scale(${newRenderScale})`;
       contentElem.style.scale = newRenderScale;
 
       if (window.innerWidth <= 768) {
@@ -117,12 +120,14 @@ export default function ZoomableDiv({ content }) {
       const contentWidth =
         contentElem.videoWidth ||
         contentElem.naturalWidth ||
+        contentElem.width ||
         contentElem.scrollWidth ||
         contentElem.offsetWidth ||
         (contentElem.style.width ? parseFloat(contentElem.style.width) : 0);
       const contentHeight =
         contentElem.videoHeight ||
         contentElem.naturalHeight ||
+        contentElem.height ||
         contentElem.scrollHeight ||
         contentElem.offsetHeight ||
         (contentElem.style.height ? parseFloat(contentElem.style.height) : 0);
@@ -165,6 +170,7 @@ export default function ZoomableDiv({ content }) {
       inner.style.boxSizing = 'content-box';
 
       contentElem.style.transformOrigin = 'top left';
+      contentElem.style.transform = `scale(${newRenderScale})`;
       contentElem.style.scale = newRenderScale;
 
       if (window.innerWidth <= 768) {
@@ -437,16 +443,30 @@ export default function ZoomableDiv({ content }) {
 
     const bindContentLoad = () => {
       const img = innerRef.current?.querySelector('img');
-      if (img && !img.complete) {
-        img.addEventListener('load', () => updateScale(), { once: true });
+      if (img) {
+        if (!img.complete) {
+          img.addEventListener('load', () => updateScale(), { once: true });
+        } else {
+          updateScale();
+        }
       }
       const video = innerRef.current?.querySelector('video');
-      if (video && video.readyState < 1) {
-        video.addEventListener('loadedmetadata', () => updateScale(), { once: true });
+      if (video) {
+        if (video.readyState < 1) {
+          video.addEventListener('loadedmetadata', () => updateScale(), { once: true });
+        } else {
+          updateScale();
+        }
+      }
+      const canvas = innerRef.current?.querySelector('canvas');
+      if (canvas) {
+        updateScale();
       }
     };
 
     bindContentLoad();
+    updateScale();
+    const initRafId = requestAnimationFrame(() => updateScale());
 
     const mutationObserver = new MutationObserver(() => {
       if (state.current.isUpdatingProgrammatically) return;
@@ -461,6 +481,7 @@ export default function ZoomableDiv({ content }) {
     });
 
     return () => {
+      cancelAnimationFrame(initRafId);
       if (updateScaleRafId) cancelAnimationFrame(updateScaleRafId);
       outer.removeEventListener('wheel', handleWheel);
       outer.removeEventListener('mousedown', handleMouseDown);

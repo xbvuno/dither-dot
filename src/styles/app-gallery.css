@@ -148,6 +148,25 @@
     min-width: 0;
     contain: layout;
     scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-text) 35%, transparent) var(--color-surface);
+  }
+
+  .gallery-grid::-webkit-scrollbar {
+    height: 6px;
+    background-color: var(--color-surface);
+  }
+
+  .gallery-grid::-webkit-scrollbar-track {
+    background-color: var(--color-surface);
+  }
+
+  .gallery-grid::-webkit-scrollbar-thumb {
+    background-color: color-mix(in srgb, var(--color-text) 35%, transparent);
+    border-radius: 0px;
+  }
+
+  .gallery-grid::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-text);
   }
 
   .gallery-thumb-wrap {
