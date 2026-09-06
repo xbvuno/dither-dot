@@ -27,7 +27,8 @@ const usePageStore = create(
             exportOpen: false,
 
             setPage: (page) => {
-                if (page === PAGE.EXPORT) {
+                const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+                if (page === PAGE.EXPORT && !isMobile) {
                     set((s) => ({ exportOpen: !s.exportOpen }));
                     return;
                 }

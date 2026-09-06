@@ -420,6 +420,10 @@ main {
     margin-top: auto;
 }
 
+.nav-icon-btn--mobile-only {
+    display: none;
+}
+
 .nav-icon-btn {
     position: relative;
     box-sizing: content-box;
@@ -731,19 +735,11 @@ h3 {
     }
 
     .nav-export-wrap {
-        flex-direction: row;
-        align-items: stretch;
-        width: auto;
-        flex-shrink: 0;
-        border-top: none;
-        border-left: none;
-        padding: 0;
-        margin-top: 0;
-        height: 100%;
+        display: none !important;
     }
 
-    .nav-export-wrap .nav-icon-btn {
-        min-width: 3.6rem;
+    .nav-icon-btn--mobile-only {
+        display: grid !important;
     }
 
     .nav-icon-btn {

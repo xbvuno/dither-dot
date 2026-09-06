@@ -43,6 +43,7 @@ const MAIN_NAV_ITEMS = [
   { id: PAGE.PALETTE, label: 'Palette', Icon: Palette },
   { id: PAGE.DITHER, label: 'Dither', Icon: SprayCan },
   { id: PAGE.SETTINGS, label: 'Settings', Icon: Settings },
+  { id: PAGE.EXPORT, label: 'Export', Icon: Download, mobileOnly: true },
 ];
 
 export default function EditorPage() {
@@ -98,11 +99,12 @@ export default function EditorPage() {
         return;
       }
 
+      const desktopNavItems = MAIN_NAV_ITEMS.filter((item) => !item.mobileOnly);
       const keyNum = parseInt(e.key, 10);
       if (!isNaN(keyNum)) {
-        if (keyNum >= 1 && keyNum <= MAIN_NAV_ITEMS.length) {
+        if (keyNum >= 1 && keyNum <= desktopNavItems.length) {
           e.preventDefault();
-          setPage(MAIN_NAV_ITEMS[keyNum - 1].id);
+          setPage(desktopNavItems[keyNum - 1].id);
           return;
         }
       }
@@ -173,7 +175,7 @@ export default function EditorPage() {
       const delta = event.deltaY;
       if (delta === 0) return;
 
-      const editorPages = MAIN_NAV_ITEMS.map((item) => item.id);
+      const editorPages = MAIN_NAV_ITEMS.filter((item) => !item.mobileOnly).map((item) => item.id);
       const currentIndex = editorPages.indexOf(currentPageRef.current);
       if (currentIndex === -1) return;
 
@@ -260,7 +262,7 @@ export default function EditorPage() {
                 <button
                   key={item.id}
                   type='button'
-                  className={`nav-icon-btn${isSelected ? ' selected' : ''}`}
+                  className={`nav-icon-btn${isSelected ? ' selected' : ''}${item.mobileOnly ? ' nav-icon-btn--mobile-only' : ''}`}
                   onClick={() => setPage(item.id)}
                   onDragEnter={(event) => handleNavDragOver(event, item.id)}
                   onDragOver={(event) => handleNavDragOver(event, item.id)}

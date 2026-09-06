@@ -147,6 +147,10 @@ aside::-webkit-scrollbar-corner {
         box-sizing: border-box !important;
     }
 
+    .resizable-shell--right {
+        display: none !important;
+    }
+
     .resize-handle {
         display: none;
     }
