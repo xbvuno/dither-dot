@@ -850,4 +850,41 @@ main.import-3col-layout,
   .import-route-template-preview-wrap {
     height: 72px;
   }
+
+  .import-media-gallery-group {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .import-media-gallery-group .bv-section {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .import-route-presets-grid,
+  .import-route-presets-row {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    gap: 8px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+  }
+
+  .import-route-preset-item {
+    flex: 0 0 100px !important;
+    width: 100px !important;
+    min-width: 100px !important;
+    scroll-snap-align: start;
+  }
 }

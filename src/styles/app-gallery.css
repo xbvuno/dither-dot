@@ -130,3 +130,32 @@
   opacity: 0.85;
   pointer-events: none;
 }
+
+@media (max-width: 768px) {
+  .gallery-grid {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    gap: 0.5rem;
+    padding-bottom: 6px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    contain: layout;
+    scrollbar-width: thin;
+  }
+
+  .gallery-thumb-wrap {
+    flex: 0 0 6.5rem !important;
+    width: 6.5rem !important;
+    height: 6.5rem !important;
+    min-width: 6.5rem !important;
+    scroll-snap-align: start;
+  }
+}
+
