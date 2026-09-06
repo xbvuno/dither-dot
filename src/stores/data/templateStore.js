@@ -149,6 +149,10 @@ const useTemplateStore = create(
     {
       name: 'dither-dot:template',
       storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        selectedTemplateId: state.selectedTemplateId,
+        currentTemplate: state.currentTemplate,
+      }),
     }
   )
 );
