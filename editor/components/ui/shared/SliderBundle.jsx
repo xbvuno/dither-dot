@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, useId } from "react";
+import { useRef, useCallback, useEffect, useId } from "react";
 import { Minus, Plus, RotateCcw, Pin, PinOff } from "lucide-react";
 import { triggerHapticPulse } from "../../../utils/haptics";
 import usePinnedStore from "../../../stores/ui/pinnedStore";
@@ -51,8 +51,10 @@ export default function SliderBundle({
     const isAtMin = !Number.isNaN(numValue) && !Number.isNaN(numMin) && numValue <= numMin + 1e-5;
     const isAtMax = !Number.isNaN(numValue) && !Number.isNaN(numMax) && numValue >= numMax - 1e-5;
 
-    const stateRef = useRef({});
-    stateRef.current = { value: numValue, min: numMin, max: numMax, step: numStep, onChange };
+    const stateRef = useRef({ value: numValue, min: numMin, max: numMax, step: numStep, onChange });
+    useEffect(() => {
+        stateRef.current = { value: numValue, min: numMin, max: numMax, step: numStep, onChange };
+    });
 
     const setInternalValue = (next) => {
         const s = stateRef.current;

@@ -401,7 +401,7 @@ export default function ExportPage() {
             step={1}
             defaultValue={1}
             value={isLivePreviewActive ? 1 : upscale}
-            onChange={setUpscale}
+            onChange={handleUpscaleChange}
             disabled={isLivePreviewActive}
             pinId="export:upscale"
           />

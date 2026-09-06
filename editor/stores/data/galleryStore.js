@@ -69,7 +69,7 @@ function isPresetItem(src, name, gifDataUrl) {
   });
 }
 
-const useGalleryStore = create((set, get) => ({
+const useGalleryStore = create((set) => ({
   history: [],
   hasHydratedHistory: false,
   randomImages: createRandomItems(),

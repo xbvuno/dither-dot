@@ -16,7 +16,6 @@ import useWebcamStore, { WEBCAM_SOURCE } from '../../stores/media/webcamStore';
 import useTemplateStore, { buildCurrentTemplate } from '../../stores/data/templateStore';
 import { TEMPLATES } from '../../constants/templates';
 import { generateTemplatePreview } from '../../utils/templatePreviewGenerator';
-import { drawWebcamFrameToCanvas } from '../../utils/shaderHelpers';
 import { notify } from '../../stores/ui/popupStore';
 import ZoomableDiv from '../ui/shared/ZoomableDiv';
 import ImageShader from '../canvas/ImageShader';
@@ -250,20 +249,6 @@ export default function ImportStudio() {
   const setDecoding = useGifStore((s) => s.setDecoding);
   const clearGifFrames = useGifStore((s) => s.clearFrames);
 
-  const [gifSourceUrl, setGifSourceUrl] = useState(() => {
-    const gifState = useGifStore.getState();
-    if (gifState.frames?.length > 1) {
-      const currentName = useImageStore.getState().sourceName;
-      if (currentName === 'PIZZA COW' || currentName === 'PIZZA_COW') {
-        const pizzaPreset = GALLERY_PRESETS.find((p) => p.id === 'preset-pizza-cow');
-        return pizzaPreset?.src || null;
-      }
-      const historyItem = useGalleryStore.getState().history.find((h) => h.name === currentName && h.kind === 'gif');
-      return historyItem?.gifDataUrl || null;
-    }
-    return null;
-  });
-
   const webcamActive = useWebcamStore((s) => s.active);
   const webcamStarting = useWebcamStore((s) => s.starting);
   const webcamStream = useWebcamStore((s) => s.stream);
@@ -373,7 +358,9 @@ export default function ImportStudio() {
           col.style.width = `${parsed}px`;
         }
       }
-    } catch {}
+    } catch {
+      // ignore
+    }
 
     let isResizing = false;
     let startX = 0;
@@ -418,7 +405,9 @@ export default function ImportStudio() {
       try {
         const currentWidth = col.getBoundingClientRect().width;
         window.localStorage.setItem('dither-dot:import-media-width', String(clampWidth(currentWidth)));
-      } catch {}
+      } catch {
+        // ignore
+      }
     };
 
     const onMouseMove = (e) => {
@@ -466,7 +455,6 @@ export default function ImportStudio() {
 
           const previewSrc = await blobToDataUrl(firstFrameBlob);
           const gifDataUrl = await blobToDataUrl(blob);
-          setGifSourceUrl(gifDataUrl);
           pushGifHistory(previewSrc, name, gifDataUrl);
         } catch (error) {
           setDecoding(false);
@@ -475,7 +463,6 @@ export default function ImportStudio() {
         return;
       }
 
-      setGifSourceUrl(null);
       clearGifFrames();
 
       const isWebp = blob?.type === 'image/webp' || name?.toLowerCase().endsWith('.webp');
@@ -650,7 +637,7 @@ export default function ImportStudio() {
         const response = await fetch(preset.src);
         if (!response.ok) throw new Error('Failed to load preset GIF');
         const blob = await response.blob();
-        const { decodeGifWithWorker, rgbaFrameToPngBlob, blobToDataUrl } = await import('../../utils/gifDecodeUtils');
+        const { decodeGifWithWorker, rgbaFrameToPngBlob } = await import('../../utils/gifDecodeUtils');
         const decoded = await decodeGifWithWorker(blob);
         if (!decoded.frames.length) throw new Error('No frames in preset GIF');
 
@@ -659,9 +646,6 @@ export default function ImportStudio() {
 
         const firstFrameBlob = await rgbaFrameToPngBlob(decoded.frames[0]);
         await setSourceFromBlob(firstFrameBlob, preset.name, { skipHistory: true });
-
-        const gifDataUrl = await blobToDataUrl(blob);
-        setGifSourceUrl(gifDataUrl);
       } catch (err) {
         console.error('Failed to load preset GIF:', err);
       } finally {
@@ -670,7 +654,6 @@ export default function ImportStudio() {
       return;
     }
 
-    setGifSourceUrl(null);
     clearGifFrames();
     setSourceDirect(preset.src, preset.name, 'preset');
   };
@@ -687,7 +670,6 @@ export default function ImportStudio() {
           if (decoded.frames.length) {
             setGifFrames(decoded.frames, decoded.loop);
             setPlaying(true);
-            setGifSourceUrl(item.gifDataUrl);
             const firstFrameBlob = await rgbaFrameToPngBlob(decoded.frames[0]);
             await setSourceFromBlob(firstFrameBlob, item.name, { skipHistory: true });
           }
@@ -702,7 +684,6 @@ export default function ImportStudio() {
       return;
     }
 
-    setGifSourceUrl(null);
     clearGifFrames();
     setSourceDirect(item.src, item.name, 'imported');
   };
@@ -837,9 +818,6 @@ export default function ImportStudio() {
                     className='import-recent-clear-btn'
                     onClick={() => {
                       clearHistory();
-                      if (history.some((h) => h.kind === 'gif' && h.name === sourceName)) {
-                        setGifSourceUrl(null);
-                      }
                     }}
                   >
                     (<span>CLEAR</span>)
@@ -872,9 +850,6 @@ export default function ImportStudio() {
                           onClick={(e) => {
                             e.stopPropagation();
                             removeHistoryItem(h.id);
-                            if (h.name === sourceName) {
-                              setGifSourceUrl(null);
-                            }
                           }}
                           title={`Remove ${h.name}`}
                           aria-label={`Remove ${h.name}`}

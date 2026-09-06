@@ -3,8 +3,6 @@ import PaletteColorSlider from './PaletteColorSlider';
 import {
   hexToHsv,
   hsvToHex,
-  hexToRgb,
-  rgbToHex,
   applyTonalAdjustments,
 } from '../../utils/colorConversions';
 

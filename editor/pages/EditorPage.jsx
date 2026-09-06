@@ -32,7 +32,6 @@ import useProcessingStore from '../stores/engine/processingStore';
 import useWatermarkStore from '../stores/media/watermarkStore';
 import useViewStore from '../stores/ui/viewStore';
 import useWebcamStore from '../stores/media/webcamStore';
-import { useRouter } from '../router/router';
 
 const ExportPage = lazy(() => import('./ExportPage'));
 
@@ -48,7 +47,6 @@ const MAIN_NAV_ITEMS = [
 ];
 
 export default function EditorPage() {
-  const { navigate } = useRouter();
   const [modalType, setModalType] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -210,7 +208,7 @@ export default function EditorPage() {
     <>
       <h1 className='sr-only'>DITHER-DOT Studio Editor</h1>
       <header className='app-header'>
-        <span className='app-header-title' onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+        <span className='app-header-title' onClick={() => setPage(PAGE.IMPORT)} style={{ cursor: 'pointer' }}>
           <img src={watermarkMini} alt='DITHER-DOT Logo' className='header-logo-img' />
           <span className='app-header-title-name'>DITHER-DOT</span>
         </span>

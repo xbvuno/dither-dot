@@ -4,7 +4,10 @@ import babel from '@rolldown/plugin-babel'
 import workboxBuild from 'workbox-build'
 import wasm from 'vite-plugin-wasm'
 import { readFileSync } from 'fs'
+import { fileURLToPath } from 'url'
+import { dirname, resolve } from 'path'
 
+const __dirname = dirname(fileURLToPath(import.meta.url))
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8'))
 
 function generateServiceWorker() {
@@ -65,6 +68,10 @@ export default defineConfig({
     chunkSizeWarningLimit: 600,
     assetsInlineLimit: 100000,
     rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        editor: resolve(__dirname, 'editor/index.html'),
+      },
       output: {
         manualChunks: (id) => {
           if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) return 'vendor-react'

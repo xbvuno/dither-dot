@@ -99,12 +99,6 @@ function countUniqueColors(pixels, excludeAlpha = false) {
   return unique.size;
 }
 
-function applyBinaryAlphaThreshold(pixels) {
-  for (let index = 3; index < pixels.length; index += 4) {
-    pixels[index] = pixels[index] >= 128 ? 255 : 0;
-  }
-}
-
 self.onmessage = async (event) => {
   const { type } = event.data;
 
