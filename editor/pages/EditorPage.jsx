@@ -355,14 +355,14 @@ export default function EditorPage() {
                 <CameraControlsBar />
                 <Footer />
               </div>
-              {exportOpen && (
-                <Aside side='right'>
-                  <Suspense fallback={null}>
-                    <ExportPage />
-                  </Suspense>
-                </Aside>
-              )}
             </>
+          )}
+          {exportOpen && (
+            <Aside side='right'>
+              <Suspense fallback={null}>
+                <ExportPage />
+              </Suspense>
+            </Aside>
           )}
         </main>
       </div>
