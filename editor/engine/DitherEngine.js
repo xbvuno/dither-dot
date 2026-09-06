@@ -1131,19 +1131,9 @@ const action = this.debugEnabled ? "disable" : "enable";
           }
         }
 
-        const shouldRefresh = this.refreshPaletteForRequest.get(jobId);
         this.refreshPaletteForRequest.delete(jobId);
         this.gifFrameForRequest.delete(jobId);
         this.skipStatsForRequest.delete(jobId);
-
-        if (shouldRefresh) {
-          try {
-            const paletteState = usePaletteStore.getState();
-            await paletteState.generatePalette();
-          } catch (err) {
-            this.error('Palette', 'palette generation failed: %o', err);
-          }
-        }
       }
     };
 

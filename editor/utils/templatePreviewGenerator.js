@@ -13,6 +13,8 @@ import { hexToRgbUnit } from './shaderHelpers';
 let wasmInitialized = false;
 let wasmInitPromise = null;
 let filtersCache = null;
+let ditherAlgorithmsCache = null;
+let paletteGeneratorsCache = null;
 let baseImageData = null;
 let baseImageDataPromise = null;
 
@@ -31,6 +33,20 @@ async function initWasmIfNeeded() {
     }
     await wasmInitPromise;
   }
+}
+
+function getCachedAlgorithms() {
+  if (!ditherAlgorithmsCache) {
+    ditherAlgorithmsCache = Dithering.getAlgorithms();
+  }
+  return ditherAlgorithmsCache;
+}
+
+function getCachedGenerators() {
+  if (!paletteGeneratorsCache) {
+    paletteGeneratorsCache = Palettes.Generators;
+  }
+  return paletteGeneratorsCache;
 }
 
 async function loadBaseImageData() {
@@ -187,7 +203,7 @@ export async function generateTemplatePreview(template) {
               }
             } else if (template.palette?.extractMethod) {
               const count = template.palette.colorCount || 8;
-              const generators = Palettes.Generators;
+              const generators = getCachedGenerators();
               if (template.palette.extractMethod === 'octree') {
                 wasmPalette = generators.Octree.calculate(wasmImage, count);
               } else if (template.palette.extractMethod === 'kmeans') {
@@ -198,7 +214,7 @@ export async function generateTemplatePreview(template) {
             }
 
             if (wasmPalette) {
-              const algs = Dithering.getAlgorithms();
+              const algs = getCachedAlgorithms();
               const methodName = template.dither.method === 'ordered_bayer' ? 'bayer' : template.dither.method;
               const alg = algs.find((a) => a.name === methodName);
 
@@ -214,7 +230,7 @@ export async function generateTemplatePreview(template) {
             console.warn(`[template-preview] Dither failed for template ${templateId}:`, e);
           } finally {
             if (wasmPalette) {
-              wasmPalette.free();
+              try { wasmPalette.free(); } catch { /* ignore */ }
               wasmPalette = null;
             }
           }
@@ -240,9 +256,11 @@ export async function generateTemplatePreview(template) {
       } finally {
         if (wasmPalette) {
           try { wasmPalette.free(); } catch { /* ignore */ }
+          wasmPalette = null;
         }
         if (wasmImage) {
           try { wasmImage.free(); } catch { /* ignore */ }
+          wasmImage = null;
         }
       }
     }).catch((err) => {
