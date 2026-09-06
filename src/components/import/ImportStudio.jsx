@@ -24,7 +24,7 @@ import WaveGridSpinner from '../ui/shared/WaveGridSpinner';
 import PopupMessage from '../ui/shared/PopupMessage';
 import WebcamSection from './WebcamSection';
 import LargeImageDialog from './LargeImageDialog';
-import statuePreviewUrl from '../../assets/STATUE_PREVIEW.png';
+import { setupMobileResize } from '../../utils/mobileResize';
 import '../../styles/ImportRoute.css';
 
 function TemplateContextMenu({ x, y, tpl, onClose, onApplyTemplate }) {
@@ -444,6 +444,18 @@ export default function ImportStudio() {
 
   const mediaColRef = useRef(null);
   const resizeHandleRef = useRef(null);
+  const mobileShellRef = useRef(null);
+  const mobileHandleRef = useRef(null);
+
+  useEffect(() => {
+    if (!mobileHandleRef.current) return;
+    const cleanup = setupMobileResize(
+      mobileHandleRef.current,
+      () => mobileShellRef.current,
+      'dither-dot:mobile-import-height'
+    );
+    return () => cleanup();
+  }, []);
 
   // Automatically select first random image on initial load if still default statue
   useEffect(() => {
@@ -841,7 +853,18 @@ export default function ImportStudio() {
   return (
     <>
       <div className='import-3col-layout'>
-        {/* COLUMN 1: SELECT MEDIA (Resizable) */}
+        {/* MOBILE BOTTOM SHELL: wraps media + templates on mobile (display: contents on desktop) */}
+        <div ref={mobileShellRef} className='import-bottom-shell'>
+          <div
+            ref={mobileHandleRef}
+            className='mobile-resize-handle'
+            role='separator'
+            aria-label='Resize import panel height'
+          >
+            <span className='mobile-resize-pill' />
+          </div>
+          <div className='import-bottom-content'>
+            {/* COLUMN 1: SELECT MEDIA (Resizable) */}
         <div
           ref={mediaColRef}
           className='import-col import-col-media'
@@ -1086,6 +1109,8 @@ export default function ImportStudio() {
             </div>
           </div>
         </div>
+      </div>
+    </div>
 
         {/* COLUMN 3: REALTIME PREVIEW & EDIT */}
         <div className='import-col import-col-preview'>
