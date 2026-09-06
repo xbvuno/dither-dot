@@ -8,6 +8,7 @@ const AdjustmentsPage = lazy(() => import("../../pages/AdjustmentsPage"));
 const DitherPage = lazy(() => import("../../pages/DitherPage"));
 const ExportPage = lazy(() => import("../../pages/ExportPage"));
 const PalettePage = lazy(() => import("../../pages/PalettePage"));
+const SettingsPage = lazy(() => import("../../pages/SettingsPage"));
 
 const PAGES = {
   [PAGE.IMPORT]: ImportPage,
@@ -17,6 +18,7 @@ const PAGES = {
   [PAGE.DITHER]: DitherPage,
   [PAGE.EXPORT]: ExportPage,
   [PAGE.PALETTE]: PalettePage,
+  [PAGE.SETTINGS]: SettingsPage,
 };
 
 export default function AsideRouter() {

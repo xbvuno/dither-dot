@@ -9,8 +9,8 @@ export const DEFAULT_PINNED_IDS = [
   PIN_ID.COLOR_CONTRAST,
   PIN_ID.COLOR_SATURATION,
   PIN_ID.COLOR_HUE,
-  PIN_ID.RESIZE_SCALE,
   PIN_ID.DITHER_AMOUNT,
+  PIN_ID.RESIZE_SCALE,
 ];
 
 const usePinnedStore = create(
@@ -50,6 +50,12 @@ const usePinnedStore = create(
 
       resetToDefault: () => {
         set({ pinnedIds: DEFAULT_PINNED_IDS });
+      },
+
+      setPinnedIds: (ids) => {
+        if (Array.isArray(ids)) {
+          set({ pinnedIds: ids });
+        }
       },
     }),
     {

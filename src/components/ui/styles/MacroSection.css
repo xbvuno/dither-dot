@@ -13,7 +13,7 @@
 
 .bv-macro-section > h2,
 .bv-macro-section-header {
-  background-color: var(--color-macro-section-bg);
+  background-color: var(--color-surface);
   border-top: 1px solid var(--color-border-subtle);
   border-bottom: 1px solid var(--color-border-subtle);
   border-left: none;

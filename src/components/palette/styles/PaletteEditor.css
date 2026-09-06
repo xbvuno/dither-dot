@@ -8,10 +8,10 @@
   left: calc(100% + 0.65rem);
   width: 23.5rem;
   max-height: calc(100vh - 5rem);
-  background: var(--color-floating-bg, rgba(0, 0, 0, 0.88));
-  backdrop-filter: var(--filter-floating-blur, blur(6px));
-  border: 1px solid var(--color-floating-border, rgba(255, 255, 255, 0.14));
-  box-shadow: var(--shadow-floating, 0 8px 24px rgba(0, 0, 0, 0.5));
+  background: var(--color-floating-bg);
+  backdrop-filter: var(--filter-floating-blur);
+  border: 1px solid var(--color-floating-border);
+  box-shadow: var(--shadow-floating);
   padding: 0.85rem 0.95rem;
   display: flex;
   flex-direction: column;
@@ -81,13 +81,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-}
-
-.palette-editor-content::-webkit-scrollbar {
-  width: 4px;
-}
-.palette-editor-content::-webkit-scrollbar-thumb {
-  background: var(--color-border);
 }
 
 
@@ -258,13 +251,6 @@
   max-height: 130px;
   overflow-y: auto;
   padding-right: 0.25rem;
-}
-
-.pe-multi-hex-list::-webkit-scrollbar {
-  width: 3px;
-}
-.pe-multi-hex-list::-webkit-scrollbar-thumb {
-  background: var(--color-border);
 }
 
 /* Footer / Undo / Apply */

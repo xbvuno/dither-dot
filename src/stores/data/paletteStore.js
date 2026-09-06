@@ -236,6 +236,11 @@ const BUILTIN_PALETTES = [
     name: 'VGA 16 Core',
     colors: ['#000000', '#800000', '#008000', '#808000', '#000080', '#800080', '#008080', '#c0c0c0', '#808080', '#ff0000', '#00ff00', '#ffff00', '#0000ff', '#ff00ff', '#00ffff', '#ffffff'],
   },
+  {
+    id: 'builtin-bloody',
+    name: 'Bloody',
+    colors: ['#000000', '#ffffff', '#b31010'],
+  },
 ];
 
 function makeDefaultPalette() {

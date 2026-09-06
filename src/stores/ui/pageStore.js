@@ -12,6 +12,7 @@ export const PAGE = {
     ADJUSTMENTS: 'adjustments',
     PALETTE: 'palette',
     DITHER: 'dither',
+    SETTINGS: 'settings',
     EXPORT: 'export',
 };
 
@@ -21,12 +22,13 @@ export const PAGE = {
 
 const usePageStore = create(
     persist(
-        (set, get) => ({
+        (set) => ({
             currentPage: PAGE.IMPORT,
             exportOpen: false,
 
             setPage: (page) => {
-                if (page === PAGE.EXPORT) {
+                const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+                if (page === PAGE.EXPORT && !isMobile) {
                     set((s) => ({ exportOpen: !s.exportOpen }));
                     return;
                 }

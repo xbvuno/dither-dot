@@ -11,6 +11,7 @@ export default function ZoomableDiv({ content }) {
 
   const state = useRef({
     scale: 1,
+    renderScale: null,
     dragging: false,
     startX: 0,
     startY: 0,
@@ -57,10 +58,16 @@ export default function ZoomableDiv({ content }) {
       if (!outerWidth || !outerHeight) return;
 
       const contentWidth =
+        contentElem.videoWidth ||
+        contentElem.naturalWidth ||
+        contentElem.width ||
         contentElem.scrollWidth ||
         contentElem.offsetWidth ||
         (contentElem.style.width ? parseFloat(contentElem.style.width) : 0);
       const contentHeight =
+        contentElem.videoHeight ||
+        contentElem.naturalHeight ||
+        contentElem.height ||
         contentElem.scrollHeight ||
         contentElem.offsetHeight ||
         (contentElem.style.height ? parseFloat(contentElem.style.height) : 0);
@@ -75,6 +82,7 @@ export default function ZoomableDiv({ content }) {
       state.current.height = contentHeight;
 
       const newRenderScale = fitScale * clampedScale;
+      state.current.renderScale = newRenderScale;
       const newRenderWidth = Math.floor(contentWidth * newRenderScale);
       const newRenderHeight = Math.floor(contentHeight * newRenderScale);
       const newPadX = Math.max(0, (outerWidth - newRenderWidth) / 2);
@@ -89,6 +97,7 @@ export default function ZoomableDiv({ content }) {
       inner.style.boxSizing = 'content-box';
 
       contentElem.style.transformOrigin = 'top left';
+      contentElem.style.transform = '';
       contentElem.style.scale = newRenderScale;
 
       if (window.innerWidth <= 768) {
@@ -97,7 +106,7 @@ export default function ZoomableDiv({ content }) {
       }
     };
 
-    const zoomTo = (targetScale, focalX, focalY, fromSync = false) => {
+    const zoomTo = (targetScale, focalX, focalY, fromSync = false, prevFocal = null) => {
       const contentElem = getContentElem();
       if (!contentElem) return;
 
@@ -111,10 +120,16 @@ export default function ZoomableDiv({ content }) {
       }
 
       const contentWidth =
+        contentElem.videoWidth ||
+        contentElem.naturalWidth ||
+        contentElem.width ||
         contentElem.scrollWidth ||
         contentElem.offsetWidth ||
         (contentElem.style.width ? parseFloat(contentElem.style.width) : 0);
       const contentHeight =
+        contentElem.videoHeight ||
+        contentElem.naturalHeight ||
+        contentElem.height ||
         contentElem.scrollHeight ||
         contentElem.offsetHeight ||
         (contentElem.style.height ? parseFloat(contentElem.style.height) : 0);
@@ -125,24 +140,30 @@ export default function ZoomableDiv({ content }) {
       }
 
       const fitScale = Math.min(outerWidth / contentWidth, outerHeight / contentHeight);
-      const prevScale = state.current.scale;
       const clampedScale = clamp(targetScale, ZOOM_MIN, ZOOM_MAX);
 
-      const prevRenderScale = fitScale * prevScale;
+      const pOuterW = prevFocal?.outerW ?? outerWidth;
+      const pOuterH = prevFocal?.outerH ?? outerHeight;
+      const pFocalX = prevFocal?.x ?? focalX;
+      const pFocalY = prevFocal?.y ?? focalY;
+
+      const prevRenderScale = state.current.renderScale || (fitScale * state.current.scale);
       const prevRenderWidth = contentWidth * prevRenderScale;
       const prevRenderHeight = contentHeight * prevRenderScale;
-      const prevPadX = Math.max(0, (outerWidth - prevRenderWidth) / 2);
-      const prevPadY = Math.max(0, (outerHeight - prevRenderHeight) / 2);
+      const prevPadX = Math.max(0, (pOuterW - prevRenderWidth) / 2);
+      const prevPadY = Math.max(0, (pOuterH - prevRenderHeight) / 2);
 
       // Content space coordinates under current focal point (focalX, focalY)
-      const xF = (focalX - prevPadX + outer.scrollLeft) / (prevRenderScale || 1);
-      const yF = (focalY - prevPadY + outer.scrollTop) / (prevRenderScale || 1);
+      const xF = (pFocalX - prevPadX + outer.scrollLeft) / (prevRenderScale || 1);
+      const yF = (pFocalY - prevPadY + outer.scrollTop) / (prevRenderScale || 1);
 
       state.current.scale = clampedScale;
       state.current.width = contentWidth;
       state.current.height = contentHeight;
 
       const newRenderScale = fitScale * clampedScale;
+      state.current.renderScale = newRenderScale;
+
       const newRenderWidth = Math.floor(contentWidth * newRenderScale);
       const newRenderHeight = Math.floor(contentHeight * newRenderScale);
       const newPadX = Math.max(0, (outerWidth - newRenderWidth) / 2);
@@ -157,6 +178,7 @@ export default function ZoomableDiv({ content }) {
       inner.style.boxSizing = 'content-box';
 
       contentElem.style.transformOrigin = 'top left';
+      contentElem.style.transform = '';
       contentElem.style.scale = newRenderScale;
 
       if (window.innerWidth <= 768) {
@@ -180,18 +202,122 @@ export default function ZoomableDiv({ content }) {
       }
     };
 
+    let updateScaleRafId = null;
+    const lastLayout = {
+      outerW: 0,
+      outerH: 0,
+      contentW: 0,
+      contentH: 0,
+      scale: 0,
+    };
+
     const updateScale = () => {
-      const atBaseZoom = Math.abs(state.current.scale - ZOOM_MIN) < SCALE_EPSILON;
-      if (atBaseZoom) {
-        state.current.scale = ZOOM_MIN;
-        outer.scrollLeft = 0;
-        outer.scrollTop = 0;
-      }
-      const outerWidth = outer.clientWidth;
-      const outerHeight = outer.clientHeight;
-      if (outerWidth && outerHeight) {
-        zoomTo(state.current.scale, outerWidth / 2, outerHeight / 2);
-      }
+      if (updateScaleRafId) cancelAnimationFrame(updateScaleRafId);
+      updateScaleRafId = requestAnimationFrame(() => {
+        const contentElem = getContentElem();
+        if (!contentElem) return;
+
+        const outerWidth = outer.clientWidth;
+        const outerHeight = outer.clientHeight;
+        if (!outerWidth || !outerHeight) return;
+
+        const contentWidth =
+          contentElem.videoWidth ||
+          contentElem.naturalWidth ||
+          contentElem.scrollWidth ||
+          contentElem.offsetWidth ||
+          (contentElem.style.width ? parseFloat(contentElem.style.width) : 0);
+        const contentHeight =
+          contentElem.videoHeight ||
+          contentElem.naturalHeight ||
+          contentElem.scrollHeight ||
+          contentElem.offsetHeight ||
+          (contentElem.style.height ? parseFloat(contentElem.style.height) : 0);
+
+        if (!contentWidth || !contentHeight) {
+          updateScaleRafId = requestAnimationFrame(() => {
+            const retryElem = getContentElem();
+            if (!retryElem) return;
+            const retryW =
+              retryElem.videoWidth ||
+              retryElem.naturalWidth ||
+              retryElem.scrollWidth ||
+              retryElem.offsetWidth ||
+              (retryElem.style.width ? parseFloat(retryElem.style.width) : 0);
+            const retryH =
+              retryElem.videoHeight ||
+              retryElem.naturalHeight ||
+              retryElem.scrollHeight ||
+              retryElem.offsetHeight ||
+              (retryElem.style.height ? parseFloat(retryElem.style.height) : 0);
+            if (retryW > 0 && retryH > 0 && outer.clientWidth > 0 && outer.clientHeight > 0) {
+              zoomTo(state.current.scale, outer.clientWidth / 2, outer.clientHeight / 2);
+            }
+          });
+          return;
+        }
+
+        const contentChanged =
+          lastLayout.contentW > 0 &&
+          lastLayout.contentH > 0 &&
+          (Math.abs(lastLayout.contentW - contentWidth) > 0.5 ||
+            Math.abs(lastLayout.contentH - contentHeight) > 0.5);
+
+        if (contentChanged) {
+          state.current.scale = ZOOM_MIN;
+          state.current.renderScale = null;
+        }
+
+        const atBaseZoom = Math.abs(state.current.scale - ZOOM_MIN) < SCALE_EPSILON;
+        if (atBaseZoom) {
+          state.current.scale = ZOOM_MIN;
+          outer.scrollLeft = 0;
+          outer.scrollTop = 0;
+        }
+
+        // Check if layout is already identical to avoid unnecessary DOM writes
+        if (
+          Math.abs(lastLayout.outerW - outerWidth) < 0.5 &&
+          Math.abs(lastLayout.outerH - outerHeight) < 0.5 &&
+          Math.abs(lastLayout.contentW - contentWidth) < 0.5 &&
+          Math.abs(lastLayout.contentH - contentHeight) < 0.5 &&
+          Math.abs(lastLayout.scale - state.current.scale) < SCALE_EPSILON
+        ) {
+          return;
+        }
+
+        const prevFocal =
+          lastLayout.outerW > 0 && lastLayout.outerH > 0
+            ? {
+                x: lastLayout.outerW / 2,
+                y: lastLayout.outerH / 2,
+                outerW: lastLayout.outerW,
+                outerH: lastLayout.outerH,
+              }
+            : null;
+
+        lastLayout.outerW = outerWidth;
+        lastLayout.outerH = outerHeight;
+        lastLayout.contentW = contentWidth;
+        lastLayout.contentH = contentHeight;
+
+        if (atBaseZoom) {
+          lastLayout.scale = ZOOM_MIN;
+          zoomTo(ZOOM_MIN, outerWidth / 2, outerHeight / 2);
+        } else {
+          // User has manually zoomed in.
+          // Maintain visual scale (renderScale) so resizing the window does NOT change the photo's zoom!
+          const newFitScale = Math.min(outerWidth / contentWidth, outerHeight / contentHeight);
+          if (newFitScale > 0 && state.current.renderScale) {
+            const preservedTargetScale = state.current.renderScale / newFitScale;
+            lastLayout.scale = clamp(preservedTargetScale, ZOOM_MIN, ZOOM_MAX);
+            zoomTo(preservedTargetScale, outerWidth / 2, outerHeight / 2, false, prevFocal);
+          } else {
+            lastLayout.scale = state.current.scale;
+            zoomTo(state.current.scale, outerWidth / 2, outerHeight / 2, false, prevFocal);
+          }
+        }
+      });
     };
 
     updateScale();
@@ -241,6 +367,7 @@ export default function ZoomableDiv({ content }) {
 
     let initialPinchDist = null;
     let initialPinchScale = 1;
+    let lastTapTime = 0;
 
     const getTouchDist = (t1, t2) => {
       const dx = t1.clientX - t2.clientX;
@@ -258,11 +385,21 @@ export default function ZoomableDiv({ content }) {
 
     const handleTouchStart = (e) => {
       if (e.touches.length === 2) {
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
         state.current.dragging = false;
         initialPinchDist = getTouchDist(e.touches[0], e.touches[1]);
         initialPinchScale = state.current.scale;
       } else if (e.touches.length === 1) {
+        const now = Date.now();
+        if (now - lastTapTime < 300) {
+          const outerWidth = outer.clientWidth;
+          const outerHeight = outer.clientHeight;
+          zoomTo(1, outerWidth / 2, outerHeight / 2);
+          lastTapTime = 0;
+          return;
+        }
+        lastTapTime = now;
+
         initialPinchDist = null;
         state.current.dragging = true;
         state.current.startX = e.touches[0].clientX;
@@ -274,7 +411,7 @@ export default function ZoomableDiv({ content }) {
 
     const handleTouchMove = (e) => {
       if (e.touches.length === 2 && initialPinchDist) {
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
         state.current.dragging = false;
         const currentDist = getTouchDist(e.touches[0], e.touches[1]);
         const center = getTouchCenter(e.touches[0], e.touches[1]);
@@ -294,6 +431,8 @@ export default function ZoomableDiv({ content }) {
           state.current.startScrollTop = outer.scrollTop;
           return;
         }
+
+        if (e.cancelable) e.preventDefault();
 
         const dx = e.touches[0].clientX - state.current.startX;
         const dy = e.touches[0].clientY - state.current.startY;
@@ -345,9 +484,7 @@ export default function ZoomableDiv({ content }) {
 
     const handleRenderReady = () => {
       if (state.current.isUpdatingProgrammatically) return;
-      requestAnimationFrame(() => {
-        updateScale();
-      });
+      updateScale();
     };
 
     window.addEventListener('dither-render-ready', handleRenderReady);
@@ -360,31 +497,48 @@ export default function ZoomableDiv({ content }) {
 
     resizeObserver.observe(outer);
 
-    const reobserveContent = () => {
-      const render = innerRef.current?.querySelector('#render');
-      if (render) resizeObserver.observe(render);
-      const layer = innerRef.current?.querySelector('.render-canvas-layer');
-      if (layer) resizeObserver.observe(layer);
+    const bindContentLoad = () => {
+      const img = innerRef.current?.querySelector('img');
+      if (img) {
+        if (!img.complete) {
+          img.addEventListener('load', () => updateScale(), { once: true });
+        } else {
+          updateScale();
+        }
+      }
+      const video = innerRef.current?.querySelector('video');
+      if (video) {
+        if (video.readyState < 1) {
+          video.addEventListener('loadedmetadata', () => updateScale(), { once: true });
+        } else {
+          updateScale();
+        }
+      }
       const canvas = innerRef.current?.querySelector('canvas');
-      if (canvas) resizeObserver.observe(canvas);
+      if (canvas) {
+        updateScale();
+      }
     };
 
-    reobserveContent();
+    bindContentLoad();
+    updateScale();
+    const initRafId = requestAnimationFrame(() => updateScale());
 
     const mutationObserver = new MutationObserver(() => {
       if (state.current.isUpdatingProgrammatically) return;
-      reobserveContent();
+      bindContentLoad();
       updateScale();
     });
 
     mutationObserver.observe(inner, {
       childList: true,
       subtree: true,
-      attributes: true,
-      attributeFilter: ['style', 'width', 'height', 'class'],
+      attributes: false,
     });
 
     return () => {
+      cancelAnimationFrame(initRafId);
+      if (updateScaleRafId) cancelAnimationFrame(updateScaleRafId);
       outer.removeEventListener('wheel', handleWheel);
       outer.removeEventListener('mousedown', handleMouseDown);
       outer.removeEventListener('dblclick', handleDoubleClick);
@@ -400,7 +554,7 @@ export default function ZoomableDiv({ content }) {
       mutationObserver.disconnect();
       resizeObserver.disconnect();
     };
-  }, [content]);
+  }, []);
 
   return (
     <div ref={outerRef} className="zoomable-outer">

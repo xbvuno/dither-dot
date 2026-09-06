@@ -167,7 +167,7 @@
   font-size: 0.5rem;
   letter-spacing: 0.02em;
   padding: 0 0.14rem;
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--color-floating-bg);
   color: var(--color-text);
 }
 
@@ -182,7 +182,7 @@
   font-size: 0.5rem;
   letter-spacing: 0.02em;
   padding: 0 0.14rem;
-  background: rgba(0, 0, 0, 0.7);
+  background: var(--color-floating-bg);
   color: var(--color-text-subtle);
 }
 

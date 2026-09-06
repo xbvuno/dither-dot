@@ -17,6 +17,8 @@ export default function GallerySection() {
   const setGifFrames = useGifStore((s) => s.setFrames);
   const setDecoding = useGifStore((s) => s.setDecoding);
   const history = useGalleryStore((s) => s.history);
+  const randomImages = useGalleryStore((s) => s.randomImages);
+  const refreshRandomImages = useGalleryStore((s) => s.refreshRandomImages);
   const removeHistoryItem = useGalleryStore((s) => s.removeHistoryItem);
   const [presetStaticPreviews, setPresetStaticPreviews] = useState({});
   const hasHistory = history.length > 0;
@@ -207,6 +209,41 @@ export default function GallerySection() {
                 isActive={isActive}
                 onSelect={() => {
                   void handleSelectPresetItem(item, isAnimatedPreset, staticPreviewSrc);
+                }}
+                onDelete={() => {}}
+                showDelete={false}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      <div className='bv-section'>
+        <div className='bv-controls-row'>
+          <p className='bv-label'>RANDOM IMAGES</p>
+          <button
+            type='button'
+            className='bv-option-btn import-btn'
+            onClick={() => {
+              const newItems = refreshRandomImages();
+              if (newItems?.length > 0) {
+                setSourceDirect(newItems[0].src, newItems[0].name, 'preset');
+              }
+            }}
+          >
+            REFRESH
+          </button>
+        </div>
+        <div className='gallery-grid'>
+          {randomImages.map((item) => {
+            const isActive = sourceName === item.name || sourceImg === item.src;
+            return (
+              <GalleryThumbItem
+                key={item.id}
+                item={item}
+                isActive={isActive}
+                onSelect={() => {
+                  setSourceDirect(item.src, item.name, 'preset');
                 }}
                 onDelete={() => {}}
                 showDelete={false}

@@ -19,23 +19,34 @@
 
   <title>DITHER-DOT - Browser Image &amp; GIF Dithering Studio</title>
   <meta name="description"
-    content="A fast, open-source dithering studio for images and GIFs - running entirely in your browser.">
+    content="A fast, open-source dithering studio for images and GIFs — running entirely in your browser with WebGL shaders &amp; WebAssembly.">
+  <meta name="keywords"
+    content="dithering, image dithering, gif dithering, dither studio, floyd-steinberg, bayer matrix, retro pixel art, 1-bit dithering, palette generator, webgl shader, webassembly, client-side image processing">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://dither.xbvuno.dev/editor">
+
+  <!-- Immediate Redirect from Landing to Editor -->
+  <script>
+    if (window.location.pathname === '/' || window.location.pathname === '') {
+      window.location.replace('/editor');
+    }
+  </script>
 
   <!-- Facebook Meta Tags -->
-  <meta property="og:url" content="https://dither.xbvuno.dev/">
+  <meta property="og:url" content="https://dither.xbvuno.dev/editor">
   <meta property="og:type" content="website">
   <meta property="og:title" content="DITHER-DOT - Browser Image &amp; GIF Dithering Studio">
   <meta property="og:description"
-    content="A fast, open-source dithering studio for images and GIFs - running entirely in your browser.">
+    content="A fast, open-source dithering studio for images and GIFs — running entirely in your browser with WebGL shaders &amp; WebAssembly.">
   <meta property="og:image" content="https://dither.xbvuno.dev/wallpaper.png">
 
   <!-- Twitter Meta Tags -->
   <meta name="twitter:card" content="summary_large_image">
   <meta property="twitter:domain" content="dither.xbvuno.dev">
-  <meta property="twitter:url" content="https://dither.xbvuno.dev/">
+  <meta property="twitter:url" content="https://dither.xbvuno.dev/editor">
   <meta name="twitter:title" content="DITHER-DOT - Browser Image &amp; GIF Dithering Studio">
   <meta name="twitter:description"
-    content="A fast, open-source dithering studio for images and GIFs - running entirely in your browser.">
+    content="A fast, open-source dithering studio for images and GIFs — running entirely in your browser with WebGL shaders &amp; WebAssembly.">
   <meta name="twitter:image" content="https://dither.xbvuno.dev/wallpaper.png">
 
   <meta name="twitter:site" content="@xbvuno">
@@ -47,9 +58,18 @@
       "@type": "WebApplication",
       "name": "DITHER-DOT",
       "url": "https://dither.xbvuno.dev/",
-      "description": "A fast, open-source dithering studio for images and GIFs running entirely in your browser.",
+      "description": "A fast, open-source dithering studio for images and GIFs running entirely in your browser with WebGL & WebAssembly.",
       "applicationCategory": "MultimediaApplication",
       "operatingSystem": "All",
+      "browserRequirements": "Requires WebGL & WebAssembly support",
+      "featureList": [
+        "Realtime GPU WebGL Dithering",
+        "WASM Palette Generation (Median-Cut, Octree, K-Means)",
+        "Animated GIF Dithering with frame-by-frame rendering",
+        "Live Camera & Webcam Dithering",
+        "10+ Dithering Algorithms including Floyd-Steinberg, Bayer Matrix, Atkinson",
+        "Export to PNG, Animated GIF, Custom Palettes"
+      ],
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -57,10 +77,136 @@
       }
     }
   </script>
+  <style>
+    :root {
+      --color-bg: #12120F;
+      --color-text: #EEEEDF;
+      --color-surface: color-mix(in srgb, var(--color-bg) 50%, black);
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #090907;
+      background-color: var(--color-surface, color-mix(in srgb, #12120F 50%, black));
+      color: var(--color-text, #EEEEDF);
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    #root {
+      width: 100%;
+      height: 100%;
+    }
+    .static-loader-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100vw;
+      height: 100vh;
+      background-color: #090907;
+      background-color: var(--color-surface, color-mix(in srgb, #12120F 50%, black));
+    }
+    .static-loader-spinner {
+      width: 160px;
+      max-width: 80%;
+      height: auto;
+      color: #EEEEDF;
+      display: block;
+      shape-rendering: crispEdges;
+    }
+    @keyframes anim_frame_0 { 0%, 4.348% { opacity: 1; visibility: visible; } 4.349%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_1 { 0%, 4.347% { opacity: 0; visibility: hidden; } 4.348%, 8.696% { opacity: 1; visibility: visible; } 8.697%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_2 { 0%, 8.695% { opacity: 0; visibility: hidden; } 8.696%, 13.043% { opacity: 1; visibility: visible; } 13.044%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_3 { 0%, 13.042% { opacity: 0; visibility: hidden; } 13.043%, 17.391% { opacity: 1; visibility: visible; } 17.392%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_4 { 0%, 17.39% { opacity: 0; visibility: hidden; } 17.391%, 21.739% { opacity: 1; visibility: visible; } 21.74%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_5 { 0%, 21.738% { opacity: 0; visibility: hidden; } 21.739%, 26.087% { opacity: 1; visibility: visible; } 26.088%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_6 { 0%, 26.086% { opacity: 0; visibility: hidden; } 26.087%, 30.435% { opacity: 1; visibility: visible; } 30.436%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_7 { 0%, 30.434% { opacity: 0; visibility: hidden; } 30.435%, 34.783% { opacity: 1; visibility: visible; } 34.784%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_8 { 0%, 34.782% { opacity: 0; visibility: hidden; } 34.783%, 39.13% { opacity: 1; visibility: visible; } 39.131%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_9 { 0%, 39.129% { opacity: 0; visibility: hidden; } 39.13%, 43.478% { opacity: 1; visibility: visible; } 43.479%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_10 { 0%, 43.477% { opacity: 0; visibility: hidden; } 43.478%, 47.826% { opacity: 1; visibility: visible; } 47.827%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_11 { 0%, 47.825% { opacity: 0; visibility: hidden; } 47.826%, 52.174% { opacity: 1; visibility: visible; } 52.175%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_12 { 0%, 52.173% { opacity: 0; visibility: hidden; } 52.174%, 56.522% { opacity: 1; visibility: visible; } 56.523%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_13 { 0%, 56.521% { opacity: 0; visibility: hidden; } 56.522%, 60.87% { opacity: 1; visibility: visible; } 60.871%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_14 { 0%, 60.869% { opacity: 0; visibility: hidden; } 60.87%, 65.217% { opacity: 1; visibility: visible; } 65.218%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_15 { 0%, 65.216% { opacity: 0; visibility: hidden; } 65.217%, 69.565% { opacity: 1; visibility: visible; } 69.566%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_16 { 0%, 69.564% { opacity: 0; visibility: hidden; } 69.565%, 73.913% { opacity: 1; visibility: visible; } 73.914%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_17 { 0%, 73.912% { opacity: 0; visibility: hidden; } 73.913%, 78.261% { opacity: 1; visibility: visible; } 78.262%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_18 { 0%, 78.26% { opacity: 0; visibility: hidden; } 78.261%, 82.609% { opacity: 1; visibility: visible; } 82.61%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_19 { 0%, 82.608% { opacity: 0; visibility: hidden; } 82.609%, 86.957% { opacity: 1; visibility: visible; } 86.958%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_20 { 0%, 86.956% { opacity: 0; visibility: hidden; } 86.957%, 91.304% { opacity: 1; visibility: visible; } 91.305%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_21 { 0%, 91.303% { opacity: 0; visibility: hidden; } 91.304%, 95.652% { opacity: 1; visibility: visible; } 95.653%, 100% { opacity: 0; visibility: hidden; } }
+    @keyframes anim_frame_22 { 0%, 95.651% { opacity: 0; visibility: hidden; } 95.652%, 100% { opacity: 1; visibility: visible; } }
+    .static-loader-spinner .gd-f-0 { animation: anim_frame_0 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-1 { animation: anim_frame_1 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-2 { animation: anim_frame_2 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-3 { animation: anim_frame_3 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-4 { animation: anim_frame_4 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-5 { animation: anim_frame_5 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-6 { animation: anim_frame_6 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-7 { animation: anim_frame_7 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-8 { animation: anim_frame_8 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-9 { animation: anim_frame_9 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-10 { animation: anim_frame_10 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-11 { animation: anim_frame_11 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-12 { animation: anim_frame_12 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-13 { animation: anim_frame_13 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-14 { animation: anim_frame_14 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-15 { animation: anim_frame_15 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-16 { animation: anim_frame_16 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-17 { animation: anim_frame_17 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-18 { animation: anim_frame_18 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-19 { animation: anim_frame_19 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-20 { animation: anim_frame_20 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-21 { animation: anim_frame_21 1.917s infinite step-end; opacity: 0; }
+    .static-loader-spinner .gd-f-22 { animation: anim_frame_22 1.917s infinite step-end; opacity: 0; }
+  </style>
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <div class="static-loader-container">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 27.25 6"
+        class="static-loader-spinner"
+        aria-hidden="true"
+      >
+        <path class="gd-f-0" fill="currentColor" d="M2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-1" fill="currentColor" d="M0 1.25h1v1h-1zM2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-2" fill="currentColor" d="M1.25 1.25h1v1h-1zM2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM0 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM1.25 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-3" fill="currentColor" d="M2.5 0h1v1h-1zM2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-4" fill="currentColor" d="M2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-5" fill="currentColor" d="M5 0h1v1h-1zM2.5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-6" fill="currentColor" d="M2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-7" fill="currentColor" d="M2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM7.5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-8" fill="currentColor" d="M8.75 0h1v1h-1zM2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-9" fill="currentColor" d="M2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM10 1.25h1v1h-1zM12.5 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-10" fill="currentColor" d="M2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-11" fill="currentColor" d="M12.5 0h1v1h-1zM2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-12" fill="currentColor" d="M2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM13.75 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-13" fill="currentColor" d="M2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM15 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-14" fill="currentColor" d="M2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-15" fill="currentColor" d="M2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM17.5 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-16" fill="currentColor" d="M2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM18.75 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-17" fill="currentColor" d="M2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM20 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM20 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-18" fill="currentColor" d="M2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-19" fill="currentColor" d="M2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM22.5 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-20" fill="currentColor" d="M2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM23.75 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1zM26.25 5h1v1h-1z" />
+        <path class="gd-f-21" fill="currentColor" d="M2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM20 3.75h1v1h-1zM22.5 3.75h1v1h-1zM26.25 3.75h1v1h-1z" />
+        <path class="gd-f-22" fill="currentColor" d="M2.5 1.25h1v1h-1zM5 1.25h1v1h-1zM8.75 1.25h1v1h-1zM12.5 1.25h1v1h-1zM0 2.5h1v1h-1zM1.25 2.5h1v1h-1zM2.5 2.5h1v1h-1zM7.5 2.5h1v1h-1zM8.75 2.5h1v1h-1zM10 2.5h1v1h-1zM12.5 2.5h1v1h-1zM13.75 2.5h1v1h-1zM15 2.5h1v1h-1zM17.5 2.5h1v1h-1zM18.75 2.5h1v1h-1zM20 2.5h1v1h-1zM22.5 2.5h1v1h-1zM23.75 2.5h1v1h-1zM0 3.75h1v1h-1zM2.5 3.75h1v1h-1zM5 3.75h1v1h-1zM8.75 3.75h1v1h-1zM12.5 3.75h1v1h-1zM15 3.75h1v1h-1zM17.5 3.75h1v1h-1zM18.75 3.75h1v1h-1zM22.5 3.75h1v1h-1zM26.25 3.75h1v1h-1zM0 5h1v1h-1zM1.25 5h1v1h-1zM2.5 5h1v1h-1zM5 5h1v1h-1zM8.75 5h1v1h-1zM12.5 5h1v1h-1zM15 5h1v1h-1zM17.5 5h1v1h-1zM18.75 5h1v1h-1zM20 5h1v1h-1zM22.5 5h1v1h-1z" />
+      </svg>
+    </div>
+  </div>
+  <noscript>
+    <meta http-equiv="refresh" content="0; url=/editor">
+    <div style="padding: 2rem; font-family: monospace; color: #EEEEDF; background: #12120F; max-width: 600px; margin: 2rem auto; border: 1px solid #333;">
+      <h1>DITHER-DOT — Browser Image &amp; GIF Dithering Studio</h1>
+      <p>A fast, open-source dithering studio for images and GIFs running entirely in your browser with WebGL &amp; WebAssembly.</p>
+      <p>Features: 10+ dithering algorithms (Floyd-Steinberg, Bayer Matrix, Atkinson, etc.), color palette extraction and quantization, animated GIF frame-by-frame dithering, live webcam support, and lossless client-side export.</p>
+      <p><a href="/editor" style="color: #56a8ff; font-weight: bold;">Open DITHER-DOT Editor &rarr;</a></p>
+    </div>
+  </noscript>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 

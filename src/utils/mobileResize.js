@@ -1,6 +1,6 @@
 const MOBILE_ASIDE_HEIGHT_KEY = 'dither-dot:mobile-aside-height';
 
-export function setupMobileResize(handleEl, getShellEl) {
+export function setupMobileResize(handleEl, getShellEl, storageKey = MOBILE_ASIDE_HEIGHT_KEY) {
   if (!handleEl) return () => {};
 
   let isDragging = false;
@@ -86,7 +86,7 @@ export function setupMobileResize(handleEl, getShellEl) {
       const targetH = currentH <= 45 ? defaultH : 32;
       shell.style.setProperty('height', `${targetH}px`, 'important');
       try {
-        window.localStorage.setItem(MOBILE_ASIDE_HEIGHT_KEY, String(targetH));
+        window.localStorage.setItem(storageKey, String(targetH));
       } catch {
         // Ignore
       }
@@ -100,7 +100,7 @@ export function setupMobileResize(handleEl, getShellEl) {
     try {
       if (shell) {
         const finalHeight = shell.getBoundingClientRect().height;
-        window.localStorage.setItem(MOBILE_ASIDE_HEIGHT_KEY, String(finalHeight));
+        window.localStorage.setItem(storageKey, String(finalHeight));
       }
     } catch {
       // Ignore storage write errors.
@@ -151,7 +151,7 @@ export function setupMobileResize(handleEl, getShellEl) {
     const shell = getShell();
     if (!shell) return;
     try {
-      const stored = Number(window.localStorage.getItem(MOBILE_ASIDE_HEIGHT_KEY));
+      const stored = Number(window.localStorage.getItem(storageKey));
       const minH = 32;
       const maxH = Math.floor(window.innerHeight * 0.70);
       const defaultH = Math.floor(window.innerHeight * 0.42);

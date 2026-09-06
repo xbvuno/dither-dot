@@ -1,11 +1,15 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, lazy, Suspense } from "react";
 import { setupMobileResize } from "../../utils/mobileResize";
+import usePageStore, { PAGE } from "../../stores/ui/pageStore";
 import "./styles/Aside.css";
+
+const SettingsPage = lazy(() => import("../../pages/SettingsPage"));
 
 const ASIDE_WIDTH_STORAGE_KEY_LEFT = 'dither-dot:aside-width';
 const ASIDE_WIDTH_STORAGE_KEY_RIGHT = 'dither-dot:export-aside-width';
 
 export default function Aside({ children, side = "left", storageKey, className = "" }) {
+  const currentPage = usePageStore((s) => s.currentPage);
   const shellRef = useRef(null);
   const asideRef = useRef(null);
   const resizeHandleRef = useRef(null);
@@ -124,6 +128,13 @@ export default function Aside({ children, side = "left", storageKey, className =
       </div>
       <aside ref={asideRef}>
         {children}
+        {side === "left" && currentPage !== PAGE.SETTINGS && (
+          <div className="aside-mobile-settings">
+            <Suspense fallback={null}>
+              <SettingsPage />
+            </Suspense>
+          </div>
+        )}
       </aside>
       <div
         ref={resizeHandleRef}

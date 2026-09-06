@@ -378,6 +378,7 @@ main {
     height: 100%;
     width: 3.2rem;
     background-color: #000;
+    border-right: 1px solid var(--color-border);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -388,6 +389,16 @@ main {
 
 .nav-logo-img {
     display: none;
+}
+
+.nav-top-wrap {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 0.35rem 0;
+    margin-top: 0;
+    margin-bottom: auto;
 }
 
 .nav-links-wrap {
@@ -407,6 +418,10 @@ main {
     align-items: center;
     padding: 0.35rem 0;
     margin-top: auto;
+}
+
+.nav-icon-btn--mobile-only {
+    display: none;
 }
 
 .nav-icon-btn {
@@ -462,6 +477,13 @@ main {
     cursor: pointer;
 }
 
+.nav-icon-btn:disabled,
+.nav-icon-btn.disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .nav-icon-btn.selected {
     background-color: var(--color-text);
     color: var(--color-bg);
@@ -470,6 +492,47 @@ main {
 .nav-icon-img {
     width: 24px;
     height: 24px;
+}
+
+/* Aside Media & Template Header Banner */
+.aside-media-template-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0.85rem;
+    background: var(--btn-bg-default);
+    border: none;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    width: 100%;
+    text-align: left;
+    flex-shrink: 0;
+}
+
+.aside-media-template-banner:hover {
+    background: var(--btn-bg-hover);
+    color: var(--btn-color-hover);
+}
+
+.aside-media-template-banner-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.aside-media-template-banner-badge {
+    font-size: 0.68rem;
+    padding: 2px 6px;
+    background: var(--color-bg-subtle);
+    border: 1px solid var(--color-border-subtle);
+    color: var(--color-text-subtle);
+    font-weight: 500;
 }
 
 .flex-v {
@@ -550,18 +613,24 @@ h3 {
     letter-spacing: 0.08em;
 }
 
+@supports not selector(::-webkit-scrollbar) {
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-text) var(--color-surface);
+    }
+}
+
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
-    background-color: var(--color-macro-section-bg);
+    background-color: var(--color-surface);
 }
 
 ::-webkit-scrollbar-track {
-    background-color: var(--color-macro-section-bg);
+    background-color: var(--color-surface);
 }
 
 ::-webkit-scrollbar-thumb {
-    /* background-color: color-mix(in srgb, var(--color-text) 50%, transparent); */
     background-color: var(--color-text);
     opacity: 0.2;
 }
@@ -572,7 +641,7 @@ h3 {
 }
 
 ::-webkit-scrollbar-corner {
-    background: var(--color-macro-section-bg);
+    background: var(--color-surface);
 }
 
 .sr-only {
@@ -668,19 +737,11 @@ h3 {
     }
 
     .nav-export-wrap {
-        flex-direction: row;
-        align-items: stretch;
-        width: auto;
-        flex-shrink: 0;
-        border-top: none;
-        border-left: none;
-        padding: 0;
-        margin-top: 0;
-        height: 100%;
+        display: none !important;
     }
 
-    .nav-export-wrap .nav-icon-btn {
-        min-width: 3.6rem;
+    .nav-icon-btn--mobile-only {
+        display: grid !important;
     }
 
     .nav-icon-btn {
@@ -696,6 +757,11 @@ h3 {
 
     .nav-icon-btn::after {
         display: none;
+    }
+
+    .nav-icon-btn[data-tooltip*="SETTINGS"],
+    .nav-icon-btn[aria-label*="SETTINGS"] {
+        display: none !important;
     }
 
 

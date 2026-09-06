@@ -215,6 +215,10 @@ const action = this.debugEnabled ? "disable" : "enable";
     this.log('Pipeline', 'init() entered. sourceImg type/details: %s', typeof sourceImg === 'string' ? sourceImg.slice(0, 50) + "..." : typeof sourceImg);
     this.canvasHost = canvasHost;
     this.disposed = false;
+    this.activeJobs = 0;
+    this.processingQueued = false;
+    this.pendingPaletteRefresh = false;
+    this.processingVisible = false;
     const lifecycleToken = ++this.lifecycleToken;
     
     this.clearViewerLoadingTimer();
@@ -319,11 +323,13 @@ const action = this.debugEnabled ? "disable" : "enable";
       
       this.clearViewerLoadingTimer();
       useImageStore.getState().setViewerLoading(false);
+      useImageStore.getState().setEngineReady(true);
     } catch (error) {
       if (this.lifecycleToken === lifecycleToken && !this.disposed) {
         useProcessingStore.getState().setRenderProcessing(false);
         this.clearViewerLoadingTimer();
         useImageStore.getState().setViewerLoading(false);
+        useImageStore.getState().setEngineReady(true);
         this.setEngineState('ERROR');
         this.error('Pipeline', 'Error during initialization: %o', error);
         alert('Unable to load the selected image. Please try another file.');
@@ -548,6 +554,7 @@ const action = this.debugEnabled ? "disable" : "enable";
         const prevState = this.previousGifState || {};
         const hadFrames = (prevState.frames?.length || 0) > 1;
         const hasFrames = (state?.frames?.length || 0) > 1;
+        const framesChanged = state.frames !== prevState.frames;
 
         this.previousGifState = {
           frames: state.frames,
@@ -556,12 +563,7 @@ const action = this.debugEnabled ? "disable" : "enable";
 
         if (!hasFrames && !hadFrames) return;
 
-        if (!hadFrames && hasFrames) {
-          this.swapSourceFrame(state.currentFrameIndex);
-          return;
-        }
-
-        if (state.currentFrameIndex !== prevState.currentFrameIndex) {
+        if (framesChanged || (!hadFrames && hasFrames) || state.currentFrameIndex !== prevState.currentFrameIndex) {
           this.swapSourceFrame(state.currentFrameIndex);
         }
       })
@@ -620,6 +622,8 @@ const action = this.debugEnabled ? "disable" : "enable";
       window.clearTimeout(this.processingVisibilityTimer);
       this.processingVisibilityTimer = null;
     }
+    this.activeJobs = 0;
+    this.processingVisible = false;
     this.processingQueued = false;
     this.pendingPaletteRefresh = false;
 
@@ -704,6 +708,10 @@ const action = this.debugEnabled ? "disable" : "enable";
         return;
       }
 
+      // Lock activeJobs immediately to prevent re-entry during async extraction
+      this.setProcessingDelta(1);
+      const requestId = ++this.latestRequestId;
+
       usePerformanceStore.getState().setPipelineStart();
 
       const paletteState = usePaletteStore.getState();
@@ -729,8 +737,14 @@ const action = this.debugEnabled ? "disable" : "enable";
         usePerformanceStore.getState().recordExtractionEnd(extractionDuration);
       } catch (error) {
         this.error('Pipeline', 'Failed to create ImageBitmap from active source: %o', error);
+        this.setProcessingDelta(-1);
         this.preserveVisibleOutput();
         this.processingQueued = false;
+        return;
+      }
+
+      if (this.disposed || !this.worker || this.worker !== worker) {
+        this.setProcessingDelta(-1);
         return;
       }
 
@@ -740,10 +754,9 @@ const action = this.debugEnabled ? "disable" : "enable";
       const customWidth = sizeState.customSize.customWidth || sourceW;
       const customHeight = sizeState.customSize.customHeight || sourceH;
 
-      const requestId = ++this.latestRequestId;
       this.log('Worker', 'Dispatching job %d. customSize: %d x %d, ditherEnabled: %o', requestId, customWidth, customHeight, ditherEnabled);
       
-      const skipStats = !refreshPalette && frameIndex >= 0 && (gifState.playing || gifState.exporting || frameIndex !== gifState.currentFrameIndex);
+      const skipStats = !refreshPalette && frameIndex >= 0;
 
       this.refreshPaletteForRequest.set(requestId, refreshPalette);
       this.ditherEnabledForRequest.set(requestId, ditherEnabled);
@@ -753,7 +766,6 @@ const action = this.debugEnabled ? "disable" : "enable";
       if (frameIndex >= 0) {
         gifState.markFrameRendering(frameIndex);
       }
-      this.setProcessingDelta(1);
       usePerformanceStore.getState().setCurrentPhase('dithering');
 
       const workerStartTime = performance.now();
@@ -1084,13 +1096,9 @@ const action = this.debugEnabled ? "disable" : "enable";
         }
 
         this.ditherEnabledForRequest.delete(jobId);
-        const skipStats = Boolean(this.skipStatsForRequest.get(jobId));
-
-        if (skipStats) {
-          this.refreshPaletteForRequest.delete(jobId);
-          this.gifFrameForRequest.delete(jobId);
-          this.skipStatsForRequest.delete(jobId);
-        }
+        this.refreshPaletteForRequest.delete(jobId);
+        this.gifFrameForRequest.delete(jobId);
+        this.skipStatsForRequest.delete(jobId);
 
         this.setProcessingDelta(-1);
         if (this.processingQueued) {
@@ -1458,31 +1466,33 @@ const action = this.debugEnabled ? "disable" : "enable";
     }
 
     const video = document.createElement('video');
-    video.srcObject = webcamStream;
+    video.setAttribute('playsinline', 'true');
+    video.setAttribute('muted', 'true');
+    video.setAttribute('autoplay', 'true');
     video.muted = true;
+    video.defaultMuted = true;
     video.playsInline = true;
     video.autoplay = true;
+    video.srcObject = webcamStream;
 
-    if (video.readyState < 1) {
-      await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          resolve();
-        }, 3000);
-        video.onloadedmetadata = () => {
+    if (video.readyState < 2) {
+      await new Promise((resolve) => {
+        const timeout = setTimeout(resolve, 1500);
+        const onReady = () => {
           clearTimeout(timeout);
+          video.removeEventListener('loadeddata', onReady);
+          video.removeEventListener('loadedmetadata', onReady);
           resolve();
         };
-        video.onerror = () => {
-          clearTimeout(timeout);
-          reject(new Error('Failed to initialize camera video'));
-        };
+        video.addEventListener('loadeddata', onReady, { once: true });
+        video.addEventListener('loadedmetadata', onReady, { once: true });
       });
     }
 
     try {
       await video.play();
-    } catch (err) {
-      throw new Error(`Camera play failed: ${err?.message ?? err}`);
+    } catch {
+      // Harmless if blocked or already playing
     }
 
     if (this.lifecycleToken !== lifecycleToken || this.disposed) {
@@ -1556,42 +1566,19 @@ const action = this.debugEnabled ? "disable" : "enable";
     const frame = gifState.frames?.[frameIndex];
     if (!frame || !frame.width || !frame.height || !frame.pixels) return;
 
-    const needsFreshCanvas =
-      !this.webcamCanvas || // reuse webcamCanvas reference as frameCanvas
-      !this.webcamCtx ||
-      this.webcamCanvas.width !== frame.width ||
-      this.webcamCanvas.height !== frame.height;
-
-    if (needsFreshCanvas) {
-      this.webcamCanvas = document.createElement('canvas');
-      this.webcamCanvas.width = frame.width;
-      this.webcamCanvas.height = frame.height;
-      this.webcamCtx = this.webcamCanvas.getContext('2d');
+    const currentSize = useSizeStore.getState().size;
+    if (!currentSize || currentSize.width !== frame.width || currentSize.height !== frame.height) {
+      this.internalFrameSwap = true;
+      useSizeStore.getState().setSize({ width: frame.width, height: frame.height }, { resetCustom: false });
+      this.internalFrameSwap = false;
+      const displaySize = getTargetDisplaySize();
+      this.applyDisplaySize(displaySize.width, displaySize.height);
     }
-
-    if (!this.webcamCtx || !this.webcamCanvas) return;
-
-    this.webcamCtx.putImageData(new ImageData(frame.pixels, frame.width, frame.height), 0, 0);
-
-    this.activeSource = this.webcamCanvas;
-    this.splitOverlayImage = this.webcamCanvas;
-
-    this.internalFrameSwap = true;
-    useSizeStore.getState().setSize({ width: frame.width, height: frame.height }, { resetCustom: false });
-
-    const displaySize = getTargetDisplaySize();
-    this.applyDisplaySize(
-      displaySize.width,
-      displaySize.height,
-    );
-
-    this.outputReady = false;
-    this.outputMode = 'none';
-    this.syncVisibleLayer();
 
     const cachedFrame = gifState.renderedFrames?.[frameIndex];
     const cachedState = gifState.frameStates?.[frameIndex];
     const shouldForceRefresh = this.pendingPaletteRefresh;
+
     if (cachedFrame && cachedState === 'done') {
       const cachedPixels = cachedFrame.pixels instanceof Uint8ClampedArray
         ? cachedFrame.pixels
@@ -1638,10 +1625,30 @@ const action = this.debugEnabled ? "disable" : "enable";
           this.queueProcessing(true);
         }
 
-        this.internalFrameSwap = false;
         return;
       }
     }
+
+    // Otherwise, frame needs to be rendered by worker
+    const needsFreshCanvas =
+      !this.webcamCanvas ||
+      !this.webcamCtx ||
+      this.webcamCanvas.width !== frame.width ||
+      this.webcamCanvas.height !== frame.height;
+
+    if (needsFreshCanvas) {
+      this.webcamCanvas = document.createElement('canvas');
+      this.webcamCanvas.width = frame.width;
+      this.webcamCanvas.height = frame.height;
+      this.webcamCtx = this.webcamCanvas.getContext('2d');
+    }
+
+    if (!this.webcamCtx || !this.webcamCanvas) return;
+
+    this.webcamCtx.putImageData(new ImageData(frame.pixels, frame.width, frame.height), 0, 0);
+
+    this.activeSource = this.webcamCanvas;
+    this.splitOverlayImage = this.webcamCanvas;
 
     if (frame.pixels) {
       registerPaletteReference({
@@ -1652,7 +1659,6 @@ const action = this.debugEnabled ? "disable" : "enable";
     }
 
     this.queueProcessing(false);
-    this.internalFrameSwap = false;
   }
 
   markGifFramesPending() {
