@@ -2,6 +2,7 @@ import init, { Image as WasmImage, Palettes } from 'ddot-wasm';
 import wasmUrl from 'ddot-wasm/ddot_wasm_bg.wasm?url';
 
 let wasmInitialized = false;
+let generatorsCache = null;
 
 function colorToHex({ r, g, b }) {
   const R = String(r.toString(16)).padStart(2, '0');
@@ -22,11 +23,15 @@ self.onmessage = async (event) => {
       wasmInitialized = true;
     }
 
+    if (!generatorsCache) {
+      generatorsCache = Palettes.Generators;
+    }
+
     const pixelsArray = new Uint8ClampedArray(pixels);
     const imageData = new ImageData(pixelsArray, width, height);
     image = new WasmImage(imageData);
 
-    const generators = Palettes.Generators;
+    const generators = generatorsCache;
 
     if (method === 'octree') {
       wasmPalette = generators.Octree.calculate(image, count);
@@ -51,9 +56,11 @@ self.onmessage = async (event) => {
   } finally {
     if (image) {
       try { image.free(); } catch { /* ignore */ }
+      image = null;
     }
     if (wasmPalette) {
       try { wasmPalette.free(); } catch { /* ignore */ }
+      wasmPalette = null;
     }
   }
 };

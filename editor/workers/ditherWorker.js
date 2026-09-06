@@ -3,8 +3,16 @@ import wasmUrl from 'ddot-wasm/ddot_wasm_bg.wasm?url';
 
 let wasmInitialized = false;
 let filtersCache = null;
+let ditherAlgorithmsCache = null;
 let activeJobId = null;
 let debugEnabled = false;
+
+function getCachedAlgorithms() {
+  if (!ditherAlgorithmsCache) {
+    ditherAlgorithmsCache = Dithering.getAlgorithms();
+  }
+  return ditherAlgorithmsCache;
+}
 
 // Persistent worker-side canvas elements for offscreen rendering
 let viewportCanvas = null;
@@ -292,7 +300,7 @@ self.onmessage = async (event) => {
       });
       wasmPalette = new WasmPalette(colors);
 
-      const algs = Dithering.getAlgorithms();
+      const algs = getCachedAlgorithms();
       const methodName = dither.method === 'ordered_bayer' ? 'bayer' : dither.method;
       const alg = algs.find(a => a.name === methodName);
       if (alg) {
