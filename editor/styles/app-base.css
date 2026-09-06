@@ -421,7 +421,7 @@ main {
 }
 
 .nav-icon-btn--mobile-only {
-    display: none;
+    display: none !important;
 }
 
 .nav-icon-btn {
