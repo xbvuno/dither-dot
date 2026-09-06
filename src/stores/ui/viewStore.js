@@ -17,6 +17,12 @@ const useViewStore = create(
         window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
       },
 
+      splitDirection: 'vertical',
+      setSplitDirection: (d) => {
+        set({ splitDirection: d || 'vertical' });
+        window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
+      },
+
       activeSliderId: null,
       setActiveSliderId: (id) => set({ activeSliderId: id }),
       clearActiveSlider: () => set({ activeSliderId: null }),
@@ -26,6 +32,7 @@ const useViewStore = create(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         splitView: state.splitView,
+        splitDirection: state.splitDirection,
       }),
     }
   )

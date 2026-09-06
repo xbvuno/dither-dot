@@ -63,6 +63,7 @@ export default function EditorPage() {
   const watermarkEnabled = useWatermarkStore((s) => s.enabled);
   const setWatermarkEnabled = useWatermarkStore((s) => s.setEnabled);
   const splitView = useViewStore((s) => s.splitView);
+  const splitDirection = useViewStore((s) => s.splitDirection || 'vertical');
 
   const navRef = useRef(null);
   const lastScrollTimeRef = useRef(0);
@@ -302,7 +303,7 @@ export default function EditorPage() {
                 <div className='zoomable-wrap'>
                   <PopupMessage />
                   {splitView ? (
-                    <div className='split-view-container'>
+                    <div className={`split-view-container split-view-container--${splitDirection}`}>
                       <div className='split-view-pane'>
                         <span className='split-view-badge'>POST-PROCESSING</span>
                         <ZoomableDiv content={<PostProcessShader />} />

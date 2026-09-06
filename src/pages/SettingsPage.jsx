@@ -10,6 +10,7 @@ import useWatermarkStore from '../stores/media/watermarkStore';
 export default function SettingsPage() {
   const [openSections, toggleSection] = useAccordion('dither-dot:open-sections-settings', {
     settings: true,
+    splitView: true,
     storage: false,
     about: true,
   });
@@ -24,6 +25,8 @@ export default function SettingsPage() {
   const setWatermarkEnabled = useWatermarkStore((s) => s.setEnabled);
   const splitView = useViewStore((s) => s.splitView);
   const setSplitView = useViewStore((s) => s.setSplitView);
+  const splitDirection = useViewStore((s) => s.splitDirection || 'vertical');
+  const setSplitDirection = useViewStore((s) => s.setSplitDirection);
 
   const handleClearCache = () => {
     if (window.confirm('Reset all saved settings and reload DITHER-DOT?')) {
@@ -46,21 +49,6 @@ export default function SettingsPage() {
         isOpen={openSections.settings}
         onToggle={() => toggleSection('settings')}
       >
-        <div className='bv-section split-view-section'>
-          <div className='bv-controls-row'>
-            <span className='bv-label'>SPLIT VIEW</span>
-            <OptionGroup
-              options={[
-                { value: true, label: 'ON' },
-                { value: false, label: 'OFF' },
-              ]}
-              value={splitView}
-              onChange={setSplitView}
-              ariaLabel="Split view comparison"
-            />
-          </div>
-        </div>
-
         <div className='bv-section pipeline-section'>
           <div className='bv-controls-row'>
             <span className='bv-label'>PIPELINE</span>
@@ -122,7 +110,46 @@ export default function SettingsPage() {
         </div>
       </MacroSection>
 
-      {/* 2. STORAGE & PREFERENCES */}
+      {/* 2. SPLIT VIEW SETTINGS */}
+      <MacroSection
+        title="SPLIT VIEW"
+        collapsible
+        isOpen={openSections.splitView}
+        onToggle={() => toggleSection('splitView')}
+      >
+        <div className='bv-section split-view-enabled-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>ENABLED</span>
+            <OptionGroup
+              options={[
+                { value: true, label: 'ON' },
+                { value: false, label: 'OFF' },
+              ]}
+              value={splitView}
+              onChange={setSplitView}
+              ariaLabel="Split view enabled"
+            />
+          </div>
+        </div>
+
+        <div className='bv-section split-view-direction-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>DIRECTION</span>
+            <OptionGroup
+              options={[
+                { value: 'vertical', label: 'VERT.' },
+                { value: 'horizontal', label: 'HORIZ.' },
+              ]}
+              value={splitDirection}
+              onChange={setSplitDirection}
+              disabled={!splitView}
+              ariaLabel="Split view direction"
+            />
+          </div>
+        </div>
+      </MacroSection>
+
+      {/* 3. STORAGE & PREFERENCES */}
       <MacroSection
         title="STORAGE"
         collapsible
