@@ -95,7 +95,7 @@ export default function ZoomableDiv({ content }) {
       inner.style.boxSizing = 'content-box';
 
       contentElem.style.transformOrigin = 'top left';
-      contentElem.style.transform = `scale(${newRenderScale})`;
+      contentElem.style.transform = '';
       contentElem.style.scale = newRenderScale;
 
       if (window.innerWidth <= 768) {
@@ -170,7 +170,7 @@ export default function ZoomableDiv({ content }) {
       inner.style.boxSizing = 'content-box';
 
       contentElem.style.transformOrigin = 'top left';
-      contentElem.style.transform = `scale(${newRenderScale})`;
+      contentElem.style.transform = '';
       contentElem.style.scale = newRenderScale;
 
       if (window.innerWidth <= 768) {
@@ -324,6 +324,7 @@ export default function ZoomableDiv({ content }) {
 
     let initialPinchDist = null;
     let initialPinchScale = 1;
+    let lastTapTime = 0;
 
     const getTouchDist = (t1, t2) => {
       const dx = t1.clientX - t2.clientX;
@@ -341,11 +342,21 @@ export default function ZoomableDiv({ content }) {
 
     const handleTouchStart = (e) => {
       if (e.touches.length === 2) {
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
         state.current.dragging = false;
         initialPinchDist = getTouchDist(e.touches[0], e.touches[1]);
         initialPinchScale = state.current.scale;
       } else if (e.touches.length === 1) {
+        const now = Date.now();
+        if (now - lastTapTime < 300) {
+          const outerWidth = outer.clientWidth;
+          const outerHeight = outer.clientHeight;
+          zoomTo(1, outerWidth / 2, outerHeight / 2);
+          lastTapTime = 0;
+          return;
+        }
+        lastTapTime = now;
+
         initialPinchDist = null;
         state.current.dragging = true;
         state.current.startX = e.touches[0].clientX;
@@ -357,7 +368,7 @@ export default function ZoomableDiv({ content }) {
 
     const handleTouchMove = (e) => {
       if (e.touches.length === 2 && initialPinchDist) {
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
         state.current.dragging = false;
         const currentDist = getTouchDist(e.touches[0], e.touches[1]);
         const center = getTouchCenter(e.touches[0], e.touches[1]);
@@ -377,6 +388,8 @@ export default function ZoomableDiv({ content }) {
           state.current.startScrollTop = outer.scrollTop;
           return;
         }
+
+        if (e.cancelable) e.preventDefault();
 
         const dx = e.touches[0].clientX - state.current.startX;
         const dy = e.touches[0].clientY - state.current.startY;
