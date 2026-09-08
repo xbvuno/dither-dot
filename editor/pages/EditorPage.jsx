@@ -56,6 +56,7 @@ export default function EditorPage() {
   const toggleExportOpen = usePageStore((s) => s.toggleExportOpen);
 
   const sourceImg = useImageStore((s) => s.sourceImg);
+  const sourceName = useImageStore((s) => s.sourceName);
   const viewerLoading = useImageStore((s) => s.viewerLoading);
   const renderProcessing = useProcessingStore((s) => s.renderProcessing);
   const webcamActive = useWebcamStore((s) => s.active);
@@ -75,6 +76,27 @@ export default function EditorPage() {
       setPage(PAGE.IMPORT);
     }
   }, [sourceImg, webcamActive, currentPage, setPage]);
+
+  // Dynamic window / tab title (adapts cleanly to PWA standalone mode)
+  useEffect(() => {
+    const mql = typeof window !== 'undefined' ? window.matchMedia?.('(display-mode: standalone)') : null;
+    const defaultBrowserTitle = 'DITHER-DOT - Browser Image & GIF Dithering Studio';
+
+    const updateTitle = () => {
+      const isPWA = mql?.matches || window.navigator?.standalone === true;
+      if (isPWA) {
+        document.title = sourceName ? sourceName : 'Editor';
+      } else {
+        document.title = sourceName ? `${sourceName} — DITHER-DOT` : defaultBrowserTitle;
+      }
+    };
+
+    updateTitle();
+    mql?.addEventListener?.('change', updateTitle);
+    return () => {
+      mql?.removeEventListener?.('change', updateTitle);
+    };
+  }, [sourceName]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
