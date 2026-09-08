@@ -20,11 +20,16 @@ const paletteWorkerJobs = new Map();
 
 if (paletteWorker) {
   paletteWorker.onmessage = (event) => {
-    const { jobId, palette, error } = event.data || {};
+    const { jobId, palette, error, aborted } = event.data || {};
     const job = paletteWorkerJobs.get(jobId);
     if (!job) return;
 
     paletteWorkerJobs.delete(jobId);
+
+    if (aborted) {
+      job.resolve([]);
+      return;
+    }
 
     if (error) {
       job.reject(new Error(error));

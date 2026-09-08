@@ -2,9 +2,11 @@ import init, {
   Image as WasmImage,
   Filters,
   Dithering,
-  Palettes,
   Palette as WasmPalette,
   Backend,
+  MedianCutGenerator,
+  OctreeGenerator,
+  KMeansGenerator,
 } from 'ddot-wasm';
 import wasmUrl from 'ddot-wasm/ddot_wasm_bg.wasm?url';
 import statuePreviewUrl from '../assets/STATUE_PREVIEW.png';
@@ -14,7 +16,6 @@ let wasmInitialized = false;
 let wasmInitPromise = null;
 let filtersCache = null;
 let ditherAlgorithmsCache = null;
-let paletteGeneratorsCache = null;
 let baseImageData = null;
 let baseImageDataPromise = null;
 
@@ -40,13 +41,6 @@ function getCachedAlgorithms() {
     ditherAlgorithmsCache = Dithering.getAlgorithms();
   }
   return ditherAlgorithmsCache;
-}
-
-function getCachedGenerators() {
-  if (!paletteGeneratorsCache) {
-    paletteGeneratorsCache = Palettes.Generators;
-  }
-  return paletteGeneratorsCache;
 }
 
 async function loadBaseImageData() {
@@ -202,14 +196,21 @@ export async function generateTemplatePreview(template) {
                 wasmPalette = new WasmPalette(colors);
               }
             } else if (template.palette?.extractMethod) {
-              const count = template.palette.colorCount || 8;
-              const generators = getCachedGenerators();
-              if (template.palette.extractMethod === 'octree') {
-                wasmPalette = generators.Octree.calculate(wasmImage, count);
-              } else if (template.palette.extractMethod === 'kmeans') {
-                wasmPalette = generators.Kmeans.calculate(wasmImage, count);
-              } else {
-                wasmPalette = generators.MedianCut.calculate(wasmImage, count);
+              const count = Math.max(2, Math.min(256, Number(template.palette.colorCount) || 8));
+              let gen = null;
+              try {
+                if (template.palette.extractMethod === 'octree') {
+                  gen = new OctreeGenerator();
+                } else if (template.palette.extractMethod === 'kmeans') {
+                  gen = new KMeansGenerator();
+                } else {
+                  gen = new MedianCutGenerator();
+                }
+                wasmPalette = gen.calculate(wasmImage, { n_of_colors: count });
+              } finally {
+                if (gen) {
+                  try { gen.free(); } catch { /* ignore */ }
+                }
               }
             }
 
