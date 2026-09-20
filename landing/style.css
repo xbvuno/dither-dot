@@ -1225,17 +1225,20 @@ section code::before {
   width: 100%;
   max-width: 64rem;
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   justify-content: space-between;
-  gap: 2rem;
+  gap: 2.5rem;
   flex-wrap: wrap;
+  min-height: 7.5rem;
 }
 
 .landing-footer-left {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: flex-end;
   gap: 1rem;
+  align-self: flex-end;
 }
 
 .footer-logo-wrap {
@@ -1258,12 +1261,6 @@ section code::before {
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
   display: block;
-}
-
-.landing-footer-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
 }
 
 .footer-credit {
@@ -1289,10 +1286,17 @@ section code::before {
   color: var(--color-text);
 }
 
+.landing-footer-nav-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: flex-start;
+}
+
 .footer-nav {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 0.65rem;
 }
 
@@ -1317,6 +1321,25 @@ section code::before {
 
 .footer-link:hover {
   color: var(--color-text);
+}
+
+.landing-footer-disclaimer-col {
+  max-width: 22rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  align-self: flex-start;
+}
+
+.footer-disclaimer {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: var(--fg-dim);
+  letter-spacing: 0.05em;
+  margin: 0;
+  text-transform: uppercase;
 }
 
 /* ==========================================================================
@@ -1602,12 +1625,23 @@ section code::before {
   .landing-footer-inner {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1.25rem;
+    gap: 2rem;
+    min-height: auto;
   }
 
-  .landing-footer-right,
+  .landing-footer-left {
+    align-self: flex-start;
+  }
+
+  .landing-footer-nav-col,
   .footer-nav {
     align-items: flex-start;
+  }
+
+  .landing-footer-disclaimer-col {
+    max-width: 100%;
+    align-items: flex-start;
+    text-align: left;
   }
 }
 
