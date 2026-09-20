@@ -1034,13 +1034,19 @@ body::after {
   }
 
   .ddot-section {
-    padding: 3.5rem clamp(1.25rem, 4vw, 2.5rem);
+    padding: 2.5rem clamp(1.25rem, 4vw, 2.5rem);
   }
 
   .ddot-container {
     flex-direction: column;
     align-items: stretch;
-    gap: 2rem;
+    gap: 1.5rem;
+  }
+
+  .ddot-left {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
   }
 
   .ddot-actions {
@@ -1055,7 +1061,7 @@ body::after {
   }
 
   .ddot-section {
-    padding: 2.5rem 1.25rem;
+    padding: 2rem 1.25rem;
   }
   .usecases-section {
     padding: 2.5rem 1rem;
