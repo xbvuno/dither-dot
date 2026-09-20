@@ -1,8 +1,9 @@
 name: Deploy to Cloudflare Pages
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -43,17 +44,6 @@ jobs:
         run: |
           grep -n "@emnapi/core" package-lock.json || true
           grep -n "@emnapi/runtime" package-lock.json || true
-
-      - name: Verify version matches release tag
-        run: |
-          TAG="${{ github.ref_name }}"
-          CLEAN="${TAG#v}"
-          PKG=$(node -p "require('./package.json').version")
-
-          echo "Tag: $TAG"
-          echo "Package: $PKG"
-
-          test "$CLEAN" = "$PKG"
 
       - name: Install
         run: npm ci
