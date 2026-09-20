@@ -597,6 +597,10 @@ section code::before {
 
 .usecases-header {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .usecases-headline {
@@ -610,11 +614,22 @@ section code::before {
   margin: 0;
 }
 
+.usecases-sub {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--fg-secondary);
+  text-transform: uppercase;
+  margin: 0;
+}
+
 .usecases-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1.25rem;
   width: 100%;
+  align-items: start;
 }
 
 .usecase-card {
@@ -680,14 +695,19 @@ section code::before {
 }
 
 .usecase-content {
-  padding: 1.25rem 1.25rem 1.4rem;
+  padding: 1.15rem 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0;
   flex-grow: 1;
   border-top: 1px solid var(--border-subtle);
   background-color: #161613;
   z-index: 4;
+  transition: padding 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.usecase-card:hover .usecase-content {
+  padding: 1.15rem 1.25rem 1.35rem;
 }
 
 .usecase-title {
@@ -701,12 +721,35 @@ section code::before {
   text-transform: uppercase;
 }
 
+.usecase-desc-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.usecase-card:hover .usecase-desc-wrap {
+  grid-template-rows: 1fr;
+}
+
+.usecase-desc-inner {
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.22s ease, transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.usecase-card:hover .usecase-desc-inner {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .usecase-desc {
   font-family: var(--font-mono);
   font-size: 1rem;
   line-height: 1.4;
   color: var(--fg-dim);
   margin: 0;
+  padding-top: 0.65rem;
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
