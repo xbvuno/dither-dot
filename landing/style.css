@@ -749,7 +749,7 @@ section code::before {
   width: 100%;
   background-color: var(--bg-surface);
   border: none;
-  padding: 5rem clamp(1.5rem, 5vw, 4rem);
+  padding: 3.5rem clamp(1.5rem, 5vw, 4rem);
   box-sizing: border-box;
   display: flex;
   justify-content: center;
@@ -761,14 +761,18 @@ section code::before {
   width: 100%;
   max-width: 64rem;
   display: flex;
-  flex-direction: column;
-  gap: 2.75rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2.5rem;
+  flex-wrap: wrap;
 }
 
-.ddot-header {
+.ddot-left {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.45rem;
+  flex: 1 1 30rem;
+  max-width: 44rem;
 }
 
 .ddot-tag {
@@ -778,82 +782,23 @@ section code::before {
   color: var(--fg-secondary);
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  line-height: 1.2;
 }
 
 .ddot-title {
   font-family: var(--font-mono);
-  font-size: clamp(1.35rem, 2.8vw, 2.25rem);
+  font-size: clamp(1.35rem, 2.5vw, 1.85rem);
   font-weight: 400;
   letter-spacing: 0.04em;
   color: var(--color-text);
-  line-height: 1.25;
+  line-height: 1.2;
   text-transform: uppercase;
   margin: 0;
 }
 
-.ddot-lead {
+.ddot-desc {
   font-family: var(--font-mono);
-  font-size: 1rem;
-  line-height: 1.55;
-  color: var(--fg-secondary);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  max-width: 52rem;
-  margin: 0;
-}
-
-.ddot-lead code {
-  color: var(--color-text);
-  background-color: var(--color-bg-subtle);
-  padding: 0.15rem 0.4rem;
-  border: 1px solid var(--border-subtle);
-  font-size: 0.95em;
-}
-
-.ddot-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-}
-
-.ddot-card {
-  background-color: var(--color-bg);
-  border: 1px solid var(--border-subtle);
-  padding: 1.75rem 1.5rem;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
-}
-
-.ddot-card:hover {
-  border-color: var(--color-border-hover);
-  background-color: color-mix(in srgb, var(--color-bg) 90%, var(--color-text));
-}
-
-.ddot-card-num {
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: var(--fg-muted);
-  letter-spacing: 0.08em;
-}
-
-.ddot-card-title {
-  font-family: var(--font-mono);
-  font-size: 1.15rem;
-  font-weight: 400;
-  letter-spacing: 0.04em;
-  color: var(--color-text);
-  line-height: 1.3;
-  text-transform: uppercase;
-  margin: 0;
-}
-
-.ddot-card-desc {
-  font-family: var(--font-mono);
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   line-height: 1.5;
   color: var(--fg-secondary);
   letter-spacing: 0.02em;
@@ -864,14 +809,9 @@ section code::before {
 .ddot-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.85rem;
+  flex-shrink: 0;
   flex-wrap: wrap;
-}
-
-@media (max-width: 860px) {
-  .ddot-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* Profile / Hero Section */
