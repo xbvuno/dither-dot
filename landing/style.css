@@ -1005,6 +1005,11 @@ section code::before {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
+  transition: border-color 0.2s ease;
+}
+
+.feature-card:hover {
+  border-color: var(--color-border-hover);
 }
 
 .feature-card-header {
@@ -1201,37 +1206,100 @@ section code::before {
   top: 0;
 }
 
-/* Footer Section (own-website style) */
-#footer {
+/* ==========================================================================
+   Footer Section (Full-Width, Background: var(--bg-surface))
+   ========================================================================== */
+.landing-footer {
   width: 100%;
-  border-top: none;
-  margin-top: 3rem;
-  padding: 1.5rem 0 3rem 0;
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-subtle);
+  padding: 3rem clamp(1.5rem, 5vw, 4rem);
+  box-sizing: border-box;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  margin: 0;
+}
+
+.landing-footer-inner {
+  width: 100%;
+  max-width: 64rem;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1.5rem;
   flex-wrap: wrap;
 }
 
-#footer .footer-meta {
-  font-size: 0.85rem;
-  color: var(--fg-dim);
-  letter-spacing: 0.06em;
+.landing-footer-left {
+  display: flex;
+  align-items: center;
+}
+
+.footer-logo-wrap {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  line-height: 0;
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
 }
 
-#footer .footer-url {
-  font-size: 0.85rem;
+.footer-logo-wrap:hover {
+  opacity: 1;
+}
+
+.footer-logo-img {
+  height: 20px;
+  width: auto;
+  aspect-ratio: 22 / 4;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  display: block;
+}
+
+.landing-footer-right {
+  display: flex;
+  align-items: center;
+}
+
+.footer-credit {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 400;
   color: var(--fg-dim);
-  letter-spacing: 0.06em;
-  text-decoration: none;
+  letter-spacing: 0.08em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
 }
 
-#footer .footer-url:hover {
+.footer-heart-icon {
+  display: inline-flex;
+  vertical-align: middle;
+  flex-shrink: 0;
+  animation: pulse-heart 2s ease-in-out infinite;
+}
+
+@keyframes pulse-heart {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+.footer-author-link {
   color: var(--fg-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.footer-author-link:hover {
+  color: var(--color-text);
+  border-bottom-color: var(--color-text);
 }
 
 /* Responsive Breakpoints */
@@ -1340,10 +1408,14 @@ section code::before {
     grid-template-columns: 1fr;
   }
 
-  #footer {
+  .landing-footer {
+    padding: 2.5rem 1.25rem;
+  }
+
+  .landing-footer-inner {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.75rem;
+    gap: 1.25rem;
   }
 }
 
