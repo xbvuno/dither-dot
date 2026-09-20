@@ -723,20 +723,44 @@ section code::before {
   font-family: var(--font-mono);
   font-size: 1rem;
   line-height: 1.45;
-  color: var(--fg-dim);
+  color: var(--color-text);
   margin: 0;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+  transition: color 0.2s ease;
 }
 
 .usecase-text-cell:hover .usecase-title,
-.usecase-text-cell.is-hovered .usecase-title {
+.usecase-text-cell.is-hovered .usecase-title,
+.usecase-text-cell:hover .usecase-desc,
+.usecase-text-cell.is-hovered .usecase-desc {
   color: #ffffff;
 }
 
 .usecase-text-cell:hover .usecase-tag,
 .usecase-text-cell.is-hovered .usecase-tag {
   color: var(--color-text);
+}
+
+/* Empty Placeholder Section */
+.empty-section {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  padding: 3rem 1.5rem;
+  box-sizing: border-box;
+}
+
+.empty-section p {
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0;
 }
 
 /* Profile / Hero Section */
