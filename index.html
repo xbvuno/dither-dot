@@ -103,12 +103,6 @@
       <p class="splash-subtitle">
         <span>A FAST, OPEN-SOURCE DITHERING STUDIO FOR IMAGES AND ANIMATED GIFS RUNNING 100% IN YOUR BROWSER.</span>
       </p>
-      <div class="splash-actions">
-        <a href="/editor/" class="btn-cta">
-          <span>LAUNCH STUDIO</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-        </a>
-      </div>
     </div>
   </section>
 
@@ -391,34 +385,93 @@
         }
       });
 
+      var mobileQuery = window.matchMedia('(max-width: 820px)');
+      function isMobile() {
+        return mobileQuery.matches;
+      }
+
+      function activateUsecase(usecaseId) {
+        var pair = document.querySelectorAll('.usecase-cell[data-usecase="' + usecaseId + '"]');
+        pair.forEach(function (el) {
+          el.classList.add('is-hovered');
+        });
+
+        var mediaCell = document.querySelector('.usecase-media-cell[data-usecase="' + usecaseId + '"]');
+        if (mediaCell) {
+          var gif = mediaCell.querySelector('.usecase-gif');
+          if (gif) {
+            var originalSrc = gif.getAttribute('data-src') || gif.src;
+            var cleanSrc = originalSrc.split('?')[0];
+            gif.src = cleanSrc + '?play=' + Date.now();
+          }
+        }
+      }
+
+      function deactivateUsecase(usecaseId) {
+        var pair = document.querySelectorAll('.usecase-cell[data-usecase="' + usecaseId + '"]');
+        pair.forEach(function (el) {
+          el.classList.remove('is-hovered');
+        });
+      }
+
+      // Desktop: hover pair sync
       usecaseCells.forEach(function (cell) {
         var usecaseId = cell.getAttribute('data-usecase');
         if (!usecaseId) return;
 
         cell.addEventListener('mouseenter', function () {
-          var pair = document.querySelectorAll('.usecase-cell[data-usecase="' + usecaseId + '"]');
-          pair.forEach(function (el) {
-            el.classList.add('is-hovered');
-          });
-
-          var mediaCell = document.querySelector('.usecase-media-cell[data-usecase="' + usecaseId + '"]');
-          if (mediaCell) {
-            var gif = mediaCell.querySelector('.usecase-gif');
-            if (gif) {
-              var originalSrc = gif.getAttribute('data-src') || gif.src;
-              var cleanSrc = originalSrc.split('?')[0];
-              gif.src = cleanSrc + '?play=' + Date.now();
-            }
-          }
+          if (isMobile()) return;
+          activateUsecase(usecaseId);
         });
 
         cell.addEventListener('mouseleave', function () {
-          var pair = document.querySelectorAll('.usecase-cell[data-usecase="' + usecaseId + '"]');
-          pair.forEach(function (el) {
-            el.classList.remove('is-hovered');
-          });
+          if (isMobile()) return;
+          deactivateUsecase(usecaseId);
         });
       });
+
+      // Mobile only: scroll-based playback without hover
+      if ('IntersectionObserver' in window) {
+        var activeOnMobile = {};
+
+        var scrollObserver = new IntersectionObserver(function (entries) {
+          if (!isMobile()) return;
+
+          entries.forEach(function (entry) {
+            var usecaseId = entry.target.getAttribute('data-usecase');
+            if (!usecaseId) return;
+
+            if (entry.isIntersecting) {
+              if (!activeOnMobile[usecaseId]) {
+                activeOnMobile[usecaseId] = true;
+                activateUsecase(usecaseId);
+              }
+            } else {
+              if (activeOnMobile[usecaseId]) {
+                activeOnMobile[usecaseId] = false;
+                deactivateUsecase(usecaseId);
+              }
+            }
+          });
+        }, {
+          threshold: 0.25
+        });
+
+        mediaCells.forEach(function (mediaCell) {
+          scrollObserver.observe(mediaCell);
+        });
+
+        mobileQuery.addEventListener('change', function (e) {
+          if (!e.matches) {
+            Object.keys(activeOnMobile).forEach(function (id) {
+              if (activeOnMobile[id]) {
+                deactivateUsecase(id);
+                activeOnMobile[id] = false;
+              }
+            });
+          }
+        });
+      }
     })();
   </script>
 </body>

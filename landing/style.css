@@ -374,13 +374,6 @@ body::after {
   -webkit-box-decoration-break: clone;
 }
 
-.splash-actions {
-  margin-top: 1rem;
-  display: flex;
-  justify-content: flex-start;
-  width: 100%;
-}
-
 /* ==========================================================================
    GitHub Star Banner
    ========================================================================== */
@@ -550,7 +543,6 @@ body::after {
   margin: 0;
 }
 
-.usecase-media-cell:hover,
 .usecase-media-cell.is-hovered {
   border-color: var(--color-border-hover);
 }
@@ -582,12 +574,10 @@ body::after {
   filter: grayscale(100%);
 }
 
-.usecase-media-cell:hover .usecase-canvas,
 .usecase-media-cell.is-hovered .usecase-canvas {
   opacity: 0;
 }
 
-.usecase-media-cell:hover .usecase-gif,
 .usecase-media-cell.is-hovered .usecase-gif {
   opacity: 1;
   filter: grayscale(0%);
@@ -607,7 +597,6 @@ body::after {
   transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.usecase-text-cell:hover,
 .usecase-text-cell.is-hovered {
   opacity: 1;
   background-color: rgba(0, 0, 0, 0.5);
@@ -641,16 +630,46 @@ body::after {
   transition: color 0.2s ease;
 }
 
-.usecase-text-cell:hover h3,
-.usecase-text-cell.is-hovered h3,
-.usecase-text-cell:hover p,
-.usecase-text-cell.is-hovered p {
+.usecase-text-cell.is-hovered h3 {
   color: #ffffff;
 }
 
-.usecase-text-cell:hover small,
+.usecase-text-cell.is-hovered p {
+  color: var(--color-text);
+}
+
 .usecase-text-cell.is-hovered small {
   color: var(--color-text);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .usecase-media-cell:hover {
+    border-color: var(--color-border-hover);
+  }
+
+  .usecase-media-cell:hover .usecase-canvas {
+    opacity: 0;
+  }
+
+  .usecase-media-cell:hover .usecase-gif {
+    opacity: 1;
+    filter: grayscale(0%);
+    z-index: 3;
+  }
+
+  .usecase-text-cell:hover {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  .usecase-text-cell:hover h3 {
+    color: #ffffff;
+  }
+
+  .usecase-text-cell:hover p,
+  .usecase-text-cell:hover small {
+    color: var(--color-text);
+  }
 }
 
 /* ==========================================================================
@@ -998,9 +1017,46 @@ body::after {
   .features-grid {
     grid-template-columns: 1fr;
   }
+
+  .star-banner {
+    padding: 2.25rem clamp(1.25rem, 4vw, 2.5rem);
+  }
+
+  .star-banner-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.5rem;
+  }
+
+  .star-cta-btn {
+    align-self: center;
+    margin: 0 auto;
+  }
+
+  .ddot-section {
+    padding: 3.5rem clamp(1.25rem, 4vw, 2.5rem);
+  }
+
+  .ddot-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2rem;
+  }
+
+  .ddot-actions {
+    align-self: center;
+    margin: 0 auto;
+  }
 }
 
 @media (max-width: 540px) {
+  .star-banner {
+    padding: 2rem 1.25rem;
+  }
+
+  .ddot-section {
+    padding: 2.5rem 1.25rem;
+  }
   .usecases-section {
     padding: 2.5rem 1rem;
   }
