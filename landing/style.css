@@ -698,20 +698,22 @@ section code::before {
 }
 
 .usecase-text-cell {
-  background: transparent;
+  background-color: transparent;
   border: none;
-  padding: 0;
+  padding: 1.15rem clamp(1rem, 2.5vw, 1.5rem);
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
   cursor: pointer;
   opacity: 0.35;
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .usecase-text-cell:hover,
 .usecase-text-cell.is-hovered {
   opacity: 1;
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .usecase-tag {
