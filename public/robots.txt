@@ -1,0 +1,5 @@
+# robots.txt for https://dither.xbvuno.dev/
+User-agent: *
+Allow: /
+
+Sitemap: https://dither.xbvuno.dev/sitemap.xml
