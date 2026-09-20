@@ -67,14 +67,14 @@
 </head>
 
 <body>
-  <!-- App Header (Double height of editor: 4rem) -->
+  <!-- App Header -->
   <header class="app-header">
     <a href="/" class="app-header-title">
       <img src="/favicon.svg" alt="DITHER-DOT Logo" class="header-logo-img" />
-      <span class="app-header-title-name">DITHER-DOT</span>
+      <span>DITHER-DOT</span>
     </a>
 
-    <div class="app-header-links">
+    <nav class="app-header-links" aria-label="Main Navigation">
       <a
         href="https://github.com/xbvuno/dither-dot"
         target="_blank"
@@ -86,14 +86,14 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg>
         <span class="header-link-label">GITHUB</span>
       </a>
-      <a href="/editor/" class="bv-option-btn header-studio-btn">
+      <a href="/editor/" class="btn-cta btn-sm">
         <span>STUDIO</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
       </a>
-    </div>
+    </nav>
   </header>
 
-  <!-- Full-Width 80vh Splash Section (under header, outside main) -->
+  <!-- Full-Width Splash Hero Section -->
   <section id="splash" class="splash-section">
     <img src="/splash.gif" class="splash-bg-img" alt="" aria-hidden="true" />
     <div class="splash-content">
@@ -104,7 +104,7 @@
         <span>A FAST, OPEN-SOURCE DITHERING STUDIO FOR IMAGES AND ANIMATED GIFS RUNNING 100% IN YOUR BROWSER.</span>
       </p>
       <div class="splash-actions">
-        <a href="/editor/" class="bv-option-btn splash-cta">
+        <a href="/editor/" class="btn-cta">
           <span>LAUNCH STUDIO</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
@@ -113,17 +113,17 @@
   </section>
 
   <!-- GitHub Star Banner -->
-  <section id="github-star" class="star-banner" aria-label="Support on GitHub">
+  <aside id="github-star" class="star-banner" aria-label="Support on GitHub">
     <div class="star-banner-inner">
-      <div class="star-banner-left">
-        <h2 class="star-banner-title">HIT THAT STAR BUTTON ON GITHUB</h2>
-        <p class="star-banner-sub">HELP MORE DEVELOPERS &amp; PIXEL ARTISTS DISCOVER DITHER-DOT.</p>
-      </div>
+      <header>
+        <h2>HIT THAT STAR BUTTON ON GITHUB</h2>
+        <p>HELP MORE DEVELOPERS &amp; PIXEL ARTISTS DISCOVER DITHER-DOT.</p>
+      </header>
       <a
         href="https://github.com/xbvuno/dither-dot"
         target="_blank"
         rel="noopener noreferrer"
-        class="bv-option-btn splash-cta star-cta-btn"
+        class="btn-cta star-cta-btn"
         aria-label="Star xbvuno/dither-dot on GitHub"
         id="star-btn"
       >
@@ -135,117 +135,117 @@
         <span class="star-btn-label">STAR ON GITHUB</span>
       </a>
     </div>
-  </section>
+  </aside>
 
   <!-- Use Cases Section -->
   <section id="use-cases" class="usecases-section" aria-label="Use Cases">
     <div class="usecases-container">
-      <div class="usecases-header">
-        <h2 class="usecases-headline">WHATEVER YOU'RE MAKING, DITHER-DOT IS FOR YOU.</h2>
-        <p class="usecases-sub">HOVER THEM.</p>
-      </div>
+      <header class="usecases-header">
+        <h2>WHATEVER YOU'RE MAKING, DITHER-DOT IS FOR YOU.</h2>
+        <p>HOVER THEM.</p>
+      </header>
 
       <div class="usecases-split-grid">
         <!-- COLUMN 1 -->
         <div class="usecases-col">
           <!-- 01: PIXEL ART Media -->
-          <div class="usecase-cell usecase-media-cell" data-usecase="pixel-art">
+          <figure class="usecase-cell usecase-media-cell" data-usecase="pixel-art">
             <canvas class="usecase-canvas" aria-hidden="true"></canvas>
             <img class="usecase-gif" src="/cards/pixel-art.gif" data-src="/cards/pixel-art.gif" alt="Pixel art dithering" loading="lazy" />
-          </div>
+          </figure>
 
           <!-- 02: 3D RENDERING Text -->
-          <div class="usecase-cell usecase-text-cell" data-usecase="3d-rendering">
-            <span class="usecase-tag">// 02 &mdash; USE CASE</span>
-            <h3 class="usecase-title">3D RENDERING</h3>
-            <p class="usecase-desc">GIVE YOUR RENDERS A STYLIZED, LOW-RES OR RETRO LOOK.</p>
-          </div>
+          <article class="usecase-cell usecase-text-cell" data-usecase="3d-rendering">
+            <small>// 02 &mdash; USE CASE</small>
+            <h3>3D RENDERING</h3>
+            <p>GIVE YOUR RENDERS A STYLIZED, LOW-RES OR RETRO LOOK.</p>
+          </article>
 
           <!-- 03: GRAPHIC DESIGN Media -->
-          <div class="usecase-cell usecase-media-cell" data-usecase="graphic-design">
+          <figure class="usecase-cell usecase-media-cell" data-usecase="graphic-design">
             <canvas class="usecase-canvas" aria-hidden="true"></canvas>
             <img class="usecase-gif" src="/cards/graphic-design.gif" data-src="/cards/graphic-design.gif" alt="Graphic design dithering" loading="lazy" />
-          </div>
+          </figure>
 
           <!-- 04: PHOTOGRAPHY Text -->
-          <div class="usecase-cell usecase-text-cell" data-usecase="photography">
-            <span class="usecase-tag">// 04 &mdash; USE CASE</span>
-            <h3 class="usecase-title">PHOTOGRAPHY</h3>
-            <p class="usecase-desc">TURN PHOTOS INTO STRIKING, LIMITED-COLOR COMPOSITIONS.</p>
-          </div>
+          <article class="usecase-cell usecase-text-cell" data-usecase="photography">
+            <small>// 04 &mdash; USE CASE</small>
+            <h3>PHOTOGRAPHY</h3>
+            <p>TURN PHOTOS INTO STRIKING, LIMITED-COLOR COMPOSITIONS.</p>
+          </article>
         </div>
 
         <!-- COLUMN 2 -->
         <div class="usecases-col">
           <!-- 01: PIXEL ART Text -->
-          <div class="usecase-cell usecase-text-cell" data-usecase="pixel-art">
-            <span class="usecase-tag">// 01 &mdash; USE CASE</span>
-            <h3 class="usecase-title">PIXEL ART</h3>
-            <p class="usecase-desc">CREATE RETRO GRAPHICS WITH LIMITED PALETTES AND PRECISE DITHERING.</p>
-          </div>
+          <article class="usecase-cell usecase-text-cell" data-usecase="pixel-art">
+            <small>// 01 &mdash; USE CASE</small>
+            <h3>PIXEL ART</h3>
+            <p>CREATE RETRO GRAPHICS WITH LIMITED PALETTES AND PRECISE DITHERING.</p>
+          </article>
 
           <!-- 02: 3D RENDERING Media -->
-          <div class="usecase-cell usecase-media-cell" data-usecase="3d-rendering">
+          <figure class="usecase-cell usecase-media-cell" data-usecase="3d-rendering">
             <canvas class="usecase-canvas" aria-hidden="true"></canvas>
             <img class="usecase-gif" src="/cards/3d-rendering.gif" data-src="/cards/3d-rendering.gif" alt="3D rendering dithering" loading="lazy" />
-          </div>
+          </figure>
 
           <!-- 03: GRAPHIC DESIGN Text -->
-          <div class="usecase-cell usecase-text-cell" data-usecase="graphic-design">
-            <span class="usecase-tag">// 03 &mdash; USE CASE</span>
-            <h3 class="usecase-title">GRAPHIC DESIGN</h3>
-            <p class="usecase-desc">ADD TEXTURE, DEPTH AND CHARACTER TO YOUR VISUAL DESIGNS.</p>
-          </div>
+          <article class="usecase-cell usecase-text-cell" data-usecase="graphic-design">
+            <small>// 03 &mdash; USE CASE</small>
+            <h3>GRAPHIC DESIGN</h3>
+            <p>ADD TEXTURE, DEPTH AND CHARACTER TO YOUR VISUAL DESIGNS.</p>
+          </article>
 
           <!-- 04: PHOTOGRAPHY Media -->
-          <div class="usecase-cell usecase-media-cell" data-usecase="photography">
+          <figure class="usecase-cell usecase-media-cell" data-usecase="photography">
             <canvas class="usecase-canvas" aria-hidden="true"></canvas>
             <img class="usecase-gif" src="/cards/photography.gif" data-src="/cards/photography.gif" alt="Photography dithering" loading="lazy" />
-          </div>
+          </figure>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- DDOT Engine Section (Full-Width) -->
+  <!-- DDOT Engine Section -->
   <section id="ddot" class="ddot-section" aria-label="About ddot engine">
     <div class="ddot-container">
       <div class="ddot-left">
-        <span class="ddot-tag">// CORE-ENGINE</span>
-        <h2 class="ddot-title">POWERED BY DDOT</h2>
-        <p class="ddot-desc">AN ULTRA-FAST, SIMD-ACCELERATED IMAGE PROCESSING AND DITHERING ENGINE WRITTEN IN RUST AND COMPILED TO WEBASSEMBLY.</p>
+        <small>// CORE-ENGINE</small>
+        <h2>POWERED BY DDOT</h2>
+        <p>AN ULTRA-FAST, SIMD-ACCELERATED IMAGE PROCESSING AND DITHERING ENGINE WRITTEN IN RUST AND COMPILED TO WEBASSEMBLY.</p>
       </div>
 
-      <div class="ddot-actions">
-        <a href="https://github.com/xbvuno/ddot" target="_blank" rel="noopener noreferrer" class="bv-option-btn splash-cta ddot-btn-main">
+      <nav class="ddot-actions" aria-label="DDOT Links">
+        <a href="https://github.com/xbvuno/ddot" target="_blank" rel="noopener noreferrer" class="btn-cta ddot-btn-main">
           <span>VIEW DDOT ON GITHUB</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
         <div class="ddot-sub-actions">
-          <a href="https://www.npmjs.com/package/ddot-wasm" target="_blank" rel="noopener noreferrer" class="bv-option-btn ddot-sub-btn">
+          <a href="https://www.npmjs.com/package/ddot-wasm" target="_blank" rel="noopener noreferrer" class="btn ddot-sub-btn">
             <span>NPM</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>
           </a>
-          <a href="https://crates.io/crates/ddot-core" target="_blank" rel="noopener noreferrer" class="bv-option-btn ddot-sub-btn">
+          <a href="https://crates.io/crates/ddot-core" target="_blank" rel="noopener noreferrer" class="btn ddot-sub-btn">
             <span>CARGO</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>
           </a>
         </div>
-      </div>
+      </nav>
     </div>
   </section>
 
-  <!-- Features Section (Full-Width, Background: var(--color-bg)) -->
+  <!-- Features Section -->
   <section id="features" class="features-section" aria-label="Features">
     <div class="features-container">
-      <div class="features-header">
-        <span class="features-tag">// FEATURES</span>
-        <h2 class="features-title">EVERYTHING YOU NEED TO CREATE DITHERED ART.</h2>
-      </div>
+      <header class="features-header">
+        <small>// FEATURES</small>
+        <h2>EVERYTHING YOU NEED TO CREATE DITHERED ART.</h2>
+      </header>
 
       <div class="features-grid">
-        <!-- Feature 1: Timeline & Animated GIFs -->
-        <div class="feature-card">
+        <!-- Feature 1 -->
+        <article class="feature-card">
           <div class="feature-card-header">
             <span class="feature-card-index">
               <span class="feature-card-icon" aria-hidden="true">
@@ -253,19 +253,14 @@
               </span>
               [01]
             </span>
-            <span class="feature-card-badge">ANIMATED GIF AND TIMELINE CONTROLS</span>
+            <span class="sr-only">ANIMATED GIF AND TIMELINE CONTROLS</span>
           </div>
-          <h3 class="feature-card-title">ANIMATED GIF &amp; TIMELINE</h3>
-          <p class="feature-card-desc">DECODE GIF ANIMATIONS FRAME BY FRAME. SCRUB THE PLAYBACK TIMELINE, ADJUST FPS, LOOP PLAYBACK, AND EXPORT DIRECTLY TO GIF.</p>
-          <div class="feature-card-pills">
-            <span class="feature-pill">PER-FRAME DECODE</span>
-            <span class="feature-pill">TIMELINE SCRUBBER</span>
-            <span class="feature-pill">GIF EXPORT</span>
-          </div>
-        </div>
+          <h3>ANIMATED GIF &amp; TIMELINE</h3>
+          <p>DECODE GIF ANIMATIONS FRAME BY FRAME. SCRUB THE PLAYBACK TIMELINE, ADJUST FPS, LOOP PLAYBACK, AND EXPORT DIRECTLY TO GIF.</p>
+        </article>
 
-        <!-- Feature 2: Curated Templates -->
-        <div class="feature-card">
+        <!-- Feature 2 -->
+        <article class="feature-card">
           <div class="feature-card-header">
             <span class="feature-card-index">
               <span class="feature-card-icon" aria-hidden="true">
@@ -273,20 +268,14 @@
               </span>
               [02]
             </span>
-            <span class="feature-card-badge">PRESET TEMPLATES GAME BOY MACINTOSH CRT</span>
+            <span class="sr-only">PRESET TEMPLATES GAME BOY MACINTOSH CRT</span>
           </div>
-          <h3 class="feature-card-title">CURATED PRESET TEMPLATES</h3>
-          <p class="feature-card-desc">READY-MADE PALETTES AND ALGORITHMS FOR GAME BOY, MACINTOSH, 1-BIT, CGA, AND CRT STYLES. LOAD AND TWEAK IN ONE CLICK.</p>
-          <div class="feature-card-pills">
-            <span class="feature-pill">1-CLICK PRESETS</span>
-            <span class="feature-pill">GAME BOY</span>
-            <span class="feature-pill">MACINTOSH</span>
-            <span class="feature-pill">CRT RETRO</span>
-          </div>
-        </div>
+          <h3>CURATED PRESET TEMPLATES</h3>
+          <p>READY-MADE PALETTES AND ALGORITHMS FOR GAME BOY, MACINTOSH, 1-BIT, CGA, AND CRT STYLES. LOAD AND TWEAK IN ONE CLICK.</p>
+        </article>
 
-        <!-- Feature 3: Live Webcam -->
-        <div class="feature-card">
+        <!-- Feature 3 -->
+        <article class="feature-card">
           <div class="feature-card-header">
             <span class="feature-card-index">
               <span class="feature-card-icon" aria-hidden="true">
@@ -294,19 +283,14 @@
               </span>
               [03]
             </span>
-            <span class="feature-card-badge">LIVE WEBCAM STREAMING 60 FPS</span>
+            <span class="sr-only">LIVE WEBCAM STREAMING 60 FPS</span>
           </div>
-          <h3 class="feature-card-title">REALTIME WEBCAM FEED</h3>
-          <p class="feature-card-desc">DITHER YOUR LIVE CAMERA FEED AT 60 FPS. TOGGLE HORIZONTAL MIRRORING AND CAPTURE SNAPSHOTS DIRECTLY IN THE BROWSER.</p>
-          <div class="feature-card-pills">
-            <span class="feature-pill">60 FPS STREAM</span>
-            <span class="feature-pill">MIRROR MODE</span>
-            <span class="feature-pill">LIVE SNAPSHOT</span>
-          </div>
-        </div>
+          <h3>REALTIME WEBCAM FEED</h3>
+          <p>DITHER YOUR LIVE CAMERA FEED AT 60 FPS. TOGGLE HORIZONTAL MIRRORING AND CAPTURE SNAPSHOTS DIRECTLY IN THE BROWSER.</p>
+        </article>
 
-        <!-- Feature 4: Advanced Palette Editor -->
-        <div class="feature-card">
+        <!-- Feature 4 -->
+        <article class="feature-card">
           <div class="feature-card-header">
             <span class="feature-card-index">
               <span class="feature-card-icon" aria-hidden="true">
@@ -314,50 +298,44 @@
               </span>
               [04]
             </span>
-            <span class="feature-card-badge">ADVANCED COLOR PALETTE QUANTIZATION</span>
+            <span class="sr-only">ADVANCED COLOR PALETTE QUANTIZATION</span>
           </div>
-          <h3 class="feature-card-title">ADVANCED PALETTE STUDIO</h3>
-          <p class="feature-card-desc">REDUCE COLORS USING OCTREE, MEDIAN-CUT, OR K-MEANS IN RGB AND LAB SPACES. ADD, REMOVE, LOCK, AND REORDER INDIVIDUAL SWATCHES.</p>
-          <div class="feature-card-pills">
-            <span class="feature-pill">K-MEANS</span>
-            <span class="feature-pill">MEDIAN-CUT</span>
-            <span class="feature-pill">LAB QUANT</span>
-            <span class="feature-pill">CUSTOM SWATCHES</span>
-          </div>
-        </div>
+          <h3>ADVANCED PALETTE STUDIO</h3>
+          <p>REDUCE COLORS USING OCTREE, MEDIAN-CUT, OR K-MEANS IN RGB AND LAB SPACES. ADD, REMOVE, LOCK, AND REORDER INDIVIDUAL SWATCHES.</p>
+        </article>
       </div>
     </div>
   </section>
 
-  <!-- Landing Footer (Full-Width, Background: var(--bg-surface)) -->
+  <!-- Landing Footer -->
   <footer id="footer" class="landing-footer">
     <div class="landing-footer-inner">
       <div class="landing-footer-left">
         <a href="/" class="footer-logo-wrap" aria-label="DITHER-DOT Home">
           <img src="/dither.png" class="footer-logo-img" alt="dither." />
         </a>
-        <div class="footer-credit">
+        <p class="footer-credit">
           <span>MADE BY</span>
           <a href="https://xbvuno.dev" target="_blank" rel="noopener noreferrer" class="footer-author-link">XBVUNO</a>
+        </p>
+      </div>
+
+      <nav class="landing-footer-nav-col" aria-label="Footer Navigation">
+        <div class="footer-nav-item">
+          <span>SEE</span>
+          <a href="https://github.com/xbvuno/dither-dot/releases" target="_blank" rel="noopener noreferrer" class="footer-link">CHANGELOG</a>
         </div>
-      </div>
-      <div class="landing-footer-nav-col">
-        <nav class="footer-nav" aria-label="Footer Navigation">
-          <div class="footer-nav-item">
-            <span>SEE</span>
-            <a href="/changelog" class="footer-link">CHANGELOG</a>
-          </div>
-          <div class="footer-nav-item">
-            <a href="https://github.com/xbvuno/dither-dot/issues" target="_blank" rel="noopener noreferrer" class="footer-link">REPORT A BUG</a>
-          </div>
-          <div class="footer-nav-item">
-            <a href="https://github.com/xbvuno/dither-dot" target="_blank" rel="noopener noreferrer" class="footer-link">CONTRIBUTE</a>
-          </div>
-          <div class="footer-nav-item">
-            <a href="https://github.com/xbvuno/dither-dot/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="footer-link">LICENSE</a>
-          </div>
-        </nav>
-      </div>
+        <div class="footer-nav-item">
+          <a href="https://github.com/xbvuno/dither-dot/issues" target="_blank" rel="noopener noreferrer" class="footer-link">REPORT A BUG</a>
+        </div>
+        <div class="footer-nav-item">
+          <a href="https://github.com/xbvuno/dither-dot" target="_blank" rel="noopener noreferrer" class="footer-link">CONTRIBUTE</a>
+        </div>
+        <div class="footer-nav-item">
+          <a href="https://github.com/xbvuno/dither-dot/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="footer-link">LICENSE</a>
+        </div>
+      </nav>
+
       <div class="landing-footer-disclaimer-col">
         <div class="footer-nav-item">
           <a href="https://xbvuno.dev" target="_blank" rel="noopener noreferrer" class="footer-link">CONTACT ME</a>
