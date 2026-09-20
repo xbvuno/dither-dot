@@ -808,10 +808,30 @@ section code::before {
 
 .ddot-actions {
   display: flex;
-  align-items: center;
-  gap: 0.85rem;
+  flex-direction: column;
+  gap: 0.65rem;
   flex-shrink: 0;
-  flex-wrap: wrap;
+  width: 100%;
+  max-width: 280px;
+}
+
+.ddot-btn-main {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ddot-sub-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.ddot-sub-btn {
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  padding: 0.5rem 0.65rem;
 }
 
 /* Profile / Hero Section */
