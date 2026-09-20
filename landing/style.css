@@ -1005,12 +1005,6 @@ section code::before {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
-}
-
-.feature-card:hover {
-  border-color: var(--color-border-hover);
-  background-color: var(--bg-surface-hover);
 }
 
 .feature-card-header {
