@@ -71,6 +71,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         editor: resolve(__dirname, 'editor/index.html'),
+        changelog: resolve(__dirname, 'changelog/index.html'),
       },
       output: {
         manualChunks: (id) => {
