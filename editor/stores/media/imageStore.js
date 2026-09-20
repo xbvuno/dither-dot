@@ -1,17 +1,87 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import useGalleryStore, { createRandomItems, INITIAL_RANDOM_SEEDS } from '../data/galleryStore';
 import useGifStore from './gifStore';
 import useWebcamStore, { WEBCAM_SOURCE } from './webcamStore';
 
 const IMAGE_STORE_KEY = 'dither-dot:image';
 
-const defaultRandom = createRandomItems(INITIAL_RANDOM_SEEDS)[0];
+// Default fallback random image is RANDOM 4 (abstract-art)
+const fallbackRandom = createRandomItems(INITIAL_RANDOM_SEEDS)[3];
 
-const DEFAULT_IMAGE_STATE = {
-  sourceImg: defaultRandom.src,
-  sourceName: defaultRandom.name,
-  sourceKind: 'preset',
+export const DEFAULT_IMAGE_STATE = {
+  sourceImg: fallbackRandom.src,
+  sourceName: fallbackRandom.name,
+  sourceKind: 'default',
 };
+
+let autoDefaultPromise = null;
+
+export async function fetchAutoDefaultImage() {
+  if (autoDefaultPromise) return autoDefaultPromise;
+
+  autoDefaultPromise = (async () => {
+    const fallbackItem = createRandomItems(INITIAL_RANDOM_SEEDS)[3];
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+      const response = await fetch(`https://picsum.photos/800/600?random=${Date.now()}`, {
+        signal: controller.signal,
+        cache: 'no-cache',
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`Picsum HTTP error: ${response.status}`);
+      }
+
+      const finalUrl = response.url || `https://picsum.photos/800/600`;
+      const picsumId = response.headers.get('picsum-id');
+      const name = picsumId ? `RANDOM #${picsumId}` : 'RANDOM';
+
+      // Verify the image can be loaded as an HTMLImageElement with anonymous crossOrigin
+      await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Failed to load image texture from Picsum'));
+        img.src = finalUrl;
+      });
+
+      // Verify state hasn't been changed by user interaction while fetch was in-flight
+      const currentState = useImageStore.getState();
+      if (currentState.sourceKind !== 'default') {
+        return;
+      }
+
+      const newItem = {
+        id: picsumId ? `random-picsum-${picsumId}` : `random-${Date.now()}`,
+        name,
+        src: finalUrl,
+        thumb: picsumId ? `https://picsum.photos/id/${picsumId}/200/200` : finalUrl,
+        isRandom: true,
+      };
+
+      useGalleryStore.getState().addRandomImage(newItem);
+      useImageStore.getState().setSourceDirect(newItem.src, newItem.name, 'default');
+      return newItem;
+    } catch (error) {
+      console.warn('Auto default image fetch failed, falling back to RANDOM 4:', error);
+      const currentState = useImageStore.getState();
+      if (currentState.sourceKind === 'default') {
+        const random4 =
+          useGalleryStore.getState().randomImages?.find((img) => img.name === 'RANDOM 4') || fallbackItem;
+        useImageStore.getState().setSourceDirect(random4.src, random4.name, 'default');
+      }
+      return fallbackItem;
+    } finally {
+      autoDefaultPromise = null;
+    }
+  })();
+
+  return autoDefaultPromise;
+}
 
 function purgeOversizedPersistedState(storageKey, maxChars = 250_000) {
   try {
@@ -34,8 +104,6 @@ function readBlobAsDataUrl(blob) {
 }
 
 purgeOversizedPersistedState(IMAGE_STORE_KEY);
-
-import { persist, createJSONStorage } from 'zustand/middleware';
 
 const useImageStore = create(
   persist(
@@ -85,6 +153,9 @@ const useImageStore = create(
         useWebcamStore.getState().stopWebcam?.();
         useGifStore.getState().clearFrames?.();
         set({ ...DEFAULT_IMAGE_STATE, exportPreviewUrl: null });
+        fetchAutoDefaultImage().catch((err) => {
+          console.warn('Failed to fetch auto default on reset:', err);
+        });
       },
     }),
     {
@@ -112,7 +183,9 @@ const useImageStore = create(
           (state.sourceImg === WEBCAM_SOURCE ||
             state.sourceKind === 'webcam' ||
             !state.sourceImg ||
-            (state.sourceName === 'STATUE' && state.sourceKind === 'default'))
+            state.sourceKind === 'default' ||
+            state.sourceName === 'STATUE' ||
+            state.sourceName === 'RANDOM 1')
         ) {
           state.sourceImg = DEFAULT_IMAGE_STATE.sourceImg;
           state.sourceName = DEFAULT_IMAGE_STATE.sourceName;

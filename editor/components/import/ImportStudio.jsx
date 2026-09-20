@@ -9,7 +9,7 @@ import {
   Trash2,
   Film,
 } from 'lucide-react';
-import useImageStore from '../../stores/media/imageStore';
+import useImageStore, { fetchAutoDefaultImage } from '../../stores/media/imageStore';
 import useGalleryStore, { GALLERY_PRESETS } from '../../stores/data/galleryStore';
 import useGifStore from '../../stores/media/gifStore';
 import useWebcamStore, { WEBCAM_SOURCE } from '../../stores/media/webcamStore';
@@ -227,7 +227,6 @@ export default function ImportStudio() {
 
   const sourceImg = useImageStore((s) => s.sourceImg);
   const sourceName = useImageStore((s) => s.sourceName);
-  const sourceKind = useImageStore((s) => s.sourceKind);
   const viewerLoading = useImageStore((s) => s.viewerLoading);
   const setSourceFromBlob = useImageStore((s) => s.setSourceFromBlob);
   const setSourceDirect = useImageStore((s) => s.setSourceDirect);
@@ -305,10 +304,11 @@ export default function ImportStudio() {
     return () => cleanup();
   }, []);
 
-  // Automatically select first random image on initial load if still default statue
+  // Automatically fetch fresh Picsum image on initial load if using default image, fallback to RANDOM 4
   useEffect(() => {
-    if ((sourceName === 'STATUE' || sourceKind === 'default') && randomImages?.length > 0) {
-      handleSelectPreset(randomImages[0]);
+    const { sourceKind: currKind, sourceName: currName } = useImageStore.getState();
+    if (currKind === 'default' || currName === 'STATUE' || currName === 'RANDOM 1') {
+      fetchAutoDefaultImage();
     }
   }, []);
 

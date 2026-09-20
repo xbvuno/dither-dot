@@ -27,7 +27,7 @@ import WaveGridSpinner from '../components/ui/shared/WaveGridSpinner';
 import PopupMessage from '../components/ui/shared/PopupMessage';
 import ImportStudio from '../components/import/ImportStudio';
 import usePageStore, { PAGE } from '../stores/ui/pageStore';
-import useImageStore from '../stores/media/imageStore';
+import useImageStore, { fetchAutoDefaultImage } from '../stores/media/imageStore';
 import useProcessingStore from '../stores/engine/processingStore';
 import useWatermarkStore from '../stores/media/watermarkStore';
 import useViewStore from '../stores/ui/viewStore';
@@ -69,6 +69,14 @@ export default function EditorPage() {
   const navRef = useRef(null);
   const lastScrollTimeRef = useRef(0);
   const currentPageRef = useRef(currentPage);
+
+  // Automatically fetch fresh Picsum image on initial load if using default image, fallback to RANDOM 4
+  useEffect(() => {
+    const { sourceKind: currKind, sourceName: currName } = useImageStore.getState();
+    if (currKind === 'default' || currName === 'STATUE' || currName === 'RANDOM 1') {
+      fetchAutoDefaultImage();
+    }
+  }, []);
 
   // Guard: Switch to import page if no media is loaded and webcam is not active
   useEffect(() => {
