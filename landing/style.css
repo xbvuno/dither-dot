@@ -991,16 +991,6 @@ section code::before {
   margin: 0;
 }
 
-.features-sub {
-  font-family: var(--font-mono);
-  font-size: 0.88rem;
-  font-weight: 400;
-  letter-spacing: 0.04em;
-  color: var(--fg-secondary);
-  text-transform: uppercase;
-  margin: 0;
-}
-
 .features-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1025,7 +1015,6 @@ section code::before {
 
 .feature-card-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
 }
 
@@ -1045,18 +1034,6 @@ section code::before {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.feature-card-badge {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 500;
-  color: var(--fg-secondary);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  background-color: var(--color-bg);
-  border: 1px solid var(--border-subtle);
-  padding: 0.2rem 0.5rem;
 }
 
 .feature-card-title {
