@@ -708,6 +708,7 @@ section code::before {
   color: var(--fg-dim);
   margin: 0;
   letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 /* Profile / Hero Section */
