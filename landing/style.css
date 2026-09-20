@@ -501,21 +501,11 @@ section code::before {
   text-transform: uppercase;
 }
 
-.star-cta-btn,
-.bv-option-btn.star-cta-btn {
-  padding: 0.5rem 1rem;
-  font-size: 13px;
-  line-height: 12px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  background-color: var(--color-bg);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
+.star-btn-icon-slot {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  flex-shrink: 0;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  justify-content: center;
+  line-height: 1;
 }
 
 .star-cta-btn .star-icon {
@@ -524,23 +514,9 @@ section code::before {
   transition: transform 0.15s ease, fill 0.15s ease;
 }
 
-.star-cta-btn:hover,
-.bv-option-btn.star-cta-btn:hover {
-  background-color: #ffffff;
-  color: #000000;
-  border-color: #ffffff;
-}
-
-.star-btn-icon-slot {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
 .star-cta-btn:hover .star-icon {
   transform: scale(1.1);
-  fill: #000000;
+  fill: #ffffff;
 }
 
 @keyframes heartPop {
@@ -557,8 +533,9 @@ section code::before {
 }
 
 .star-cta-btn.is-thanked {
+  background-color: #ffffff;
   border-color: #ff4d4d;
-  color: var(--color-text);
+  color: #ff4d4d;
 }
 
 .star-cta-btn.is-thanked:hover {
