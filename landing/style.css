@@ -627,8 +627,15 @@ section code::before {
 .usecases-split-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
+  gap: 1.75rem;
   width: 100%;
+  align-items: start;
+}
+
+.usecases-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .usecase-cell {
@@ -693,12 +700,19 @@ section code::before {
 .usecase-text-cell {
   background: transparent;
   border: none;
-  padding: clamp(1rem, 3vw, 2.5rem);
+  padding: 0.5rem 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 0.85rem;
+  gap: 0.35rem;
   cursor: pointer;
+}
+
+.usecases-col:last-child .usecase-text-cell:first-child {
+  padding-top: 0;
+}
+
+.usecases-col:first-child .usecase-text-cell:last-child {
+  padding-bottom: 0;
 }
 
 .usecase-tag {
@@ -709,11 +723,12 @@ section code::before {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   transition: color 0.2s ease;
+  line-height: 1.2;
 }
 
 .usecase-title {
   font-family: var(--font-mono);
-  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  font-size: clamp(1.35rem, 2.3vw, 1.85rem);
   font-weight: 400;
   letter-spacing: 0.04em;
   color: var(--color-text);
@@ -726,7 +741,7 @@ section code::before {
 .usecase-desc {
   font-family: var(--font-mono);
   font-size: 1rem;
-  line-height: 1.5;
+  line-height: 1.45;
   color: var(--fg-dim);
   margin: 0;
   letter-spacing: 0.02em;
@@ -1109,8 +1124,13 @@ section code::before {
   }
 
   .usecases-split-grid {
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .usecases-col {
+    display: contents;
   }
 
   .usecase-cell[data-usecase="pixel-art"].usecase-media-cell { order: 1; }
