@@ -2,6 +2,7 @@
   "name": "dither-dot",
   "private": true,
   "version": "1.5.3",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
