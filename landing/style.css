@@ -632,24 +632,23 @@ section code::before {
 }
 
 .usecase-cell {
-  background-color: #161613;
-  border: 1px solid var(--border-subtle);
   box-sizing: border-box;
-  transition: border-color 0.2s ease;
   position: relative;
-  overflow: hidden;
-}
-
-.usecase-cell:hover,
-.usecase-cell.is-hovered {
-  border-color: var(--color-border-hover);
 }
 
 .usecase-media-cell {
   aspect-ratio: 1 / 1;
   width: 100%;
   background-color: #0b0b09;
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
   cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.usecase-media-cell:hover,
+.usecase-media-cell.is-hovered {
+  border-color: var(--color-border-hover);
 }
 
 .usecase-canvas,
@@ -679,20 +678,22 @@ section code::before {
   filter: grayscale(100%);
 }
 
-.usecase-cell:hover .usecase-canvas,
-.usecase-cell.is-hovered .usecase-canvas {
+.usecase-media-cell:hover .usecase-canvas,
+.usecase-media-cell.is-hovered .usecase-canvas {
   opacity: 0;
 }
 
-.usecase-cell:hover .usecase-gif,
-.usecase-cell.is-hovered .usecase-gif {
+.usecase-media-cell:hover .usecase-gif,
+.usecase-media-cell.is-hovered .usecase-gif {
   opacity: 1;
   filter: grayscale(0%);
   z-index: 3;
 }
 
 .usecase-text-cell {
-  padding: clamp(1.75rem, 3.5vw, 3rem);
+  background: transparent;
+  border: none;
+  padding: clamp(1rem, 3vw, 2.5rem);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -707,6 +708,7 @@ section code::before {
   color: var(--fg-secondary);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  transition: color 0.2s ease;
 }
 
 .usecase-title {
@@ -718,6 +720,7 @@ section code::before {
   margin: 0;
   line-height: 1.2;
   text-transform: uppercase;
+  transition: color 0.2s ease;
 }
 
 .usecase-desc {
@@ -728,6 +731,16 @@ section code::before {
   margin: 0;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+}
+
+.usecase-text-cell:hover .usecase-title,
+.usecase-text-cell.is-hovered .usecase-title {
+  color: #ffffff;
+}
+
+.usecase-text-cell:hover .usecase-tag,
+.usecase-text-cell.is-hovered .usecase-tag {
+  color: var(--color-text);
 }
 
 /* Profile / Hero Section */
@@ -1144,7 +1157,7 @@ section code::before {
   }
 
   .usecase-text-cell {
-    padding: 1.5rem 1.25rem;
+    padding: 0.75rem 0.25rem 1.25rem 0.25rem;
   }
 
   main {
