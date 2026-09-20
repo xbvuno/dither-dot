@@ -427,8 +427,8 @@ section code::before {
   transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
 
-.splash-cta svg,
-.bv-option-btn.splash-cta svg {
+.splash-cta > svg,
+.bv-option-btn.splash-cta > svg {
   flex-shrink: 0;
   transition: transform 0.15s ease;
 }
@@ -440,8 +440,8 @@ section code::before {
   border-color: #ffffff;
 }
 
-.splash-cta:hover svg,
-.bv-option-btn.splash-cta:hover svg {
+.splash-cta:hover > svg,
+.bv-option-btn.splash-cta:hover > svg {
   transform: translateX(2px);
 }
 
@@ -508,13 +508,16 @@ section code::before {
   line-height: 1;
 }
 
-.star-cta-btn .star-icon {
+.star-cta-btn .star-icon,
+.bv-option-btn.star-cta-btn .star-icon {
   flex-shrink: 0;
   transform-origin: center;
   transition: transform 0.15s ease, fill 0.15s ease;
 }
 
-.star-cta-btn:hover .star-icon {
+.star-cta-btn:hover .star-icon,
+.bv-option-btn.star-cta-btn:hover .star-icon,
+.bv-option-btn.splash-cta.star-cta-btn:hover .star-icon {
   transform: scale(1.1);
   fill: #ffffff;
 }
