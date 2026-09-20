@@ -12,10 +12,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="apple-touch-icon" href="/icon-192.png" />
 
-  <!-- Google Fonts Preconnect & Stylesheet -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Sono:MONO,wght@1,200..800&amp;display=swap" rel="stylesheet" />
+  <!-- Performance Preloads (Local Font & LCP Image) -->
+  <link rel="preload" href="/fonts/sono-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/splash.gif" as="image" type="image/gif" fetchpriority="high" />
+
+  <!-- AI Agents & LLMs Documentation (llmstxt.org) -->
+  <link rel="help" type="text/markdown" href="/llms.txt" title="LLM and AI Agent Documentation" />
 
   <!-- Primary SEO Meta Tags -->
   <title>DITHER-DOT — Browser Image &amp; GIF Dithering Studio</title>
@@ -121,7 +123,7 @@
 
   <!-- Full-Width Splash Hero Section -->
   <section id="splash" class="splash-section">
-    <img src="/splash.gif" class="splash-bg-img" alt="" aria-hidden="true" />
+    <img src="/splash.gif" class="splash-bg-img" alt="" aria-hidden="true" fetchpriority="high" loading="eager" decoding="async" />
     <div class="splash-content">
       <h1 class="splash-title-wrap">
         <span class="splash-title-invert" role="img" aria-label="dither."></span>

@@ -1,0 +1,27 @@
+# dither-dot
+
+> High-performance in-browser image and animated GIF dithering studio powered by WebAssembly and WebGL shaders.
+
+dither-dot is an open-source, client-side web application and toolkit for applying retro dithering algorithms, color quantization, and palette styling to images and animated GIFs directly in the browser. Powered by the high-performance Rust/Wasm engine `ddot`.
+
+## Web Application
+- [Live Studio](https://dither.xbvuno.dev/editor/): Interactive browser studio with real-time dithering preview, GIF timeline scrubbing, palette editing, and 60 FPS webcam support.
+- [Landing Page](https://dither.xbvuno.dev/): Feature overview, showcase use cases (pixel art, 3D rendering, graphic design, photography), and benchmark highlights.
+
+## Core Engine & Packages
+- [ddot-wasm on npm](https://www.npmjs.com/package/ddot-wasm): Fast, SIMD-accelerated WebAssembly image processing and dithering package.
+- [ddot-core on crates.io](https://crates.io/crates/ddot-core): Core Rust image processing, color quantization, and error-diffusion dithering library.
+- [GitHub Repository](https://github.com/xbvuno/dither-dot): Full open-source monorepo, issue tracker, and release changelogs.
+
+## Documentation & Community
+- [Contributing Guide](https://github.com/xbvuno/dither-dot/blob/main/CONTRIBUTING.md): GitHub Flow, Conventional Commits standard, and local setup instructions.
+- [Project README](https://github.com/xbvuno/dither-dot/blob/main/README.md): Architecture, supported dithering algorithms, curated retro palettes, and quickstart guide.
+- [MIT License](https://github.com/xbvuno/dither-dot/blob/main/LICENSE): Permissive open-source license terms.
+
+## Key Features & Capabilities
+- **Error-Diffusion & Ordered Dithering**: Floyd-Steinberg, Atkinson, Jarvis-Judice-Ninke, Stucki, Burkes, Sierra (1, 2, 3), Bayer matrices (2x2, 4x4, 8x8), Blue Noise, and Halftone dot screens.
+- **Color Quantization**: Octree color quantization, Median-Cut, and K-Means in RGB and CIE Lab color spaces.
+- **Animated GIF Timeline**: Frame-by-frame decoding, FPS controls, looping options, and direct animated GIF export via Web Workers.
+- **Realtime Webcam Feed**: Live camera feed dithered in real time at 60 FPS with horizontal mirroring and snapshot capture.
+- **Curated Retro Palettes**: 1-bit monochrome, Game Boy, Macintosh Classic, CGA, EGA, Commodore 64, Cyberpunk, and custom palette creation.
+- **Zero Server Uploads**: 100% client-side execution; user media never leaves the browser.
