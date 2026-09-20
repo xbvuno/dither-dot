@@ -455,7 +455,7 @@ section code::before {
 /* GitHub Star Banner Section (directly under splash, no gap) */
 .star-banner {
   width: 100%;
-  background-color: #161613;
+  background-color: var(--bg-surface);
   border: none;
   padding: 2rem clamp(3rem, 10vw, 8rem);
   box-sizing: border-box;
