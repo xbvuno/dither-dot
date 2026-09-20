@@ -17,21 +17,29 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Sono:MONO,wght@1,200..800&amp;display=swap" rel="stylesheet" />
 
+  <!-- Primary SEO Meta Tags -->
   <title>DITHER-DOT — Browser Image &amp; GIF Dithering Studio</title>
+  <meta name="title" content="DITHER-DOT — Browser Image &amp; GIF Dithering Studio" />
   <meta name="description"
     content="A fast, open-source dithering studio for images and GIFs — running entirely in your browser with WebGL shaders &amp; WebAssembly." />
   <meta name="keywords"
-    content="dithering, image dithering, gif dithering, dither studio, floyd-steinberg, bayer matrix, retro pixel art, 1-bit dithering, palette generator, webgl shader, webassembly, client-side image processing" />
+    content="dithering, image dithering, gif dithering, dither studio, floyd-steinberg, bayer matrix, retro pixel art, 1-bit dithering, palette generator, webgl shader, webassembly, client-side image processing, ddot" />
+  <meta name="author" content="Bruno Cerra (xbvuno)" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://dither.xbvuno.dev/" />
 
-  <!-- Facebook Meta Tags -->
+  <!-- Open Graph / Facebook -->
+  <meta property="og:site_name" content="DITHER-DOT" />
+  <meta property="og:locale" content="en_US" />
   <meta property="og:url" content="https://dither.xbvuno.dev/" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="DITHER-DOT — Browser Image &amp; GIF Dithering Studio" />
   <meta property="og:description"
     content="A fast, open-source dithering studio for images and GIFs — running entirely in your browser with WebGL shaders &amp; WebAssembly." />
   <meta property="og:image" content="https://dither.xbvuno.dev/wallpaper.png" />
+  <meta property="og:image:alt" content="DITHER-DOT — Browser Image &amp; GIF Dithering Studio" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
 
   <!-- Twitter Meta Tags -->
   <meta name="twitter:card" content="summary_large_image" />
@@ -41,6 +49,7 @@
   <meta name="twitter:description"
     content="A fast, open-source dithering studio for images and GIFs — running entirely in your browser with WebGL shaders &amp; WebAssembly." />
   <meta name="twitter:image" content="https://dither.xbvuno.dev/wallpaper.png" />
+  <meta name="twitter:image:alt" content="DITHER-DOT — Browser Image &amp; GIF Dithering Studio" />
   <meta name="twitter:site" content="@xbvuno" />
   <meta name="twitter:creator" content="@xbvuno" />
 
@@ -50,11 +59,28 @@
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "DITHER-DOT",
+      "alternateName": "dither.",
       "url": "https://dither.xbvuno.dev/",
-      "description": "A fast, open-source dithering studio for images and GIFs running entirely in your browser with WebGL & WebAssembly.",
+      "image": "https://dither.xbvuno.dev/wallpaper.png",
+      "description": "A fast, open-source dithering studio for images and animated GIFs running entirely in your browser with WebGL shaders & WebAssembly.",
       "applicationCategory": "MultimediaApplication",
       "operatingSystem": "All",
       "browserRequirements": "Requires WebGL & WebAssembly support",
+      "author": {
+        "@type": "Person",
+        "name": "Bruno Cerra",
+        "url": "https://xbvuno.dev"
+      },
+      "featureList": [
+        "Realtime GPU WebGL Dithering",
+        "SIMD-accelerated Rust WebAssembly Dithering Engine (DDOT)",
+        "Animated GIF decode, frame scrubbing, and export",
+        "Live Camera & Webcam Dithering at 60 FPS",
+        "10+ Dithering Algorithms including Floyd-Steinberg, Bayer Matrix, Atkinson, Ordered",
+        "Palette Quantization via Octree, Median-Cut, and K-Means",
+        "Curated 1-click retro presets (Game Boy, Macintosh, 1-bit, CGA, CRT)",
+        "100% Client-side processing with zero server uploads"
+      ],
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -99,6 +125,7 @@
     <div class="splash-content">
       <h1 class="splash-title-wrap">
         <span class="splash-title-invert" role="img" aria-label="dither."></span>
+        <span class="sr-only">DITHER-DOT — Browser Image &amp; GIF Dithering Studio</span>
       </h1>
       <p class="splash-subtitle">
         <span>A FAST, OPEN-SOURCE DITHERING STUDIO FOR IMAGES AND ANIMATED GIFS RUNNING 100% IN YOUR BROWSER.</span>
@@ -151,7 +178,7 @@
           <!-- 01: PIXEL ART Media -->
           <figure class="usecase-cell usecase-media-cell" data-usecase="pixel-art">
             <canvas class="usecase-canvas" aria-hidden="true"></canvas>
-            <img class="usecase-gif" src="/cards/pixel-art.gif" data-src="/cards/pixel-art.gif" alt="Pixel art dithering" loading="lazy" />
+            <img class="usecase-gif" src="/cards/pixel-art.gif" data-src="/cards/pixel-art.gif" alt="Pixel art dithering with custom color palette in DITHER-DOT" loading="lazy" />
           </figure>
 
           <!-- 02: 3D RENDERING Text -->
@@ -164,7 +191,7 @@
           <!-- 03: GRAPHIC DESIGN Media -->
           <figure class="usecase-cell usecase-media-cell" data-usecase="graphic-design">
             <canvas class="usecase-canvas" aria-hidden="true"></canvas>
-            <img class="usecase-gif" src="/cards/graphic-design.gif" data-src="/cards/graphic-design.gif" alt="Graphic design dithering" loading="lazy" />
+            <img class="usecase-gif" src="/cards/graphic-design.gif" data-src="/cards/graphic-design.gif" alt="Graphic design halftone texture dithering in DITHER-DOT" loading="lazy" />
           </figure>
 
           <!-- 04: PHOTOGRAPHY Text -->
@@ -187,7 +214,7 @@
           <!-- 02: 3D RENDERING Media -->
           <figure class="usecase-cell usecase-media-cell" data-usecase="3d-rendering">
             <canvas class="usecase-canvas" aria-hidden="true"></canvas>
-            <img class="usecase-gif" src="/cards/3d-rendering.gif" data-src="/cards/3d-rendering.gif" alt="3D rendering dithering" loading="lazy" />
+            <img class="usecase-gif" src="/cards/3d-rendering.gif" data-src="/cards/3d-rendering.gif" alt="Stylized 3D rendering retro dithering in DITHER-DOT" loading="lazy" />
           </figure>
 
           <!-- 03: GRAPHIC DESIGN Text -->
@@ -200,7 +227,7 @@
           <!-- 04: PHOTOGRAPHY Media -->
           <figure class="usecase-cell usecase-media-cell" data-usecase="photography">
             <canvas class="usecase-canvas" aria-hidden="true"></canvas>
-            <img class="usecase-gif" src="/cards/photography.gif" data-src="/cards/photography.gif" alt="Photography dithering" loading="lazy" />
+            <img class="usecase-gif" src="/cards/photography.gif" data-src="/cards/photography.gif" alt="Photography high-contrast black and white dithering in DITHER-DOT" loading="lazy" />
           </figure>
         </div>
       </div>
@@ -312,7 +339,7 @@
     <div class="landing-footer-inner">
       <div class="landing-footer-left">
         <a href="/" class="footer-logo-wrap" aria-label="DITHER-DOT Home">
-          <img src="/dither.png" class="footer-logo-img" alt="dither." />
+          <img src="/dither.png" class="footer-logo-img" alt="DITHER-DOT — Browser Image and Animated GIF Dithering Studio" />
         </a>
         <p class="footer-credit">
           <span>MADE BY</span>
@@ -345,6 +372,15 @@
       </div>
     </div>
   </footer>
+
+  <noscript>
+    <div style="padding: 2rem; font-family: monospace; color: #EEEEDF; background: #12120F; max-width: 680px; margin: 2rem auto; border: 1px solid #333;">
+      <h2>DITHER-DOT — Browser Image &amp; GIF Dithering Studio</h2>
+      <p>A fast, open-source dithering studio for images and animated GIFs running entirely in your browser with WebGL shaders &amp; WebAssembly.</p>
+      <p>Features include 10+ dithering algorithms (Floyd-Steinberg, Bayer Matrix, Atkinson, Ordered), SIMD-accelerated Rust/WASM engine (DDOT), per-frame GIF decoding and timeline scrubber, 60 FPS live webcam feed, and color quantization studio (Octree, Median-Cut, K-Means).</p>
+      <p><a href="/editor/" style="color: #ffffff; text-decoration: underline;">Launch DITHER-DOT Studio</a></p>
+    </div>
+  </noscript>
 
   <script>
     (function () {
