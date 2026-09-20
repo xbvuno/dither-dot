@@ -145,68 +145,56 @@
         <p class="usecases-sub">HOVER THEM.</p>
       </div>
 
-      <div class="usecases-grid">
-        <!-- Card 1: PIXEL ART -->
-        <article class="usecase-card">
+      <div class="usecases-list">
+        <!-- Item 1: PIXEL ART (Col 1: GIF, Col 2: Text) -->
+        <article class="usecase-row">
           <div class="usecase-media">
             <canvas class="usecase-canvas" aria-hidden="true"></canvas>
             <img class="usecase-gif" src="/cards/pixel-art.gif" data-src="/cards/pixel-art.gif" alt="Pixel art dithering" loading="lazy" />
           </div>
           <div class="usecase-content">
+            <span class="usecase-tag">// 01 &mdash; USE CASE</span>
             <h3 class="usecase-title">PIXEL ART</h3>
-          </div>
-          <div class="usecase-desc-drawer">
-            <div class="usecase-desc-inner">
-              <p class="usecase-desc">CREATE RETRO GRAPHICS WITH LIMITED PALETTES AND PRECISE DITHERING.</p>
-            </div>
+            <p class="usecase-desc">CREATE RETRO GRAPHICS WITH LIMITED PALETTES AND PRECISE DITHERING.</p>
           </div>
         </article>
 
-        <!-- Card 2: 3D RENDERING -->
-        <article class="usecase-card">
+        <!-- Item 2: 3D RENDERING (Col 1: Text, Col 2: GIF via alternating layout) -->
+        <article class="usecase-row">
           <div class="usecase-media">
             <canvas class="usecase-canvas" aria-hidden="true"></canvas>
             <img class="usecase-gif" src="/cards/3d-rendering.gif" data-src="/cards/3d-rendering.gif" alt="3D rendering dithering" loading="lazy" />
           </div>
           <div class="usecase-content">
+            <span class="usecase-tag">// 02 &mdash; USE CASE</span>
             <h3 class="usecase-title">3D RENDERING</h3>
-          </div>
-          <div class="usecase-desc-drawer">
-            <div class="usecase-desc-inner">
-              <p class="usecase-desc">GIVE YOUR RENDERS A STYLIZED, LOW-RES OR RETRO LOOK.</p>
-            </div>
+            <p class="usecase-desc">GIVE YOUR RENDERS A STYLIZED, LOW-RES OR RETRO LOOK.</p>
           </div>
         </article>
 
-        <!-- Card 3: GRAPHIC DESIGN -->
-        <article class="usecase-card">
+        <!-- Item 3: GRAPHIC DESIGN (Col 1: GIF, Col 2: Text) -->
+        <article class="usecase-row">
           <div class="usecase-media">
             <canvas class="usecase-canvas" aria-hidden="true"></canvas>
             <img class="usecase-gif" src="/cards/graphic-design.gif" data-src="/cards/graphic-design.gif" alt="Graphic design dithering" loading="lazy" />
           </div>
           <div class="usecase-content">
+            <span class="usecase-tag">// 03 &mdash; USE CASE</span>
             <h3 class="usecase-title">GRAPHIC DESIGN</h3>
-          </div>
-          <div class="usecase-desc-drawer">
-            <div class="usecase-desc-inner">
-              <p class="usecase-desc">ADD TEXTURE, DEPTH AND CHARACTER TO YOUR VISUAL DESIGNS.</p>
-            </div>
+            <p class="usecase-desc">ADD TEXTURE, DEPTH AND CHARACTER TO YOUR VISUAL DESIGNS.</p>
           </div>
         </article>
 
-        <!-- Card 4: PHOTOGRAPHY -->
-        <article class="usecase-card">
+        <!-- Item 4: PHOTOGRAPHY (Col 1: Text, Col 2: GIF via alternating layout) -->
+        <article class="usecase-row">
           <div class="usecase-media">
             <canvas class="usecase-canvas" aria-hidden="true"></canvas>
             <img class="usecase-gif" src="/cards/photography.gif" data-src="/cards/photography.gif" alt="Photography dithering" loading="lazy" />
           </div>
           <div class="usecase-content">
+            <span class="usecase-tag">// 04 &mdash; USE CASE</span>
             <h3 class="usecase-title">PHOTOGRAPHY</h3>
-          </div>
-          <div class="usecase-desc-drawer">
-            <div class="usecase-desc-inner">
-              <p class="usecase-desc">TURN PHOTOS INTO STRIKING, LIMITED-COLOR COMPOSITIONS.</p>
-            </div>
+            <p class="usecase-desc">TURN PHOTOS INTO STRIKING, LIMITED-COLOR COMPOSITIONS.</p>
           </div>
         </article>
       </div>
@@ -415,7 +403,7 @@
       }
 
       // Use cases GIF pause/play & grayscale preview
-      var cards = document.querySelectorAll('.usecase-card');
+      var cards = document.querySelectorAll('.usecase-row, .usecase-card');
       cards.forEach(function (card) {
         var canvas = card.querySelector('.usecase-canvas');
         var gif = card.querySelector('.usecase-gif');
