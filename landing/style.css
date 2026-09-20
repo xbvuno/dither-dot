@@ -635,7 +635,7 @@ section code::before {
 .usecases-col {
   display: flex;
   flex-direction: column;
-  gap: 1.35rem;
+  gap: clamp(2rem, 3.5vw, 2.75rem);
 }
 
 .usecase-cell {
