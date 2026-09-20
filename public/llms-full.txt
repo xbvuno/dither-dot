@@ -1,0 +1,50 @@
+# dither-dot — Full Technical & Agentic Documentation
+
+> High-performance in-browser image and animated GIF dithering studio powered by WebAssembly and WebGL shaders.
+
+## Overview
+dither-dot is an open-source web application designed for digital artists, game developers, retro computing enthusiasts, and web creators. It brings professional-grade retro dithering and palette quantization directly to the web platform with zero server dependencies.
+
+- Canonical URL: https://dither.xbvuno.dev/
+- Studio URL: https://dither.xbvuno.dev/editor/
+- Source Code: https://github.com/xbvuno/dither-dot
+- License: MIT License (Copyright (c) 2026 Bruno Cerra)
+
+## Technical Architecture
+- **Front-End Framework**: React 18 with TypeScript.
+- **Build System**: Vite 6.
+- **State Management**: Zustand stores (`ditherStore`, `paletteStore`, `paramsStore`, `viewStore`, `watermarkStore`).
+- **Core Engine**: `ddot` (Rust) compiled to WebAssembly with SIMD acceleration (`ddot-wasm`).
+- **Styling**: Tailwind CSS, custom design tokens, monospace font (`Sono`).
+- **Web Workers**: Offloads computationally heavy tasks (`ditherWorker`, `paletteWorker`, `gifDecodeWorker`).
+
+## Algorithms Implemented
+1. **Error Diffusion**:
+   - Floyd-Steinberg (standard 2D error diffusion)
+   - Atkinson (classic Apple Mac 1-bit style)
+   - Jarvis, Judice, and Ninke (wide distribution matrix)
+   - Stucki (crisp high-contrast edges)
+   - Burkes (fast integer arithmetic)
+   - Sierra-3, Sierra-2, Sierra Lite
+2. **Ordered Dithering**:
+   - Bayer Matrix 2x2, 4x4, 8x8
+   - Halftone Dot Screen (cluster dot printing aesthetic)
+   - Blue Noise (uniform high-frequency spatial noise)
+3. **Color Reduction & Palette Generation**:
+   - Octree Color Quantization
+   - Median-Cut Quantization
+   - K-Means Clustering (RGB & CIE L*a*b*)
+
+## External Packages
+- npm package: [ddot-wasm](https://www.npmjs.com/package/ddot-wasm)
+- Cargo crate: [ddot-core](https://crates.io/crates/ddot-core)
+
+## Useful Links
+- [Landing Page](https://dither.xbvuno.dev/)
+- [Editor Studio](https://dither.xbvuno.dev/editor/)
+- [GitHub Repository](https://github.com/xbvuno/dither-dot)
+- [Contributing Guide](https://github.com/xbvuno/dither-dot/blob/main/CONTRIBUTING.md)
+- [LICENSE (MIT)](https://github.com/xbvuno/dither-dot/blob/main/LICENSE)
+- [Sitemap](https://dither.xbvuno.dev/sitemap.xml)
+- [Robots](https://dither.xbvuno.dev/robots.txt)
+- [LLMs Summary](https://dither.xbvuno.dev/llms.txt)

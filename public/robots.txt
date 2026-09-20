@@ -3,3 +3,6 @@ User-agent: *
 Allow: /
 
 Sitemap: https://dither.xbvuno.dev/sitemap.xml
+# LLMs and AI Agents documentation
+# https://llmstxt.org/
+# https://dither.xbvuno.dev/llms.txt
