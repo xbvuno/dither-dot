@@ -374,6 +374,13 @@ body::after {
   -webkit-box-decoration-break: clone;
 }
 
+.splash-actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+}
+
 /* ==========================================================================
    GitHub Star Banner
    ========================================================================== */
@@ -988,6 +995,10 @@ body::after {
    Responsive Breakpoints
    ========================================================================== */
 @media (max-width: 820px) {
+  .splash-actions {
+    display: none;
+  }
+
   .usecases-section {
     padding: 3rem clamp(1.25rem, 4vw, 2.5rem);
   }
