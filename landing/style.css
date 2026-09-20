@@ -742,23 +742,34 @@ section code::before {
   color: var(--color-text);
 }
 
-/* Empty Placeholder Section */
+/* Empty Placeholder Section (full-width like star-banner) */
 .empty-section {
+  width: 100%;
   background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
+  border: none;
+  padding: 5rem clamp(1.5rem, 5vw, 4rem);
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  margin-bottom: 0;
+  min-height: 280px;
+}
+
+.empty-section-inner {
+  width: 100%;
+  max-width: 64rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 240px;
-  padding: 3rem 1.5rem;
-  box-sizing: border-box;
 }
 
 .empty-section p {
   color: var(--color-text);
   font-family: var(--font-mono);
-  font-size: 1.15rem;
-  letter-spacing: 0.1em;
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   margin: 0;
 }
