@@ -693,7 +693,7 @@ section code::before {
 .usecase-title {
   font-family: var(--font-mono);
   font-size: clamp(1.2rem, 1.75vw, 1.45rem);
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: 0.05em;
   color: var(--color-text);
   margin: 0;
@@ -703,8 +703,8 @@ section code::before {
 
 .usecase-desc {
   font-family: var(--font-mono);
-  font-size: 0.82rem;
-  line-height: 1.45;
+  font-size: 1rem;
+  line-height: 1.4;
   color: var(--fg-dim);
   margin: 0;
   letter-spacing: 0.02em;
