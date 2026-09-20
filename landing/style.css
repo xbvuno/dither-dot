@@ -624,48 +624,32 @@ section code::before {
   margin: 0;
 }
 
-.usecases-list {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(2rem, 4vw, 3rem);
+.usecases-split-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
   width: 100%;
 }
 
-.usecase-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(2rem, 4vw, 3.5rem);
-  align-items: center;
-  padding: 1.5rem;
+.usecase-cell {
   background-color: #161613;
   border: 1px solid var(--border-subtle);
-  transition: border-color 0.2s ease, transform 0.2s ease;
-  cursor: pointer;
-}
-
-.usecase-row:hover {
-  border-color: var(--color-border-hover);
-  transform: translateY(-2px);
-}
-
-/* Alternating: Even rows place media on the right and content on the left */
-.usecase-row:nth-child(even) .usecase-media {
-  order: 2;
-}
-
-.usecase-row:nth-child(even) .usecase-content {
-  order: 1;
-}
-
-.usecase-media {
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
   position: relative;
-  width: 100%;
-  max-width: 24rem;
-  aspect-ratio: 1 / 1;
   overflow: hidden;
+}
+
+.usecase-cell:hover,
+.usecase-cell.is-hovered {
+  border-color: var(--color-border-hover);
+}
+
+.usecase-media-cell {
+  aspect-ratio: 1 / 1;
+  width: 100%;
   background-color: #0b0b09;
-  border: 1px solid var(--border-subtle);
-  margin: 0 auto;
+  cursor: pointer;
 }
 
 .usecase-canvas,
@@ -674,13 +658,13 @@ section code::before {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   display: block;
   pointer-events: none;
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .usecase-canvas {
@@ -695,22 +679,25 @@ section code::before {
   filter: grayscale(100%);
 }
 
-.usecase-row:hover .usecase-canvas {
+.usecase-cell:hover .usecase-canvas,
+.usecase-cell.is-hovered .usecase-canvas {
   opacity: 0;
 }
 
-.usecase-row:hover .usecase-gif {
+.usecase-cell:hover .usecase-gif,
+.usecase-cell.is-hovered .usecase-gif {
   opacity: 1;
   filter: grayscale(0%);
   z-index: 3;
-  transform: scale(1.02);
 }
 
-.usecase-content {
+.usecase-text-cell {
+  padding: clamp(1.75rem, 3.5vw, 3rem);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 0.5rem;
+  justify-content: center;
+  gap: 0.85rem;
+  cursor: pointer;
 }
 
 .usecase-tag {
@@ -724,7 +711,7 @@ section code::before {
 
 .usecase-title {
   font-family: var(--font-mono);
-  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
   font-weight: 400;
   letter-spacing: 0.04em;
   color: var(--color-text);
@@ -1108,27 +1095,22 @@ section code::before {
     padding: 3rem clamp(1.25rem, 4vw, 2.5rem);
   }
 
-  .usecases-list {
-    gap: 2rem;
-  }
-
-  .usecase-row {
+  .usecases-split-grid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
-    padding: 1.25rem;
+    gap: 1.25rem;
   }
 
-  .usecase-row:nth-child(even) .usecase-media {
-    order: 1;
-  }
+  .usecase-cell[data-usecase="pixel-art"].usecase-media-cell { order: 1; }
+  .usecase-cell[data-usecase="pixel-art"].usecase-text-cell  { order: 2; }
 
-  .usecase-row:nth-child(even) .usecase-content {
-    order: 2;
-  }
+  .usecase-cell[data-usecase="3d-rendering"].usecase-media-cell { order: 3; }
+  .usecase-cell[data-usecase="3d-rendering"].usecase-text-cell  { order: 4; }
 
-  .usecase-media {
-    max-width: 22rem;
-  }
+  .usecase-cell[data-usecase="graphic-design"].usecase-media-cell { order: 5; }
+  .usecase-cell[data-usecase="graphic-design"].usecase-text-cell  { order: 6; }
+
+  .usecase-cell[data-usecase="photography"].usecase-media-cell { order: 7; }
+  .usecase-cell[data-usecase="photography"].usecase-text-cell  { order: 8; }
 
   #profile {
     flex-direction: column;
@@ -1157,13 +1139,12 @@ section code::before {
     padding: 2.5rem 1rem;
   }
 
-  .usecase-row {
-    padding: 1rem;
-    gap: 1.25rem;
+  .usecases-split-grid {
+    gap: 1rem;
   }
 
-  .usecase-media {
-    max-width: 100%;
+  .usecase-text-cell {
+    padding: 1.5rem 1.25rem;
   }
 
   main {
