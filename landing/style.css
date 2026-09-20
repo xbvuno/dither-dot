@@ -71,6 +71,10 @@ body {
   font-variation-settings: 'MONO' 1;
 }
 
+h1, h2, h3, h4, h5, h6, b, strong, th {
+  font-weight: 500;
+}
+
 body {
   display: flex;
   flex-direction: column;
@@ -480,7 +484,7 @@ section code::before {
 .star-banner-title {
   font-family: var(--font-mono);
   font-size: clamp(0.95rem, 1.8vw, 1.15rem);
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.05em;
   color: var(--color-text);
   margin: 0;
@@ -598,7 +602,7 @@ section code::before {
 .usecases-headline {
   font-family: var(--font-mono);
   font-size: clamp(1.15rem, 2.5vw, 1.85rem);
-  font-weight: 600;
+  font-weight: 400;
   letter-spacing: 0.04em;
   color: var(--color-text);
   line-height: 1.35;
@@ -687,7 +691,7 @@ section code::before {
 .usecase-title {
   font-family: var(--font-mono);
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.06em;
   color: var(--color-text);
   margin: 0;
@@ -745,7 +749,7 @@ section code::before {
 
 #profile h1 {
   font-size: 2.5rem;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.1rem;
   line-height: 1;
   color: var(--fg-primary);
@@ -963,7 +967,7 @@ section code::before {
 
 .spec-card .spec-num {
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--fg-primary);
 }
 
@@ -1006,6 +1010,7 @@ section code::before {
 
 .source-link-card h4 {
   font-size: 0.95rem;
+  font-weight: 500;
   color: var(--fg-primary);
   letter-spacing: 0.06em;
 }
