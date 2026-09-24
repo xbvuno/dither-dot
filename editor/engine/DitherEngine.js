@@ -118,6 +118,7 @@ class DitherEngine {
     this.idleRenderTimer = null;
     this.idleGeneration = 0;
     this.idleJobIds = new Set();
+    this.latestForegroundRequestId = 0;
     this.frameSourceCanvas = null;
     this.frameSourceCtx = null;
 
@@ -717,6 +718,7 @@ const action = this.debugEnabled ? "disable" : "enable";
       // Lock activeJobs immediately to prevent re-entry during async extraction
       this.setProcessingDelta(1);
       const requestId = ++this.latestRequestId;
+      this.latestForegroundRequestId = requestId;
 
       usePerformanceStore.getState().setPipelineStart();
 
@@ -959,7 +961,6 @@ const action = this.debugEnabled ? "disable" : "enable";
         isStatsReady,
       } = event.data;
 
-      const latestId = this.latestRequestId;
       const shouldRefreshPalette = Boolean(this.refreshPaletteForRequest.get(jobId));
 
       if (shouldRefreshPalette) {
@@ -982,7 +983,13 @@ const action = this.debugEnabled ? "disable" : "enable";
         }
       }
 
-      if (jobId !== latestId) {
+      const isIdleJob = Boolean(this.idleJobIds && this.idleJobIds.has(jobId));
+      if (isIdleJob) {
+        this.idleJobIds.delete(jobId);
+      }
+
+      // For foreground jobs, ignore stale responses from earlier requests
+      if (!isIdleJob && this.latestForegroundRequestId && jobId !== this.latestForegroundRequestId) {
         if (isImageReady || error) {
           this.setProcessingDelta(-1);
           if (this.processingQueued) {
@@ -996,7 +1003,9 @@ const action = this.debugEnabled ? "disable" : "enable";
         if (error) this.error('Worker', 'Worker reported error: %o', error);
         if (this.disposed) this.warn('Worker', 'Worker message arrived after engine disposed.');
         this.preserveVisibleOutput();
-        this.setProcessingDelta(-1);
+        if (!isIdleJob) {
+          this.setProcessingDelta(-1);
+        }
         if (this.processingQueued) {
           this.queueProcessing(false);
         }
@@ -1046,14 +1055,12 @@ const action = this.debugEnabled ? "disable" : "enable";
           });
         }
 
-        const isIdleJob = Boolean(this.idleJobIds && this.idleJobIds.has(jobId));
-        if (isIdleJob) {
-          this.idleJobIds.delete(jobId);
-        }
+        const currentActiveIndex = useGifStore.getState().currentFrameIndex;
+        const isCurrentFrame = gifFrameIndex < 0 || gifFrameIndex === currentActiveIndex;
 
-        const isCurrentFrame = gifFrameIndex < 0 || gifFrameIndex === useGifStore.getState().currentFrameIndex;
-
-        if (isCurrentFrame || !isIdleJob) {
+        // CRITICAL: The main viewport in zoomable div MUST ONLY display the CURRENT active frame!
+        // Background idle jobs MUST NEVER touch the output texture or main visible layer.
+        if (isCurrentFrame) {
           const textureUpdateStart = performance.now();
           usePerformanceStore.getState().setCurrentPhase('texture');
           this.updateOutputTexture(output, outWidth, outHeight);
@@ -1067,9 +1074,10 @@ const action = this.debugEnabled ? "disable" : "enable";
 
         if (gifFrameIndex >= 0) {
           let thumbnailUrl = '';
-          if (isCurrentFrame || !isIdleJob) {
+          if (isCurrentFrame) {
             thumbnailUrl = captureThumbnailDataUrl(this.outputCanvas, 60);
           } else {
+            // Render thumbnail on an offscreen canvas without ever touching viewport/zoomable div
             const thumbCanvas = document.createElement('canvas');
             thumbCanvas.width = outWidth;
             thumbCanvas.height = outHeight;
@@ -1090,7 +1098,7 @@ const action = this.debugEnabled ? "disable" : "enable";
           useGifStore.getState().markFrameRendered(gifFrameIndex, thumbnailUrl || '', cachedFrame);
         }
 
-        if (isCurrentFrame || !isIdleJob) {
+        if (isCurrentFrame) {
           const syncStart = performance.now();
           usePerformanceStore.getState().setCurrentPhase('sync');
           this.syncVisibleLayer();
@@ -1740,7 +1748,10 @@ const action = this.debugEnabled ? "disable" : "enable";
       return;
     }
 
-    const pendingIndex = gifState.frameStates.findIndex((st) => st === 'pending');
+    const currentActiveIndex = gifState.currentFrameIndex;
+    const pendingIndex = gifState.frameStates.findIndex(
+      (st, idx) => st === 'pending' && idx !== currentActiveIndex
+    );
     if (pendingIndex === -1) {
       return;
     }
