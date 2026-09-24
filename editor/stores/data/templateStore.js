@@ -104,12 +104,22 @@ const useTemplateStore = create(
           // Apply Palette
           const paletteState = usePaletteStore.getState();
           if (template.palette?.extractMethod) {
+            const defaultPlaceholderColors = [
+              '#1a1a2e', '#16213e', '#0f3460', '#533483',
+              '#e94560', '#f5a623', '#f8e71c', '#7ed321',
+            ].map((hex, i) => ({ id: i + 1, hex, locked: false, hidden: false }));
+
             usePaletteStore.setState({
               method: template.palette.extractMethod,
               colorCount: template.palette.colorCount || 8,
               selectedLibraryPaletteId: null,
+              lastAppliedPalette: null,
+              customPaletteName: template.name || 'DEFAULT',
+              ...(template.id === 'default' ? { colors: defaultPlaceholderColors } : {}),
             });
             paletteState.generatePalette?.();
+          } else if (template.id === 'current' && template.palette?.colors && template.palette.colors.length) {
+            paletteState.applyPaletteByHexes?.(template.palette.colors, template.palette.name || 'LAST USED');
           } else if (template.palette?.id && template.palette.id.startsWith('builtin-') && template.id !== 'current') {
             paletteState.applyLibraryPaletteById?.(template.palette.id);
           } else if (template.palette?.colors && template.palette.colors.length) {
@@ -156,10 +166,42 @@ const useTemplateStore = create(
   )
 );
 
+let hasInitializedStartupTemplate = false;
+
+export function initTemplateStoreOnStartup() {
+  if (hasInitializedStartupTemplate) return;
+  hasInitializedStartupTemplate = true;
+
+  const state = useTemplateStore.getState();
+
+  // Snapshot current rehydrated state as LAST USED
+  // If currentTemplate was already saved in localStorage, ensure its name is 'LAST USED'
+  const persistedCurrent = state.currentTemplate;
+  const current = persistedCurrent || buildCurrentTemplate();
+  const lastUsed = {
+    ...current,
+    id: 'current',
+    name: 'LAST USED',
+    author: 'you',
+  };
+
+  useTemplateStore.setState({
+    currentTemplate: lastUsed,
+    selectedTemplateId: 'default',
+  });
+
+  // Apply DEFAULT template so all active stores reset to default and generate fresh palette
+  useTemplateStore.getState().applyTemplate('default');
+}
+
+// Automatically initialize on startup
+initTemplateStoreOnStartup();
+
 function onParameterModified() {
   if (isApplyingTemplate) return;
+  if (usePaletteStore.getState().isAutoExtracting) return;
   const currentPage = usePageStore.getState().currentPage;
-  // If modifying parameters outside the import studio, update CURRENT
+  // If modifying parameters outside the import studio, update CURRENT / LAST USED
   if (currentPage !== PAGE.IMPORT) {
     const current = buildCurrentTemplate();
     useTemplateStore.setState({
@@ -173,16 +215,6 @@ useParamsStore.subscribe(() => onParameterModified());
 useDitherStore.subscribe(() => onParameterModified());
 usePaletteStore.subscribe(() => onParameterModified());
 usePinnedStore.subscribe(() => onParameterModified());
-
-// When user navigates between sections (pages), snapshot active parameters as new CURRENT
-usePageStore.subscribe((state, prevState) => {
-  if (state.currentPage !== prevState.currentPage) {
-    const current = buildCurrentTemplate();
-    useTemplateStore.setState({
-      currentTemplate: current,
-    });
-  }
-});
 
 export default useTemplateStore;
 

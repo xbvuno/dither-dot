@@ -106,7 +106,7 @@ function TemplateContextMenu({ x, y, tpl, onClose, onApplyTemplate }) {
         id: 'current',
         name: 'LAST USED',
         author: 'you',
-        palette: parsed.palette || { id: null, name: 'Current', colors: [], colorCount: 8 },
+        palette: parsed.palette || { id: null, name: 'LAST USED', colors: [], colorCount: 8 },
         dither: parsed.dither || { enabled: true, method: 'floyd_steinberg', amount: 0.65, matrixScale: 1.0, seed: 1.0 },
         params: parsed.params || {},
         pinnedIds: Array.isArray(parsed.pinnedIds) ? parsed.pinnedIds : [],

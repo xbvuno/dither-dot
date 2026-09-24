@@ -303,6 +303,7 @@ const usePaletteStore = create(persist((set, get) => ({
   /* ---- palette ---- */
   colors: makeDefaultPalette(),
   isGeneratingPalette: false,
+  isAutoExtracting: false,
   customPaletteName: 'Custom Palette',
   lastAppliedPalette: null,
   selectedLibraryPaletteId: null,
@@ -388,14 +389,14 @@ const usePaletteStore = create(persist((set, get) => ({
     };
 
     const generationToken = ++latestGenerationToken;
-    set({ isGeneratingPalette: true });
+    set({ isGeneratingPalette: true, isAutoExtracting: true });
 
     const { method, colorCount, colors } = get();
 
     // In CUSTOM mode the palette is user-authored and must never be regenerated.
     if (method === EXTRACT_METHOD.CUSTOM) {
       if (generationToken === latestGenerationToken) {
-        set({ isGeneratingPalette: false });
+        set({ isGeneratingPalette: false, isAutoExtracting: false });
       }
       finishProcessing();
       return;
@@ -410,7 +411,7 @@ const usePaletteStore = create(persist((set, get) => ({
 
     if (slots <= 0) {
       if (generationToken === latestGenerationToken) {
-        set({ colors: locked.slice(0, colorCount), isGeneratingPalette: false });
+        set({ colors: locked.slice(0, colorCount), isGeneratingPalette: false, isAutoExtracting: false });
       }
       finishProcessing();
       return;
@@ -420,7 +421,7 @@ const usePaletteStore = create(persist((set, get) => ({
     const pixels = reference?.pixels;
     if (!pixels) {
       if (generationToken === latestGenerationToken) {
-        set({ isGeneratingPalette: false });
+        set({ isGeneratingPalette: false, isAutoExtracting: false });
       }
       finishProcessing();
       return;
@@ -433,6 +434,7 @@ const usePaletteStore = create(persist((set, get) => ({
       });
 
       if (generationToken !== latestGenerationToken) {
+        set({ isAutoExtracting: false });
         finishProcessing();
         return;
       }
@@ -443,6 +445,9 @@ const usePaletteStore = create(persist((set, get) => ({
       ].slice(0, colorCount);
 
       set({ colors: newColors, isGeneratingPalette: false });
+      setTimeout(() => {
+        set({ isAutoExtracting: false });
+      }, 50);
 
       const measuredDuration = performance.now() - paletteGenerationStart;
 
@@ -450,7 +455,7 @@ const usePaletteStore = create(persist((set, get) => ({
     } catch (error) {
       console.error(error);
       if (generationToken === latestGenerationToken) {
-        set({ isGeneratingPalette: false });
+        set({ isGeneratingPalette: false, isAutoExtracting: false });
       }
       usePerformanceStore.getState().setCurrentPhase(null);
       finishProcessing();
