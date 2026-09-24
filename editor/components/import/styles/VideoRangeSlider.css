@@ -1,0 +1,141 @@
+.video-range-slider-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+  user-select: none;
+  touch-action: none;
+}
+
+.video-range-track-wrap {
+  position: relative;
+  height: 28px;
+  background: var(--color-bg-subtle, #161616);
+  border: 1px solid var(--color-border, #333);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  overflow: visible;
+}
+
+.video-range-ticks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.video-range-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-border-subtle, #252525);
+  pointer-events: none;
+}
+
+.video-range-active-span {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.18);
+  border-top: 2px solid var(--color-text, #fff);
+  border-bottom: 2px solid var(--color-text, #fff);
+  cursor: grab;
+  z-index: 2;
+  transition: background 0.15s ease;
+}
+
+.video-range-active-span:active {
+  cursor: grabbing;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.video-range-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #ff4444;
+  box-shadow: 0 0 6px rgba(255, 68, 68, 0.8);
+  pointer-events: none;
+  z-index: 5;
+  transform: translateX(-50%);
+}
+
+.video-range-handle {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 14px;
+  background: var(--color-bg-elevated, #2a2a2a);
+  border: 1px solid var(--color-text, #fff);
+  transform: translateX(-50%);
+  cursor: ew-resize;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  outline: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.video-range-handle:focus-visible,
+.video-range-handle:hover {
+  background: var(--color-text, #fff);
+  border-color: #fff;
+}
+
+.video-range-handle:focus-visible .video-range-handle-grip,
+.video-range-handle:hover .video-range-handle-grip {
+  background: #000;
+}
+
+.video-range-handle-grip {
+  width: 2px;
+  height: 12px;
+  background: var(--color-text, #fff);
+}
+
+.video-range-handle-tag {
+  position: absolute;
+  bottom: -16px;
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  color: var(--color-text-subtle, #888);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.video-range-inputs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+
+.video-range-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.video-range-summary-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0 0.5rem;
+}
+
+.video-range-time-val {
+  font-size: 0.8rem;
+  font-family: var(--font-mono, monospace);
+  font-weight: 600;
+  color: var(--color-text, #fff);
+  white-space: nowrap;
+}

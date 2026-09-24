@@ -1,7 +1,38 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { getVideoMetadata, extractFramesFromVideo } from '../../utils/videoDecodeUtils';
+import { X, Play, Pause, Film } from 'lucide-react';
+import {
+  getVideoMetadata,
+  extractFramesFromVideo,
+  detectFpsFromVideoElement,
+} from '../../utils/videoDecodeUtils';
+import VideoRangeSlider from './VideoRangeSlider';
+import Slider from '../ui/shared/Slider';
+import OptionGroup from '../ui/shared/OptionGroup';
 import './styles/VideoImportDialog.css';
+
+function getFpsOptions(detectedFps) {
+  const safeFps = Math.max(1, Math.min(120, Math.round(detectedFps || 24)));
+  const standardPool = safeFps >= 24
+    ? [10, 12, 15, 18, 20, 24, 25, 30, 48, 50, 60, 120]
+    : [5, 8, 10, 12, 15, 18, 20];
+
+  const candidates = standardPool.filter((f) => f < safeFps);
+  candidates.push(safeFps);
+  const unique = Array.from(new Set(candidates)).sort((a, b) => a - b);
+
+  if (unique.length <= 5) return unique;
+
+  const step = (unique.length - 1) / 4;
+  const picked = [
+    unique[0],
+    unique[Math.round(step)],
+    unique[Math.round(step * 2)],
+    unique[Math.round(step * 3)],
+    safeFps,
+  ];
+  return Array.from(new Set(picked)).sort((a, b) => a - b);
+}
 
 export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   const [meta, setMeta] = useState(null);
@@ -10,14 +41,19 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
 
   const [startTime, setStartTime] = useState(0);
   const [endTime, setEndTime] = useState(0);
-  const [scale, setScale] = useState(1);
-  const [fps, setFps] = useState(20);
+  const [scalePercent, setScalePercent] = useState(100);
+  const [detectedFps, setDetectedFps] = useState(24);
+  const [fps, setFps] = useState(24);
+
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [currentPlayTime, setCurrentPlayTime] = useState(0);
 
   const [isExtracting, setIsExtracting] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0, percent: 0 });
 
   const videoRef = useRef(null);
 
+  // Load video metadata and initial container FPS
   useEffect(() => {
     let active = true;
     setLoadingMeta(true);
@@ -31,14 +67,21 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
         }
         setMeta(data);
         setStartTime(0);
-        setEndTime(Math.min(data.duration, 10)); // Default to first 10s max
-        // If resolution is high (> 1280px), default to 50% scale
+        setEndTime(Math.min(data.duration, 10)); // Default to first 10s max or full duration
+
+        // Initial default scale: if resolution > 1280px in either dim, default to 50%
         if (data.width > 1280 || data.height > 1280) {
-          setScale(0.5);
+          setScalePercent(50);
+        } else {
+          setScalePercent(100);
         }
+
+        const sourceFps = data.fps || 24;
+        setDetectedFps(sourceFps);
+        setFps(sourceFps);
       })
       .catch((err) => {
-        if (active) setMetaError(err?.message || 'Failed to load video.');
+        if (active) setMetaError(err?.message || 'Failed to load video file.');
       })
       .finally(() => {
         if (active) setLoadingMeta(false);
@@ -49,27 +92,91 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
     };
   }, [file]);
 
-  const handleStartChange = (val) => {
-    const num = Math.max(0, Math.min(endTime - 0.1, Number(val) || 0));
-    setStartTime(num);
+  // Video element autoplay, muted, no controls, start position, and looping between [startTime, endTime]
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !meta) return;
+
+    video.muted = true;
+    video.volume = 0;
+    video.currentTime = startTime;
+
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => setIsPlaying(true))
+        .catch(() => setIsPlaying(false));
+    }
+
+    // Secondary refinement of FPS via requestVideoFrameCallback if needed
+    let cancelled = false;
+    detectFpsFromVideoElement(video).then((elementFps) => {
+      if (!cancelled && elementFps && elementFps !== detectedFps) {
+        setDetectedFps(elementFps);
+        setFps((prev) => (prev > elementFps ? elementFps : prev));
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [meta, detectedFps, startTime]);
+
+  const handleTimeUpdate = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    setCurrentPlayTime(video.currentTime);
+
+    // Loop video within [startTime, endTime]
+    if (video.currentTime >= endTime || video.currentTime < startTime - 0.08) {
+      video.currentTime = startTime;
+      video.play().catch(() => {});
+    }
+  }, [startTime, endTime]);
+
+  const handleRangeChange = useCallback(({ startTime: newStart, endTime: newEnd }) => {
+    setStartTime(newStart);
+    setEndTime(newEnd);
+
     if (videoRef.current) {
-      videoRef.current.currentTime = num;
+      videoRef.current.currentTime = newStart;
+      videoRef.current.play().catch(() => {});
+      setIsPlaying(true);
+    }
+  }, []);
+
+  const togglePlayPause = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.paused) {
+      if (video.currentTime >= endTime || video.currentTime < startTime) {
+        video.currentTime = startTime;
+      }
+      video.play().then(() => setIsPlaying(true)).catch(() => {});
+    } else {
+      video.pause();
+      setIsPlaying(false);
     }
   };
 
-  const handleEndChange = (val) => {
-    const maxDur = meta?.duration || 1;
-    const num = Math.max(startTime + 0.1, Math.min(maxDur, Number(val) || maxDur));
-    setEndTime(num);
-    if (videoRef.current) {
-      videoRef.current.currentTime = num;
-    }
-  };
+  // Compute FPS options strictly <= detectedFps
+  const fpsOptions = useMemo(() => getFpsOptions(detectedFps), [detectedFps]);
 
-  const duration = Math.max(0.1, endTime - startTime);
-  const estimatedFrames = Math.min(300, Math.ceil(duration * fps));
-  const outW = meta ? Math.round(meta.width * scale) : 0;
-  const outH = meta ? Math.round(meta.height * scale) : 0;
+  // Keep fps clamped if detectedFps changes
+  useEffect(() => {
+    if (fps > detectedFps) {
+      setFps(detectedFps);
+    }
+  }, [detectedFps, fps]);
+
+  // Calculations that feed the final import specs
+  const duration = Math.max(0.05, endTime - startTime);
+  const estimatedFrames = Math.ceil(duration * fps); // NO 300 LIMIT!
+
+  const scale = scalePercent / 100;
+  const outW = meta ? Math.max(1, Math.round(meta.width * scale)) : 0;
+  const outH = meta ? Math.max(1, Math.round(meta.height * scale)) : 0;
   const estimatedRamMb = Math.round((estimatedFrames * outW * outH * 4) / (1024 * 1024));
 
   const handleConfirm = async () => {
@@ -81,7 +188,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
         endTime,
         scale,
         fps,
-        maxFrames: 300,
+        maxFrames: Infinity, // NO LIMIT
         onProgress: (p) => setProgress(p),
       });
 
@@ -97,17 +204,37 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   };
 
   return createPortal(
-    <div className='video-dialog-overlay' onClick={!isExtracting ? onCancel : undefined}>
-      <div className='video-dialog' onClick={(e) => e.stopPropagation()}>
-        <h2 className='video-dialog-title'>IMPORT VIDEO (FRAME SEQUENCE)</h2>
+    <div className="video-dialog-overlay" onClick={!isExtracting ? onCancel : undefined}>
+      <div className="video-dialog" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="video-dialog-header">
+          <div className="video-dialog-header-title">
+            <Film size={16} />
+            <h2 className="video-dialog-title">IMPORT VIDEO (FRAME SEQUENCE)</h2>
+          </div>
+          <button
+            type="button"
+            className="video-dialog-close-btn"
+            onClick={onCancel}
+            disabled={isExtracting}
+            aria-label="Close"
+          >
+            <X size={16} />
+          </button>
+        </div>
 
-        {loadingMeta && <p className='bv-label'>READING VIDEO METADATA...</p>}
+        {loadingMeta && (
+          <div className="video-dialog-loading">
+            <p className="bv-label">READING VIDEO METADATA & FRAMERATE...</p>
+          </div>
+        )}
+
         {metaError && (
-          <div className='bv-section'>
-            <p className='bv-label' style={{ color: 'var(--color-danger, #ff4444)' }}>
+          <div className="video-dialog-section">
+            <p className="bv-label" style={{ color: 'var(--color-danger, #ff4444)' }}>
               {metaError}
             </p>
-            <button type='button' className='bv-option-btn' onClick={onCancel}>
+            <button type="button" className="bv-option-btn danger-btn" onClick={onCancel}>
               CLOSE
             </button>
           </div>
@@ -115,125 +242,126 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
 
         {meta && !metaError && (
           <>
-            <div className='video-dialog-preview-wrap'>
+            {/* Video preview: Auto-play, hidden controls, muted, click to play/pause */}
+            <div
+              className="video-dialog-preview-wrap"
+              onClick={togglePlayPause}
+              title={isPlaying ? 'Click to pause' : 'Click to play'}
+            >
               <video
                 ref={videoRef}
                 src={meta.url}
-                controls
                 muted
+                autoPlay
                 playsInline
-                className='video-dialog-preview'
+                onTimeUpdate={handleTimeUpdate}
+                className="video-dialog-preview"
+              />
+              <div className={`video-dialog-play-overlay${!isPlaying ? ' visible' : ''}`}>
+                {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+              </div>
+            </div>
+
+            {/* Trimming: Dual-Handle Range Slider */}
+            <div className="video-dialog-section">
+              <div className="video-dialog-header-row">
+                <span className="bv-label">RANGE (TRIM)</span>
+                <span className="video-dialog-value-highlight">
+                  {duration.toFixed(2)}s SELECTED
+                  <span className="video-dialog-muted-text"> [TOTAL: {meta.duration.toFixed(2)}s]</span>
+                </span>
+              </div>
+              <VideoRangeSlider
+                duration={meta.duration}
+                startTime={startTime}
+                endTime={endTime}
+                currentTime={currentPlayTime}
+                onChange={handleRangeChange}
+                disabled={isExtracting}
               />
             </div>
 
-            {/* Trimming: Start & End */}
-            <div className='video-dialog-section'>
-              <p className='video-dialog-label'>
-                <span>RANGE (TRIM)</span>
-                <span>TOTAL DURATION: {meta.duration.toFixed(2)}s</span>
-              </p>
-              <div className='video-dialog-row'>
-                <div className='video-dialog-input-group'>
-                  <span className='video-dialog-label'>START (S)</span>
-                  <input
-                    type='number'
-                    className='video-dialog-input'
-                    min={0}
-                    max={Math.max(0, endTime - 0.1)}
-                    step={0.1}
-                    value={Number(startTime.toFixed(2))}
-                    onChange={(e) => handleStartChange(e.target.value)}
-                    disabled={isExtracting}
-                  />
-                </div>
-                <div className='video-dialog-input-group'>
-                  <span className='video-dialog-label'>END (S)</span>
-                  <input
-                    type='number'
-                    className='video-dialog-input'
-                    min={startTime + 0.1}
-                    max={meta.duration}
-                    step={0.1}
-                    value={Number(endTime.toFixed(2))}
-                    onChange={(e) => handleEndChange(e.target.value)}
-                    disabled={isExtracting}
-                  />
-                </div>
+            {/* Scale / Frame Dimensions Slider */}
+            <div className="video-dialog-section">
+              <div className="video-dialog-header-row">
+                <span className="bv-label">FRAME SCALE & RESOLUTION</span>
+                <span className="video-dialog-value-highlight">
+                  {outW} × {outH} PX ({scalePercent}%)
+                  <span className="video-dialog-muted-text"> [ORIGINAL: {meta.width} × {meta.height}]</span>
+                </span>
+              </div>
+              <Slider
+                min={10}
+                max={100}
+                step={5}
+                value={scalePercent}
+                defaultValue={meta.width > 1280 || meta.height > 1280 ? 50 : 100}
+                onChange={(val) => setScalePercent(val)}
+                label="Scale"
+                disabled={isExtracting}
+              />
+            </div>
+
+            {/* Frame Rate (FPS) using OptionGroup */}
+            <div className="video-dialog-section">
+              <div className="video-dialog-header-row">
+                <span className="bv-label">FRAME RATE</span>
+                <span className="video-dialog-value-highlight">
+                  {fps} FPS (~{Math.round(1000 / fps)}ms)
+                  <span className="video-dialog-muted-text"> [SOURCE: {detectedFps} FPS]</span>
+                </span>
+              </div>
+              <OptionGroup
+                options={fpsOptions.map((f) => ({
+                  value: f,
+                  label: `${f} FPS`,
+                  title: `${f} FPS (~${Math.round(1000 / f)}ms delay)`,
+                }))}
+                value={fps}
+                onChange={(val) => setFps(Number(val))}
+                disabled={isExtracting}
+              />
+            </div>
+
+            {/* Live Specifications & Calculations Summary */}
+            <div className="video-dialog-summary">
+              <div className="video-dialog-summary-col">
+                <span className="video-dialog-summary-label">FRAMES TO IMPORT</span>
+                <span className="video-dialog-summary-value highlight">{estimatedFrames} FRAMES</span>
+              </div>
+              <div className="video-dialog-summary-col">
+                <span className="video-dialog-summary-label">OUTPUT RESOLUTION</span>
+                <span className="video-dialog-summary-value">{outW} × {outH} PX</span>
+              </div>
+              <div className="video-dialog-summary-col">
+                <span className="video-dialog-summary-label">ESTIMATED RAM</span>
+                <span className="video-dialog-summary-value">~{estimatedRamMb} MB</span>
               </div>
             </div>
 
-            {/* Scale / Frame Dimensions */}
-            <div className='video-dialog-section'>
-              <p className='video-dialog-label'>
-                <span>SCALE / DIMENSIONS</span>
-                <span>TARGET: {outW} x {outH} px</span>
-              </p>
-              <div className='video-dialog-options'>
-                {[
-                  { label: '100%', val: 1 },
-                  { label: '75%', val: 0.75 },
-                  { label: '50%', val: 0.5 },
-                  { label: '25%', val: 0.25 },
-                ].map((opt) => (
-                  <button
-                    key={opt.label}
-                    type='button'
-                    className={`video-dialog-pill-btn${scale === opt.val ? ' active' : ''}`}
-                    onClick={() => setScale(opt.val)}
-                    disabled={isExtracting}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Framerate (FPS) */}
-            <div className='video-dialog-section'>
-              <p className='video-dialog-label'>
-                <span>FRAME RATE</span>
-                <span>{fps} FPS ({(1000 / fps).toFixed(0)}ms DELAY)</span>
-              </p>
-              <div className='video-dialog-options'>
-                {[10, 15, 20, 24, 30].map((f) => (
-                  <button
-                    key={f}
-                    type='button'
-                    className={`video-dialog-pill-btn${fps === f ? ' active' : ''}`}
-                    onClick={() => setFps(f)}
-                    disabled={isExtracting}
-                  >
-                    {f} FPS
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Live Summary */}
-            <div className='video-dialog-summary'>
-              <span>ESTIMATED: ~{estimatedFrames} FRAMES</span>
-              <span>~{estimatedRamMb} MB RAM</span>
-            </div>
-
+            {/* Progress Bar during extraction */}
             {isExtracting && (
-              <div className='video-dialog-section'>
-                <p className='video-dialog-label'>
-                  <span>EXTRACTING FRAMES: {progress.current} / {progress.total}</span>
-                  <span>{progress.percent}%</span>
-                </p>
-                <div className='video-dialog-progress-bar-wrap'>
+              <div className="video-dialog-section">
+                <div className="video-dialog-header-row">
+                  <span className="bv-label">
+                    EXTRACTING FRAMES: {progress.current} / {progress.total}
+                  </span>
+                  <span className="video-dialog-value-highlight">{progress.percent}%</span>
+                </div>
+                <div className="video-dialog-progress-bar-wrap">
                   <div
-                    className='video-dialog-progress-bar-fill'
+                    className="video-dialog-progress-bar-fill"
                     style={{ width: `${progress.percent}%` }}
                   />
                 </div>
               </div>
             )}
 
-            <div className='video-dialog-actions'>
+            {/* Dialog Actions */}
+            <div className="video-dialog-actions">
               <button
-                type='button'
-                className='bv-option-btn'
+                type="button"
+                className="bv-option-btn active"
                 onClick={handleConfirm}
                 disabled={isExtracting}
               >
@@ -242,8 +370,8 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
                   : `IMPORT (${estimatedFrames} FRAMES)`}
               </button>
               <button
-                type='button'
-                className='bv-option-btn danger-btn'
+                type="button"
+                className="bv-option-btn danger-btn"
                 onClick={onCancel}
                 disabled={isExtracting}
               >
