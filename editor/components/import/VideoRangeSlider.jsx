@@ -9,6 +9,7 @@ export default function VideoRangeSlider({
   endTime = 1,
   currentTime = 0,
   onChange,
+  onSeek,
   disabled = false,
 }) {
   const trackRef = useRef(null);
@@ -105,6 +106,45 @@ export default function VideoRangeSlider({
     window.addEventListener('pointercancel', onPointerUp);
   }, [disabled, safeDuration, safeEnd, safeStart, onChange]);
 
+  const handleWindowPointerDown = useCallback((e) => {
+    if (disabled || e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    try {
+      e.currentTarget.setPointerCapture?.(e.pointerId);
+    } catch {
+      // ignore
+    }
+
+    const seekToClientX = (clientX) => {
+      const rawTime = getTimeFromPointer(clientX);
+      const clampedTime = Math.max(safeStart, Math.min(safeEnd, rawTime));
+      onSeek?.(Number(clampedTime.toFixed(3)));
+    };
+
+    seekToClientX(e.clientX);
+
+    const onPointerMove = (moveEvt) => {
+      seekToClientX(moveEvt.clientX);
+    };
+
+    const onPointerUp = (upEvt) => {
+      try {
+        upEvt.currentTarget?.releasePointerCapture?.(upEvt.pointerId);
+      } catch {
+        // ignore
+      }
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
+    };
+
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
+  }, [disabled, getTimeFromPointer, onSeek, safeEnd, safeStart]);
+
   const handleTrackPointerDown = (e) => {
     if (disabled || e.button !== 0) return;
     const clickedTime = getTimeFromPointer(e.clientX);
@@ -176,8 +216,8 @@ export default function VideoRangeSlider({
           {/* Draggable Middle Window with Playhead inside */}
           <div
             className="video-range-window"
-            onPointerDown={(e) => handlePointerDown(e, 'range')}
-            title="Drag to move trim window"
+            onPointerDown={handleWindowPointerDown}
+            title="Click or drag to seek video"
           >
             <div
               className="video-range-playhead"

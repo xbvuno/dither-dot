@@ -149,6 +149,13 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
     }
   }, []);
 
+  const handleSeek = useCallback((time) => {
+    setCurrentPlayTime(time);
+    if (videoRef.current) {
+      videoRef.current.currentTime = time;
+    }
+  }, []);
+
   const togglePlayPause = () => {
     const video = videoRef.current;
     if (!video) return;
@@ -477,6 +484,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
                 endTime={endTime}
                 currentTime={currentPlayTime}
                 onChange={handleRangeChange}
+                onSeek={handleSeek}
                 disabled={isExtracting}
               />
             </div>
