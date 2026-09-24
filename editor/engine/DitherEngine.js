@@ -121,6 +121,8 @@ class DitherEngine {
     this.latestForegroundRequestId = 0;
     this.frameSourceCanvas = null;
     this.frameSourceCtx = null;
+    this.activeSourceImg = null;
+    this.previousDitherState = null;
 
     this.engineState = 'IDLE';
     this.subscriptions = [];
@@ -218,8 +220,44 @@ const action = this.debugEnabled ? "disable" : "enable";
     }
   }
 
+  detach(canvasHost) {
+    if (this.canvasHost === canvasHost) {
+      this.canvasHost = null;
+    }
+  }
+
+  clearSubscriptions() {
+    this.subscriptions.forEach((unsub) => {
+      try {
+        if (typeof unsub === 'function') unsub();
+      } catch {
+        // ignore
+      }
+    });
+    this.subscriptions = [];
+  }
+
   async init(canvasHost, sourceImg) {
     this.log('Pipeline', 'init() entered. sourceImg type/details: %s', typeof sourceImg === 'string' ? sourceImg.slice(0, 50) + "..." : typeof sourceImg);
+
+    // If the engine is already initialized with this exact source, just re-attach the canvas host without re-running pipeline or resetting frames!
+    if (this.worker && this.activeSourceImg === sourceImg && !this.disposed && (this.engineState === 'READY' || this.engineState === 'STREAMING')) {
+      this.canvasHost = canvasHost;
+      this.recreateViewportCanvas();
+      
+      const gifState = useGifStore.getState();
+      if ((gifState.frames?.length || 0) > 1) {
+        this.swapSourceFrame(gifState.currentFrameIndex);
+      } else {
+        this.syncVisibleLayer();
+      }
+
+      this.clearViewerLoadingTimer();
+      useImageStore.getState().setViewerLoading(false);
+      useImageStore.getState().setEngineReady(true);
+      return;
+    }
+
     this.canvasHost = canvasHost;
     this.disposed = false;
     this.activeJobs = 0;
@@ -235,6 +273,13 @@ const action = this.debugEnabled ? "disable" : "enable";
       if (this.lifecycleToken !== lifecycleToken || this.disposed) return;
       useImageStore.getState().setViewerLoading(true);
     }, VIEWER_LOADING_VISIBILITY_DELAY_MS);
+
+    // Clean up previous worker and subscriptions if re-initializing with new source
+    this.clearSubscriptions();
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
+    }
 
     // Initialize worker
     this.worker = new Worker(new URL('../workers/ditherWorker.js', import.meta.url), { type: 'module' });
@@ -260,6 +305,7 @@ const action = this.debugEnabled ? "disable" : "enable";
           throw new Error('Unable to create texture from source image');
         }
         this.activeSource = texture;
+        this.activeSourceImg = sourceImg;
         try {
           this.originalUniqueColors = await countUniqueColorsFromImageSource(sourceImg);
         } catch (error) {
@@ -393,10 +439,9 @@ const action = this.debugEnabled ? "disable" : "enable";
 
         if (colorParamsChanged) {
           usePaletteStore.getState().clearPaletteCache?.();
+          this.markGifFramesPending();
+          this.queueProcessing(true);
         }
-
-        this.markGifFramesPending();
-        this.queueProcessing(true);
       })
     );
 
@@ -430,7 +475,24 @@ const action = this.debugEnabled ? "disable" : "enable";
     );
 
     this.subscriptions.push(
-      useDitherStore.subscribe(() => {
+      useDitherStore.subscribe((state) => {
+        const prevState = this.previousDitherState;
+        const ditherChanged = !prevState || (
+          prevState.enabled !== state.enabled ||
+          prevState.method !== state.method ||
+          prevState.amount !== state.amount ||
+          prevState.matrixScale !== state.matrixScale ||
+          prevState.seed !== state.seed
+        );
+        this.previousDitherState = {
+          enabled: state.enabled,
+          method: state.method,
+          amount: state.amount,
+          matrixScale: state.matrixScale,
+          seed: state.seed,
+        };
+        if (!ditherChanged) return;
+
         this.preserveVisibleOutput();
         this.markGifFramesPending();
         this.queueProcessing(false);
@@ -511,7 +573,9 @@ const action = this.debugEnabled ? "disable" : "enable";
 
     this.subscriptions.push(
       useWatermarkStore.subscribe((state) => {
-        this.watermarkEnabled = Boolean(state.enabled);
+        const nextEnabled = Boolean(state.enabled);
+        if (this.watermarkEnabled === nextEnabled) return;
+        this.watermarkEnabled = nextEnabled;
         this.syncWatermarkPalette();
         this.markGifFramesPending();
         this.queueProcessing(false);

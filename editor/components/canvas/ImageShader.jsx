@@ -5,14 +5,15 @@ export default function ShaderImage({ sourceImg }) {
   const canvasHostRef = useRef(null);
 
   useEffect(() => {
-    if (!sourceImg || !canvasHostRef.current) return;
+    const host = canvasHostRef.current;
+    if (!sourceImg || !host) return;
 
     ditherEngine.log("Pipeline", "ShaderImage React wrapper initializing with source:", sourceImg);
-    ditherEngine.init(canvasHostRef.current, sourceImg);
+    ditherEngine.init(host, sourceImg);
 
     return () => {
-      ditherEngine.log("Pipeline", "ShaderImage React wrapper destroying");
-      ditherEngine.destroy();
+      ditherEngine.log("Pipeline", "ShaderImage React wrapper detaching canvas host");
+      ditherEngine.detach(host);
     };
   }, [sourceImg]);
 

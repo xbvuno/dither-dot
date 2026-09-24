@@ -309,12 +309,20 @@ export default function ImportStudio() {
   }, []);
 
 
-  // Ensure loaded GIFs are set to playing on mount
+  // Remember if editor was playing or paused before entering ImportStudio
+  const wasPlayingBeforeImportRef = useRef(useGifStore.getState().playing);
+
+  // Auto-play GIF in Import view, then restore previous editor playback state on unmount
   useEffect(() => {
-    if (frames.length > 1 && !playing) {
+    const wasPlaying = wasPlayingBeforeImportRef.current;
+    if (frames.length > 1 && !useGifStore.getState().playing) {
       setPlaying(true);
     }
-  }, [frames.length, playing, setPlaying]);
+
+    return () => {
+      setPlaying(wasPlaying);
+    };
+  }, [frames.length, setPlaying]);
 
   // GIF playback animation loop in Import view
   useEffect(() => {
