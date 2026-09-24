@@ -353,8 +353,8 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
 
   return createPortal(
     <div className="video-dialog-overlay" onClick={!isExtracting ? onCancel : undefined}>
-      <div className="video-dialog" onClick={(e) => e.stopPropagation()}>
-        {/* Warning banner: directly above title */}
+      <div className="video-dialog-container" onClick={(e) => e.stopPropagation()}>
+        {/* Warning banner: detached right above the popup */}
         {estimatedRamMb > 500 && (
           <div className="video-dialog-warning-banner">
             <span className="bv-label video-dialog-warning-text">
@@ -363,12 +363,13 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
           </div>
         )}
 
-        {/* Header */}
-        <div className="video-dialog-header">
-          <div className="video-dialog-header-title">
-            <Film size={16} />
-            <h2 className="video-dialog-title">IMPORT VIDEO</h2>
-          </div>
+        <div className="video-dialog">
+          {/* Header */}
+          <div className="video-dialog-header">
+            <div className="video-dialog-header-title">
+              <Film size={16} />
+              <h2 className="video-dialog-title">IMPORT VIDEO</h2>
+            </div>
           <button
             type="button"
             className="video-dialog-close-btn"
@@ -582,12 +583,6 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
                 <span className="bv-label video-dialog-meta-val">{estimatedFrames} FRAMES</span>
               </div>
               <div className="bv-controls-row" style={{ marginTop: '0.45rem' }}>
-                <span className="bv-label">DURATION & DELAY</span>
-                <span className="bv-label video-dialog-meta-val">
-                  {duration.toFixed(2)}s (~{Math.round(1000 / fps)}ms)
-                </span>
-              </div>
-              <div className="bv-controls-row" style={{ marginTop: '0.45rem' }}>
                 <span className="bv-label">ESTIMATED RAM</span>
                 <span className="bv-label video-dialog-meta-val">~{estimatedRamMb} MB</span>
               </div>
@@ -634,6 +629,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
             </div>
           </div>
         )}
+        </div>
       </div>
     </div>,
     document.body

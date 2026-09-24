@@ -90,7 +90,7 @@
   border-top: 2px solid var(--color-text, #EDEDDE);
   border-bottom: 2px solid var(--color-text, #EDEDDE);
   box-sizing: border-box;
-  cursor: pointer;
+  cursor: grab;
 }
 
 .video-range-window:active {

@@ -10,12 +10,21 @@
   padding: 1rem;
 }
 
-.video-dialog {
-  background: var(--color-bg, #000);
-  border: 1px solid var(--color-border, #333);
+.video-dialog-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   max-width: 460px;
   width: 100%;
   max-height: 90vh;
+  gap: 0.65rem;
+}
+
+.video-dialog {
+  background: var(--color-bg, #000);
+  border: 1px solid var(--color-border, #333);
+  width: 100%;
+  max-height: 100%;
   overflow-y: auto;
   box-shadow: var(--shadow-floating, 0 8px 32px rgba(0, 0, 0, 0.6));
   display: flex;
@@ -75,13 +84,16 @@
 }
 
 .video-dialog-warning-banner {
+  width: 100%;
   background: color-mix(in srgb, var(--color-danger, #b53636) 20%, transparent);
-  border-bottom: 1px solid var(--color-danger, #b53636);
+  border: 1px solid var(--color-danger, #b53636);
   padding: 0.45rem 0.65rem;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
+  box-sizing: border-box;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
 .video-dialog-warning-text {

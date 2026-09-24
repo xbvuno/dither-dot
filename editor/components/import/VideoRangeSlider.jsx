@@ -117,16 +117,36 @@ export default function VideoRangeSlider({
       // ignore
     }
 
-    const seekToClientX = (clientX) => {
-      const rawTime = getTimeFromPointer(clientX);
-      const clampedTime = Math.max(safeStart, Math.min(safeEnd, rawTime));
-      onSeek?.(Number(clampedTime.toFixed(3)));
-    };
-
-    seekToClientX(e.clientX);
+    const startX = e.clientX;
+    const initialStart = safeStart;
+    const initialEnd = safeEnd;
+    let hasDragged = false;
 
     const onPointerMove = (moveEvt) => {
-      seekToClientX(moveEvt.clientX);
+      const dist = Math.abs(moveEvt.clientX - startX);
+      if (!hasDragged && dist <= 4) return;
+      hasDragged = true;
+
+      const rect = trackRef.current?.getBoundingClientRect();
+      if (!rect || rect.width <= 0) return;
+
+      const deltaSec = ((moveEvt.clientX - startX) / rect.width) * safeDuration;
+      const span = initialEnd - initialStart;
+      let nextStart = initialStart + deltaSec;
+      let nextEnd = initialEnd + deltaSec;
+
+      if (nextStart < 0) {
+        nextStart = 0;
+        nextEnd = Math.min(safeDuration, span);
+      } else if (nextEnd > safeDuration) {
+        nextEnd = safeDuration;
+        nextStart = Math.max(0, safeDuration - span);
+      }
+
+      onChange?.({
+        startTime: Number(nextStart.toFixed(3)),
+        endTime: Number(nextEnd.toFixed(3)),
+      });
     };
 
     const onPointerUp = (upEvt) => {
@@ -138,12 +158,19 @@ export default function VideoRangeSlider({
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onPointerUp);
       window.removeEventListener('pointercancel', onPointerUp);
+
+      if (!hasDragged) {
+        // Click without drag: seek playhead and video
+        const rawTime = getTimeFromPointer(upEvt.clientX);
+        const clampedTime = Math.max(safeStart, Math.min(safeEnd, rawTime));
+        onSeek?.(Number(clampedTime.toFixed(3)));
+      }
     };
 
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
     window.addEventListener('pointercancel', onPointerUp);
-  }, [disabled, getTimeFromPointer, onSeek, safeEnd, safeStart]);
+  }, [disabled, getTimeFromPointer, onChange, onSeek, safeDuration, safeEnd, safeStart]);
 
   const handleTrackPointerDown = (e) => {
     if (disabled || e.button !== 0) return;
