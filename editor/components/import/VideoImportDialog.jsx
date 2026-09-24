@@ -389,6 +389,38 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
                 />
                 {activeCrop && meta && (
                   <div className="video-dialog-crop-overlay" aria-hidden="true">
+                    {/* Shaded cropped areas in red matching aside */}
+                    <div
+                      className="video-dialog-crop-shade"
+                      style={{ left: 0, right: 0, top: 0, height: `${(activeCrop.y / meta.height) * 100}%` }}
+                    />
+                    <div
+                      className="video-dialog-crop-shade"
+                      style={{
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        height: `${Math.max(0, (meta.height - (activeCrop.y + activeCrop.height)) / meta.height) * 100}%`,
+                      }}
+                    />
+                    <div
+                      className="video-dialog-crop-shade"
+                      style={{
+                        left: 0,
+                        top: `${(activeCrop.y / meta.height) * 100}%`,
+                        bottom: `${Math.max(0, (meta.height - (activeCrop.y + activeCrop.height)) / meta.height) * 100}%`,
+                        width: `${(activeCrop.x / meta.width) * 100}%`,
+                      }}
+                    />
+                    <div
+                      className="video-dialog-crop-shade"
+                      style={{
+                        right: 0,
+                        top: `${(activeCrop.y / meta.height) * 100}%`,
+                        bottom: `${Math.max(0, (meta.height - (activeCrop.y + activeCrop.height)) / meta.height) * 100}%`,
+                        width: `${Math.max(0, (meta.width - (activeCrop.x + activeCrop.width)) / meta.width) * 100}%`,
+                      }}
+                    />
                     <div
                       className="video-dialog-crop-box"
                       style={{
@@ -415,19 +447,6 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
               <span className="bv-label video-dialog-crop-hint">
                 DRAG TO CROP • RIGHT-CLICK TO RESET
               </span>
-              {crop && (
-                <button
-                  type="button"
-                  className="video-dialog-reset-crop-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setCrop(null);
-                  }}
-                  title="Reset crop to full frame"
-                >
-                  RESET CROP
-                </button>
-              )}
             </div>
 
             {/* Range / Trimming Section */}
@@ -556,21 +575,21 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
             <div className="video-dialog-actions">
               <button
                 type="button"
-                className="bv-option-btn active"
+                className="bv-option-btn video-dialog-cancel-btn"
+                onClick={onCancel}
+                disabled={isExtracting}
+              >
+                CANCEL
+              </button>
+              <button
+                type="button"
+                className="bv-option-btn active video-dialog-confirm-btn"
                 onClick={handleConfirm}
                 disabled={isExtracting}
               >
                 {isExtracting
                   ? `EXTRACTING (${progress.percent}%)...`
                   : `IMPORT (${estimatedFrames} FRAMES)`}
-              </button>
-              <button
-                type="button"
-                className="bv-option-btn danger-btn"
-                onClick={onCancel}
-                disabled={isExtracting}
-              >
-                CANCEL
               </button>
             </div>
           </div>

@@ -21,6 +21,33 @@ const PAGES = {
   [PAGE.SETTINGS]: SettingsPage,
 };
 
+export function AsideLoadingFallback({ label = "LOADING PANEL..." }) {
+  return (
+    <div className="aside-loading-container" role="status" aria-label={label}>
+      <div className="aside-loading-spinner" />
+      <span className="bv-label aside-loading-text">{label}</span>
+    </div>
+  );
+}
+
+// Preload aside components on idle for instant, prioritized rendering
+if (typeof window !== "undefined") {
+  const preloadPages = () => {
+    import("../../pages/ResizingPage");
+    import("../../pages/AdjustmentsPage");
+    import("../../pages/DitherPage");
+    import("../../pages/ExportPage");
+    import("../../pages/PalettePage");
+    import("../../pages/SettingsPage");
+    import("../../pages/PinnedPage");
+  };
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(preloadPages);
+  } else {
+    setTimeout(preloadPages, 200);
+  }
+}
+
 export default function AsideRouter() {
   const currentPage = usePageStore(s => s.currentPage);
   const PageComponent = PAGES[currentPage];
@@ -28,7 +55,7 @@ export default function AsideRouter() {
   if (!PageComponent) return null;
 
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<AsideLoadingFallback />}>
       <PageComponent />
     </Suspense>
   );

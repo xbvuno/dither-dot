@@ -126,35 +126,35 @@
   overflow-y: hidden;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
-  scrollbar-color: var(--color-border-hover, #aaa) var(--color-surface, #181818);
+  scrollbar-color: var(--color-border) transparent;
   min-height: 0;
-  padding-bottom: 8px;
+  padding-bottom: 6px;
 }
 
 .gif-frame-strip::-webkit-scrollbar {
-  height: 8px;
-  background-color: var(--color-surface, #181818);
-  display: block;
+  height: 6px;
 }
 
 .gif-frame-strip::-webkit-scrollbar-track {
-  background-color: var(--color-surface, #181818);
+  background: transparent;
 }
 
 .gif-frame-strip::-webkit-scrollbar-thumb {
-  background-color: var(--color-border-hover, #555);
-  border-radius: 4px;
+  background: var(--color-border);
+  border-radius: var(--radius-sm, 2px);
+  transition: background var(--transition-fast, 0.15s ease);
 }
 
 .gif-frame-strip::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-text, #fff);
+  background: var(--color-border-hover);
 }
 
 .gif-frame-btn {
   position: relative;
   width: var(--gif-frame-width, 56px);
-  height: 44px;
+  height: var(--gif-frame-height, 44px);
   min-width: 14px;
+  min-height: 14px;
   border: 1px solid var(--color-border);
   background: var(--color-bg-subtle);
   cursor: pointer;

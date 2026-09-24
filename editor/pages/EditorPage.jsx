@@ -19,7 +19,7 @@ import ZoomableDiv from '../components/ui/shared/ZoomableDiv';
 import ImageShader from '../components/canvas/ImageShader';
 import PostProcessShader from '../components/canvas/PostProcessShader';
 import OriginalMediaPreview from '../components/ui/shared/OriginalMediaPreview';
-import AsideRouter from '../components/layout/AsideRouter';
+import AsideRouter, { AsideLoadingFallback } from '../components/layout/AsideRouter';
 import GifTimeline from '../components/timeline/GifTimeline';
 import CameraControlsBar from '../components/camera/CameraControlsBar';
 import Footer from '../components/layout/Footer';
@@ -389,7 +389,7 @@ export default function EditorPage() {
           )}
           {exportOpen && (
             <Aside side='right'>
-              <Suspense fallback={null}>
+              <Suspense fallback={<AsideLoadingFallback label="LOADING EXPORT..." />}>
                 <ExportPage />
               </Suspense>
             </Aside>

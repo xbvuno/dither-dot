@@ -136,8 +136,9 @@ export default function GifTimeline() {
     };
 
     const getMetrics = () => {
-      const frameWidth = FRAME_CELL_WIDTH;
-      const frameHeight = FRAME_CELL_HEIGHT;
+      const currentZoom = useGifStore.getState().zoom || 1;
+      const frameWidth = Math.max(14, Math.round(FRAME_CELL_WIDTH * currentZoom));
+      const frameHeight = Math.max(14, Math.round(FRAME_CELL_HEIGHT * currentZoom));
 
       const stripStyle = window.getComputedStyle(strip);
       const stripGap = toPx(stripStyle.getPropertyValue('gap'), 6);
@@ -389,7 +390,7 @@ export default function GifTimeline() {
       if (e.altKey) {
         e.preventDefault();
         e.stopPropagation();
-        const delta = e.deltaY < 0 ? 0.08 : -0.08;
+        const delta = e.deltaY < 0 ? 0.1 : -0.1;
         const currentZoom = useGifStore.getState().zoom || 1;
         useGifStore.getState().setZoom(currentZoom + delta);
       }
@@ -397,7 +398,7 @@ export default function GifTimeline() {
 
     shell.addEventListener('wheel', onWheel, { passive: false });
     return () => shell.removeEventListener('wheel', onWheel);
-  }, [decoding, frames.length]);
+  }, []);
 
   useEffect(() => {
     if (!contextMenu) return;
@@ -424,18 +425,86 @@ export default function GifTimeline() {
     const onKeyDown = (e) => {
       const tag = e.target?.tagName?.toUpperCase();
       if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return;
+
+      const state = useGifStore.getState();
+      const totalFrames = state.frames.length;
+      if (totalFrames === 0) return;
+
+      const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+
+      // ArrowLeft: frame indietro
+      if (e.key === 'ArrowLeft' && !isCtrlOrCmd && !e.altKey) {
+        e.preventDefault();
+        const prevIdx = (state.currentFrameIndex - 1 + totalFrames) % totalFrames;
+        state.setPlaying(false);
+        state.setCurrentFrameIndex(prevIdx);
+        state.setSelectedFrameIndices([prevIdx]);
+        return;
+      }
+
+      // ArrowRight: frame avanti
+      if (e.key === 'ArrowRight' && !isCtrlOrCmd && !e.altKey) {
+        e.preventDefault();
+        const nextIdx = (state.currentFrameIndex + 1) % totalFrames;
+        state.setPlaying(false);
+        state.setCurrentFrameIndex(nextIdx);
+        state.setSelectedFrameIndices([nextIdx]);
+        return;
+      }
+
+      // Ctrl + A: seleziona tutti i frame
+      if (isCtrlOrCmd && (e.key === 'a' || e.key === 'A')) {
+        e.preventDefault();
+        const allIndices = state.frames.map((_, i) => i);
+        state.setSelectedFrameIndices(allIndices);
+        return;
+      }
+
+      // Del / Backspace: cancella i frame selezionati
       if (e.key === 'Delete' || e.key === 'Backspace') {
-        const state = useGifStore.getState();
         if (state.frames.length > 1 && state.selectedFrameIndices?.length > 0) {
           e.preventDefault();
-          deleteFrames(state.selectedFrameIndices);
+          state.deleteFrames(state.selectedFrameIndices);
         }
+        return;
+      }
+
+      // Ctrl + C: copia i frame selezionati
+      if (isCtrlOrCmd && (e.key === 'c' || e.key === 'C')) {
+        const targets = state.selectedFrameIndices?.length > 0 ? state.selectedFrameIndices : [state.currentFrameIndex];
+        e.preventDefault();
+        state.copyFrames(targets);
+        return;
+      }
+
+      // Ctrl + V: incolla i frame next
+      if (isCtrlOrCmd && (e.key === 'v' || e.key === 'V')) {
+        if (state.clipboardFrames && state.clipboardFrames.length > 0) {
+          e.preventDefault();
+          state.pasteFrames(state.currentFrameIndex, 'after');
+        }
+        return;
+      }
+
+      // Ctrl + D: duplica i frame selezionati
+      if (isCtrlOrCmd && (e.key === 'd' || e.key === 'D')) {
+        const targets = state.selectedFrameIndices?.length > 0 ? state.selectedFrameIndices : [state.currentFrameIndex];
+        e.preventDefault();
+        state.duplicateFrames(targets);
+        return;
+      }
+
+      // Escape: deseleziona tutti i frame
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        state.setSelectedFrameIndices([]);
+        return;
       }
     };
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [deleteFrames]);
+  }, []);
 
   const handleCopyImage = async (targetIndex) => {
     const frame = frames[targetIndex];
@@ -620,7 +689,7 @@ export default function GifTimeline() {
               className='bv-option-btn gif-timeline-btn gif-timeline-icon-btn'
               onClick={() => setZoom(zoom - 0.1)}
               aria-label='Zoom out frames'
-              title='ZOOM OUT'
+              title='ZOOM OUT (ALT + WHEEL DOWN)'
               disabled={decoding || zoom <= 0.25}
             >
               <ZoomOut size={13} strokeWidth={2} />
@@ -630,8 +699,8 @@ export default function GifTimeline() {
               className='bv-option-btn gif-timeline-btn gif-timeline-icon-btn'
               onClick={() => setZoom(zoom + 0.1)}
               aria-label='Zoom in frames'
-              title='ZOOM IN'
-              disabled={decoding || zoom >= 1.0}
+              title='ZOOM IN (ALT + WHEEL UP)'
+              disabled={decoding || zoom >= 2.5}
             >
               <ZoomIn size={13} strokeWidth={2} />
             </button>
@@ -669,7 +738,7 @@ export default function GifTimeline() {
             className='gif-frame-strip'
             style={{
               '--gif-frame-width': `${Math.max(14, Math.round(56 * zoom))}px`,
-              '--gif-frame-height': '44px',
+              '--gif-frame-height': `${Math.max(14, Math.round(44 * zoom))}px`,
             }}
           >
             {frames.map((_, index) => {

@@ -115,23 +115,29 @@
   overflow: hidden;
 }
 
+.video-dialog-crop-shade {
+  position: absolute;
+  background: color-mix(in srgb, var(--color-danger, #b53636) 42%, transparent);
+  pointer-events: none;
+}
+
 .video-dialog-crop-box {
   position: absolute;
-  border: 1.5px solid var(--color-text, #EDEDDE);
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+  border: 1.5px solid var(--color-danger-hover, #e43b44);
   box-sizing: border-box;
+  pointer-events: none;
 }
 
 .video-dialog-crop-badge {
   position: absolute;
   top: 4px;
   left: 4px;
-  background: rgba(0, 0, 0, 0.82);
-  color: var(--color-text, #EDEDDE);
+  background: rgba(15, 15, 15, 0.88);
+  color: var(--color-danger-text, #ffc8c8);
   font-family: var(--font-mono, monospace);
   font-size: 0.65rem;
-  padding: 1px 4px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 1px 5px;
+  border: 1px solid var(--color-danger-hover, #e43b44);
   pointer-events: none;
   line-height: 1.2;
   white-space: nowrap;
@@ -140,7 +146,7 @@
 .video-dialog-crop-hint-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   margin-top: -0.35rem;
   padding: 0 0.15rem;
 }
@@ -150,23 +156,7 @@
   color: var(--color-text-muted, #777);
   letter-spacing: 0.04em;
   margin: 0;
-}
-
-.video-dialog-reset-crop-btn {
-  background: transparent;
-  border: 1px solid var(--color-border-subtle, #333);
-  color: var(--color-text-muted, #888);
-  font-family: var(--font-mono, monospace);
-  font-size: 0.65rem;
-  padding: 1px 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.video-dialog-reset-crop-btn:hover {
-  color: #fff;
-  border-color: var(--color-border, #555);
-  background: rgba(255, 255, 255, 0.05);
+  text-align: center;
 }
 
 .video-dialog-play-overlay {
@@ -252,16 +242,37 @@
 
 .video-dialog-actions {
   display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
   margin-top: 0.2rem;
 }
 
-.video-dialog-actions .bv-option-btn {
+.video-dialog-cancel-btn {
+  flex: 0 0 auto;
+  width: auto !important;
+  min-width: 80px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.8rem;
+  background: transparent;
+  border: 1px solid var(--color-border, #333);
+  color: var(--color-text-muted, #999);
   text-align: center;
   justify-content: center;
+}
+
+.video-dialog-cancel-btn:hover:not(:disabled) {
+  color: var(--color-text, #EDEDDE);
+  border-color: var(--color-border-hover, #666);
+  background: var(--color-surface, #1e1e1e);
+}
+
+.video-dialog-confirm-btn {
+  flex: 1 1 auto;
   width: 100%;
   padding: 0.5rem;
   font-size: 0.8rem;
   font-weight: 500;
+  text-align: center;
+  justify-content: center;
 }

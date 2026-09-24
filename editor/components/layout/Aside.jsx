@@ -1,6 +1,7 @@
 import { useEffect, useRef, lazy, Suspense } from "react";
 import { setupMobileResize } from "../../utils/mobileResize";
 import usePageStore, { PAGE } from "../../stores/ui/pageStore";
+import { AsideLoadingFallback } from "./AsideRouter";
 import "./styles/Aside.css";
 
 const SettingsPage = lazy(() => import("../../pages/SettingsPage"));
@@ -130,7 +131,7 @@ export default function Aside({ children, side = "left", storageKey, className =
         {children}
         {side === "left" && currentPage !== PAGE.SETTINGS && (
           <div className="aside-mobile-settings">
-            <Suspense fallback={null}>
+            <Suspense fallback={<AsideLoadingFallback label="LOADING SETTINGS..." />}>
               <SettingsPage />
             </Suspense>
           </div>

@@ -489,14 +489,13 @@ export default function ImportStudio() {
   );
 
   const confirmVideoImport = useCallback(
-    async (frames, name) => {
+    async (frames, name, options = {}) => {
       setPendingVideo(null);
       setViewerLoading(true);
       setDecoding(true);
       try {
         const { rgbaFrameToPngBlob } = await import('../../utils/gifDecodeUtils');
-        setGifFrames(frames, 0);
-        setPlaying(true);
+        setGifFrames(frames, 0, options);
 
         const firstFrameBlob = await rgbaFrameToPngBlob(frames[0]);
         await setSourceFromBlob(firstFrameBlob, name, { skipHistory: true });
@@ -507,7 +506,7 @@ export default function ImportStudio() {
         setDecoding(false);
       }
     },
-    [setDecoding, setGifFrames, setPlaying, setSourceFromBlob, setViewerLoading]
+    [setDecoding, setGifFrames, setSourceFromBlob, setViewerLoading]
   );
 
   const importMultiImages = useCallback(
