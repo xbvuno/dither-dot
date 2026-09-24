@@ -9,6 +9,7 @@ import {
 import VideoRangeSlider from './VideoRangeSlider';
 import Slider from '../ui/shared/Slider';
 import OptionGroup from '../ui/shared/OptionGroup';
+import WaveGridSpinner from '../ui/shared/WaveGridSpinner';
 import './styles/VideoImportDialog.css';
 
 function getFpsOptions(detectedFps) {
@@ -38,6 +39,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   const [meta, setMeta] = useState(null);
   const [loadingMeta, setLoadingMeta] = useState(true);
   const [metaError, setMetaError] = useState(null);
+  const [isVideoReady, setIsVideoReady] = useState(false);
 
   const [startTime, setStartTime] = useState(0);
   const [endTime, setEndTime] = useState(0);
@@ -96,14 +98,18 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
     };
   }, [file]);
 
-  // Video element autoplay, muted, no controls, start position, and looping between [startTime, endTime]
+  const startTimeRef = useRef(startTime);
+  startTimeRef.current = startTime;
+
+  // Video element autoplay, muted, no controls, start position, and background FPS detection
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !meta) return;
 
+    setIsVideoReady(false);
     video.muted = true;
     video.volume = 0;
-    video.currentTime = startTime;
+    video.currentTime = startTimeRef.current;
 
     const playPromise = video.play();
     if (playPromise !== undefined) {
@@ -113,17 +119,28 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
     }
 
     let cancelled = false;
-    detectFpsFromVideoElement(video).then((elementFps) => {
-      if (!cancelled && elementFps && elementFps !== detectedFps) {
-        setDetectedFps(elementFps);
-        setFps((prev) => (prev > elementFps ? elementFps : prev));
-      }
-    });
+    detectFpsFromVideoElement(video)
+      .then((elementFps) => {
+        if (!cancelled && elementFps) {
+          setDetectedFps(elementFps);
+          setFps((prev) => (prev > elementFps ? elementFps : prev));
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) {
+          if (videoRef.current) {
+            videoRef.current.currentTime = startTimeRef.current;
+            videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+          }
+          setIsVideoReady(true);
+        }
+      });
 
     return () => {
       cancelled = true;
     };
-  }, [meta, detectedFps, startTime]);
+  }, [meta]);
 
   const handleTimeUpdate = useCallback(() => {
     const video = videoRef.current;
@@ -209,6 +226,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   }, [meta]);
 
   const handlePointerDown = (e) => {
+    if (!isVideoReady) return;
     if (e.button === 2) {
       // Right click resets crop
       e.preventDefault();
@@ -336,6 +354,15 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   return createPortal(
     <div className="video-dialog-overlay" onClick={!isExtracting ? onCancel : undefined}>
       <div className="video-dialog" onClick={(e) => e.stopPropagation()}>
+        {/* Warning banner: directly above title */}
+        {estimatedRamMb > 500 && (
+          <div className="video-dialog-warning-banner">
+            <span className="bv-label video-dialog-warning-text">
+              WARNING: HEAVY IMPORTS MAY CAUSE THE TAB TO CRASH (OOM)
+            </span>
+          </div>
+        )}
+
         {/* Header */}
         <div className="video-dialog-header">
           <div className="video-dialog-header-title">
@@ -372,15 +399,6 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
 
         {meta && !metaError && (
           <div className="video-dialog-body">
-            {/* Warning banner: only shown when estimated memory exceeds 500 MB */}
-            {estimatedRamMb > 500 && (
-              <div className="video-dialog-warning-banner">
-                <span className="bv-label video-dialog-warning-text">
-                  WARNING: HEAVY IMPORTS MAY CAUSE THE TAB TO CRASH (OOM)
-                </span>
-              </div>
-            )}
-
             {/* Video preview with interactive drag-to-crop */}
             <div
               className="video-dialog-preview-wrap"
@@ -389,9 +407,18 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerUp}
               onContextMenu={handleContextMenu}
-              title="Drag to crop • Right-click to reset"
+              title={isVideoReady ? 'Drag to crop • Right-click to reset' : undefined}
             >
-              <div className="video-dialog-preview-inner">
+              {!isVideoReady && (
+                <div className="video-dialog-preview-loader" aria-label="Loading video preview">
+                  <WaveGridSpinner />
+                </div>
+              )}
+
+              <div
+                className="video-dialog-preview-inner"
+                style={{ opacity: isVideoReady ? 1 : 0 }}
+              >
                 <video
                   ref={videoRef}
                   src={meta.url}
@@ -548,30 +575,21 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
               />
             </div>
 
-            {/* Specifications Summary */}
-            <div className="video-dialog-specs">
-              <div className="video-dialog-spec-row">
+            {/* Specifications as standard aside rows */}
+            <div className="bv-section">
+              <div className="bv-controls-row">
                 <span className="bv-label">FRAMES TO IMPORT</span>
-                <span className="video-dialog-spec-val highlight">{estimatedFrames} FRAMES</span>
+                <span className="bv-label video-dialog-meta-val">{estimatedFrames} FRAMES</span>
               </div>
-              <div className="video-dialog-spec-row">
-                <span className="bv-label">RESOLUTION</span>
-                <span className="video-dialog-spec-val">
-                  {outW} x {outH}{' '}
-                  <span className="video-dialog-spec-sub">
-                    ({crop ? `CROP ${crop.width} x ${crop.height}` : `ORIGINAL ${meta.width} x ${meta.height}`})
-                  </span>
-                </span>
-              </div>
-              <div className="video-dialog-spec-row">
+              <div className="bv-controls-row" style={{ marginTop: '0.45rem' }}>
                 <span className="bv-label">DURATION & DELAY</span>
-                <span className="video-dialog-spec-val">
+                <span className="bv-label video-dialog-meta-val">
                   {duration.toFixed(2)}s (~{Math.round(1000 / fps)}ms)
                 </span>
               </div>
-              <div className="video-dialog-spec-row">
+              <div className="bv-controls-row" style={{ marginTop: '0.45rem' }}>
                 <span className="bv-label">ESTIMATED RAM</span>
-                <span className="video-dialog-spec-val">~{estimatedRamMb} MB</span>
+                <span className="bv-label video-dialog-meta-val">~{estimatedRamMb} MB</span>
               </div>
             </div>
 
