@@ -51,6 +51,14 @@
   min-width: 4.6rem;
 }
 
+.gif-timeline-btn:focus,
+.gif-timeline-btn:focus-visible,
+.gif-timeline-icon-btn:focus,
+.gif-timeline-icon-btn:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 .gif-timeline-icon-btn {
   min-width: 2rem;
   width: 2rem;
@@ -114,11 +122,32 @@
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  overflow-x: auto;
+  overflow-x: scroll;
   overflow-y: hidden;
   scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-hover, #aaa) var(--color-surface, #181818);
   min-height: 0;
   padding-bottom: 8px;
+}
+
+.gif-frame-strip::-webkit-scrollbar {
+  height: 8px;
+  background-color: var(--color-surface, #181818);
+  display: block;
+}
+
+.gif-frame-strip::-webkit-scrollbar-track {
+  background-color: var(--color-surface, #181818);
+}
+
+.gif-frame-strip::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-hover, #555);
+  border-radius: 4px;
+}
+
+.gif-frame-strip::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-text, #fff);
 }
 
 .gif-frame-btn {
@@ -293,6 +322,33 @@
 .gif-frame-btn--compact .gif-frame-index--rendering {
   color: var(--color-text, #ffffff);
   font-weight: bold;
+}
+
+.gif-frame-btn--no-thumb {
+  background: var(--color-surface, #1e1e1e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gif-frame-btn--no-thumb .gif-frame-index {
+  position: static;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  background: transparent;
+  color: var(--color-text, #ffffff);
+  width: auto;
+  height: auto;
+  border: none;
+}
+
+.gif-frame-btn--no-thumb .gif-frame-state {
+  position: absolute;
+  top: 0.15rem;
+  right: 0.15rem;
+  bottom: auto;
+  left: auto;
 }
 
 .gif-context-menu-divider {

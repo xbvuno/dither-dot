@@ -9,6 +9,7 @@ const DEFAULT_GIF_STATE = {
   frameStates: [],
   renderedThumbnails: {},
   renderedFrames: {},
+  thumbnailsEnabled: true,
   loopCount: 0,
   decoding: false,
   selectedFrameIndices: [0],
@@ -45,9 +46,10 @@ const clampZoom = (value) => {
 const useGifStore = create((set) => ({
   ...DEFAULT_GIF_STATE,
 
-  setFrames: (frames, loopCount = 0) => {
+  setFrames: (frames, loopCount = 0, options = {}) => {
     const nextFrames = Array.isArray(frames) ? frames : [];
     const firstFrameDelay = nextFrames[0]?.delay;
+    const thumbnailsEnabled = options.thumbnailsEnabled !== undefined ? Boolean(options.thumbnailsEnabled) : true;
     set({
       frames: nextFrames,
       currentFrameIndex: 0,
@@ -57,6 +59,7 @@ const useGifStore = create((set) => ({
       frameStates: nextFrames.map(() => 'pending'),
       renderedThumbnails: {},
       renderedFrames: {},
+      thumbnailsEnabled,
       loopCount: Number.isFinite(loopCount) ? loopCount : 0,
       decoding: false,
     });
@@ -108,6 +111,10 @@ const useGifStore = create((set) => ({
     set({ playbackSpeed: clampSpeed(speed) });
   },
 
+  setThumbnailsEnabled: (enabled) => {
+    set({ thumbnailsEnabled: Boolean(enabled) });
+  },
+
   setPlaybackDelay: (delay) => {
     set((state) => {
       const nextDelay = clampDelay(delay);
@@ -115,13 +122,20 @@ const useGifStore = create((set) => ({
         return { playbackDelay: nextDelay };
       }
 
-      const safeIndex = clampFrameIndex(state.currentFrameIndex, state.frames.length);
-      const nextFrames = [...state.frames];
-      const currentFrame = nextFrames[safeIndex];
-      nextFrames[safeIndex] = {
-        ...currentFrame,
-        delay: nextDelay,
-      };
+      const targetIndices = state.selectedFrameIndices && state.selectedFrameIndices.length > 0
+        ? state.selectedFrameIndices
+        : [state.currentFrameIndex];
+
+      const targetsSet = new Set(targetIndices.map((i) => clampFrameIndex(i, state.frames.length)));
+      const nextFrames = state.frames.map((frame, idx) => {
+        if (targetsSet.has(idx)) {
+          return {
+            ...frame,
+            delay: nextDelay,
+          };
+        }
+        return frame;
+      });
 
       return {
         frames: nextFrames,

@@ -44,6 +44,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   const [scalePercent, setScalePercent] = useState(100);
   const [detectedFps, setDetectedFps] = useState(24);
   const [fps, setFps] = useState(24);
+  const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
 
   const [isPlaying, setIsPlaying] = useState(true);
   const [currentPlayTime, setCurrentPlayTime] = useState(0);
@@ -174,7 +175,11 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   const scale = scalePercent / 100;
   const outW = meta ? Math.max(1, Math.round(meta.width * scale)) : 0;
   const outH = meta ? Math.max(1, Math.round(meta.height * scale)) : 0;
-  const estimatedRamMb = Math.round((estimatedFrames * outW * outH * 4) / (1024 * 1024));
+  // Frame RAM is doubled to account for raw source frame + rendered dither cache buffer
+  const frameBytes = estimatedFrames * outW * outH * 4 * 2;
+  // If thumbnails are enabled: ~50x36 per frame (RGBA canvas + DataURL base64 string)
+  const thumbnailBytes = thumbnailsEnabled ? estimatedFrames * 50 * 36 * 4 * 2 : 0;
+  const estimatedRamMb = Math.round((frameBytes + thumbnailBytes) / (1024 * 1024));
 
   const handleConfirm = async () => {
     if (isExtracting || !meta) return;
@@ -193,7 +198,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
         throw new Error('No frames were extracted from the video.');
       }
 
-      await onConfirm(result.frames, name);
+      await onConfirm(result.frames, name, { thumbnailsEnabled });
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Video frame extraction failed.');
       setIsExtracting(false);
@@ -313,6 +318,25 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
                 }))}
                 value={fps}
                 onChange={(val) => setFps(Number(val))}
+                disabled={isExtracting}
+              />
+            </div>
+
+            {/* Thumbnails Section */}
+            <div className="bv-section">
+              <div className="bv-controls-row">
+                <span className="bv-label">TIMELINE THUMBNAILS</span>
+                <span className="bv-label video-dialog-meta-val">
+                  {thumbnailsEnabled ? 'ENABLED' : 'DISABLED (SAVING RAM)'}
+                </span>
+              </div>
+              <OptionGroup
+                options={[
+                  { value: 'disabled', label: 'DISABLED' },
+                  { value: 'enabled', label: 'ENABLED' },
+                ]}
+                value={thumbnailsEnabled ? 'enabled' : 'disabled'}
+                onChange={(val) => setThumbnailsEnabled(val === 'enabled')}
                 disabled={isExtracting}
               />
             </div>

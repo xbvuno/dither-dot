@@ -72,6 +72,7 @@ export default function GifTimeline() {
   const playbackDelay = useGifStore((s) => s.playbackDelay);
   const frameStates = useGifStore((s) => s.frameStates);
   const renderedThumbnails = useGifStore((s) => s.renderedThumbnails);
+  const thumbnailsEnabled = useGifStore((s) => s.thumbnailsEnabled) !== false;
   const decoding = useGifStore((s) => s.decoding);
   const clipboardFrames = useGifStore((s) => s.clipboardFrames) || [];
 
@@ -85,6 +86,40 @@ export default function GifTimeline() {
   const copyFrames = useGifStore((s) => s.copyFrames);
   const cutFrames = useGifStore((s) => s.cutFrames);
   const pasteFrames = useGifStore((s) => s.pasteFrames);
+
+  // Compute delay representation for selected frames:
+  // If multiple frames selected and all share the same delay, show it;
+  // if they have different delays, show '~'.
+  const targetIndices = selectedFrameIndices && selectedFrameIndices.length > 0
+    ? selectedFrameIndices
+    : [currentFrameIndex];
+
+  const delays = targetIndices
+    .map((idx) => frames[idx]?.delay)
+    .filter((d) => d !== undefined && d !== null);
+
+  const allDelaysSame = delays.length > 0 && delays.every((d) => d === delays[0]);
+  const canonicalDelay = allDelaysSame ? delays[0] : (delays.length === 0 ? playbackDelay : '~');
+
+  const [editingDelay, setEditingDelay] = useState(null);
+  const displayDelayValue = editingDelay !== null ? editingDelay : String(canonicalDelay);
+
+  const handleDelayChange = (e) => {
+    const val = e.target.value;
+    setEditingDelay(val);
+    const num = parseInt(val, 10);
+    if (!Number.isNaN(num) && Number.isFinite(num)) {
+      setPlaybackDelay(num);
+    }
+  };
+
+  const handleDelayBlur = () => {
+    const num = parseInt(editingDelay, 10);
+    if (!Number.isNaN(num) && Number.isFinite(num)) {
+      setPlaybackDelay(num);
+    }
+    setEditingDelay(null);
+  };
 
   useEffect(() => {
     const shell = timelineRef.current;
@@ -321,7 +356,7 @@ export default function GifTimeline() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setRawThumbnails({});
-    if (frames.length <= 1) return;
+    if (!thumbnailsEnabled || frames.length <= 1) return;
 
     let active = true;
     let index = 0;
@@ -344,7 +379,7 @@ export default function GifTimeline() {
     return () => {
       active = false;
     };
-  }, [frames]);
+  }, [frames, thumbnailsEnabled]);
 
   useEffect(() => {
     const shell = timelineRef.current;
@@ -609,14 +644,19 @@ export default function GifTimeline() {
             <span className='gif-timeline-label gif-delay-label-short gif-mobile-only'>MS</span>
             <input
               className='gif-delay-input'
-              type='number'
+              type='text'
+              inputMode='numeric'
               name='playbackDelay'
               id='gif-playback-delay'
-              min='20'
-              max='5000'
-              step='10'
-              value={playbackDelay}
-              onChange={(event) => setPlaybackDelay(event.target.value)}
+              value={displayDelayValue}
+              onFocus={() => setEditingDelay(displayDelayValue === '~' ? '' : displayDelayValue)}
+              onChange={handleDelayChange}
+              onBlur={handleDelayBlur}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.currentTarget.blur();
+                }
+              }}
               disabled={decoding}
               aria-label='Playback Delay (MS)'
             />
@@ -635,7 +675,7 @@ export default function GifTimeline() {
             {frames.map((_, index) => {
               const isLoaded = Boolean(frames[index]);
               const state = frameStates[index] || 'pending';
-              const thumb = renderedThumbnails[index] || rawThumbnails[index] || '';
+              const thumb = thumbnailsEnabled ? (renderedThumbnails[index] || rawThumbnails[index] || '') : '';
               const isActive = index === currentFrameIndex;
               const isSelected = selectedFrameIndices.includes(index);
               const stateLabel = state === 'pending' ? 'P' : state === 'done' ? 'DONE' : 'R';
@@ -646,7 +686,7 @@ export default function GifTimeline() {
                 <button
                   key={`gif-frame-${index}`}
                   type='button'
-                  className={`gif-frame-btn${isActive ? ' active' : ''}${isSelected ? ' selected' : ''}${state === 'pending' ? ' gif-frame-btn--pending' : ''}${!isLoaded ? ' gif-frame-btn--unloaded' : ''}${isCompact ? ' gif-frame-btn--compact' : ''}`}
+                  className={`gif-frame-btn${isActive ? ' active' : ''}${isSelected ? ' selected' : ''}${state === 'pending' ? ' gif-frame-btn--pending' : ''}${!isLoaded ? ' gif-frame-btn--unloaded' : ''}${isCompact ? ' gif-frame-btn--compact' : ''}${!thumbnailsEnabled ? ' gif-frame-btn--no-thumb' : ''}`}
                   disabled={!isLoaded}
                   onClick={(e) => handleFrameClick(e, index)}
                   onContextMenu={(e) => handleFrameContextMenu(e, index)}

@@ -111,12 +111,12 @@ export default function ImportPage() {
   );
 
   const confirmVideoImport = useCallback(
-    async (frames, name) => {
+    async (frames, name, options = {}) => {
       setPendingVideo(null);
       setViewerLoading(true);
       setDecoding(true);
       try {
-        setGifFrames(frames, 0);
+        setGifFrames(frames, 0, options);
 
         const firstFrameBlob = await rgbaFrameToPngBlob(frames[0]);
         await setSourceFromBlob(firstFrameBlob, name, { skipHistory: true });

@@ -1161,17 +1161,22 @@ const action = this.debugEnabled ? "disable" : "enable";
 
         if (gifFrameIndex >= 0) {
           let thumbnailUrl = '';
-          if (isCurrentFrame) {
-            thumbnailUrl = captureThumbnailDataUrl(this.outputCanvas, 60);
-          } else {
-            // Render thumbnail on an offscreen canvas without ever touching viewport/zoomable div
-            const thumbCanvas = document.createElement('canvas');
-            thumbCanvas.width = outWidth;
-            thumbCanvas.height = outHeight;
-            const tCtx = thumbCanvas.getContext('2d');
-            if (tCtx) {
-              tCtx.putImageData(new ImageData(output, outWidth, outHeight), 0, 0);
-              thumbnailUrl = captureThumbnailDataUrl(thumbCanvas, 60);
+          const gifState = useGifStore.getState();
+          const shouldCaptureThumb = gifState.thumbnailsEnabled !== false;
+
+          if (shouldCaptureThumb) {
+            if (isCurrentFrame) {
+              thumbnailUrl = captureThumbnailDataUrl(this.outputCanvas, 60);
+            } else {
+              // Render thumbnail on an offscreen canvas without ever touching viewport/zoomable div
+              const thumbCanvas = document.createElement('canvas');
+              thumbCanvas.width = outWidth;
+              thumbCanvas.height = outHeight;
+              const tCtx = thumbCanvas.getContext('2d');
+              if (tCtx) {
+                tCtx.putImageData(new ImageData(output, outWidth, outHeight), 0, 0);
+                thumbnailUrl = captureThumbnailDataUrl(thumbCanvas, 60);
+              }
             }
           }
 
