@@ -123,11 +123,13 @@ export default function VideoRangeSlider({
   };
 
   return (
-    <div className={`video-range-slider-wrap${disabled ? ' disabled' : ''}`}>
+    <div
+      className={`video-range-slider-wrap${disabled ? ' disabled' : ''}`}
+      onPointerDown={handleTrackPointerDown}
+    >
       <div
         className="video-range-track"
         ref={trackRef}
-        onPointerDown={handleTrackPointerDown}
       >
         {/* Background Ticks */}
         <div className="video-range-ticks" aria-hidden="true">

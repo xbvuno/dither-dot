@@ -286,8 +286,9 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   const duration = Math.max(0.05, endTime - startTime);
   const estimatedFrames = Math.ceil(duration * fps); // NO 300 LIMIT!
 
-  const sourceW = crop ? crop.width : (meta ? meta.width : 0);
-  const sourceH = crop ? crop.height : (meta ? meta.height : 0);
+  const activeCrop = dragCrop || crop;
+  const sourceW = activeCrop ? activeCrop.width : (meta ? meta.width : 0);
+  const sourceH = activeCrop ? activeCrop.height : (meta ? meta.height : 0);
 
   const scale = scalePercent / 100;
   const outW = Math.max(1, Math.round(sourceW * scale));
@@ -324,8 +325,6 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
       setIsExtracting(false);
     }
   };
-
-  const activeCrop = dragCrop || crop;
 
   return createPortal(
     <div className="video-dialog-overlay" onClick={!isExtracting ? onCancel : undefined}>
@@ -452,6 +451,16 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
               <span className="bv-label video-dialog-crop-hint">
                 DRAG TO CROP • RIGHT-CLICK TO RESET
               </span>
+            </div>
+
+            {/* Crop Section */}
+            <div className="bv-section">
+              <div className="bv-controls-row">
+                <span className="bv-label">CROP</span>
+                <span className="bv-label video-dialog-meta-val">
+                  {sourceW} x {sourceH}
+                </span>
+              </div>
             </div>
 
             {/* Range / Trimming Section */}
