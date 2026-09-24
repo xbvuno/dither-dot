@@ -429,11 +429,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
                         width: `${(activeCrop.width / meta.width) * 100}%`,
                         height: `${(activeCrop.height / meta.height) * 100}%`,
                       }}
-                    >
-                      <span className="video-dialog-crop-badge">
-                        {activeCrop.width} × {activeCrop.height}
-                      </span>
-                    </div>
+                    />
                   </div>
                 )}
                 <div className={`video-dialog-play-overlay${!isPlaying ? ' visible' : ''}`}>
@@ -452,9 +448,9 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
             {/* Range / Trimming Section */}
             <div className="bv-section">
               <div className="bv-controls-row">
-                <span className="bv-label">RANGE (TRIM)</span>
+                <span className="bv-label">TRIM</span>
                 <span className="bv-label video-dialog-meta-val">
-                  {duration.toFixed(2)}s [{startTime.toFixed(2)}s - {endTime.toFixed(2)}s]
+                  {startTime.toFixed(2)}s - {endTime.toFixed(2)}s [{duration.toFixed(2)}s]
                 </span>
               </div>
               <VideoRangeSlider
@@ -472,7 +468,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
               <div className="bv-controls-row">
                 <span className="bv-label">SCALE</span>
                 <span className="bv-label video-dialog-meta-val">
-                  {outW} × {outH} PX ({scalePercent}%)
+                  {outW} x {outH} [{scalePercent}%]
                 </span>
               </div>
               <Slider
@@ -490,15 +486,15 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
             {/* Frame Rate Section */}
             <div className="bv-section">
               <div className="bv-controls-row">
-                <span className="bv-label">FRAME RATE</span>
+                <span className="bv-label">FRAME RATE (FPS)</span>
                 <span className="bv-label video-dialog-meta-val">
-                  {fps} FPS [SOURCE: {detectedFps} FPS]
+                  {fps}
                 </span>
               </div>
               <OptionGroup
                 options={fpsOptions.map((f) => ({
                   value: f,
-                  label: `${f} FPS`,
+                  label: f === detectedFps ? `SOURCE [${detectedFps}]` : `${f}`,
                   title: `${f} FPS (~${Math.round(1000 / f)}ms delay)`,
                 }))}
                 value={fps}
@@ -535,9 +531,9 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
               <div className="video-dialog-spec-row">
                 <span className="bv-label">RESOLUTION</span>
                 <span className="video-dialog-spec-val">
-                  {outW} × {outH} PX{' '}
+                  {outW} x {outH}{' '}
                   <span className="video-dialog-spec-sub">
-                    ({crop ? `CROP ${crop.width} × ${crop.height}` : `ORIGINAL ${meta.width} × ${meta.height}`})
+                    ({crop ? `CROP ${crop.width} x ${crop.height}` : `ORIGINAL ${meta.width} x ${meta.height}`})
                   </span>
                 </span>
               </div>

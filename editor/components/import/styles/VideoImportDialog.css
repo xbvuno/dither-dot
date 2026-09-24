@@ -128,21 +128,6 @@
   pointer-events: none;
 }
 
-.video-dialog-crop-badge {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  background: rgba(15, 15, 15, 0.88);
-  color: var(--color-danger-text, #ffc8c8);
-  font-family: var(--font-mono, monospace);
-  font-size: 0.65rem;
-  padding: 1px 5px;
-  border: 1px solid var(--color-danger-hover, #e43b44);
-  pointer-events: none;
-  line-height: 1.2;
-  white-space: nowrap;
-}
-
 .video-dialog-crop-hint-row {
   display: flex;
   align-items: center;
