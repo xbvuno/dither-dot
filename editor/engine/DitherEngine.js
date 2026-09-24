@@ -210,6 +210,9 @@ const action = this.debugEnabled ? "disable" : "enable";
     if (prevState !== nextState) {
       this.engineState = nextState;
       this.log('FSM', 'State transitioned: %s -> %s', prevState, nextState);
+      if ((nextState === 'READY' || nextState === 'STREAMING') && this.processingQueued) {
+        this.queueProcessing(false);
+      }
     }
   }
 
@@ -781,6 +784,7 @@ const action = this.debugEnabled ? "disable" : "enable";
     try {
       if (this.engineState !== 'READY' && this.engineState !== 'STREAMING') {
         this.warn('Pipeline', 'dispatchProcessing aborted: engineState is %s (needs READY/STREAMING)', this.engineState);
+        this.processingQueued = true;
         return;
       }
       const worker = this.worker;
@@ -952,11 +956,12 @@ const action = this.debugEnabled ? "disable" : "enable";
   }
 
   queueProcessing(refreshPalette = false) {
+    this.pendingPaletteRefresh = this.pendingPaletteRefresh || refreshPalette;
+    this.processingQueued = true;
+
     if (this.engineState !== 'READY' && this.engineState !== 'STREAMING') {
       return;
     }
-    this.pendingPaletteRefresh = this.pendingPaletteRefresh || refreshPalette;
-    this.processingQueued = true;
 
     if (this.isWebcamMode) {
       this.flushProcessingQueue();
@@ -1018,6 +1023,7 @@ const action = this.debugEnabled ? "disable" : "enable";
 
     // Recreate viewport canvas because old one's control was permanently transferred to crashed worker
     this.recreateViewportCanvas();
+    this.queueProcessing(true);
 
     this.warn('Worker', 'restarted dither worker after %s (job %d)', reason, jobId);
   }

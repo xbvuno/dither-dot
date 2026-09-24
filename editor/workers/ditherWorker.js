@@ -331,30 +331,32 @@ self.onmessage = async (event) => {
     tFinal = performance.now() - tFinalStart;
 
     // Render directly to OffscreenCanvas if available and not an idle/background job
-    if (!event.data.skipCanvasRender && viewportCanvas && viewportCtx) {
-      if (viewportCanvas.width !== outWidth || viewportCanvas.height !== outHeight) {
-        viewportCanvas.width = outWidth;
-        viewportCanvas.height = outHeight;
-      }
-      viewportCtx.clearRect(0, 0, outWidth, outHeight);
-      viewportCtx.imageSmoothingEnabled = false;
-      const imgDataOut = new ImageData(outputPixels, outWidth, outHeight);
-      viewportCtx.putImageData(imgDataOut, 0, 0);
-
-      if (watermarkEnabled) {
-        const useMini = outWidth < 64 || outHeight < 64;
-        const watermark = useMini ? watermarkMiniBitmap : watermarkBitmap;
-        if (watermark) {
-          const margin = useMini ? WATERMARK_MARGIN_MINI : WATERMARK_MARGIN_NORMAL;
-          const x = outWidth - margin - watermark.width;
-          const y = outHeight - margin - watermark.height;
-          viewportCtx.drawImage(watermark, x, y);
-        } else {
-          warn('Watermark', 'Watermark requested but bitmap is not loaded!');
+    if (!event.data.skipCanvasRender) {
+      if (viewportCanvas && viewportCtx) {
+        if (viewportCanvas.width !== outWidth || viewportCanvas.height !== outHeight) {
+          viewportCanvas.width = outWidth;
+          viewportCanvas.height = outHeight;
         }
+        viewportCtx.clearRect(0, 0, outWidth, outHeight);
+        viewportCtx.imageSmoothingEnabled = false;
+        const imgDataOut = new ImageData(outputPixels, outWidth, outHeight);
+        viewportCtx.putImageData(imgDataOut, 0, 0);
+
+        if (watermarkEnabled) {
+          const useMini = outWidth < 64 || outHeight < 64;
+          const watermark = useMini ? watermarkMiniBitmap : watermarkBitmap;
+          if (watermark) {
+            const margin = useMini ? WATERMARK_MARGIN_MINI : WATERMARK_MARGIN_NORMAL;
+            const x = outWidth - margin - watermark.width;
+            const y = outHeight - margin - watermark.height;
+            viewportCtx.drawImage(watermark, x, y);
+          } else {
+            warn('Watermark', 'Watermark requested but bitmap is not loaded!');
+          }
+        }
+      } else {
+        warn('Canvas', 'Cannot draw directly to OffscreenCanvas: viewportCanvas is %o, viewportCtx is %o', !!viewportCanvas, !!viewportCtx);
       }
-    } else {
-      warn('Canvas', 'Cannot draw directly to OffscreenCanvas: viewportCanvas is %o, viewportCtx is %o', !!viewportCanvas, !!viewportCtx);
     }
 
     const elapsed = (self.performance?.now?.() ?? Date.now()) - startTs;
