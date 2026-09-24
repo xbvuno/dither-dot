@@ -366,12 +366,14 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
 
         {meta && !metaError && (
           <div className="video-dialog-body">
-            {/* Warning banner */}
-            <div className="video-dialog-warning-banner">
-              <span className="bv-label video-dialog-warning-text">
-                ATTENZIONE: UN IMPORT TROPPO PESANTE POTREBBE FAR CRASHARE LA PAGINA (OOM)
-              </span>
-            </div>
+            {/* Warning banner: only shown when estimated memory exceeds 500 MB */}
+            {estimatedRamMb > 500 && (
+              <div className="video-dialog-warning-banner">
+                <span className="bv-label video-dialog-warning-text">
+                  WARNING: HEAVY IMPORTS MAY CAUSE THE TAB TO CRASH (OOM)
+                </span>
+              </div>
+            )}
 
             {/* Video preview with interactive drag-to-crop */}
             <div
