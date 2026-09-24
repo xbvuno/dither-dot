@@ -366,6 +366,13 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
 
         {meta && !metaError && (
           <div className="video-dialog-body">
+            {/* Warning banner */}
+            <div className="video-dialog-warning-banner">
+              <span className="bv-label video-dialog-warning-text">
+                ATTENZIONE: UN IMPORT TROPPO PESANTE POTREBBE FAR CRASHARE LA PAGINA (OOM)
+              </span>
+            </div>
+
             {/* Video preview with interactive drag-to-crop */}
             <div
               className="video-dialog-preview-wrap"
@@ -488,7 +495,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
               <div className="bv-controls-row">
                 <span className="bv-label">FRAME RATE (FPS)</span>
                 <span className="bv-label video-dialog-meta-val">
-                  {fps}
+                  {fps} FPS
                 </span>
               </div>
               <OptionGroup
@@ -506,7 +513,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
             {/* Thumbnails Section */}
             <div className="bv-section">
               <div className="bv-controls-row">
-                <span className="bv-label">TIMELINE THUMBNAILS</span>
+                <span className="bv-label">THUMBNAILS</span>
                 <span className="bv-label video-dialog-meta-val">
                   {thumbnailsEnabled ? `ENABLED (~${thumbnailRamMb} MB)` : 'DISABLED (SAVING RAM)'}
                 </span>

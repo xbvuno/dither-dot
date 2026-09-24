@@ -74,6 +74,26 @@
   gap: 0.85rem;
 }
 
+.video-dialog-warning-banner {
+  background: color-mix(in srgb, var(--color-danger, #b53636) 14%, transparent);
+  border: 1px solid var(--color-danger, #b53636);
+  padding: 0.45rem 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.video-dialog-warning-text {
+  color: var(--color-danger-text, #ffc8c8) !important;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  margin: 0;
+  text-align: center;
+}
+
 .video-dialog-preview-wrap {
   width: 100%;
   max-height: 190px;
