@@ -16,6 +16,7 @@ import {
   stripExtension,
   isGifFile,
   isWebpFile,
+  isVideoFile,
   getImageDimensions,
   buildClipboardFileName,
   validateImageFile,
@@ -31,15 +32,18 @@ import WebcamSection from '../components/import/WebcamSection';
 import SourceSection from '../components/import/SourceSection';
 import GallerySection from '../components/import/GallerySection';
 import LargeImageDialog from '../components/import/LargeImageDialog';
+import VideoImportDialog from '../components/import/VideoImportDialog';
 
 export default function ImportPage() {
   const inputRef = useRef(null);
   const [isDropActive, setIsDropActive] = useState(false);
   const [pendingImport, setPendingImport] = useState(null);
+  const [pendingVideo, setPendingVideo] = useState(null);
   const [isRandomLoading, setIsRandomLoading] = useState(false);
 
   const setSourceFromBlob = useImageStore((s) => s.setSourceFromBlob);
   const setSourceDirect = useImageStore((s) => s.setSourceDirect);
+  const setViewerLoading = useImageStore((s) => s.setViewerLoading);
   const resetToDefault = useImageStore((s) => s.resetToDefault);
 
   const pushGifHistory = useGalleryStore((s) => s.pushGifHistory);
@@ -67,6 +71,7 @@ export default function ImportPage() {
     async (blob, name) => {
       if (isGifFile({ type: blob?.type, name })) {
         setDecoding(true);
+        setViewerLoading(true);
         try {
           const decoded = await decodeGifWithWorker(blob);
           if (!decoded.frames.length) {
@@ -82,8 +87,10 @@ export default function ImportPage() {
           const gifDataUrl = await blobToDataUrl(blob);
           pushGifHistory(previewSrc, name, gifDataUrl);
         } catch (error) {
+          alert(error instanceof Error ? error.message : 'GIF decode failed.');
+        } finally {
           setDecoding(false);
-          throw error;
+          setViewerLoading(false);
         }
         return;
       }
@@ -100,7 +107,59 @@ export default function ImportPage() {
 
       await setSourceFromBlob(blob, name);
     },
-    [clearGifFrames, pushGifHistory, setGifFrames, setSourceFromBlob, setDecoding],
+    [clearGifFrames, pushGifHistory, setGifFrames, setSourceFromBlob, setDecoding, setViewerLoading],
+  );
+
+  const confirmVideoImport = useCallback(
+    async (frames, name) => {
+      setPendingVideo(null);
+      setViewerLoading(true);
+      setDecoding(true);
+      try {
+        setGifFrames(frames, 0);
+
+        const firstFrameBlob = await rgbaFrameToPngBlob(frames[0]);
+        await setSourceFromBlob(firstFrameBlob, name, { skipHistory: true });
+
+        const previewSrc = await blobToDataUrl(firstFrameBlob);
+        pushGifHistory(previewSrc, name, previewSrc);
+      } catch (err) {
+        alert(err instanceof Error ? err.message : 'Failed to finalize video import.');
+      } finally {
+        setViewerLoading(false);
+        setDecoding(false);
+      }
+    },
+    [pushGifHistory, setDecoding, setGifFrames, setSourceFromBlob, setViewerLoading],
+  );
+
+  const importMultiImages = useCallback(
+    async (files) => {
+      setViewerLoading(true);
+      setDecoding(true);
+      try {
+        const { loadImagesAsFrames } = await import('../utils/videoDecodeUtils');
+        const result = await loadImagesAsFrames(files);
+        if (!result.frames.length) {
+          throw new Error('No valid frames extracted from image files.');
+        }
+
+        const name = `${stripExtension(files[0].name).toUpperCase()} (${files.length} FRAMES)`;
+        setGifFrames(result.frames, 0);
+
+        const firstFrameBlob = await rgbaFrameToPngBlob(result.frames[0]);
+        await setSourceFromBlob(firstFrameBlob, name, { skipHistory: true });
+
+        const previewSrc = await blobToDataUrl(firstFrameBlob);
+        pushGifHistory(previewSrc, name, previewSrc);
+      } catch (err) {
+        alert(err instanceof Error ? err.message : 'Multi-image sequence import failed.');
+      } finally {
+        setViewerLoading(false);
+        setDecoding(false);
+      }
+    },
+    [pushGifHistory, setDecoding, setGifFrames, setSourceFromBlob, setViewerLoading],
   );
 
   const importWithSizeCheck = useCallback(
@@ -133,21 +192,31 @@ export default function ImportPage() {
         const rawName =
           typeof file.name === 'string' && file.name ? file.name : buildClipboardFileName(file.type || 'image/png');
         const name = stripExtension(rawName);
+
+        if (isVideoFile(file)) {
+          setPendingVideo({ file, name });
+          return;
+        }
+
         await importWithSizeCheck(file, name);
       } catch (error) {
-        alert(error instanceof Error ? error.message : 'Image import failed.');
+        alert(error instanceof Error ? error.message : 'Media import failed.');
       }
     },
     [importWithSizeCheck],
   );
 
   const handleFilePickerChange = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      alert('No file selected. Please choose an image file.');
+    const files = Array.from(event.target.files || []);
+    if (!files.length) {
+      alert('No file selected.');
       return;
     }
-    await importFromFile(file);
+    if (files.length > 1) {
+      await importMultiImages(files);
+    } else {
+      await importFromFile(files[0]);
+    }
     event.target.value = '';
   };
 
@@ -213,14 +282,16 @@ export default function ImportPage() {
     setIsDropActive(false);
 
     const files = Array.from(event.dataTransfer?.files || []);
-    const file = files[0];
-
-    if (!file) {
+    if (!files.length) {
       alert('No file detected in drop payload.');
       return;
     }
 
-    await importFromFile(file);
+    if (files.length > 1) {
+      await importMultiImages(files);
+    } else {
+      await importFromFile(files[0]);
+    }
   };
 
   const handleWebcamToggle = async () => {
@@ -340,6 +411,7 @@ export default function ImportPage() {
             name='imageFileInput'
             id='image-file-input'
             accept={INPUT_ACCEPT}
+            multiple
             onChange={handleFilePickerChange}
             style={{ display: 'none' }}
             aria-label='Select image file'
@@ -423,6 +495,15 @@ export default function ImportPage() {
           dims={pendingImport.dims}
           onConfirm={confirmImport}
           onCancel={() => setPendingImport(null)}
+        />
+      )}
+
+      {pendingVideo && (
+        <VideoImportDialog
+          file={pendingVideo.file}
+          name={pendingVideo.name}
+          onConfirm={confirmVideoImport}
+          onCancel={() => setPendingVideo(null)}
         />
       )}
     </div>

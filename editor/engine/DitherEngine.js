@@ -115,6 +115,12 @@ class DitherEngine {
     this.viewerLoadingTimer = null;
     this.previousColorParams = null;
     
+    this.idleRenderTimer = null;
+    this.idleGeneration = 0;
+    this.idleJobIds = new Set();
+    this.frameSourceCanvas = null;
+    this.frameSourceCtx = null;
+
     this.engineState = 'IDLE';
     this.subscriptions = [];
 
@@ -1040,18 +1046,40 @@ const action = this.debugEnabled ? "disable" : "enable";
           });
         }
 
-        const textureUpdateStart = performance.now();
-        usePerformanceStore.getState().setCurrentPhase('texture');
-        this.updateOutputTexture(output, outWidth, outHeight);
-        this.textureUpdateStartTime.set(jobId, textureUpdateStart);
-        const textureUpdateDuration = performance.now() - textureUpdateStart;
-        usePerformanceStore.getState().recordTextureUpdate(textureUpdateDuration);
+        const isIdleJob = Boolean(this.idleJobIds && this.idleJobIds.has(jobId));
+        if (isIdleJob) {
+          this.idleJobIds.delete(jobId);
+        }
 
-        this.outputMode = wasDitherEnabled ? 'dither' : 'clean';
-        this.outputReady = true;
+        const isCurrentFrame = gifFrameIndex < 0 || gifFrameIndex === useGifStore.getState().currentFrameIndex;
+
+        if (isCurrentFrame || !isIdleJob) {
+          const textureUpdateStart = performance.now();
+          usePerformanceStore.getState().setCurrentPhase('texture');
+          this.updateOutputTexture(output, outWidth, outHeight);
+          this.textureUpdateStartTime.set(jobId, textureUpdateStart);
+          const textureUpdateDuration = performance.now() - textureUpdateStart;
+          usePerformanceStore.getState().recordTextureUpdate(textureUpdateDuration);
+
+          this.outputMode = wasDitherEnabled ? 'dither' : 'clean';
+          this.outputReady = true;
+        }
 
         if (gifFrameIndex >= 0) {
-          const thumbnailUrl = captureThumbnailDataUrl(this.outputCanvas, 60);
+          let thumbnailUrl = '';
+          if (isCurrentFrame || !isIdleJob) {
+            thumbnailUrl = captureThumbnailDataUrl(this.outputCanvas, 60);
+          } else {
+            const thumbCanvas = document.createElement('canvas');
+            thumbCanvas.width = outWidth;
+            thumbCanvas.height = outHeight;
+            const tCtx = thumbCanvas.getContext('2d');
+            if (tCtx) {
+              tCtx.putImageData(new ImageData(output, outWidth, outHeight), 0, 0);
+              thumbnailUrl = captureThumbnailDataUrl(thumbCanvas, 60);
+            }
+          }
+
           const cachedFrame = {
             width: outWidth,
             height: outHeight,
@@ -1059,21 +1087,19 @@ const action = this.debugEnabled ? "disable" : "enable";
             referencePixels: reference ? new Uint8ClampedArray(reference) : null,
             uniqueColors: uniqueColorCount ?? 0,
           };
-          if (thumbnailUrl) {
-            useGifStore.getState().markFrameRendered(gifFrameIndex, thumbnailUrl, cachedFrame);
-          } else {
-            useGifStore.getState().markFrameRendered(gifFrameIndex, '', cachedFrame);
-          }
+          useGifStore.getState().markFrameRendered(gifFrameIndex, thumbnailUrl || '', cachedFrame);
         }
 
-        const syncStart = performance.now();
-        usePerformanceStore.getState().setCurrentPhase('sync');
-        this.syncVisibleLayer();
-        const syncDuration = performance.now() - syncStart;
-        usePerformanceStore.getState().recordLayerSync(syncDuration);
+        if (isCurrentFrame || !isIdleJob) {
+          const syncStart = performance.now();
+          usePerformanceStore.getState().setCurrentPhase('sync');
+          this.syncVisibleLayer();
+          const syncDuration = performance.now() - syncStart;
+          usePerformanceStore.getState().recordLayerSync(syncDuration);
 
-        usePerformanceStore.getState().recordPipelineComplete();
-        useImageStore.setState({ lastRenderJobId: jobId });
+          usePerformanceStore.getState().recordPipelineComplete();
+          useImageStore.setState({ lastRenderJobId: jobId });
+        }
 
         if (this.isWebcamMode) {
           useWebcamStore.getState().recordRenderedFrame();
@@ -1100,9 +1126,14 @@ const action = this.debugEnabled ? "disable" : "enable";
         this.gifFrameForRequest.delete(jobId);
         this.skipStatsForRequest.delete(jobId);
 
-        this.setProcessingDelta(-1);
+        if (!isIdleJob) {
+          this.setProcessingDelta(-1);
+        }
+
         if (this.processingQueued) {
           this.queueProcessing(false);
+        } else {
+          this.scheduleIdleFrameRender();
         }
       }
 
@@ -1565,6 +1596,26 @@ const action = this.debugEnabled ? "disable" : "enable";
       this.applyDisplaySize(displaySize.width, displaySize.height);
     }
 
+    // Always update raw frameSourceCanvas so activeSource and splitOverlayImage point to the current frame
+    const needsFreshCanvas =
+      !this.frameSourceCanvas ||
+      !this.frameSourceCtx ||
+      this.frameSourceCanvas.width !== frame.width ||
+      this.frameSourceCanvas.height !== frame.height;
+
+    if (needsFreshCanvas) {
+      this.frameSourceCanvas = document.createElement('canvas');
+      this.frameSourceCanvas.width = frame.width;
+      this.frameSourceCanvas.height = frame.height;
+      this.frameSourceCtx = this.frameSourceCanvas.getContext('2d');
+    }
+
+    if (this.frameSourceCtx && this.frameSourceCanvas) {
+      this.frameSourceCtx.putImageData(new ImageData(frame.pixels, frame.width, frame.height), 0, 0);
+      this.activeSource = this.frameSourceCanvas;
+      this.splitOverlayImage = this.frameSourceCanvas;
+    }
+
     const cachedFrame = gifState.renderedFrames?.[frameIndex];
     const cachedState = gifState.frameStates?.[frameIndex];
     const shouldForceRefresh = this.pendingPaletteRefresh;
@@ -1613,6 +1664,8 @@ const action = this.debugEnabled ? "disable" : "enable";
 
         if (shouldForceRefresh) {
           this.queueProcessing(true);
+        } else {
+          this.scheduleIdleFrameRender();
         }
 
         return;
@@ -1620,26 +1673,6 @@ const action = this.debugEnabled ? "disable" : "enable";
     }
 
     // Otherwise, frame needs to be rendered by worker
-    const needsFreshCanvas =
-      !this.webcamCanvas ||
-      !this.webcamCtx ||
-      this.webcamCanvas.width !== frame.width ||
-      this.webcamCanvas.height !== frame.height;
-
-    if (needsFreshCanvas) {
-      this.webcamCanvas = document.createElement('canvas');
-      this.webcamCanvas.width = frame.width;
-      this.webcamCanvas.height = frame.height;
-      this.webcamCtx = this.webcamCanvas.getContext('2d');
-    }
-
-    if (!this.webcamCtx || !this.webcamCanvas) return;
-
-    this.webcamCtx.putImageData(new ImageData(frame.pixels, frame.width, frame.height), 0, 0);
-
-    this.activeSource = this.webcamCanvas;
-    this.splitOverlayImage = this.webcamCanvas;
-
     if (frame.pixels) {
       registerPaletteReference({
         width: frame.width,
@@ -1651,10 +1684,164 @@ const action = this.debugEnabled ? "disable" : "enable";
     this.queueProcessing(false);
   }
 
+  cancelIdleFrameRender() {
+    if (this.idleRenderTimer !== null) {
+      if (typeof cancelIdleCallback === 'function') {
+        cancelIdleCallback(this.idleRenderTimer);
+      } else {
+        clearTimeout(this.idleRenderTimer);
+      }
+      this.idleRenderTimer = null;
+    }
+  }
+
+  scheduleIdleFrameRender() {
+    this.cancelIdleFrameRender();
+    if (this.disposed || !this.worker || this.activeJobs > 0 || this.processingQueued || this.isWebcamMode) {
+      return;
+    }
+
+    const gifState = useGifStore.getState();
+    if (!gifState.frames || gifState.frames.length <= 1) {
+      return;
+    }
+
+    const pendingIndex = gifState.frameStates.findIndex((st) => st === 'pending');
+    if (pendingIndex === -1) {
+      return;
+    }
+
+    const scheduleFn = typeof requestIdleCallback === 'function' ? requestIdleCallback : (cb) => setTimeout(cb, 40);
+    this.idleRenderTimer = scheduleFn(() => {
+      this.idleRenderTimer = null;
+      void this.runIdleFrameRender(pendingIndex);
+    });
+  }
+
+  async runIdleFrameRender(frameIndex) {
+    if (this.disposed || !this.worker || this.activeJobs > 0 || this.processingQueued || this.isWebcamMode) {
+      return;
+    }
+
+    const gifState = useGifStore.getState();
+    const frame = gifState.frames?.[frameIndex];
+    if (!frame || !frame.pixels || gifState.frameStates?.[frameIndex] !== 'pending') {
+      return;
+    }
+
+    const generationAtStart = this.idleGeneration;
+    const worker = this.worker;
+
+    let sourceBitmap;
+    try {
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = frame.width;
+      offCanvas.height = frame.height;
+      const ctx = offCanvas.getContext('2d');
+      if (!ctx) return;
+      ctx.putImageData(new ImageData(frame.pixels, frame.width, frame.height), 0, 0);
+      sourceBitmap = await createImageBitmap(offCanvas);
+    } catch {
+      return;
+    }
+
+    if (
+      this.disposed ||
+      this.worker !== worker ||
+      this.idleGeneration !== generationAtStart ||
+      this.activeJobs > 0 ||
+      this.processingQueued
+    ) {
+      sourceBitmap?.close?.();
+      return;
+    }
+
+    const sizeState = useSizeStore.getState();
+    const customWidth = sizeState.customSize.customWidth || frame.width;
+    const customHeight = sizeState.customSize.customHeight || frame.height;
+    const crop = sizeState.crop || { top: 0, bottom: 0, left: 0, right: 0 };
+
+    const paletteState = usePaletteStore.getState();
+    const paletteColors = normalizePalette(paletteState.colors, paletteState.colorCount);
+    const paletteRgb = paletteColors.map((color) => hexToRgbUnit(color.hex));
+
+    const ditherState = useDitherStore.getState();
+    const ditherEnabled = Boolean(ditherState.enabled);
+    const paramsState = useParamsStore.getState();
+
+    const requestId = ++this.latestRequestId;
+    this.gifFrameForRequest.set(requestId, frameIndex);
+    this.ditherEnabledForRequest.set(requestId, ditherEnabled);
+    this.refreshPaletteForRequest.set(requestId, false);
+    this.skipStatsForRequest.set(requestId, true);
+
+    gifState.markFrameRendering(frameIndex);
+
+    this.idleJobIds = this.idleJobIds || new Set();
+    this.idleJobIds.add(requestId);
+
+    try {
+      worker.postMessage(
+        {
+          jobId: requestId,
+          source: sourceBitmap,
+          customWidth,
+          customHeight,
+          paletteRgb,
+          forceCpu: paramsState.forceCpu,
+          excludeAlpha: Boolean(paramsState.excludeAlpha),
+          watermarkEnabled: this.watermarkEnabled,
+          skipStats: true,
+          dither: {
+            enabled: ditherEnabled,
+            method: ditherState.method,
+            amount: ditherState.amount,
+            seed: ditherState.seed,
+            matrixScale: ditherState.matrixScale,
+          },
+          crop: {
+            top: crop.top || 0,
+            bottom: crop.bottom || 0,
+            left: crop.left || 0,
+            right: crop.right || 0,
+          },
+          adjustments: {
+            gamma: paramsState.gamma,
+            blacks: paramsState.blacks,
+            whites: paramsState.whites,
+            contrast: paramsState.contrast,
+            saturation: paramsState.saturation,
+            hue: paramsState.hue,
+          },
+          noise: {
+            enabled: paramsState.noiseEnabled,
+            noiseCoverage: paramsState.noiseCoverage,
+            noiseIntensity: paramsState.noiseIntensity,
+            noiseSaturation: paramsState.noiseSaturation,
+            noisePhase: this.noiseFrame % 100,
+          },
+          blur: {
+            enabled: paramsState.blurEnabled,
+            blurStrength: paramsState.blurStrength,
+            edgeStrength: paramsState.edgeStrength,
+            passes: paramsState.passes,
+          },
+        },
+        [sourceBitmap]
+      );
+    } catch {
+      this.gifFrameForRequest.delete(requestId);
+      this.idleJobIds.delete(requestId);
+    }
+  }
+
   markGifFramesPending() {
+    this.idleGeneration += 1;
+    this.cancelIdleFrameRender();
     const gifState = useGifStore.getState();
     if ((gifState.frames?.length || 0) > 1) {
       gifState.markAllPending();
+      this.scheduleIdleFrameRender();
     }
   }
 }

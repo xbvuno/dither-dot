@@ -23,6 +23,8 @@ import WaveGridSpinner from '../ui/shared/WaveGridSpinner';
 import PopupMessage from '../ui/shared/PopupMessage';
 import WebcamSection from './WebcamSection';
 import LargeImageDialog from './LargeImageDialog';
+import VideoImportDialog from './VideoImportDialog';
+import { INPUT_ACCEPT } from '../../utils/importUtils';
 import statuePreviewUrl from '../../assets/STATUE_PREVIEW.png';
 import { setupMobileResize } from '../../utils/mobileResize';
 import OriginalMediaPreview from '../ui/shared/OriginalMediaPreview';
@@ -223,11 +225,13 @@ export default function ImportStudio() {
 
   const [isDropActive, setIsDropActive] = useState(false);
   const [pendingImport, setPendingImport] = useState(null);
+  const [pendingVideo, setPendingVideo] = useState(null);
   const [isRandomLoading, setIsRandomLoading] = useState(false);
 
   const sourceImg = useImageStore((s) => s.sourceImg);
   const sourceName = useImageStore((s) => s.sourceName);
   const viewerLoading = useImageStore((s) => s.viewerLoading);
+  const setViewerLoading = useImageStore((s) => s.setViewerLoading);
   const setSourceFromBlob = useImageStore((s) => s.setSourceFromBlob);
   const setSourceDirect = useImageStore((s) => s.setSourceDirect);
 
@@ -440,6 +444,7 @@ export default function ImportStudio() {
       const isGif = blob?.type === 'image/gif' || name?.toLowerCase().endsWith('.gif');
       if (isGif) {
         setDecoding(true);
+        setViewerLoading(true);
         try {
           const { decodeGifWithWorker, rgbaFrameToPngBlob, blobToDataUrl } = await import('../../utils/gifDecodeUtils');
           const decoded = await decodeGifWithWorker(blob);
@@ -457,8 +462,10 @@ export default function ImportStudio() {
           const gifDataUrl = await blobToDataUrl(blob);
           pushGifHistory(previewSrc, name, gifDataUrl);
         } catch (error) {
+          alert(error instanceof Error ? error.message : 'GIF decode failed.');
+        } finally {
           setDecoding(false);
-          throw error;
+          setViewerLoading(false);
         }
         return;
       }
@@ -477,7 +484,65 @@ export default function ImportStudio() {
 
       await setSourceFromBlob(blob, name);
     },
-    [clearGifFrames, pushGifHistory, setDecoding, setGifFrames, setPlaying, setSourceFromBlob]
+    [clearGifFrames, pushGifHistory, setDecoding, setGifFrames, setPlaying, setSourceFromBlob, setViewerLoading]
+  );
+
+  const confirmVideoImport = useCallback(
+    async (frames, name) => {
+      setPendingVideo(null);
+      setViewerLoading(true);
+      setDecoding(true);
+      try {
+        const { rgbaFrameToPngBlob, blobToDataUrl } = await import('../../utils/gifDecodeUtils');
+        setGifFrames(frames, 0);
+        setPlaying(true);
+
+        const firstFrameBlob = await rgbaFrameToPngBlob(frames[0]);
+        await setSourceFromBlob(firstFrameBlob, name, { skipHistory: true });
+
+        const previewSrc = await blobToDataUrl(firstFrameBlob);
+        pushGifHistory(previewSrc, name, previewSrc);
+      } catch (err) {
+        alert(err instanceof Error ? err.message : 'Failed to finalize video import.');
+      } finally {
+        setViewerLoading(false);
+        setDecoding(false);
+      }
+    },
+    [pushGifHistory, setDecoding, setGifFrames, setPlaying, setSourceFromBlob, setViewerLoading]
+  );
+
+  const importMultiImages = useCallback(
+    async (files) => {
+      setViewerLoading(true);
+      setDecoding(true);
+      try {
+        const { loadImagesAsFrames } = await import('../../utils/videoDecodeUtils');
+        const { rgbaFrameToPngBlob, blobToDataUrl } = await import('../../utils/gifDecodeUtils');
+        const { stripExtension } = await import('../../utils/importUtils');
+
+        const result = await loadImagesAsFrames(files);
+        if (!result.frames.length) {
+          throw new Error('No valid frames extracted from image files.');
+        }
+
+        const name = `${stripExtension(files[0].name).toUpperCase()} (${files.length} FRAMES)`;
+        setGifFrames(result.frames, 0);
+        setPlaying(true);
+
+        const firstFrameBlob = await rgbaFrameToPngBlob(result.frames[0]);
+        await setSourceFromBlob(firstFrameBlob, name, { skipHistory: true });
+
+        const previewSrc = await blobToDataUrl(firstFrameBlob);
+        pushGifHistory(previewSrc, name, previewSrc);
+      } catch (err) {
+        alert(err instanceof Error ? err.message : 'Multi-image sequence import failed.');
+      } finally {
+        setViewerLoading(false);
+        setDecoding(false);
+      }
+    },
+    [pushGifHistory, setDecoding, setGifFrames, setPlaying, setSourceFromBlob, setViewerLoading]
   );
 
   const importWithSizeCheck = useCallback(
@@ -499,22 +564,32 @@ export default function ImportStudio() {
 
   const importFromFile = useCallback(
     async (file) => {
-      const { validateImageFile, stripExtension } = await import('../../utils/importUtils');
+      const { validateImageFile, stripExtension, isVideoFile } = await import('../../utils/importUtils');
       try {
         await validateImageFile(file);
         const name = stripExtension(file.name).toUpperCase();
+
+        if (isVideoFile(file)) {
+          setPendingVideo({ file, name });
+          return;
+        }
+
         await importWithSizeCheck(file, name);
       } catch (error) {
-        alert(error instanceof Error ? error.message : 'Image import failed.');
+        alert(error instanceof Error ? error.message : 'Media import failed.');
       }
     },
     [importWithSizeCheck]
   );
 
   const handleFilePickerChange = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    await importFromFile(file);
+    const files = Array.from(event.target.files || []);
+    if (!files.length) return;
+    if (files.length > 1) {
+      await importMultiImages(files);
+    } else {
+      await importFromFile(files[0]);
+    }
     event.target.value = '';
   };
 
@@ -533,13 +608,16 @@ export default function ImportStudio() {
         }
       }
 
-      const file = Array.from(clipboardData.files || []).find((f) => f.type.startsWith('image/'));
-      if (file) {
+      const files = Array.from(clipboardData.files || []).filter((f) => f.type.startsWith('image/'));
+      if (files.length > 1) {
         event.preventDefault();
-        await importFromFile(file);
+        await importMultiImages(files);
+      } else if (files.length === 1) {
+        event.preventDefault();
+        await importFromFile(files[0]);
       }
     },
-    [importFromFile]
+    [importFromFile, importMultiImages]
   );
 
   useEffect(() => {
@@ -588,10 +666,13 @@ export default function ImportStudio() {
     setIsDropActive(false);
 
     const files = Array.from(event.dataTransfer?.files || []);
-    const file = files[0];
-    if (!file) return;
+    if (!files.length) return;
 
-    await importFromFile(file);
+    if (files.length > 1) {
+      await importMultiImages(files);
+    } else {
+      await importFromFile(files[0]);
+    }
   };
 
   const handleWebcamToggle = async () => {
@@ -633,6 +714,7 @@ export default function ImportStudio() {
     const isGifPreset = Boolean(preset.isGif || preset.src?.endsWith?.('.gif') || preset.name?.toLowerCase().includes('cow'));
     if (isGifPreset) {
       setDecoding(true);
+      setViewerLoading(true);
       try {
         const response = await fetch(preset.src);
         if (!response.ok) throw new Error('Failed to load preset GIF');
@@ -650,6 +732,7 @@ export default function ImportStudio() {
         console.error('Failed to load preset GIF:', err);
       } finally {
         setDecoding(false);
+        setViewerLoading(false);
       }
       return;
     }
@@ -662,6 +745,7 @@ export default function ImportStudio() {
     if (item.kind === 'gif') {
       if (item.gifDataUrl) {
         setDecoding(true);
+        setViewerLoading(true);
         try {
           const response = await fetch(item.gifDataUrl);
           const blob = await response.blob();
@@ -677,6 +761,7 @@ export default function ImportStudio() {
           console.error('Failed to re-decode history GIF:', err);
         } finally {
           setDecoding(false);
+          setViewerLoading(false);
         }
         return;
       }
@@ -796,7 +881,8 @@ export default function ImportStudio() {
             <input
               ref={inputRef}
               type='file'
-              accept='image/*,.gif,.webp'
+              accept={INPUT_ACCEPT}
+              multiple
               style={{ display: 'none' }}
               onChange={handleFilePickerChange}
             />
@@ -1019,6 +1105,15 @@ export default function ImportStudio() {
             await doImport(blob, name);
           }}
           onCancel={() => setPendingImport(null)}
+        />
+      )}
+
+      {pendingVideo && (
+        <VideoImportDialog
+          file={pendingVideo.file}
+          name={pendingVideo.name}
+          onConfirm={confirmVideoImport}
+          onCancel={() => setPendingVideo(null)}
         />
       )}
     </>

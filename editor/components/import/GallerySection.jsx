@@ -12,6 +12,7 @@ export default function GallerySection() {
   const sourceName = useImageStore((s) => s.sourceName);
   const setSourceDirect = useImageStore((s) => s.setSourceDirect);
   const setSourceFromBlob = useImageStore((s) => s.setSourceFromBlob);
+  const setViewerLoading = useImageStore((s) => s.setViewerLoading);
   const resetToDefault = useImageStore((s) => s.resetToDefault);
   const gifFramesLen = useGifStore((s) => s.frames.length);
   const setGifFrames = useGifStore((s) => s.setFrames);
@@ -77,6 +78,7 @@ export default function GallerySection() {
 
     if (item.kind === 'gif' && item.gifDataUrl) {
       setDecoding(true);
+      setViewerLoading(true);
       try {
         const response = await fetch(item.gifDataUrl);
         if (!response.ok) {
@@ -93,8 +95,10 @@ export default function GallerySection() {
         const firstFrameBlob = await rgbaFrameToPngBlob(decoded.frames[0]);
         await setSourceFromBlob(firstFrameBlob, item.name, { skipHistory: true });
       } catch (error) {
-        setDecoding(false);
         alert(error instanceof Error ? error.message : 'FAILED TO LOAD GIF FROM GALLERY.');
+      } finally {
+        setDecoding(false);
+        setViewerLoading(false);
       }
       return;
     }
@@ -113,6 +117,7 @@ export default function GallerySection() {
       return;
     }
 
+    setViewerLoading(true);
     try {
       const response = await fetch(item.src);
       if (!response.ok) {
@@ -135,16 +140,15 @@ export default function GallerySection() {
           const decoded = await decodeGifWithWorker(animatedBlob);
           if (decoded.frames.length) {
             setGifFrames(decoded.frames, decoded.loop);
-          } else {
-            setDecoding(false);
           }
-        } catch (error) {
+        } finally {
           setDecoding(false);
-          throw error;
         }
       }
     } catch (error) {
       alert(error instanceof Error ? error.message : 'FAILED TO LOAD ANIMATED PRESET.');
+    } finally {
+      setViewerLoading(false);
     }
   };
 

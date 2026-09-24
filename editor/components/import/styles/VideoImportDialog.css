@@ -1,0 +1,168 @@
+.video-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-backdrop, rgba(0, 0, 0, 0.85));
+  backdrop-filter: var(--filter-floating-blur, blur(4px));
+  z-index: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.video-dialog {
+  background: var(--color-bg, #0d0d0d);
+  border: 1px solid var(--color-border, #333);
+  padding: 1.25rem 1.5rem;
+  max-width: 480px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-floating, 0 8px 32px rgba(0, 0, 0, 0.6));
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.video-dialog-title {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--color-text, #fff);
+  margin: 0;
+}
+
+.video-dialog-preview-wrap {
+  width: 100%;
+  max-height: 200px;
+  background: #000;
+  border: 1px solid var(--color-border, #222);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.video-dialog-preview {
+  max-width: 100%;
+  max-height: 200px;
+  width: auto;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.video-dialog-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.video-dialog-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--color-text-subtle, #888);
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.video-dialog-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.video-dialog-input-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0.25rem;
+}
+
+.video-dialog-input {
+  background: var(--color-bg-subtle, #1a1a1a);
+  border: 1px solid var(--color-border, #333);
+  color: var(--color-text, #fff);
+  font-size: 0.78rem;
+  padding: 0.35rem 0.6rem;
+  outline: none;
+  width: 100%;
+}
+
+.video-dialog-input:focus {
+  border-color: var(--color-border-hover, #666);
+}
+
+.video-dialog-options {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.video-dialog-pill-btn {
+  flex: 1;
+  min-width: 3.5rem;
+  font-size: 0.72rem;
+  padding: 0.35rem 0.5rem;
+  background: var(--color-bg-subtle, #181818);
+  border: 1px solid var(--color-border, #333);
+  color: var(--color-text-subtle, #888);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.video-dialog-pill-btn:hover:not(:disabled) {
+  border-color: var(--color-border-hover, #555);
+  color: var(--color-text, #fff);
+}
+
+.video-dialog-pill-btn.active {
+  background: var(--color-bg-elevated, #252525);
+  border-color: var(--color-text, #fff);
+  color: var(--color-text, #fff);
+}
+
+.video-dialog-summary {
+  background: var(--color-bg-subtle, #141414);
+  border: 1px dashed var(--color-border, #333);
+  padding: 0.5rem 0.7rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted, #aaa);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.video-dialog-progress-bar-wrap {
+  width: 100%;
+  height: 6px;
+  background: var(--color-bg-subtle, #222);
+  border: 1px solid var(--color-border, #333);
+  overflow: hidden;
+  margin-top: 0.35rem;
+}
+
+.video-dialog-progress-bar-fill {
+  height: 100%;
+  background: var(--color-text, #fff);
+  transition: width 0.15s ease;
+}
+
+.video-dialog-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.video-dialog-actions .bv-option-btn {
+  text-align: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.55rem;
+  font-size: 0.8rem;
+}

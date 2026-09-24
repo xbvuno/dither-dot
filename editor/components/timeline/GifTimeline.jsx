@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import "./styles/GifTimeline.css";
-import { Check, Pause, Play, SkipBack, SkipForward, Square } from 'lucide-react';
+import { Check, Pause, Play, SkipBack, SkipForward, Square, ZoomIn, ZoomOut, Copy, Trash2 } from 'lucide-react';
 import useGifStore from '../../stores/media/gifStore';
 
 const THUMB_WIDTH = 50;
@@ -45,8 +45,13 @@ export default function GifTimeline() {
   const timelineContentRef = useRef(null);
   const controlsRef = useRef(null);
   const stripRef = useRef(null);
+  const lastClickedIndexRef = useRef(0);
+  const [contextMenu, setContextMenu] = useState(null);
+
   const frames = useGifStore((s) => s.frames);
   const currentFrameIndex = useGifStore((s) => s.currentFrameIndex);
+  const selectedFrameIndices = useGifStore((s) => s.selectedFrameIndices) || [0];
+  const zoom = useGifStore((s) => s.zoom) || 1;
   const playing = useGifStore((s) => s.playing);
   const playbackDelay = useGifStore((s) => s.playbackDelay);
   const frameStates = useGifStore((s) => s.frameStates);
@@ -54,8 +59,12 @@ export default function GifTimeline() {
   const decoding = useGifStore((s) => s.decoding);
 
   const setCurrentFrameIndex = useGifStore((s) => s.setCurrentFrameIndex);
+  const setSelectedFrameIndices = useGifStore((s) => s.setSelectedFrameIndices);
+  const setZoom = useGifStore((s) => s.setZoom);
   const setPlaying = useGifStore((s) => s.setPlaying);
   const setPlaybackDelay = useGifStore((s) => s.setPlaybackDelay);
+  const duplicateFrames = useGifStore((s) => s.duplicateFrames);
+  const deleteFrames = useGifStore((s) => s.deleteFrames);
 
   useEffect(() => {
     const shell = timelineRef.current;
@@ -330,6 +339,116 @@ export default function GifTimeline() {
     };
   }, [frames]);
 
+  useEffect(() => {
+    const strip = stripRef.current;
+    if (!strip) return;
+
+    const onWheel = (e) => {
+      if (e.altKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        const delta = e.deltaY < 0 ? 0.15 : -0.15;
+        useGifStore.getState().setZoom(useGifStore.getState().zoom + delta);
+      }
+    };
+
+    strip.addEventListener('wheel', onWheel, { passive: false });
+    return () => strip.removeEventListener('wheel', onWheel);
+  }, []);
+
+  useEffect(() => {
+    if (!contextMenu) return;
+    const close = () => setContextMenu(null);
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') close();
+    };
+
+    window.addEventListener('click', close);
+    window.addEventListener('contextmenu', close);
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('click', close);
+      window.removeEventListener('contextmenu', close);
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [contextMenu]);
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      const tag = e.target?.tagName?.toUpperCase();
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) return;
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const state = useGifStore.getState();
+        if (state.frames.length > 1 && state.selectedFrameIndices?.length > 0) {
+          e.preventDefault();
+          deleteFrames(state.selectedFrameIndices);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [deleteFrames]);
+
+  const handleFrameClick = (event, index) => {
+    if (!frames[index]) return;
+    setPlaying(false);
+
+    if (event.shiftKey) {
+      const start = Math.min(lastClickedIndexRef.current, index);
+      const end = Math.max(lastClickedIndexRef.current, index);
+      const range = [];
+      for (let i = start; i <= end; i += 1) {
+        range.push(i);
+      }
+      setSelectedFrameIndices(range);
+      setCurrentFrameIndex(index);
+    } else if (event.ctrlKey || event.metaKey) {
+      const currentSelected = new Set(selectedFrameIndices);
+      if (currentSelected.has(index)) {
+        if (currentSelected.size > 1) {
+          currentSelected.delete(index);
+          const remaining = Array.from(currentSelected);
+          setSelectedFrameIndices(remaining);
+          if (currentFrameIndex === index) {
+            setCurrentFrameIndex(remaining[0]);
+          }
+        }
+      } else {
+        currentSelected.add(index);
+        setSelectedFrameIndices(Array.from(currentSelected));
+        setCurrentFrameIndex(index);
+      }
+      lastClickedIndexRef.current = index;
+    } else {
+      setSelectedFrameIndices([index]);
+      setCurrentFrameIndex(index);
+      lastClickedIndexRef.current = index;
+    }
+  };
+
+  const handleFrameContextMenu = (event, index) => {
+    event.preventDefault();
+    event.stopPropagation();
+    let targets = selectedFrameIndices;
+    if (!targets.includes(index)) {
+      targets = [index];
+      setSelectedFrameIndices([index]);
+      setCurrentFrameIndex(index);
+      lastClickedIndexRef.current = index;
+    }
+
+    setContextMenu({
+      x: event.clientX,
+      y: event.clientY,
+      indices: targets,
+    });
+  };
+
   if (frames.length <= 1 && !decoding) return null;
 
   const totalFrames = frames.length;
@@ -411,7 +530,31 @@ export default function GifTimeline() {
             {decoding ? 'DECODING...' : `${currentFrameIndex + 1} / ${totalFrames} | R: ${totalFrames > 0 ? Math.round((frameStates.filter((s) => s === 'done').length / totalFrames) * 100) : 0}%`}
           </span>
 
-          <span className='gif-timeline-divider gif-mobile-only' aria-hidden='true'>|</span>
+          <div className='gif-zoom-controls'>
+            <button
+              type='button'
+              className='bv-option-btn gif-timeline-btn gif-timeline-icon-btn'
+              onClick={() => setZoom(zoom - 0.15)}
+              aria-label='Zoom out frames'
+              title='ZOOM OUT'
+              disabled={decoding || zoom <= 0.4}
+            >
+              <ZoomOut size={13} strokeWidth={2} />
+            </button>
+            <span className='gif-timeline-label gif-zoom-label'>{Math.round(zoom * 100)}%</span>
+            <button
+              type='button'
+              className='bv-option-btn gif-timeline-btn gif-timeline-icon-btn'
+              onClick={() => setZoom(zoom + 0.15)}
+              aria-label='Zoom in frames'
+              title='ZOOM IN'
+              disabled={decoding || zoom >= 2.5}
+            >
+              <ZoomIn size={13} strokeWidth={2} />
+            </button>
+          </div>
+
+          <span className='gif-timeline-divider' aria-hidden='true'>|</span>
 
           <label htmlFor='gif-playback-delay' className={`gif-delay-wrap gif-delay-wrap--right${decoding ? ' disabled' : ''}`}>
             <span className='gif-timeline-label gif-delay-label-full'>DELAY (MS)</span>
@@ -433,25 +576,30 @@ export default function GifTimeline() {
         </div>
 
         {decoding ? null : (
-          <div ref={stripRef} className='gif-frame-strip'>
+          <div
+            ref={stripRef}
+            className='gif-frame-strip'
+            style={{
+              '--gif-frame-width': `${Math.round(56 * zoom)}px`,
+              '--gif-frame-height': `${Math.round(44 * zoom)}px`,
+            }}
+          >
             {frames.map((_, index) => {
               const isLoaded = Boolean(frames[index]);
               const state = frameStates[index] || 'pending';
               const thumb = renderedThumbnails[index] || rawThumbnails[index] || '';
               const isActive = index === currentFrameIndex;
+              const isSelected = selectedFrameIndices.includes(index);
               const stateLabel = state === 'pending' ? 'P' : state === 'done' ? 'DONE' : 'R';
 
               return (
                 <button
                   key={`gif-frame-${index}`}
                   type='button'
-                  className={`gif-frame-btn${isActive ? ' active' : ''}${state === 'pending' ? ' gif-frame-btn--pending' : ''}${!isLoaded ? ' gif-frame-btn--unloaded' : ''}`}
+                  className={`gif-frame-btn${isActive ? ' active' : ''}${isSelected ? ' selected' : ''}${state === 'pending' ? ' gif-frame-btn--pending' : ''}${!isLoaded ? ' gif-frame-btn--unloaded' : ''}`}
                   disabled={!isLoaded}
-                  onClick={() => {
-                    if (!isLoaded) return;
-                    setPlaying(false);
-                    setCurrentFrameIndex(index);
-                  }}
+                  onClick={(e) => handleFrameClick(e, index)}
+                  onContextMenu={(e) => handleFrameContextMenu(e, index)}
                   title={`FRAME ${index + 1}`}
                   aria-label={`FRAME ${index + 1}`}
                 >
@@ -463,6 +611,45 @@ export default function GifTimeline() {
                 </button>
               );
             })}
+          </div>
+        )}
+
+        {contextMenu && (
+          <div
+            className='gif-context-menu'
+            style={{
+              left: `${Math.max(8, Math.min(window.innerWidth - 160, contextMenu.x))}px`,
+              top: `${Math.max(10, Math.min(window.innerHeight - 80, contextMenu.y - 75))}px`,
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onContextMenu={(e) => e.preventDefault()}
+            role='menu'
+          >
+            <button
+              type='button'
+              className='gif-context-menu-item'
+              onClick={() => {
+                duplicateFrames(contextMenu.indices);
+                setContextMenu(null);
+              }}
+              role='menuitem'
+            >
+              <Copy size={13} strokeWidth={1.5} />
+              <span>DUPLICATE {contextMenu.indices.length > 1 ? `(${contextMenu.indices.length})` : ''}</span>
+            </button>
+            <button
+              type='button'
+              className='gif-context-menu-item gif-context-menu-item--danger'
+              disabled={frames.length <= 1}
+              onClick={() => {
+                deleteFrames(contextMenu.indices);
+                setContextMenu(null);
+              }}
+              role='menuitem'
+            >
+              <Trash2 size={13} strokeWidth={1.5} />
+              <span>DELETE {contextMenu.indices.length > 1 ? `(${contextMenu.indices.length})` : ''}</span>
+            </button>
           </div>
         )}
       </section>
