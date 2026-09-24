@@ -14,6 +14,7 @@ const DEFAULT_GIF_STATE = {
   selectedFrameIndices: [0],
   zoom: 1,
   exporting: false,
+  clipboardFrames: [],
 };
 
 const clampFrameIndex = (index, max) => {
@@ -38,7 +39,7 @@ const clampDelay = (value) => {
 const clampZoom = (value) => {
   const n = Number(value);
   if (!Number.isFinite(n)) return 1;
-  return Math.max(0.4, Math.min(2.5, Math.round(n * 100) / 100));
+  return Math.max(0.25, Math.min(1.0, Math.round(n * 100) / 100));
 };
 
 const useGifStore = create((set) => ({
@@ -276,6 +277,143 @@ const useGifStore = create((set) => ({
         renderedFrames: nextRenderedFrames,
         currentFrameIndex: safeCurrentIndex,
         selectedFrameIndices: [safeCurrentIndex],
+      };
+    });
+  },
+
+  copyFrames: (indices) => {
+    set((state) => {
+      const targetIndices = (Array.isArray(indices) ? indices : [indices])
+        .map((i) => clampFrameIndex(i, state.frames.length))
+        .filter((val, idx, self) => self.indexOf(val) === idx)
+        .sort((a, b) => a - b);
+
+      if (targetIndices.length === 0) return state;
+
+      const clipboard = targetIndices.map((idx) => {
+        const f = state.frames[idx];
+        return {
+          ...f,
+          pixels: new Uint8ClampedArray(f.pixels),
+        };
+      });
+
+      return { clipboardFrames: clipboard };
+    });
+  },
+
+  cutFrames: (indices) => {
+    set((currState) => {
+      const targetIndices = (Array.isArray(indices) ? indices : [indices])
+        .map((i) => clampFrameIndex(i, currState.frames.length))
+        .filter((val, idx, self) => self.indexOf(val) === idx)
+        .sort((a, b) => a - b);
+
+      if (targetIndices.length === 0) return currState;
+
+      const clipboard = targetIndices.map((idx) => {
+        const f = currState.frames[idx];
+        return {
+          ...f,
+          pixels: new Uint8ClampedArray(f.pixels),
+        };
+      });
+
+      // If all frames selected, leave at least 1
+      const targetSet = new Set(targetIndices);
+      if (targetSet.size >= currState.frames.length) {
+        targetSet.delete(0);
+      }
+
+      const nextFrames = [];
+      const nextFrameStates = [];
+      const nextThumbnails = {};
+      const nextRenderedFrames = {};
+
+      let newIdx = 0;
+      for (let oldIdx = 0; oldIdx < currState.frames.length; oldIdx += 1) {
+        if (!targetSet.has(oldIdx)) {
+          nextFrames.push(currState.frames[oldIdx]);
+          nextFrameStates.push(currState.frameStates[oldIdx] || 'pending');
+          if (currState.renderedThumbnails[oldIdx]) {
+            nextThumbnails[newIdx] = currState.renderedThumbnails[oldIdx];
+          }
+          if (currState.renderedFrames[oldIdx]) {
+            nextRenderedFrames[newIdx] = currState.renderedFrames[oldIdx];
+          }
+          newIdx += 1;
+        }
+      }
+
+      const safeCurrentIndex = clampFrameIndex(currState.currentFrameIndex, nextFrames.length);
+
+      return {
+        clipboardFrames: clipboard,
+        frames: nextFrames,
+        frameStates: nextFrameStates,
+        renderedThumbnails: nextThumbnails,
+        renderedFrames: nextRenderedFrames,
+        currentFrameIndex: safeCurrentIndex,
+        selectedFrameIndices: [safeCurrentIndex],
+      };
+    });
+  },
+
+  pasteFrames: (targetIndex, position = 'after') => {
+    set((state) => {
+      if (!state.clipboardFrames || state.clipboardFrames.length === 0) return state;
+
+      const copies = state.clipboardFrames.map((f) => ({
+        ...f,
+        pixels: new Uint8ClampedArray(f.pixels),
+      }));
+
+      const safeTarget = clampFrameIndex(targetIndex, state.frames.length);
+      const insertPos = position === 'before' ? safeTarget : safeTarget + 1;
+
+      const nextFrames = [
+        ...state.frames.slice(0, insertPos),
+        ...copies,
+        ...state.frames.slice(insertPos),
+      ];
+
+      const nextFrameStates = [
+        ...state.frameStates.slice(0, insertPos),
+        ...copies.map(() => 'pending'),
+        ...state.frameStates.slice(insertPos),
+      ];
+
+      const nextThumbnails = {};
+      const nextRenderedFrames = {};
+      const shift = copies.length;
+
+      Object.entries(state.renderedThumbnails).forEach(([idxKey, val]) => {
+        const k = Number(idxKey);
+        if (k < insertPos) {
+          nextThumbnails[k] = val;
+        } else {
+          nextThumbnails[k + shift] = val;
+        }
+      });
+
+      Object.entries(state.renderedFrames).forEach(([idxKey, val]) => {
+        const k = Number(idxKey);
+        if (k < insertPos) {
+          nextRenderedFrames[k] = val;
+        } else {
+          nextRenderedFrames[k + shift] = val;
+        }
+      });
+
+      const newSelected = copies.map((_, i) => insertPos + i);
+
+      return {
+        frames: nextFrames,
+        frameStates: nextFrameStates,
+        renderedThumbnails: nextThumbnails,
+        renderedFrames: nextRenderedFrames,
+        currentFrameIndex: insertPos,
+        selectedFrameIndices: newSelected,
       };
     });
   },

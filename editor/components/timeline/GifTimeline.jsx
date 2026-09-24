@@ -1,6 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import "./styles/GifTimeline.css";
-import { Check, Pause, Play, SkipBack, SkipForward, Square, ZoomIn, ZoomOut, Copy, Trash2 } from 'lucide-react';
+import {
+  Check,
+  Pause,
+  Play,
+  SkipBack,
+  SkipForward,
+  Square,
+  ZoomIn,
+  ZoomOut,
+  Copy,
+  Trash2,
+  Scissors,
+  Image as ImageIcon,
+  Download,
+  ArrowUp,
+  ArrowDown,
+} from 'lucide-react';
 import useGifStore from '../../stores/media/gifStore';
 
 const THUMB_WIDTH = 50;
@@ -57,6 +73,7 @@ export default function GifTimeline() {
   const frameStates = useGifStore((s) => s.frameStates);
   const renderedThumbnails = useGifStore((s) => s.renderedThumbnails);
   const decoding = useGifStore((s) => s.decoding);
+  const clipboardFrames = useGifStore((s) => s.clipboardFrames) || [];
 
   const setCurrentFrameIndex = useGifStore((s) => s.setCurrentFrameIndex);
   const setSelectedFrameIndices = useGifStore((s) => s.setSelectedFrameIndices);
@@ -65,6 +82,9 @@ export default function GifTimeline() {
   const setPlaybackDelay = useGifStore((s) => s.setPlaybackDelay);
   const duplicateFrames = useGifStore((s) => s.duplicateFrames);
   const deleteFrames = useGifStore((s) => s.deleteFrames);
+  const copyFrames = useGifStore((s) => s.copyFrames);
+  const cutFrames = useGifStore((s) => s.cutFrames);
+  const pasteFrames = useGifStore((s) => s.pasteFrames);
 
   useEffect(() => {
     const shell = timelineRef.current;
@@ -144,12 +164,9 @@ export default function GifTimeline() {
     const syncBounds = () => {
       const metrics = getMetrics();
       shell.style.minHeight = metrics.minHeight + 'px';
-      shell.style.maxHeight = metrics.maxHeight + 'px';
-
-      const currentHeight = shell.getBoundingClientRect().height;
-      const clampedHeight = clampHeight(currentHeight, metrics);
-      shell.style.height = clampedHeight + 'px';
-      applyRowsForHeight(clampedHeight, metrics);
+      shell.style.maxHeight = metrics.minHeight + 'px';
+      shell.style.height = metrics.minHeight + 'px';
+      applyRowsForHeight(metrics.minHeight, metrics);
       return metrics;
     };
 
@@ -157,17 +174,6 @@ export default function GifTimeline() {
     let afterLayoutFrameId = window.requestAnimationFrame(() => {
       latestMetrics = syncBounds();
     });
-
-    try {
-      const storedHeight = Number(window.localStorage.getItem(TIMELINE_HEIGHT_STORAGE_KEY));
-      if (Number.isFinite(storedHeight) && storedHeight > 0) {
-        const clampedHeight = clampHeight(storedHeight, latestMetrics);
-        shell.style.height = clampedHeight + 'px';
-        applyRowsForHeight(clampedHeight, latestMetrics);
-      }
-    } catch {
-      // localStorage can be unavailable in hardened browser contexts.
-    }
 
     let isResizing = false;
     let startY = 0;
@@ -290,6 +296,7 @@ export default function GifTimeline() {
   }, [currentFrameIndex, frames, playbackDelay, setPlaybackDelay]);
 
   useEffect(() => {
+    if (!playing) return;
     const strip = stripRef.current;
     if (!strip) return;
 
@@ -307,7 +314,7 @@ export default function GifTimeline() {
     });
 
     return () => window.cancelAnimationFrame(frameId);
-  }, [currentFrameIndex, playing, frames.length, frameStates]);
+  }, [currentFrameIndex, playing]);
 
   const [rawThumbnails, setRawThumbnails] = useState({});
 
@@ -340,21 +347,22 @@ export default function GifTimeline() {
   }, [frames]);
 
   useEffect(() => {
-    const strip = stripRef.current;
-    if (!strip) return;
+    const shell = timelineRef.current;
+    if (!shell) return;
 
     const onWheel = (e) => {
       if (e.altKey) {
         e.preventDefault();
         e.stopPropagation();
-        const delta = e.deltaY < 0 ? 0.15 : -0.15;
-        useGifStore.getState().setZoom(useGifStore.getState().zoom + delta);
+        const delta = e.deltaY < 0 ? 0.08 : -0.08;
+        const currentZoom = useGifStore.getState().zoom || 1;
+        useGifStore.getState().setZoom(currentZoom + delta);
       }
     };
 
-    strip.addEventListener('wheel', onWheel, { passive: false });
-    return () => strip.removeEventListener('wheel', onWheel);
-  }, []);
+    shell.addEventListener('wheel', onWheel, { passive: false });
+    return () => shell.removeEventListener('wheel', onWheel);
+  }, [decoding, frames.length]);
 
   useEffect(() => {
     if (!contextMenu) return;
@@ -394,6 +402,53 @@ export default function GifTimeline() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [deleteFrames]);
 
+  const handleCopyImage = async (targetIndex) => {
+    const frame = frames[targetIndex];
+    if (!frame || !frame.pixels) return;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = frame.width;
+      canvas.height = frame.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.putImageData(new ImageData(frame.pixels, frame.width, frame.height), 0, 0);
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': blob }),
+          ]);
+        } catch (err) {
+          console.error('Failed to copy frame image to clipboard:', err);
+        }
+      }, 'image/png');
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleSaveAs = (targetIndices) => {
+    const isMultiple = targetIndices.length > 1;
+    targetIndices.forEach((idx, i) => {
+      const frame = frames[idx];
+      if (!frame || !frame.pixels) return;
+      const canvas = document.createElement('canvas');
+      canvas.width = frame.width;
+      canvas.height = frame.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.putImageData(new ImageData(frame.pixels, frame.width, frame.height), 0, 0);
+      const filename = isMultiple ? `frame_${i}.png` : `frame_${idx + 1}.png`;
+      const dataUrl = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+  };
+
   const handleFrameClick = (event, index) => {
     if (!frames[index]) return;
     setPlaying(false);
@@ -406,22 +461,16 @@ export default function GifTimeline() {
         range.push(i);
       }
       setSelectedFrameIndices(range);
-      setCurrentFrameIndex(index);
     } else if (event.ctrlKey || event.metaKey) {
       const currentSelected = new Set(selectedFrameIndices);
       if (currentSelected.has(index)) {
         if (currentSelected.size > 1) {
           currentSelected.delete(index);
-          const remaining = Array.from(currentSelected);
-          setSelectedFrameIndices(remaining);
-          if (currentFrameIndex === index) {
-            setCurrentFrameIndex(remaining[0]);
-          }
+          setSelectedFrameIndices(Array.from(currentSelected));
         }
       } else {
         currentSelected.add(index);
         setSelectedFrameIndices(Array.from(currentSelected));
-        setCurrentFrameIndex(index);
       }
       lastClickedIndexRef.current = index;
     } else {
@@ -438,13 +487,12 @@ export default function GifTimeline() {
     if (!targets.includes(index)) {
       targets = [index];
       setSelectedFrameIndices([index]);
-      setCurrentFrameIndex(index);
-      lastClickedIndexRef.current = index;
     }
 
     setContextMenu({
       x: event.clientX,
       y: event.clientY,
+      index,
       indices: targets,
     });
   };
@@ -531,24 +579,24 @@ export default function GifTimeline() {
           </span>
 
           <div className='gif-zoom-controls'>
-            <button
-              type='button'
-              className='bv-option-btn gif-timeline-btn gif-timeline-icon-btn'
-              onClick={() => setZoom(zoom - 0.15)}
-              aria-label='Zoom out frames'
-              title='ZOOM OUT'
-              disabled={decoding || zoom <= 0.4}
-            >
-              <ZoomOut size={13} strokeWidth={2} />
-            </button>
             <span className='gif-timeline-label gif-zoom-label'>{Math.round(zoom * 100)}%</span>
             <button
               type='button'
               className='bv-option-btn gif-timeline-btn gif-timeline-icon-btn'
-              onClick={() => setZoom(zoom + 0.15)}
+              onClick={() => setZoom(zoom - 0.1)}
+              aria-label='Zoom out frames'
+              title='ZOOM OUT'
+              disabled={decoding || zoom <= 0.25}
+            >
+              <ZoomOut size={13} strokeWidth={2} />
+            </button>
+            <button
+              type='button'
+              className='bv-option-btn gif-timeline-btn gif-timeline-icon-btn'
+              onClick={() => setZoom(zoom + 0.1)}
               aria-label='Zoom in frames'
               title='ZOOM IN'
-              disabled={decoding || zoom >= 2.5}
+              disabled={decoding || zoom >= 1.0}
             >
               <ZoomIn size={13} strokeWidth={2} />
             </button>
@@ -580,8 +628,8 @@ export default function GifTimeline() {
             ref={stripRef}
             className='gif-frame-strip'
             style={{
-              '--gif-frame-width': `${Math.round(56 * zoom)}px`,
-              '--gif-frame-height': `${Math.round(44 * zoom)}px`,
+              '--gif-frame-width': `${Math.max(14, Math.round(56 * zoom))}px`,
+              '--gif-frame-height': '44px',
             }}
           >
             {frames.map((_, index) => {
@@ -591,12 +639,14 @@ export default function GifTimeline() {
               const isActive = index === currentFrameIndex;
               const isSelected = selectedFrameIndices.includes(index);
               const stateLabel = state === 'pending' ? 'P' : state === 'done' ? 'DONE' : 'R';
+              const frameWidth = Math.max(14, Math.round(56 * zoom));
+              const isCompact = frameWidth < 36;
 
               return (
                 <button
                   key={`gif-frame-${index}`}
                   type='button'
-                  className={`gif-frame-btn${isActive ? ' active' : ''}${isSelected ? ' selected' : ''}${state === 'pending' ? ' gif-frame-btn--pending' : ''}${!isLoaded ? ' gif-frame-btn--unloaded' : ''}`}
+                  className={`gif-frame-btn${isActive ? ' active' : ''}${isSelected ? ' selected' : ''}${state === 'pending' ? ' gif-frame-btn--pending' : ''}${!isLoaded ? ' gif-frame-btn--unloaded' : ''}${isCompact ? ' gif-frame-btn--compact' : ''}`}
                   disabled={!isLoaded}
                   onClick={(e) => handleFrameClick(e, index)}
                   onContextMenu={(e) => handleFrameContextMenu(e, index)}
@@ -604,7 +654,7 @@ export default function GifTimeline() {
                   aria-label={`FRAME ${index + 1}`}
                 >
                   {thumb && <img src={thumb} alt='' draggable={false} />}
-                  <span className='gif-frame-index'>{index + 1}</span>
+                  <span className={`gif-frame-index gif-frame-index--${state}`}>{index + 1}</span>
                   <span className={`gif-frame-state gif-frame-state--${state}`} aria-label={stateLabel}>
                     {state === 'done' ? <Check size={9} strokeWidth={3} /> : state === 'pending' ? 'P' : 'R'}
                   </span>
@@ -618,13 +668,97 @@ export default function GifTimeline() {
           <div
             className='gif-context-menu'
             style={{
-              left: `${Math.max(8, Math.min(window.innerWidth - 160, contextMenu.x))}px`,
-              top: `${Math.max(10, Math.min(window.innerHeight - 80, contextMenu.y - 75))}px`,
+              left: `${Math.max(8, Math.min(window.innerWidth - 170, contextMenu.x))}px`,
+              top: `${Math.max(10, Math.min(window.innerHeight - 230, contextMenu.y - 110))}px`,
             }}
             onClick={(e) => e.stopPropagation()}
             onContextMenu={(e) => e.preventDefault()}
             role='menu'
           >
+            <button
+              type='button'
+              className='gif-context-menu-item'
+              disabled={frames.length <= 1}
+              onClick={() => {
+                cutFrames(contextMenu.indices);
+                setContextMenu(null);
+              }}
+              role='menuitem'
+            >
+              <Scissors size={13} strokeWidth={1.5} />
+              <span>CUT {contextMenu.indices.length > 1 ? `(${contextMenu.indices.length})` : ''}</span>
+            </button>
+            <button
+              type='button'
+              className='gif-context-menu-item'
+              onClick={() => {
+                copyFrames(contextMenu.indices);
+                setContextMenu(null);
+              }}
+              role='menuitem'
+            >
+              <Copy size={13} strokeWidth={1.5} />
+              <span>COPY FRAME {contextMenu.indices.length > 1 ? `(${contextMenu.indices.length})` : ''}</span>
+            </button>
+
+            {clipboardFrames.length > 0 && (
+              <>
+                <button
+                  type='button'
+                  className='gif-context-menu-item'
+                  onClick={() => {
+                    pasteFrames(contextMenu.index, 'before');
+                    setContextMenu(null);
+                  }}
+                  role='menuitem'
+                >
+                  <ArrowUp size={13} strokeWidth={1.5} />
+                  <span>PASTE BEFORE ({clipboardFrames.length})</span>
+                </button>
+                <button
+                  type='button'
+                  className='gif-context-menu-item'
+                  onClick={() => {
+                    pasteFrames(contextMenu.index, 'after');
+                    setContextMenu(null);
+                  }}
+                  role='menuitem'
+                >
+                  <ArrowDown size={13} strokeWidth={1.5} />
+                  <span>PASTE AFTER ({clipboardFrames.length})</span>
+                </button>
+              </>
+            )}
+
+            <div className='gif-context-menu-divider' />
+
+            <button
+              type='button'
+              className='gif-context-menu-item'
+              onClick={() => {
+                handleCopyImage(contextMenu.index);
+                setContextMenu(null);
+              }}
+              role='menuitem'
+            >
+              <ImageIcon size={13} strokeWidth={1.5} />
+              <span>COPY IMAGE</span>
+            </button>
+            <button
+              type='button'
+              className='gif-context-menu-item'
+              onClick={() => {
+                handleSaveAs(contextMenu.indices);
+                setContextMenu(null);
+              }}
+              role='menuitem'
+            >
+              <Download size={13} strokeWidth={1.5} />
+              <span>SAVE AS... {contextMenu.indices.length > 1 ? `(${contextMenu.indices.length})` : ''}</span>
+            </button>
+
+            <div className='gif-context-menu-divider' />
+
             <button
               type='button'
               className='gif-context-menu-item'

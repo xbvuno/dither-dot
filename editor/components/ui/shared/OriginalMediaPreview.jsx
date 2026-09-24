@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useImageStore from '../../../stores/media/imageStore';
 import useGifStore from '../../../stores/media/gifStore';
 import useWebcamStore from '../../../stores/media/webcamStore';
@@ -33,6 +33,7 @@ export default function OriginalMediaPreview({
   const canvasRef = useRef(null);
   const videoRef = useRef(null);
   const containerRef = useRef(null);
+  const [animIndex, setAnimIndex] = useState(0);
 
   useEffect(() => {
     if (!webcamActive || !videoRef.current || !webcamStream) return;
@@ -82,10 +83,24 @@ export default function OriginalMediaPreview({
     };
   }, [webcamActive, webcamStream, webcamMirrored]);
 
+  // Autonomous animation loop cycling only through currently alive frames
+  useEffect(() => {
+    if (!isGif || !frames || frames.length <= 1) return;
+    const safeIdx = animIndex < frames.length ? animIndex : 0;
+    const activeDelay = Math.max(20, Number(frames[safeIdx]?.delay) || 100);
+    const timer = window.setTimeout(() => {
+      setAnimIndex((prev) => (prev + 1) % frames.length);
+    }, activeDelay);
+    return () => window.clearTimeout(timer);
+  }, [isGif, frames, animIndex]);
+
   useEffect(() => {
     if (!isGif || !canvasRef.current || !frames || frames.length <= 1) return;
     const canvas = canvasRef.current;
-    const frame = frames[currentFrameIndex] || frames[0];
+    const targetIdx = propCurrentFrameIndex !== undefined
+      ? currentFrameIndex
+      : (animIndex < frames.length ? animIndex : 0);
+    const frame = frames[targetIdx] || frames[0];
     if (!frame || !frame.pixels) return;
 
     if (canvas.width !== frame.width || canvas.height !== frame.height) {
@@ -98,7 +113,7 @@ export default function OriginalMediaPreview({
 
     const imgData = new ImageData(frame.pixels, frame.width, frame.height);
     ctx.putImageData(imgData, 0, 0);
-  }, [isGif, frames, currentFrameIndex]);
+  }, [isGif, frames, currentFrameIndex, propCurrentFrameIndex, animIndex]);
 
   if (webcamActive && webcamStream) {
     return (

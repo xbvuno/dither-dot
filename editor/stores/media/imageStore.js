@@ -16,8 +16,11 @@ export const DEFAULT_IMAGE_STATE = {
 };
 
 let autoDefaultPromise = null;
+let hasAttemptedAutoDefault = false;
 
-export async function fetchAutoDefaultImage() {
+export async function fetchAutoDefaultImage(force = false) {
+  if (hasAttemptedAutoDefault && !force) return autoDefaultPromise;
+  hasAttemptedAutoDefault = true;
   if (autoDefaultPromise) return autoDefaultPromise;
 
   autoDefaultPromise = (async () => {

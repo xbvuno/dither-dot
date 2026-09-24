@@ -23,7 +23,7 @@ export function buildCurrentTemplate() {
 
   return {
     id: 'current',
-    name: 'CURRENT',
+    name: 'LAST USED',
     author: 'you',
     palette: {
       id: paletteState.selectedLibraryPaletteId || null,
@@ -62,7 +62,7 @@ export function buildCurrentTemplate() {
 const useTemplateStore = create(
   persist(
     (set, get) => ({
-      selectedTemplateId: 'current',
+      selectedTemplateId: 'default',
       templates: TEMPLATES,
       currentTemplate: null,
 
@@ -88,7 +88,7 @@ const useTemplateStore = create(
             template = {
               ...templateOrId,
               id: 'current',
-              name: 'CURRENT',
+              name: 'LAST USED',
               author: 'you',
             };
             set({ currentTemplate: template, selectedTemplateId: 'current' });
@@ -150,7 +150,6 @@ const useTemplateStore = create(
       name: 'dither-dot:template',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        selectedTemplateId: state.selectedTemplateId,
         currentTemplate: state.currentTemplate,
       }),
     }

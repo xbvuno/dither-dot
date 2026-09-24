@@ -1333,15 +1333,10 @@ const action = this.debugEnabled ? "disable" : "enable";
 
   syncSplitOverlay() {
     const overlayCanvas = this.splitOverlayCanvas;
-    const overlayImage = this.splitOverlayImage;
-    const renderElement = this.canvasHost;
-
     if (!overlayCanvas) return;
 
     const showingOriginalOnly = Boolean(this.previewingOriginal);
-    const shouldShowOverlay = showingOriginalOnly;
-
-    if (!shouldShowOverlay || !overlayImage || !renderElement) {
+    if (!showingOriginalOnly || !this.canvasHost) {
       overlayCanvas.style.display = 'none';
       return;
     }
@@ -1349,22 +1344,57 @@ const action = this.debugEnabled ? "disable" : "enable";
     const ctx = this.splitOverlayCtx;
     if (!ctx) return;
 
-    const sourceDims = getDrawableDimensions(overlayImage);
+    // Check if we have multi-frame media in useGifStore
+    const gifState = useGifStore.getState();
+    const currentFrame = (gifState.frames && gifState.frames.length > 0)
+      ? gifState.frames[gifState.currentFrameIndex]
+      : null;
+
+    let sourceDrawable = this.splitOverlayImage || this.activeSource;
+
+    if (currentFrame && currentFrame.pixels && currentFrame.width && currentFrame.height) {
+      if (
+        !this.frameSourceCanvas ||
+        !this.frameSourceCtx ||
+        this.frameSourceCanvas.width !== currentFrame.width ||
+        this.frameSourceCanvas.height !== currentFrame.height
+      ) {
+        this.frameSourceCanvas = document.createElement('canvas');
+        this.frameSourceCanvas.width = currentFrame.width;
+        this.frameSourceCanvas.height = currentFrame.height;
+        this.frameSourceCtx = this.frameSourceCanvas.getContext('2d');
+      }
+      this.frameSourceCtx.putImageData(
+        new ImageData(currentFrame.pixels, currentFrame.width, currentFrame.height),
+        0,
+        0
+      );
+      sourceDrawable = this.frameSourceCanvas;
+    }
+
+    if (!sourceDrawable) {
+      overlayCanvas.style.display = 'none';
+      return;
+    }
+
+    const sourceDims = getDrawableDimensions(sourceDrawable);
     if (!sourceDims) {
       overlayCanvas.style.display = 'none';
       return;
     }
 
     const sizeState = useSizeStore.getState();
-    const left = sizeState.crop?.left || 0;
-    const right = sizeState.crop?.right || 0;
-    const top = sizeState.crop?.top || 0;
-    const bottom = sizeState.crop?.bottom || 0;
+    const crop = sizeState.crop || {};
 
-    const nativeLeft = Math.max(0, Math.min(sourceDims.width - 1, left));
-    const nativeTop = Math.max(0, Math.min(sourceDims.height - 1, top));
-    const sw = Math.max(1, sourceDims.width - nativeLeft - (right || 0));
-    const sh = Math.max(1, sourceDims.height - nativeTop - (bottom || 0));
+    const srcW = sourceDims.width;
+    const srcH = sourceDims.height;
+    const cropLeft = Math.max(0, Math.min(srcW - 1, Number(crop.left) || 0));
+    const cropTop = Math.max(0, Math.min(srcH - 1, Number(crop.top) || 0));
+    const cropRight = Math.max(0, Math.min(srcW - cropLeft - 1, Number(crop.right) || 0));
+    const cropBottom = Math.max(0, Math.min(srcH - cropTop - 1, Number(crop.bottom) || 0));
+
+    const sw = Math.max(1, srcW - cropLeft - cropRight);
+    const sh = Math.max(1, srcH - cropTop - cropBottom);
 
     const outW = Math.max(1, Math.round(Number(sizeState.customSize?.customWidth) || sw));
     const outH = Math.max(1, Math.round(Number(sizeState.customSize?.customHeight) || sh));
@@ -1380,9 +1410,9 @@ const action = this.debugEnabled ? "disable" : "enable";
     ctx.imageSmoothingEnabled = false;
 
     ctx.drawImage(
-      overlayImage,
-      nativeLeft,
-      nativeTop,
+      sourceDrawable,
+      cropLeft,
+      cropTop,
       sw,
       sh,
       0,
@@ -1679,6 +1709,10 @@ const action = this.debugEnabled ? "disable" : "enable";
         height: frame.height,
         pixels: frame.pixels,
       });
+    }
+
+    if (this.previewingOriginal) {
+      this.syncVisibleLayer();
     }
 
     this.queueProcessing(false);

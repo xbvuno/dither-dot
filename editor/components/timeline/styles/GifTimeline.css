@@ -1,8 +1,5 @@
 .gif-timeline-shell {
   position: relative;
-  min-height: 6.3rem;
-  max-height: 6.3rem;
-  height: 6.3rem;
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -127,7 +124,8 @@
 .gif-frame-btn {
   position: relative;
   width: var(--gif-frame-width, 56px);
-  height: var(--gif-frame-height, 44px);
+  height: 44px;
+  min-width: 14px;
   border: 1px solid var(--color-border);
   background: var(--color-bg-subtle);
   cursor: pointer;
@@ -135,6 +133,12 @@
   padding: 0;
   overflow: hidden;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.gif-frame-btn:focus,
+.gif-frame-btn:focus-visible {
+  outline: none !important;
+  box-shadow: none;
 }
 
 .gif-frame-btn:hover {
@@ -258,6 +262,43 @@
 
 .gif-frame-state--done {
   color: var(--color-success);
+}
+
+.gif-frame-btn--compact .gif-frame-state {
+  display: none;
+}
+
+.gif-frame-btn--compact .gif-frame-index {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  min-width: 0;
+  font-size: 0.46rem;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.78);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gif-frame-btn--compact .gif-frame-index--done {
+  color: var(--color-success, #22c55e);
+  font-weight: bold;
+}
+
+.gif-frame-btn--compact .gif-frame-index--pending {
+  color: var(--color-pending, #3b82f6);
+  font-weight: bold;
+}
+
+.gif-frame-btn--compact .gif-frame-index--rendering {
+  color: var(--color-text, #ffffff);
+  font-weight: bold;
+}
+
+.gif-context-menu-divider {
+  height: 1px;
+  background: var(--color-border, #333);
+  margin: 0.2rem 0;
 }
 
 .gif-decoding-label {

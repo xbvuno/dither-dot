@@ -9,7 +9,7 @@ import {
   Trash2,
   Film,
 } from 'lucide-react';
-import useImageStore, { fetchAutoDefaultImage } from '../../stores/media/imageStore';
+import useImageStore from '../../stores/media/imageStore';
 import useGalleryStore, { GALLERY_PRESETS } from '../../stores/data/galleryStore';
 import useGifStore from '../../stores/media/gifStore';
 import useWebcamStore, { WEBCAM_SOURCE } from '../../stores/media/webcamStore';
@@ -104,7 +104,7 @@ function TemplateContextMenu({ x, y, tpl, onClose, onApplyTemplate }) {
 
       const normalized = {
         id: 'current',
-        name: 'CURRENT',
+        name: 'LAST USED',
         author: 'you',
         palette: parsed.palette || { id: null, name: 'Current', colors: [], colorCount: 8 },
         dither: parsed.dither || { enabled: true, method: 'floyd_steinberg', amount: 0.65, matrixScale: 1.0, seed: 1.0 },
@@ -308,13 +308,6 @@ export default function ImportStudio() {
     return () => cleanup();
   }, []);
 
-  // Automatically fetch fresh Picsum image on initial load if using default image, fallback to RANDOM 4
-  useEffect(() => {
-    const { sourceKind: currKind, sourceName: currName } = useImageStore.getState();
-    if (currKind === 'default' || currName === 'STATUE' || currName === 'RANDOM 1') {
-      fetchAutoDefaultImage();
-    }
-  }, []);
 
   // Ensure loaded GIFs are set to playing on mount
   useEffect(() => {
