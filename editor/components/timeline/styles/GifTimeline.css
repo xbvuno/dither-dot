@@ -125,28 +125,8 @@
   overflow-x: scroll;
   overflow-y: hidden;
   scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border) transparent;
   min-height: 0;
-  padding-bottom: 6px;
-}
-
-.gif-frame-strip::-webkit-scrollbar {
-  height: 6px;
-}
-
-.gif-frame-strip::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.gif-frame-strip::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: var(--radius-sm, 2px);
-  transition: background var(--transition-fast, 0.15s ease);
-}
-
-.gif-frame-strip::-webkit-scrollbar-thumb:hover {
-  background: var(--color-border-hover);
+  padding-bottom: 8px;
 }
 
 .gif-frame-btn {
