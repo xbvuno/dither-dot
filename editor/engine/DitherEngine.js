@@ -244,12 +244,29 @@ const action = this.debugEnabled ? "disable" : "enable";
     if (this.worker && this.activeSourceImg === sourceImg && !this.disposed && (this.engineState === 'READY' || this.engineState === 'STREAMING')) {
       this.canvasHost = canvasHost;
       this.recreateViewportCanvas();
-      
+
+      if (!this.subscriptions || this.subscriptions.length === 0) {
+        this.setupSubscriptions();
+      }
+
       const gifState = useGifStore.getState();
       if ((gifState.frames?.length || 0) > 1) {
         this.swapSourceFrame(gifState.currentFrameIndex);
+      } else if (this.outputCanvas && this.outputContext && this.outputReady) {
+        // Redraw cached output directly onto the new viewport canvas
+        const imgData = this.outputContext.getImageData(0, 0, this.outputCanvas.width, this.outputCanvas.height);
+        const copy = new Uint8ClampedArray(imgData.data);
+        this.worker.postMessage({
+          type: 'drawFrame',
+          pixels: copy.buffer,
+          width: this.outputCanvas.width,
+          height: this.outputCanvas.height,
+          watermarkEnabled: this.watermarkEnabled,
+        }, [copy.buffer]);
+        this.syncVisibleLayer();
       } else {
         this.syncVisibleLayer();
+        this.queueProcessing(true);
       }
 
       this.clearViewerLoadingTimer();
@@ -1901,6 +1918,7 @@ const action = this.debugEnabled ? "disable" : "enable";
           excludeAlpha: Boolean(paramsState.excludeAlpha),
           watermarkEnabled: this.watermarkEnabled,
           skipStats: true,
+          skipCanvasRender: true,
           dither: {
             enabled: ditherEnabled,
             method: ditherState.method,

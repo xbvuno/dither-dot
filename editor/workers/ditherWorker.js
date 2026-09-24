@@ -330,8 +330,8 @@ self.onmessage = async (event) => {
     }
     tFinal = performance.now() - tFinalStart;
 
-    // Render directly to OffscreenCanvas if available
-    if (viewportCanvas && viewportCtx) {
+    // Render directly to OffscreenCanvas if available and not an idle/background job
+    if (!event.data.skipCanvasRender && viewportCanvas && viewportCtx) {
       if (viewportCanvas.width !== outWidth || viewportCanvas.height !== outHeight) {
         viewportCanvas.width = outWidth;
         viewportCanvas.height = outHeight;
