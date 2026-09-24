@@ -55,6 +55,20 @@ function normalizeHistoryEntry(entry) {
   };
 }
 
+function isVideoItem(name) {
+  const normName = String(name || '').trim().toLowerCase();
+  return (
+    normName.includes('(video)') ||
+    normName.includes('frames)') ||
+    normName.endsWith('.mp4') ||
+    normName.endsWith('.webm') ||
+    normName.endsWith('.mov') ||
+    normName.endsWith('.m4v') ||
+    normName.endsWith('.mkv') ||
+    normName.endsWith('.avi')
+  );
+}
+
 function isPresetItem(src, name, gifDataUrl) {
   const normName = String(name || '').trim().toUpperCase();
   if (normName.startsWith('RANDOM') || (typeof src === 'string' && src.includes('picsum.photos'))) {
@@ -98,7 +112,9 @@ const useGalleryStore = create((set) => ({
     const normalized = Array.isArray(storedHistory)
       ? storedHistory.map(normalizeHistoryEntry).filter(Boolean)
       : [];
-    const filtered = normalized.filter((entry) => !isPresetItem(entry.src, entry.name, entry.gifDataUrl));
+    const filtered = normalized
+      .filter((entry) => !isPresetItem(entry.src, entry.name, entry.gifDataUrl))
+      .filter((entry) => !isVideoItem(entry.name));
     set({
       history: filtered.slice(0, MAX_HISTORY_ITEMS),
       hasHydratedHistory: true,
@@ -106,7 +122,7 @@ const useGalleryStore = create((set) => ({
   },
 
   pushHistory: (src, name) => {
-    if (isPresetItem(src, name)) return;
+    if (isPresetItem(src, name) || isVideoItem(name)) return;
     let nextHistory = [];
     set((state) => {
       const deduped = state.history.filter((e) => e.src !== src && e.name.toUpperCase() !== String(name || '').toUpperCase());
@@ -124,7 +140,7 @@ const useGalleryStore = create((set) => ({
   },
 
   pushGifHistory: (previewSrc, name, gifDataUrl) => {
-    if (isPresetItem(previewSrc, name, gifDataUrl)) return;
+    if (isPresetItem(previewSrc, name, gifDataUrl) || isVideoItem(name)) return;
     let nextHistory = [];
     set((state) => {
       const deduped = state.history.filter((e) => e.gifDataUrl !== gifDataUrl && e.name.toUpperCase() !== String(name || '').toUpperCase());

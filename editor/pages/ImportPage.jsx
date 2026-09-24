@@ -120,9 +120,6 @@ export default function ImportPage() {
 
         const firstFrameBlob = await rgbaFrameToPngBlob(frames[0]);
         await setSourceFromBlob(firstFrameBlob, name, { skipHistory: true });
-
-        const previewSrc = await blobToDataUrl(firstFrameBlob);
-        pushGifHistory(previewSrc, name, previewSrc);
       } catch (err) {
         alert(err instanceof Error ? err.message : 'Failed to finalize video import.');
       } finally {
@@ -130,7 +127,7 @@ export default function ImportPage() {
         setDecoding(false);
       }
     },
-    [pushGifHistory, setDecoding, setGifFrames, setSourceFromBlob, setViewerLoading],
+    [setDecoding, setGifFrames, setSourceFromBlob, setViewerLoading],
   );
 
   const importMultiImages = useCallback(
