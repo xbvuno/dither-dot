@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 export const WEBCAM_SOURCE = 'webcam://live';
 
-// Module-level sliding-window FPS counter — reset on each start/stop.
+// Module-level sliding-window FPS counter - reset on each start/stop.
 let frameTimestamps = [];
 
 // Incremented on every stop (or superseded start) to cancel in-flight getUserMedia results.

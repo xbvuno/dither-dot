@@ -411,6 +411,7 @@ export async function extractFramesFromVideo(
     scale = 1,
     fps = 20,
     maxFrames = Infinity,
+    crop = null,
     onProgress = null,
   } = {}
 ) {
@@ -439,8 +440,13 @@ export async function extractFramesFromVideo(
   }
 
   const clampedScale = Math.max(0.05, Math.min(1, Number(scale) || 1));
-  const targetWidth = Math.max(1, Math.round(meta.width * clampedScale));
-  const targetHeight = Math.max(1, Math.round(meta.height * clampedScale));
+  const cropX = crop ? Math.max(0, Math.min(meta.width - 1, Math.round(crop.x))) : 0;
+  const cropY = crop ? Math.max(0, Math.min(meta.height - 1, Math.round(crop.y))) : 0;
+  const cropW = crop ? Math.max(1, Math.min(meta.width - cropX, Math.round(crop.width))) : meta.width;
+  const cropH = crop ? Math.max(1, Math.min(meta.height - cropY, Math.round(crop.height))) : meta.height;
+
+  const targetWidth = Math.max(1, Math.round(cropW * clampedScale));
+  const targetHeight = Math.max(1, Math.round(cropH * clampedScale));
 
   const canvas = document.createElement('canvas');
   canvas.width = targetWidth;
@@ -476,7 +482,7 @@ export async function extractFramesFromVideo(
       await seekVideo(video, time);
 
       ctx.clearRect(0, 0, targetWidth, targetHeight);
-      ctx.drawImage(video, 0, 0, targetWidth, targetHeight);
+      ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, targetWidth, targetHeight);
 
       const imgData = ctx.getImageData(0, 0, targetWidth, targetHeight);
       frames.push({

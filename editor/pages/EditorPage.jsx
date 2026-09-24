@@ -95,7 +95,7 @@ export default function EditorPage() {
       if (isPWA) {
         document.title = sourceName ? sourceName : 'Editor';
       } else {
-        document.title = sourceName ? `${sourceName} — DITHER-DOT` : defaultBrowserTitle;
+        document.title = sourceName ? `${sourceName} - DITHER-DOT` : defaultBrowserTitle;
       }
     };
 

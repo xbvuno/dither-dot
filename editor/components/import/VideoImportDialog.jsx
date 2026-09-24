@@ -45,6 +45,8 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   const [detectedFps, setDetectedFps] = useState(24);
   const [fps, setFps] = useState(24);
   const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
+  const [crop, setCrop] = useState(null);
+  const [dragCrop, setDragCrop] = useState(null);
 
   const [isPlaying, setIsPlaying] = useState(true);
   const [currentPlayTime, setCurrentPlayTime] = useState(0);
@@ -53,6 +55,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   const [progress, setProgress] = useState({ current: 0, total: 0, percent: 0 });
 
   const videoRef = useRef(null);
+  const dragStartRef = useRef(null);
 
   // Load video metadata and initial container FPS
   useEffect(() => {
@@ -69,6 +72,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
         setMeta(data);
         setStartTime(0);
         setEndTime(Math.min(data.duration, 10)); // Default to first 10s max or full duration
+        setCrop(null);
 
         if (data.width > 1280 || data.height > 1280) {
           setScalePercent(50);
@@ -159,6 +163,116 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
     }
   };
 
+  const getPixelCoords = useCallback((e) => {
+    const video = videoRef.current;
+    if (!video || !meta) return null;
+    const rect = video.getBoundingClientRect();
+    if (!rect.width || !rect.height) return null;
+
+    const naturalW = meta.width;
+    const naturalH = meta.height;
+    const videoAspect = naturalW / naturalH;
+    const rectAspect = rect.width / rect.height;
+
+    let renderW = rect.width;
+    let renderH = rect.height;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    if (rectAspect > videoAspect) {
+      renderW = rect.height * videoAspect;
+      offsetX = (rect.width - renderW) / 2;
+    } else {
+      renderH = rect.width / videoAspect;
+      offsetY = (rect.height - renderH) / 2;
+    }
+
+    const vLeft = rect.left + offsetX;
+    const vTop = rect.top + offsetY;
+
+    const normX = Math.max(0, Math.min(1, (e.clientX - vLeft) / renderW));
+    const normY = Math.max(0, Math.min(1, (e.clientY - vTop) / renderH));
+
+    return {
+      pixelX: normX * naturalW,
+      pixelY: normY * naturalH,
+      clientX: e.clientX,
+      clientY: e.clientY,
+    };
+  }, [meta]);
+
+  const handlePointerDown = (e) => {
+    if (e.button === 2) {
+      // Right click resets crop
+      e.preventDefault();
+      setCrop(null);
+      setDragCrop(null);
+      dragStartRef.current = null;
+      return;
+    }
+    if (e.button !== 0) return;
+
+    const coords = getPixelCoords(e);
+    if (!coords) return;
+
+    try {
+      e.currentTarget.setPointerCapture?.(e.pointerId);
+    } catch {
+      // ignore
+    }
+    dragStartRef.current = coords;
+    setDragCrop(null);
+  };
+
+  const handlePointerMove = (e) => {
+    if (!dragStartRef.current || !meta) return;
+    const curr = getPixelCoords(e);
+    if (!curr) return;
+
+    const start = dragStartRef.current;
+    const dist = Math.hypot(e.clientX - start.clientX, e.clientY - start.clientY);
+    if (dist > 4) {
+      const x = Math.max(0, Math.min(start.pixelX, curr.pixelX));
+      const y = Math.max(0, Math.min(start.pixelY, curr.pixelY));
+      const w = Math.min(meta.width - x, Math.abs(curr.pixelX - start.pixelX));
+      const h = Math.min(meta.height - y, Math.abs(curr.pixelY - start.pixelY));
+      setDragCrop({
+        x: Math.round(x),
+        y: Math.round(y),
+        width: Math.round(w),
+        height: Math.round(h),
+      });
+    }
+  };
+
+  const handlePointerUp = (e) => {
+    if (!dragStartRef.current) return;
+    try {
+      e.currentTarget.releasePointerCapture?.(e.pointerId);
+    } catch {
+      // ignore
+    }
+
+    const start = dragStartRef.current;
+    const dist = Math.hypot(e.clientX - start.clientX, e.clientY - start.clientY);
+
+    if (dist > 6 && dragCrop && dragCrop.width >= 10 && dragCrop.height >= 10) {
+      setCrop(dragCrop);
+    } else if (dist <= 4 && e.button === 0) {
+      togglePlayPause();
+    }
+
+    setDragCrop(null);
+    dragStartRef.current = null;
+  };
+
+  const handleContextMenu = (e) => {
+    e.preventDefault();
+    setCrop(null);
+    setDragCrop(null);
+    dragStartRef.current = null;
+  };
+
   // Compute FPS options strictly <= detectedFps
   const fpsOptions = useMemo(() => getFpsOptions(detectedFps), [detectedFps]);
 
@@ -172,13 +286,18 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   const duration = Math.max(0.05, endTime - startTime);
   const estimatedFrames = Math.ceil(duration * fps); // NO 300 LIMIT!
 
+  const sourceW = crop ? crop.width : (meta ? meta.width : 0);
+  const sourceH = crop ? crop.height : (meta ? meta.height : 0);
+
   const scale = scalePercent / 100;
-  const outW = meta ? Math.max(1, Math.round(meta.width * scale)) : 0;
-  const outH = meta ? Math.max(1, Math.round(meta.height * scale)) : 0;
+  const outW = Math.max(1, Math.round(sourceW * scale));
+  const outH = Math.max(1, Math.round(sourceH * scale));
   // Frame RAM is doubled to account for raw source frame + rendered dither cache buffer
   const frameBytes = estimatedFrames * outW * outH * 4 * 2;
   // If thumbnails are enabled: ~50x36 per frame (RGBA canvas + DataURL base64 string)
-  const thumbnailBytes = thumbnailsEnabled ? estimatedFrames * 50 * 36 * 4 * 2 : 0;
+  const singleThumbnailBytes = estimatedFrames * 50 * 36 * 4 * 2;
+  const thumbnailRamMb = Math.max(1, Math.round(singleThumbnailBytes / (1024 * 1024)));
+  const thumbnailBytes = thumbnailsEnabled ? singleThumbnailBytes : 0;
   const estimatedRamMb = Math.round((frameBytes + thumbnailBytes) / (1024 * 1024));
 
   const handleConfirm = async () => {
@@ -191,6 +310,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
         scale,
         fps,
         maxFrames: Infinity, // NO LIMIT
+        crop,
         onProgress: (p) => setProgress(p),
       });
 
@@ -204,6 +324,8 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
       setIsExtracting(false);
     }
   };
+
+  const activeCrop = dragCrop || crop;
 
   return createPortal(
     <div className="video-dialog-overlay" onClick={!isExtracting ? onCancel : undefined}>
@@ -244,24 +366,68 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
 
         {meta && !metaError && (
           <div className="video-dialog-body">
-            {/* Video preview */}
+            {/* Video preview with interactive drag-to-crop */}
             <div
               className="video-dialog-preview-wrap"
-              onClick={togglePlayPause}
-              title={isPlaying ? 'Click to pause' : 'Click to play'}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+              onContextMenu={handleContextMenu}
+              title="Drag to crop • Right-click to reset"
             >
-              <video
-                ref={videoRef}
-                src={meta.url}
-                muted
-                autoPlay
-                playsInline
-                onTimeUpdate={handleTimeUpdate}
-                className="video-dialog-preview"
-              />
-              <div className={`video-dialog-play-overlay${!isPlaying ? ' visible' : ''}`}>
-                {isPlaying ? <Pause size={22} /> : <Play size={22} />}
+              <div className="video-dialog-preview-inner">
+                <video
+                  ref={videoRef}
+                  src={meta.url}
+                  muted
+                  autoPlay
+                  playsInline
+                  onTimeUpdate={handleTimeUpdate}
+                  className="video-dialog-preview"
+                  draggable={false}
+                />
+                {activeCrop && meta && (
+                  <div className="video-dialog-crop-overlay" aria-hidden="true">
+                    <div
+                      className="video-dialog-crop-box"
+                      style={{
+                        left: `${(activeCrop.x / meta.width) * 100}%`,
+                        top: `${(activeCrop.y / meta.height) * 100}%`,
+                        width: `${(activeCrop.width / meta.width) * 100}%`,
+                        height: `${(activeCrop.height / meta.height) * 100}%`,
+                      }}
+                    >
+                      <span className="video-dialog-crop-badge">
+                        {activeCrop.width} × {activeCrop.height}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                <div className={`video-dialog-play-overlay${!isPlaying ? ' visible' : ''}`}>
+                  {isPlaying ? <Pause size={22} /> : <Play size={22} />}
+                </div>
               </div>
+            </div>
+
+            {/* Helper label explaining crop / reset */}
+            <div className="video-dialog-crop-hint-row">
+              <span className="bv-label video-dialog-crop-hint">
+                DRAG TO CROP • RIGHT-CLICK TO RESET
+              </span>
+              {crop && (
+                <button
+                  type="button"
+                  className="video-dialog-reset-crop-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCrop(null);
+                  }}
+                  title="Reset crop to full frame"
+                >
+                  RESET CROP
+                </button>
+              )}
             </div>
 
             {/* Range / Trimming Section */}
@@ -269,7 +435,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
               <div className="bv-controls-row">
                 <span className="bv-label">RANGE (TRIM)</span>
                 <span className="bv-label video-dialog-meta-val">
-                  {duration.toFixed(2)}s [{startTime.toFixed(2)}s — {endTime.toFixed(2)}s]
+                  {duration.toFixed(2)}s [{startTime.toFixed(2)}s - {endTime.toFixed(2)}s]
                 </span>
               </div>
               <VideoRangeSlider
@@ -327,7 +493,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
               <div className="bv-controls-row">
                 <span className="bv-label">TIMELINE THUMBNAILS</span>
                 <span className="bv-label video-dialog-meta-val">
-                  {thumbnailsEnabled ? 'ENABLED' : 'DISABLED (SAVING RAM)'}
+                  {thumbnailsEnabled ? `ENABLED (~${thumbnailRamMb} MB)` : 'DISABLED (SAVING RAM)'}
                 </span>
               </div>
               <OptionGroup
@@ -350,7 +516,10 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
               <div className="video-dialog-spec-row">
                 <span className="bv-label">RESOLUTION</span>
                 <span className="video-dialog-spec-val">
-                  {outW} × {outH} PX <span className="video-dialog-spec-sub">(ORIGINAL {meta.width} × {meta.height})</span>
+                  {outW} × {outH} PX{' '}
+                  <span className="video-dialog-spec-sub">
+                    ({crop ? `CROP ${crop.width} × ${crop.height}` : `ORIGINAL ${meta.width} × ${meta.height}`})
+                  </span>
                 </span>
               </div>
               <div className="video-dialog-spec-row">
