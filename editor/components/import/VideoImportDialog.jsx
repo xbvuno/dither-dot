@@ -69,7 +69,6 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
         setStartTime(0);
         setEndTime(Math.min(data.duration, 10)); // Default to first 10s max or full duration
 
-        // Initial default scale: if resolution > 1280px in either dim, default to 50%
         if (data.width > 1280 || data.height > 1280) {
           setScalePercent(50);
         } else {
@@ -108,7 +107,6 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
         .catch(() => setIsPlaying(false));
     }
 
-    // Secondary refinement of FPS via requestVideoFrameCallback if needed
     let cancelled = false;
     detectFpsFromVideoElement(video).then((elementFps) => {
       if (!cancelled && elementFps && elementFps !== detectedFps) {
@@ -163,7 +161,6 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   // Compute FPS options strictly <= detectedFps
   const fpsOptions = useMemo(() => getFpsOptions(detectedFps), [detectedFps]);
 
-  // Keep fps clamped if detectedFps changes
   useEffect(() => {
     if (fps > detectedFps) {
       setFps(detectedFps);
@@ -210,7 +207,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
         <div className="video-dialog-header">
           <div className="video-dialog-header-title">
             <Film size={16} />
-            <h2 className="video-dialog-title">IMPORT VIDEO (FRAME SEQUENCE)</h2>
+            <h2 className="video-dialog-title">IMPORT VIDEO</h2>
           </div>
           <button
             type="button"
@@ -225,12 +222,12 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
 
         {loadingMeta && (
           <div className="video-dialog-loading">
-            <p className="bv-label">READING VIDEO METADATA & FRAMERATE...</p>
+            <p className="bv-label">READING VIDEO METADATA...</p>
           </div>
         )}
 
         {metaError && (
-          <div className="video-dialog-section">
+          <div className="bv-section">
             <p className="bv-label" style={{ color: 'var(--color-danger, #ff4444)' }}>
               {metaError}
             </p>
@@ -241,8 +238,8 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
         )}
 
         {meta && !metaError && (
-          <>
-            {/* Video preview: Auto-play, hidden controls, muted, click to play/pause */}
+          <div className="video-dialog-body">
+            {/* Video preview */}
             <div
               className="video-dialog-preview-wrap"
               onClick={togglePlayPause}
@@ -258,17 +255,16 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
                 className="video-dialog-preview"
               />
               <div className={`video-dialog-play-overlay${!isPlaying ? ' visible' : ''}`}>
-                {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+                {isPlaying ? <Pause size={22} /> : <Play size={22} />}
               </div>
             </div>
 
-            {/* Trimming: Dual-Handle Range Slider */}
-            <div className="video-dialog-section">
-              <div className="video-dialog-header-row">
+            {/* Range / Trimming Section */}
+            <div className="bv-section">
+              <div className="bv-controls-row">
                 <span className="bv-label">RANGE (TRIM)</span>
-                <span className="video-dialog-value-highlight">
-                  {duration.toFixed(2)}s SELECTED
-                  <span className="video-dialog-muted-text"> [TOTAL: {meta.duration.toFixed(2)}s]</span>
+                <span className="bv-label video-dialog-meta-val">
+                  {duration.toFixed(2)}s [{startTime.toFixed(2)}s — {endTime.toFixed(2)}s]
                 </span>
               </div>
               <VideoRangeSlider
@@ -281,13 +277,12 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
               />
             </div>
 
-            {/* Scale / Frame Dimensions Slider */}
-            <div className="video-dialog-section">
-              <div className="video-dialog-header-row">
-                <span className="bv-label">FRAME SCALE & RESOLUTION</span>
-                <span className="video-dialog-value-highlight">
+            {/* Scale Section */}
+            <div className="bv-section">
+              <div className="bv-controls-row">
+                <span className="bv-label">SCALE</span>
+                <span className="bv-label video-dialog-meta-val">
                   {outW} × {outH} PX ({scalePercent}%)
-                  <span className="video-dialog-muted-text"> [ORIGINAL: {meta.width} × {meta.height}]</span>
                 </span>
               </div>
               <Slider
@@ -302,13 +297,12 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
               />
             </div>
 
-            {/* Frame Rate (FPS) using OptionGroup */}
-            <div className="video-dialog-section">
-              <div className="video-dialog-header-row">
+            {/* Frame Rate Section */}
+            <div className="bv-section">
+              <div className="bv-controls-row">
                 <span className="bv-label">FRAME RATE</span>
-                <span className="video-dialog-value-highlight">
-                  {fps} FPS (~{Math.round(1000 / fps)}ms)
-                  <span className="video-dialog-muted-text"> [SOURCE: {detectedFps} FPS]</span>
+                <span className="bv-label video-dialog-meta-val">
+                  {fps} FPS [SOURCE: {detectedFps} FPS]
                 </span>
               </div>
               <OptionGroup
@@ -323,30 +317,38 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
               />
             </div>
 
-            {/* Live Specifications & Calculations Summary */}
-            <div className="video-dialog-summary">
-              <div className="video-dialog-summary-col">
-                <span className="video-dialog-summary-label">FRAMES TO IMPORT</span>
-                <span className="video-dialog-summary-value highlight">{estimatedFrames} FRAMES</span>
+            {/* Specifications Summary */}
+            <div className="video-dialog-specs">
+              <div className="video-dialog-spec-row">
+                <span className="bv-label">FRAMES TO IMPORT</span>
+                <span className="video-dialog-spec-val highlight">{estimatedFrames} FRAMES</span>
               </div>
-              <div className="video-dialog-summary-col">
-                <span className="video-dialog-summary-label">OUTPUT RESOLUTION</span>
-                <span className="video-dialog-summary-value">{outW} × {outH} PX</span>
+              <div className="video-dialog-spec-row">
+                <span className="bv-label">RESOLUTION</span>
+                <span className="video-dialog-spec-val">
+                  {outW} × {outH} PX <span className="video-dialog-spec-sub">(ORIGINAL {meta.width} × {meta.height})</span>
+                </span>
               </div>
-              <div className="video-dialog-summary-col">
-                <span className="video-dialog-summary-label">ESTIMATED RAM</span>
-                <span className="video-dialog-summary-value">~{estimatedRamMb} MB</span>
+              <div className="video-dialog-spec-row">
+                <span className="bv-label">DURATION & DELAY</span>
+                <span className="video-dialog-spec-val">
+                  {duration.toFixed(2)}s (~{Math.round(1000 / fps)}ms)
+                </span>
+              </div>
+              <div className="video-dialog-spec-row">
+                <span className="bv-label">ESTIMATED RAM</span>
+                <span className="video-dialog-spec-val">~{estimatedRamMb} MB</span>
               </div>
             </div>
 
             {/* Progress Bar during extraction */}
             {isExtracting && (
-              <div className="video-dialog-section">
-                <div className="video-dialog-header-row">
+              <div className="bv-section">
+                <div className="bv-controls-row">
                   <span className="bv-label">
                     EXTRACTING FRAMES: {progress.current} / {progress.total}
                   </span>
-                  <span className="video-dialog-value-highlight">{progress.percent}%</span>
+                  <span className="bv-label video-dialog-meta-val">{progress.percent}%</span>
                 </div>
                 <div className="video-dialog-progress-bar-wrap">
                   <div
@@ -378,7 +380,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
                 CANCEL
               </button>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>,

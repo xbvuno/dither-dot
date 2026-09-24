@@ -11,44 +11,45 @@
 }
 
 .video-dialog {
-  background: var(--color-bg, #0d0d0d);
+  background: var(--color-bg, #000);
   border: 1px solid var(--color-border, #333);
-  padding: 1.25rem 1.5rem;
-  max-width: 520px;
+  max-width: 460px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: var(--shadow-floating, 0 8px 32px rgba(0, 0, 0, 0.6));
   display: flex;
   flex-direction: column;
-  gap: 1rem;
 }
 
 .video-dialog-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0.65rem 0.9rem;
+  background: var(--color-surface, #0f0f0f);
+  border-bottom: 1px solid var(--color-border-subtle, #222);
 }
 
 .video-dialog-header-title {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: var(--color-text, #fff);
+  gap: 0.45rem;
+  color: var(--color-text, #EDEDDE);
 }
 
 .video-dialog-title {
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--color-text, #fff);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--color-text, #EDEDDE);
   margin: 0;
 }
 
 .video-dialog-close-btn {
   background: transparent;
   border: none;
-  color: var(--color-text-subtle, #888);
+  color: var(--color-text-muted, #777);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -58,19 +59,26 @@
 }
 
 .video-dialog-close-btn:hover {
-  color: var(--color-text, #fff);
+  color: var(--color-text, #EDEDDE);
 }
 
 .video-dialog-loading {
-  padding: 1.5rem;
+  padding: 2rem 1rem;
   text-align: center;
+}
+
+.video-dialog-body {
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
 }
 
 .video-dialog-preview-wrap {
   width: 100%;
-  max-height: 220px;
+  max-height: 190px;
   background: #000;
-  border: 1px solid var(--color-border, #222);
+  border: 1px solid var(--color-border-subtle, #222);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -81,7 +89,7 @@
 
 .video-dialog-preview {
   max-width: 100%;
-  max-height: 220px;
+  max-height: 190px;
   width: auto;
   height: auto;
   display: block;
@@ -97,7 +105,7 @@
   background: rgba(0, 0, 0, 0.45);
   color: #fff;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.15s ease;
   pointer-events: none;
 }
 
@@ -106,86 +114,61 @@
   opacity: 1;
 }
 
-.video-dialog-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
+.video-dialog-meta-val {
+  font-size: 0.78rem;
+  font-family: var(--font-mono, monospace);
+  color: var(--color-text, #EDEDDE);
+  letter-spacing: 0.04em;
+  text-transform: none;
 }
 
-.video-dialog-header-row {
+.video-dialog-specs {
+  border: 1px solid var(--color-border-subtle, #222);
+  background: var(--color-surface, #0d0d0d);
+  padding: 0.5rem 0.7rem;
   display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.video-dialog-spec-row {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: baseline;
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.video-dialog-spec-row .bv-label {
   font-size: 0.72rem;
-  letter-spacing: 0.08em;
+  color: var(--color-text-subtle, #777);
   margin: 0;
 }
 
-.video-dialog-value-highlight {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--color-text, #fff);
-}
-
-.video-dialog-muted-text {
-  font-weight: 400;
-  color: var(--color-text-subtle, #888);
-}
-
-.video-dialog-input {
-  background: var(--color-bg-subtle, #1a1a1a);
-  border: 1px solid var(--color-border, #333);
-  color: var(--color-text, #fff);
-  font-size: 0.78rem;
-  padding: 0.35rem 0.5rem;
-  outline: none;
-  width: 100%;
-}
-
-.video-dialog-input:focus {
-  border-color: var(--color-border-hover, #666);
-}
-
-.video-dialog-summary {
-  background: var(--color-bg-subtle, #141414);
-  border: 1px dashed var(--color-border, #333);
-  padding: 0.65rem 0.8rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.video-dialog-summary-col {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.video-dialog-summary-label {
-  font-size: 0.65rem;
-  letter-spacing: 0.08em;
-  color: var(--color-text-subtle, #888);
-}
-
-.video-dialog-summary-value {
-  font-size: 0.8rem;
+.video-dialog-spec-val {
   font-family: var(--font-mono, monospace);
-  font-weight: 600;
-  color: var(--color-text, #fff);
+  font-size: 0.75rem;
+  color: var(--color-text, #EDEDDE);
+  letter-spacing: 0.02em;
 }
 
-.video-dialog-summary-value.highlight {
-  color: var(--color-accent, #fff);
+.video-dialog-spec-val.highlight {
+  font-weight: 600;
+  color: #fff;
+}
+
+.video-dialog-spec-sub {
+  color: var(--color-text-subtle, #777);
+  font-size: 0.7rem;
 }
 
 .video-dialog-progress-bar-wrap {
   width: 100%;
-  height: 6px;
+  height: 5px;
   background: var(--color-bg-subtle, #222);
   border: 1px solid var(--color-border, #333);
   overflow: hidden;
-  margin-top: 0.35rem;
+  margin-top: 0.2rem;
 }
 
 .video-dialog-progress-bar-fill {
@@ -198,14 +181,14 @@
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  margin-top: 0.3rem;
+  margin-top: 0.2rem;
 }
 
 .video-dialog-actions .bv-option-btn {
   text-align: center;
   justify-content: center;
   width: 100%;
-  padding: 0.55rem;
+  padding: 0.5rem;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 500;
 }
