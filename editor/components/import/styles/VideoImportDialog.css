@@ -11,13 +11,13 @@
 }
 
 .video-dialog-container {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   max-width: 460px;
   width: 100%;
   max-height: 90vh;
-  gap: 0.65rem;
 }
 
 .video-dialog {
@@ -84,6 +84,9 @@
 }
 
 .video-dialog-warning-banner {
+  position: absolute;
+  bottom: calc(100% + 0.65rem);
+  left: 0;
   width: 100%;
   background: var(--color-bg, #000);
   border: 1px solid var(--color-danger, #b53636);
@@ -94,6 +97,7 @@
   text-align: center;
   box-sizing: border-box;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  z-index: 10;
 }
 
 .video-dialog-warning-text {
