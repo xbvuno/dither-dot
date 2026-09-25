@@ -13,12 +13,13 @@ import WaveGridSpinner from '../ui/shared/WaveGridSpinner';
 import './styles/VideoImportDialog.css';
 
 function getFpsOptions(detectedFps) {
-  const safeFps = Math.max(1, Math.min(120, Math.round(detectedFps || 24)));
-  const standardPool = safeFps >= 24
+  const safeFps = Math.max(1, Math.min(120, Number(detectedFps) || 24));
+  const roundedSafe = Math.round(safeFps);
+  const standardPool = roundedSafe >= 24
     ? [10, 12, 15, 18, 20, 24, 25, 30, 48, 50, 60, 120]
     : [5, 8, 10, 12, 15, 18, 20];
 
-  const candidates = standardPool.filter((f) => f < safeFps);
+  const candidates = standardPool.filter((f) => Math.abs(f - safeFps) > 0.4 && f < safeFps);
   candidates.push(safeFps);
   const unique = Array.from(new Set(candidates)).sort((a, b) => a - b);
 

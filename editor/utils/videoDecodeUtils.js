@@ -15,22 +15,33 @@ export function isVideoFile(file) {
 export function snapFps(fps) {
   if (!fps || !Number.isFinite(fps) || fps <= 0) return 24;
 
-  // Film & NTSC / PAL standards with realistic tolerance
-  if (Math.abs(fps - 23.976) < 0.25 || Math.abs(fps - 24) < 0.35) return 24;
-  if (Math.abs(fps - 25) < 0.45) return 25;
-  if (Math.abs(fps - 29.97) < 0.25 || Math.abs(fps - 30) < 0.45) return 30;
-  if (Math.abs(fps - 48) < 0.5) return 48;
-  if (Math.abs(fps - 50) < 0.5) return 50;
-  if (Math.abs(fps - 59.94) < 0.25 || Math.abs(fps - 60) < 0.5) return 60;
-  if (Math.abs(fps - 120) < 1.0) return 120;
+  // Exact standard broadcast and cinema frame rates (preserve 23.976, 29.97, 59.94)
+  if (Math.abs(fps - 23.976) < 0.05 || Math.abs(fps - (24000 / 1001)) < 0.05) return 23.976;
+  if (Math.abs(fps - 24) < 0.05) return 24;
+  if (Math.abs(fps - 25) < 0.05) return 25;
+  if (Math.abs(fps - 29.97) < 0.05 || Math.abs(fps - (30000 / 1001)) < 0.05) return 29.97;
+  if (Math.abs(fps - 30) < 0.05) return 30;
+  if (Math.abs(fps - 48) < 0.05) return 48;
+  if (Math.abs(fps - 50) < 0.05) return 50;
+  if (Math.abs(fps - 59.94) < 0.05 || Math.abs(fps - (60000 / 1001)) < 0.05) return 59.94;
+  if (Math.abs(fps - 60) < 0.05) return 60;
+  if (Math.abs(fps - 119.88) < 0.1 || Math.abs(fps - (120000 / 1001)) < 0.1) return 119.88;
+  if (Math.abs(fps - 120) < 0.1) return 120;
 
-  // Other common low-framerate video / GIF / screen-recording standards
+  // Other common low-framerate video / GIF / screen-recording integer standards
   const common = [8, 10, 12, 15, 18, 20, 75, 90, 144];
   for (const s of common) {
-    if (Math.abs(fps - s) < 0.45) return s;
+    if (Math.abs(fps - s) < 0.25) return s;
   }
 
-  return Math.round(fps);
+  // If very close to an integer within measurement jitter (<= 0.03)
+  const rounded = Math.round(fps);
+  if (Math.abs(fps - rounded) < 0.03) {
+    return rounded;
+  }
+
+  // Preserve up to 3 decimal places without rounding away fractional frame rates
+  return Math.round(fps * 1000) / 1000;
 }
 
 function parseMp4Stts(view, sttsOffset, timescale) {
@@ -274,6 +285,42 @@ function parseMp4Buffer(view) {
   return null;
 }
 
+function readEbmlVint(view, offset) {
+  if (offset >= view.byteLength) return null;
+  const firstByte = view.getUint8(offset);
+  if (firstByte === 0) return null;
+
+  let mask = 0x80;
+  let length = 1;
+  while ((firstByte & mask) === 0 && length <= 8) {
+    mask >>= 1;
+    length++;
+  }
+  if (length > 8 || offset + length > view.byteLength) return null;
+
+  let value = firstByte & (mask - 1);
+  for (let i = 1; i < length; i++) {
+    value = (value * 256) + view.getUint8(offset + i);
+  }
+  return { value, length };
+}
+
+function readEbmlUint(view, offset, size) {
+  if (offset + size > view.byteLength || size <= 0 || size > 8) return null;
+  let val = 0;
+  for (let i = 0; i < size; i++) {
+    val = (val * 256) + view.getUint8(offset + i);
+  }
+  return val;
+}
+
+function readEbmlFloat(view, offset, size) {
+  if (offset + size > view.byteLength) return null;
+  if (size === 4) return view.getFloat32(offset);
+  if (size === 8) return view.getFloat64(offset);
+  return null;
+}
+
 function parseWebmBuffer(view) {
   const len = view.byteLength - 7;
   for (let i = 0; i < len; i++) {
@@ -283,40 +330,28 @@ function parseWebmBuffer(view) {
 
     // 1. DefaultDuration: [0x23, 0xE3, 0x83]
     if (b0 === 0x23 && b1 === 0xe3 && b2 === 0x83) {
-      let offset = i + 3;
-      if (offset >= view.byteLength) break;
-      const sizeByte = view.getUint8(offset++);
-      const dataSize = (sizeByte & 0x80) ? (sizeByte & 0x7f) : (sizeByte === 0x40 ? 0 : 4);
-      let durNs = 0;
-      if (dataSize === 4 && offset + 4 <= view.byteLength) {
-        durNs = view.getUint32(offset);
-      } else if (dataSize === 8 && offset + 8 <= view.byteLength) {
-        const high = view.getUint32(offset);
-        const low = view.getUint32(offset + 4);
-        durNs = high * 0x100000000 + low;
-      }
-      if (durNs > 0) {
-        const fps = 1e9 / durNs;
-        if (fps >= 1 && fps <= 240) {
-          return snapFps(fps);
+      const vint = readEbmlVint(view, i + 3);
+      if (vint && vint.value > 0 && vint.value <= 8) {
+        const dataOffset = i + 3 + vint.length;
+        const durNs = readEbmlUint(view, dataOffset, vint.value);
+        if (durNs && durNs > 0) {
+          const fps = 1e9 / durNs;
+          if (fps >= 1 && fps <= 240) {
+            return snapFps(fps);
+          }
         }
       }
     }
 
     // 2. FrameRate float element: [0x23, 0x83, 0xE3]
     if (b0 === 0x23 && b1 === 0x83 && b2 === 0xe3) {
-      let offset = i + 3;
-      if (offset >= view.byteLength) break;
-      const sizeByte = view.getUint8(offset++);
-      const dataSize = (sizeByte & 0x80) ? (sizeByte & 0x7f) : 4;
-      let fps = 0;
-      if (dataSize === 4 && offset + 4 <= view.byteLength) {
-        fps = view.getFloat32(offset);
-      } else if (dataSize === 8 && offset + 8 <= view.byteLength) {
-        fps = view.getFloat64(offset);
-      }
-      if (fps >= 1 && fps <= 240) {
-        return snapFps(fps);
+      const vint = readEbmlVint(view, i + 3);
+      if (vint && (vint.value === 4 || vint.value === 8)) {
+        const dataOffset = i + 3 + vint.length;
+        const fps = readEbmlFloat(view, dataOffset, vint.value);
+        if (fps && fps >= 1 && fps <= 240) {
+          return snapFps(fps);
+        }
       }
     }
   }
@@ -401,36 +436,7 @@ export async function parseVideoContainerFps(fileOrBlob) {
 
 export function detectFpsFromVideoElement(video, timeoutMs = 2000) {
   return new Promise((resolve) => {
-    if (!video) return resolve(null);
-
-    // 1. Try immediate captureStream track setting if available
-    try {
-      const captureStream = video.captureStream || video.mozCaptureStream;
-      if (typeof captureStream === 'function') {
-        const stream = captureStream.call(video);
-        if (stream) {
-          const track = stream.getVideoTracks()?.[0];
-          const settings = track?.getSettings?.();
-          stream.getTracks().forEach((t) => {
-            try {
-              t.stop();
-            } catch {
-              // ignore
-            }
-          });
-          if (settings && typeof settings.frameRate === 'number' && settings.frameRate > 0) {
-            const snapped = snapFps(settings.frameRate);
-            if (snapped >= 1 && snapped <= 240) {
-              return resolve(snapped);
-            }
-          }
-        }
-      }
-    } catch {
-      // Ignore captureStream failure and proceed to requestVideoFrameCallback
-    }
-
-    if (typeof video.requestVideoFrameCallback !== 'function') {
+    if (!video || typeof video.requestVideoFrameCallback !== 'function') {
       return resolve(null);
     }
 
@@ -438,6 +444,7 @@ export function detectFpsFromVideoElement(video, timeoutMs = 2000) {
     let lastTime = null;
     let callCount = 0;
     let handle = null;
+    let timer = null;
 
     const cleanup = () => {
       if (timer) clearTimeout(timer);
@@ -473,7 +480,7 @@ export function detectFpsFromVideoElement(video, timeoutMs = 2000) {
       resolve(null);
     };
 
-    let timer = setTimeout(() => {
+    timer = setTimeout(() => {
       cleanup();
       finish();
     }, timeoutMs);
