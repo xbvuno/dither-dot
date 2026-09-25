@@ -152,12 +152,16 @@
 
 .gif-frame-btn:hover {
   border-color: var(--color-border-hover, #aaa);
-  box-shadow: 0 0 0 1px var(--color-border-hover, #aaa);
 }
 
 .gif-frame-btn.selected {
+  border: 1px solid var(--color-text, #fff);
+  box-shadow: none;
+}
+
+.gif-frame-btn.selected:hover {
   border-color: var(--color-text, #fff);
-  box-shadow: 0 0 0 1px var(--color-text, #fff);
+  box-shadow: none;
 }
 
 .gif-frame-btn img {
@@ -183,10 +187,6 @@
   cursor: not-allowed;
 }
 
-.gif-frame-btn.active {
-  border-color: var(--color-text, #fff);
-  border-top: 4px solid var(--color-text, #fff);
-}
 
 .gif-context-menu {
   position: fixed;

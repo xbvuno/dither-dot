@@ -604,6 +604,7 @@ export default function GifTimeline() {
 
   const handleFrameClick = (event, index) => {
     if (!frames[index]) return;
+    event.stopPropagation();
     setPlaying(false);
 
     if (event.shiftKey) {
@@ -630,6 +631,25 @@ export default function GifTimeline() {
       setSelectedFrameIndices([index]);
       setCurrentFrameIndex(index);
       lastClickedIndexRef.current = index;
+    }
+  };
+
+  const handleTimelineBackgroundPointerDown = (e) => {
+    if (e.button !== 0) return;
+
+    // Ignore clicks on horizontal scrollbar
+    if (stripRef.current && (e.target === stripRef.current || stripRef.current.contains(e.target))) {
+      const rect = stripRef.current.getBoundingClientRect();
+      if (e.clientY >= rect.top + stripRef.current.clientHeight) {
+        return;
+      }
+    }
+
+    const interactiveTarget = e.target.closest(
+      'button, input, select, textarea, label, a, .gif-frame-btn, .gif-context-menu, .gif-timeline-resize-handle'
+    );
+    if (!interactiveTarget) {
+      setSelectedFrameIndices([]);
     }
   };
 
@@ -679,6 +699,7 @@ export default function GifTimeline() {
       className={`gif-timeline-shell${decoding ? ' gif-timeline-shell--decoding' : ''}`}
       onMouseEnter={() => { isHoveredRef.current = true; }}
       onMouseLeave={() => { isHoveredRef.current = false; }}
+      onPointerDown={handleTimelineBackgroundPointerDown}
     >
       <section ref={timelineContentRef} className='gif-timeline' aria-label='GIF TIMELINE'>
         <div
