@@ -149,7 +149,7 @@ export default function EditorPage() {
       }
 
       if (e.key === 'c' || e.key === 'C') {
-        if (!e.repeat) {
+        if (!e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) {
           useViewStore.getState().setPreviewingOriginal(true);
         }
       }

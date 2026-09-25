@@ -127,6 +127,8 @@
   scrollbar-gutter: stable;
   min-height: 0;
   padding-bottom: 8px;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .gif-frame-btn {
@@ -141,6 +143,9 @@
   flex: 0 0 auto;
   padding: 0;
   overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 

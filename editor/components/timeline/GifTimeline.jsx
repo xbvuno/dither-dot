@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import "./styles/GifTimeline.css";
 import {
   Check,
@@ -66,6 +66,12 @@ export default function GifTimeline() {
   const zoomInBtnRef = useRef(null);
   const zoomOutBtnRef = useRef(null);
   const [contextMenu, setContextMenu] = useState(null);
+  const [dragAnchor, setDragAnchor] = useState(null);
+  const dragSelectRef = useRef(null);
+  const justFinishedDragRef = useRef(false);
+  const autoScrollRafRef = useRef(null);
+  const autoScrollSpeedRef = useRef(0);
+  const lastClientXRef = useRef(0);
 
   const frames = useGifStore((s) => s.frames);
   const currentFrameIndex = useGifStore((s) => s.currentFrameIndex);
@@ -602,9 +608,163 @@ export default function GifTimeline() {
     });
   };
 
+  const stopAutoScroll = useCallback(() => {
+    if (autoScrollRafRef.current !== null) {
+      window.cancelAnimationFrame(autoScrollRafRef.current);
+      autoScrollRafRef.current = null;
+    }
+    autoScrollSpeedRef.current = 0;
+  }, []);
+
+  const getFrameIndexFromClientX = useCallback((clientX) => {
+    const strip = stripRef.current;
+    if (!strip) return null;
+    const buttons = strip.querySelectorAll('.gif-frame-btn');
+    const count = buttons.length;
+    if (count === 0) return null;
+
+    const firstRect = buttons[0].getBoundingClientRect();
+    if (clientX <= firstRect.left) return 0;
+
+    const lastRect = buttons[count - 1].getBoundingClientRect();
+    if (clientX >= lastRect.right) return count - 1;
+
+    for (let i = 0; i < count; i += 1) {
+      const rect = buttons[i].getBoundingClientRect();
+      if (clientX >= rect.left && clientX <= rect.right) {
+        return i;
+      }
+      if (i < count - 1) {
+        const nextRect = buttons[i + 1].getBoundingClientRect();
+        if (clientX > rect.right && clientX < nextRect.left) {
+          return (clientX - rect.right <= nextRect.left - clientX) ? i : (i + 1);
+        }
+      }
+    }
+    return null;
+  }, []);
+
+  const updateDragSelection = useCallback((clientX) => {
+    if (!dragSelectRef.current || !dragSelectRef.current.active) return;
+    const targetIndex = getFrameIndexFromClientX(clientX);
+    if (targetIndex !== null) {
+      const start = Math.min(dragSelectRef.current.startIndex, targetIndex);
+      const end = Math.max(dragSelectRef.current.startIndex, targetIndex);
+      const range = [];
+      for (let i = start; i <= end; i += 1) {
+        range.push(i);
+      }
+      useGifStore.getState().setSelectedFrameIndices(range);
+      lastClickedIndexRef.current = targetIndex;
+    }
+  }, [getFrameIndexFromClientX]);
+
+  const updateAutoScrollSpeed = useCallback((clientX) => {
+    const strip = stripRef.current;
+    if (!strip) {
+      autoScrollSpeedRef.current = 0;
+      return;
+    }
+    const rect = strip.getBoundingClientRect();
+    const edgeThreshold = 36;
+    if (clientX > rect.right - edgeThreshold) {
+      const factor = Math.min(1, Math.max(0, (clientX - (rect.right - edgeThreshold)) / edgeThreshold));
+      autoScrollSpeedRef.current = Math.max(3, Math.round(factor * 16));
+    } else if (clientX < rect.left + edgeThreshold) {
+      const factor = Math.min(1, Math.max(0, ((rect.left + edgeThreshold) - clientX) / edgeThreshold));
+      autoScrollSpeedRef.current = -Math.max(3, Math.round(factor * 16));
+    } else {
+      autoScrollSpeedRef.current = 0;
+    }
+  }, []);
+
+  const startAutoScroll = useCallback(() => {
+    stopAutoScroll();
+    const tick = () => {
+      if (!dragSelectRef.current || !dragSelectRef.current.active) {
+        stopAutoScroll();
+        return;
+      }
+      const strip = stripRef.current;
+      if (strip && autoScrollSpeedRef.current !== 0) {
+        strip.scrollLeft += autoScrollSpeedRef.current;
+        updateDragSelection(lastClientXRef.current);
+      }
+      autoScrollRafRef.current = window.requestAnimationFrame(tick);
+    };
+    autoScrollRafRef.current = window.requestAnimationFrame(tick);
+  }, [stopAutoScroll, updateDragSelection]);
+
+  const handleFramePointerDown = (event, index) => {
+    if (event.button !== 0 || !frames[index]) return;
+
+    dragSelectRef.current = {
+      active: false,
+      startIndex: index,
+      startX: event.clientX,
+      startY: event.clientY,
+    };
+    lastClientXRef.current = event.clientX;
+    setDragAnchor(index);
+  };
+
+  useEffect(() => {
+    if (dragAnchor === null) return;
+
+    const onPointerMove = (e) => {
+      if (!dragSelectRef.current) return;
+      lastClientXRef.current = e.clientX;
+
+      if (!dragSelectRef.current.active) {
+        const dx = e.clientX - dragSelectRef.current.startX;
+        const dy = e.clientY - dragSelectRef.current.startY;
+        if (Math.hypot(dx, dy) > 4) {
+          dragSelectRef.current.active = true;
+          useGifStore.getState().setPlaying(false);
+          useGifStore.getState().setCurrentFrameIndex(dragSelectRef.current.startIndex);
+          startAutoScroll();
+        }
+      }
+
+      if (dragSelectRef.current.active) {
+        e.preventDefault();
+        updateAutoScrollSpeed(e.clientX);
+        updateDragSelection(e.clientX);
+      }
+    };
+
+    const onPointerUp = () => {
+      if (dragSelectRef.current?.active) {
+        justFinishedDragRef.current = true;
+        window.setTimeout(() => {
+          justFinishedDragRef.current = false;
+        }, 80);
+      }
+
+      dragSelectRef.current = null;
+      stopAutoScroll();
+      setDragAnchor(null);
+    };
+
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('pointercancel', onPointerUp);
+
+    return () => {
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('pointercancel', onPointerUp);
+      stopAutoScroll();
+    };
+  }, [dragAnchor, startAutoScroll, stopAutoScroll, updateAutoScrollSpeed, updateDragSelection]);
+
   const handleFrameClick = (event, index) => {
     if (!frames[index]) return;
     event.stopPropagation();
+    if (justFinishedDragRef.current) {
+      justFinishedDragRef.current = false;
+      return;
+    }
     setPlaying(false);
 
     if (event.shiftKey) {
@@ -832,8 +992,10 @@ export default function GifTimeline() {
                 <button
                   key={`gif-frame-${index}`}
                   type='button'
+                  data-frame-index={index}
                   className={`gif-frame-btn${isActive ? ' active' : ''}${isSelected ? ' selected' : ''}${state === 'pending' ? ' gif-frame-btn--pending' : ''}${!isLoaded ? ' gif-frame-btn--unloaded' : ''}${isCompact ? ' gif-frame-btn--compact' : ''}${!thumbnailsEnabled ? ' gif-frame-btn--no-thumb' : ''}`}
                   disabled={!isLoaded}
+                  onPointerDown={(e) => handleFramePointerDown(e, index)}
                   onClick={(e) => handleFrameClick(e, index)}
                   onContextMenu={(e) => handleFrameContextMenu(e, index)}
                   title={`FRAME ${index + 1}`}
