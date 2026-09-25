@@ -63,7 +63,6 @@ export default function GifTimeline() {
   const stripRef = useRef(null);
   const lastClickedIndexRef = useRef(0);
   const isHoveredRef = useRef(false);
-  const isAltDownRef = useRef(false);
   const zoomInBtnRef = useRef(null);
   const zoomOutBtnRef = useRef(null);
   const [contextMenu, setContextMenu] = useState(null);
@@ -387,25 +386,6 @@ export default function GifTimeline() {
   }, [frames, thumbnailsEnabled]);
 
   useEffect(() => {
-    const onKeyDown = (e) => {
-      if (e.key === 'Alt') {
-        isAltDownRef.current = true;
-        if (isHoveredRef.current) {
-          e.preventDefault();
-        }
-      }
-    };
-
-    const onKeyUp = (e) => {
-      if (e.key === 'Alt') {
-        isAltDownRef.current = false;
-      }
-    };
-
-    const onWindowBlur = () => {
-      isAltDownRef.current = false;
-    };
-
     const onWheel = (e) => {
       const shell = timelineRef.current;
       if (!shell) return;
@@ -420,9 +400,8 @@ export default function GifTimeline() {
       const isOverTimeline = isHoveredRef.current || inBounds || shell.contains(e.target);
       if (!isOverTimeline) return;
 
-      // Detect if Alt is being pressed (via keydown/keyup ref or event modifier) or Ctrl / Meta
-      const isAlt = isAltDownRef.current || e.altKey || e.ctrlKey || e.metaKey;
-      if (isAlt) {
+      // Zoom only with Shift key
+      if (e.shiftKey) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -463,15 +442,9 @@ export default function GifTimeline() {
       }
     };
 
-    window.addEventListener('keydown', onKeyDown, { capture: true });
-    window.addEventListener('keyup', onKeyUp, { capture: true });
-    window.addEventListener('blur', onWindowBlur);
     window.addEventListener('wheel', onWheel, { passive: false, capture: true });
 
     return () => {
-      window.removeEventListener('keydown', onKeyDown, { capture: true });
-      window.removeEventListener('keyup', onKeyUp, { capture: true });
-      window.removeEventListener('blur', onWindowBlur);
       window.removeEventListener('wheel', onWheel, { capture: true });
     };
   }, []);
@@ -771,7 +744,7 @@ export default function GifTimeline() {
               className='bv-option-btn gif-timeline-btn gif-timeline-icon-btn'
               onClick={() => setZoom(zoom - 0.1)}
               aria-label='Zoom out frames'
-              title='ZOOM OUT (ALT + WHEEL DOWN)'
+              title='ZOOM OUT (SHIFT + WHEEL DOWN)'
               disabled={decoding || zoom <= 0.25}
             >
               <ZoomOut size={13} strokeWidth={2} />
@@ -782,7 +755,7 @@ export default function GifTimeline() {
               className='bv-option-btn gif-timeline-btn gif-timeline-icon-btn'
               onClick={() => setZoom(zoom + 0.1)}
               aria-label='Zoom in frames'
-              title='ZOOM IN (ALT + WHEEL UP)'
+              title='ZOOM IN (SHIFT + WHEEL UP)'
               disabled={decoding || zoom >= 1.0}
             >
               <ZoomIn size={13} strokeWidth={2} />
