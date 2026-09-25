@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import useGifStore from '../media/gifStore';
 
 const useViewStore = create(
   persist(
@@ -32,6 +33,17 @@ const useViewStore = create(
       previewScrollbars: true,
       setPreviewScrollbars: (v) => set({ previewScrollbars: Boolean(v) }),
 
+      disableGifThumbnails: false,
+      setDisableGifThumbnails: (v) => {
+        const val = Boolean(v);
+        set({ disableGifThumbnails: val });
+        try {
+          useGifStore.getState().setThumbnailsEnabled(!val);
+        } catch {
+          // ignore if gifStore is not yet initialized
+        }
+      },
+
       activeSliderId: null,
       setActiveSliderId: (id) => set({ activeSliderId: id }),
       clearActiveSlider: () => set({ activeSliderId: null }),
@@ -44,6 +56,7 @@ const useViewStore = create(
         splitDirection: state.splitDirection,
         splitFirstView: state.splitFirstView,
         previewScrollbars: state.previewScrollbars,
+        disableGifThumbnails: state.disableGifThumbnails,
       }),
     }
   )

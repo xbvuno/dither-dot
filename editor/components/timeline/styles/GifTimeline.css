@@ -88,6 +88,21 @@
   user-select: none;
 }
 
+.gif-timeline-divider {
+  font-size: 0.72rem;
+  color: var(--color-text-subtle);
+  user-select: none;
+  line-height: 1;
+  display: inline-block;
+  opacity: 0.8;
+  margin: 0 0.15rem;
+}
+
+.gif-selected-count {
+  user-select: none;
+  white-space: nowrap;
+}
+
 .gif-delay-wrap {
   display: inline-flex;
   align-items: center;

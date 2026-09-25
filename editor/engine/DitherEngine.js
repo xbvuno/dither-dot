@@ -1162,7 +1162,7 @@ const action = this.debugEnabled ? "disable" : "enable";
         if (gifFrameIndex >= 0) {
           let thumbnailUrl = '';
           const gifState = useGifStore.getState();
-          const shouldCaptureThumb = gifState.thumbnailsEnabled !== false;
+          const shouldCaptureThumb = gifState.thumbnailsEnabled !== false && !useViewStore.getState().disableGifThumbnails;
 
           if (shouldCaptureThumb) {
             if (isCurrentFrame) {

@@ -9,7 +9,8 @@ import useWatermarkStore from '../stores/media/watermarkStore';
 
 export default function SettingsPage() {
   const [openSections, toggleSection] = useAccordion('dither-dot:open-sections-settings', {
-    settings: true,
+    ui: true,
+    engine: true,
     splitView: true,
     storage: false,
     about: true,
@@ -31,6 +32,8 @@ export default function SettingsPage() {
   const setSplitFirstView = useViewStore((s) => s.setSplitFirstView);
   const previewScrollbars = useViewStore((s) => s.previewScrollbars ?? true);
   const setPreviewScrollbars = useViewStore((s) => s.setPreviewScrollbars);
+  const disableGifThumbnails = useViewStore((s) => s.disableGifThumbnails ?? false);
+  const setDisableGifThumbnails = useViewStore((s) => s.setDisableGifThumbnails);
 
   const handleClearCache = () => {
     if (window.confirm('Reset all saved settings and reload DITHER-DOT?')) {
@@ -46,12 +49,12 @@ export default function SettingsPage() {
 
   return (
     <div>
-      {/* 1. CORE SETTINGS (From original Import section) */}
+      {/* 1. UI SETTINGS */}
       <MacroSection
-        title="SETTINGS"
+        title="UI"
         collapsible
-        isOpen={openSections.settings}
-        onToggle={() => toggleSection('settings')}
+        isOpen={openSections.ui ?? true}
+        onToggle={() => toggleSection('ui')}
       >
         <div className='bv-section pipeline-section'>
           <div className='bv-controls-row'>
@@ -83,6 +86,29 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        <div className='bv-section disable-gif-thumbnails-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>DISABLE GIF THUMBNAILS</span>
+            <OptionGroup
+              options={[
+                { value: true, label: 'ON' },
+                { value: false, label: 'OFF' },
+              ]}
+              value={disableGifThumbnails}
+              onChange={setDisableGifThumbnails}
+              ariaLabel="Disable GIF thumbnails"
+            />
+          </div>
+        </div>
+      </MacroSection>
+
+      {/* 2. ENGINE SETTINGS */}
+      <MacroSection
+        title="ENGINE"
+        collapsible
+        isOpen={openSections.engine ?? true}
+        onToggle={() => toggleSection('engine')}
+      >
         <div className='bv-section force-cpu-section'>
           <div className='bv-controls-row'>
             <span className='bv-label'>FORCE CPU</span>
