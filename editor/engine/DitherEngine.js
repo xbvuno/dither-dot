@@ -1262,8 +1262,10 @@ const action = this.debugEnabled ? "disable" : "enable";
 
         if (gifFrameIndex >= 0) {
           const gifState = useGifStore.getState();
-          const existingCachedFrame = gifState.renderedFrames[gifFrameIndex];
-          const existingThumbnail = gifState.renderedThumbnails[gifFrameIndex] || '';
+          const targetFrame = gifState.frames?.[gifFrameIndex];
+          const originKey = targetFrame?.originId || gifFrameIndex;
+          const existingCachedFrame = gifState.renderedFrames[originKey] || gifState.renderedFrames[gifFrameIndex];
+          const existingThumbnail = gifState.renderedThumbnails[originKey] || gifState.renderedThumbnails[gifFrameIndex] || '';
           if (existingCachedFrame) {
             useGifStore.getState().markFrameRendered(gifFrameIndex, existingThumbnail, {
               ...existingCachedFrame,
@@ -1756,7 +1758,7 @@ const action = this.debugEnabled ? "disable" : "enable";
       this.splitOverlayImage = this.frameSourceCanvas;
     }
 
-    const cachedFrame = gifState.renderedFrames?.[frameIndex];
+    const cachedFrame = (frame?.originId && gifState.renderedFrames?.[frame.originId]) || gifState.renderedFrames?.[frameIndex];
     const cachedState = gifState.frameStates?.[frameIndex];
     const shouldForceRefresh = this.pendingPaletteRefresh;
 
@@ -1873,6 +1875,14 @@ const action = this.debugEnabled ? "disable" : "enable";
     const gifState = useGifStore.getState();
     const frame = gifState.frames?.[frameIndex];
     if (!frame || !frame.pixels || gifState.frameStates?.[frameIndex] !== 'pending') {
+      return;
+    }
+
+    const originCached = frame.originId ? gifState.renderedFrames[frame.originId] : null;
+    if (originCached) {
+      const originThumb = frame.originId ? (gifState.renderedThumbnails[frame.originId] || '') : '';
+      gifState.markFrameRendered(frameIndex, originThumb, originCached);
+      this.scheduleIdleFrameRender();
       return;
     }
 

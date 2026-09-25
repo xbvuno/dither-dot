@@ -128,12 +128,13 @@
   --gif-frame-rows: 1 !important;
   --gif-frame-width: 56px;
   --gif-frame-height: 44px;
+  --gif-frame-gap: 6px;
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: var(--gif-frame-width);
   grid-template-rows: 1fr;
   align-content: start;
-  gap: 0.35rem;
+  gap: var(--gif-frame-gap, 6px);
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -144,6 +145,10 @@
   padding-bottom: 8px;
   user-select: none;
   -webkit-user-select: none;
+}
+
+.gif-frame-strip--min-zoom {
+  gap: 1px !important;
 }
 
 .gif-frame-btn {
@@ -302,6 +307,26 @@
   display: none;
 }
 
+.gif-frame-btn--min-zoom .gif-frame-index {
+  display: none !important;
+}
+
+.gif-frame-btn--min-zoom.gif-frame-btn--compact .gif-frame-state,
+.gif-frame-btn--min-zoom .gif-frame-state {
+  display: inline-grid !important;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  min-width: 0;
+  height: 14px;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.78);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  place-items: center;
+  font-size: 0.52rem;
+}
+
 .gif-frame-btn--compact .gif-frame-index {
   left: 0;
   right: 0;
@@ -330,30 +355,7 @@
 }
 
 .gif-frame-btn--no-thumb {
-  background: var(--color-surface, #1e1e1e);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.gif-frame-btn--no-thumb .gif-frame-index {
-  position: static;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  background: transparent;
-  color: var(--color-text, #ffffff);
-  width: auto;
-  height: auto;
-  border: none;
-}
-
-.gif-frame-btn--no-thumb .gif-frame-state {
-  position: absolute;
-  top: 0.15rem;
-  right: 0.15rem;
-  bottom: auto;
-  left: auto;
+  background: #000000;
 }
 
 .gif-context-menu-divider {

@@ -78,6 +78,8 @@ export default function GifTimeline() {
   const currentFrameIndex = useGifStore((s) => s.currentFrameIndex);
   const selectedFrameIndices = useGifStore((s) => s.selectedFrameIndices) || [0];
   const zoom = useGifStore((s) => s.zoom) || 1;
+  const isMinZoom = Math.round(zoom * 100) <= 25;
+  const frameGap = Math.max(1, Math.round(1 + ((Math.min(1.0, Math.max(0.25, zoom)) - 0.25) / 0.75) * 5));
   const playing = useGifStore((s) => s.playing);
   const playbackDelay = useGifStore((s) => s.playbackDelay);
   const frameStates = useGifStore((s) => s.frameStates);
@@ -378,8 +380,14 @@ export default function GifTimeline() {
 
       const frame = frames[index];
       if (frame) {
-        const url = toThumbnailDataUrl(frame);
-        setRawThumbnails((prev) => ({ ...prev, [index]: url }));
+        const originKey = frame.originId || index;
+        setRawThumbnails((prev) => {
+          if (prev[originKey]) {
+            return prev[index] ? prev : { ...prev, [index]: prev[originKey] };
+          }
+          const url = toThumbnailDataUrl(frame);
+          return { ...prev, [originKey]: url, [index]: url };
+        });
       }
 
       index += 1;
@@ -488,6 +496,14 @@ export default function GifTimeline() {
       if (totalFrames === 0) return;
 
       const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+
+      // Space: play / pause
+      if ((e.key === ' ' || e.code === 'Space') && !isCtrlOrCmd && !e.altKey) {
+        e.preventDefault();
+        if (state.decoding || totalFrames <= 1) return;
+        state.setPlaying(!state.playing);
+        return;
+      }
 
       // ArrowLeft: frame indietro
       if (e.key === 'ArrowLeft' && !isCtrlOrCmd && !e.altKey) {
@@ -871,6 +887,29 @@ export default function GifTimeline() {
           aria-label='Resize GIF timeline'
         />
         <div ref={controlsRef} className='gif-timeline-controls'>
+          <label htmlFor='gif-playback-delay' className={`gif-delay-wrap${decoding ? ' disabled' : ''}`}>
+            <span className='gif-timeline-label gif-delay-label-full'>DELAY (MS)</span>
+            <span className='gif-timeline-label gif-delay-label-short gif-mobile-only'>MS</span>
+            <input
+              className='gif-delay-input'
+              type='text'
+              inputMode='numeric'
+              name='playbackDelay'
+              id='gif-playback-delay'
+              value={displayDelayValue}
+              onFocus={() => setEditingDelay(displayDelayValue === '~' ? '' : displayDelayValue)}
+              onChange={handleDelayChange}
+              onBlur={handleDelayBlur}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.currentTarget.blur();
+                }
+              }}
+              disabled={decoding}
+              aria-label='Playback Delay (MS)'
+            />
+          </label>
+
           <button
             type='button'
             className='bv-option-btn gif-timeline-btn gif-timeline-icon-btn'
@@ -898,7 +937,7 @@ export default function GifTimeline() {
             className={`bv-option-btn gif-timeline-btn gif-timeline-icon-btn${playing ? ' active' : ''}`}
             onClick={() => setPlaying(!playing)}
             aria-label={playing ? 'Pause GIF playback' : 'Play GIF playback'}
-            title={playing ? 'PAUSE' : 'PLAY'}
+            title={playing ? 'PAUSE (SPACE)' : 'PLAY (SPACE)'}
             disabled={decoding}
           >
             {playing ? <Pause size={14} strokeWidth={2} /> : <Play size={14} strokeWidth={2} />}
@@ -918,31 +957,6 @@ export default function GifTimeline() {
           <span className={`gif-timeline-label gif-frame-counter${decoding ? ' gif-decoding-label' : ''}`}>
             {decoding ? 'DECODING...' : `${currentFrameIndex + 1} / ${totalFrames} | R: ${totalFrames > 0 ? Math.round((frameStates.filter((s) => s === 'done').length / totalFrames) * 100) : 0}%`}
           </span>
-
-          <span className='gif-timeline-divider' aria-hidden='true'>|</span>
-
-          <label htmlFor='gif-playback-delay' className={`gif-delay-wrap${decoding ? ' disabled' : ''}`}>
-            <span className='gif-timeline-label gif-delay-label-full'>DELAY (MS)</span>
-            <span className='gif-timeline-label gif-delay-label-short gif-mobile-only'>MS</span>
-            <input
-              className='gif-delay-input'
-              type='text'
-              inputMode='numeric'
-              name='playbackDelay'
-              id='gif-playback-delay'
-              value={displayDelayValue}
-              onFocus={() => setEditingDelay(displayDelayValue === '~' ? '' : displayDelayValue)}
-              onChange={handleDelayChange}
-              onBlur={handleDelayBlur}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.currentTarget.blur();
-                }
-              }}
-              disabled={decoding}
-              aria-label='Playback Delay (MS)'
-            />
-          </label>
 
           <div className='gif-zoom-controls'>
             <span className='gif-timeline-label gif-selected-count'>
@@ -978,16 +992,22 @@ export default function GifTimeline() {
         {decoding ? null : (
           <div
             ref={stripRef}
-            className='gif-frame-strip'
+            className={`gif-frame-strip${isMinZoom ? ' gif-frame-strip--min-zoom' : ''}`}
             style={{
               '--gif-frame-width': `${Math.max(14, Math.round(56 * zoom))}px`,
               '--gif-frame-height': '44px',
+              '--gif-frame-gap': `${frameGap}px`,
+              gap: `${frameGap}px`,
             }}
           >
             {frames.map((_, index) => {
               const isLoaded = Boolean(frames[index]);
-              const state = frameStates[index] || 'pending';
-              const thumb = thumbnailsEnabled ? (renderedThumbnails[index] || rawThumbnails[index] || '') : '';
+              const frame = frames[index];
+              const originKey = frame?.originId;
+              const state = frameStates[index] || (originKey && renderedThumbnails[originKey] ? 'done' : 'pending');
+              const thumb = thumbnailsEnabled
+                ? (renderedThumbnails[index] || (originKey && renderedThumbnails[originKey]) || rawThumbnails[index] || (originKey && rawThumbnails[originKey]) || '')
+                : '';
               const isActive = index === currentFrameIndex;
               const isSelected = selectedFrameIndices.includes(index);
               const stateLabel = state === 'pending' ? 'P' : state === 'done' ? 'DONE' : 'R';
@@ -999,7 +1019,7 @@ export default function GifTimeline() {
                   key={`gif-frame-${index}`}
                   type='button'
                   data-frame-index={index}
-                  className={`gif-frame-btn${isActive ? ' active' : ''}${isSelected ? ' selected' : ''}${state === 'pending' ? ' gif-frame-btn--pending' : ''}${!isLoaded ? ' gif-frame-btn--unloaded' : ''}${isCompact ? ' gif-frame-btn--compact' : ''}${!thumbnailsEnabled ? ' gif-frame-btn--no-thumb' : ''}`}
+                  className={`gif-frame-btn${isActive ? ' active' : ''}${isSelected ? ' selected' : ''}${state === 'pending' ? ' gif-frame-btn--pending' : ''}${!isLoaded ? ' gif-frame-btn--unloaded' : ''}${isCompact ? ' gif-frame-btn--compact' : ''}${isMinZoom ? ' gif-frame-btn--min-zoom' : ''}${!thumbnailsEnabled ? ' gif-frame-btn--no-thumb' : ''}`}
                   disabled={!isLoaded}
                   onPointerDown={(e) => handleFramePointerDown(e, index)}
                   onClick={(e) => handleFrameClick(e, index)}
@@ -1008,7 +1028,9 @@ export default function GifTimeline() {
                   aria-label={`FRAME ${index + 1}`}
                 >
                   {thumb && <img src={thumb} alt='' draggable={false} />}
-                  <span className={`gif-frame-index gif-frame-index--${state}`}>{index + 1}</span>
+                  {!isMinZoom && (
+                    <span className={`gif-frame-index gif-frame-index--${state}`}>{index + 1}</span>
+                  )}
                   <span className={`gif-frame-state gif-frame-state--${state}`} aria-label={stateLabel}>
                     {state === 'done' ? <Check size={9} strokeWidth={3} /> : state === 'pending' ? 'P' : 'R'}
                   </span>
