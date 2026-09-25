@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import useGifStore from '../media/gifStore';
 
 const useViewStore = create(
   persist(
@@ -23,14 +24,26 @@ const useViewStore = create(
         window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
       },
 
-      splitFirstView: 'post_process',
+      splitFirstView: 'pre_dithering',
       setSplitFirstView: (v) => {
-        set({ splitFirstView: v || 'post_process' });
+        const val = v === 'post_process' ? 'pre_dithering' : (v || 'pre_dithering');
+        set({ splitFirstView: val });
         window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
       },
 
       previewScrollbars: true,
       setPreviewScrollbars: (v) => set({ previewScrollbars: Boolean(v) }),
+
+      gifThumbnails: true,
+      setGifThumbnails: (v) => {
+        const val = Boolean(v);
+        set({ gifThumbnails: val });
+        try {
+          useGifStore.getState().setThumbnailsEnabled(val);
+        } catch {
+          // ignore if gifStore is not yet initialized
+        }
+      },
 
       activeSliderId: null,
       setActiveSliderId: (id) => set({ activeSliderId: id }),
@@ -42,9 +55,15 @@ const useViewStore = create(
       partialize: (state) => ({
         splitView: state.splitView,
         splitDirection: state.splitDirection,
-        splitFirstView: state.splitFirstView,
+        splitFirstView: state.splitFirstView === 'post_process' ? 'pre_dithering' : state.splitFirstView,
         previewScrollbars: state.previewScrollbars,
+        gifThumbnails: state.gifThumbnails,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state && (state.splitFirstView === 'post_process' || !state.splitFirstView)) {
+          state.splitFirstView = 'pre_dithering';
+        }
+      },
     }
   )
 );

@@ -69,7 +69,7 @@ export default function Footer() {
   const showBusyState = !webcamActive && (isProcessing || Boolean(activePhaseLabel));
 
   const displayColorCount = previewingOriginal
-    ? (originalUniqueColors > 0 ? originalUniqueColors : '—')
+    ? (originalUniqueColors > 0 ? originalUniqueColors : '-')
     : (uniqueColors > 0 ? uniqueColors : activePaletteCount);
 
   const [lastTotalTime, setLastTotalTime] = useState(0);
@@ -178,7 +178,7 @@ export default function Footer() {
     }
   }, [pipelineVisible, timing.pipelineTotal, currentPhase]);
 
-  const formattedTime = lastTotalTime > 0 ? formatMs(lastTotalTime) : '—';
+  const formattedTime = lastTotalTime > 0 ? formatMs(lastTotalTime) : '-';
   const statusSuffix = webcamActive
     ? ''
     : (activePhaseLabel 

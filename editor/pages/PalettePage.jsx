@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { X, Plus } from 'lucide-react';
-import usePaletteStore, { EXTRACT_METHOD } from '../stores/data/paletteStore';
+import usePaletteStore, { EXTRACT_METHOD, SAMPLE_FRAME_MODE } from '../stores/data/paletteStore';
+import useGifStore from '../stores/media/gifStore';
 import SliderBundle from '../components/ui/shared/SliderBundle';
 import OptionGroup from '../components/ui/shared/OptionGroup';
 import MacroSection from '../components/ui/MacroSection';
@@ -49,10 +50,20 @@ const GENERATED_METHODS = [
   { value: EXTRACT_METHOD.KMEANS, label: 'K-MEANS' },
 ];
 
+const SAMPLE_FRAME_OPTIONS = [
+  { value: SAMPLE_FRAME_MODE.CURRENT, label: 'CURRENT FRAME' },
+  { value: SAMPLE_FRAME_MODE.SELECTED, label: 'SELECTED FRAMES' },
+];
+
 function PaletteTypeAndMethodSection() {
   const method = usePaletteStore(s => s.method);
   const setMethod = usePaletteStore(s => s.setMethod);
+  const sampleFrameMode = usePaletteStore(s => s.sampleFrameMode) || SAMPLE_FRAME_MODE.CURRENT;
+  const setSampleFrameMode = usePaletteStore(s => s.setSampleFrameMode);
   const isCustom = method === EXTRACT_METHOD.CUSTOM;
+
+  const framesCount = useGifStore(s => s.frames.length);
+  const selectedCount = useGifStore(s => s.selectedFrameIndices?.length || 0);
 
   const handleSelectType = (targetType) => {
     if (targetType === 'custom') {
@@ -81,15 +92,34 @@ function PaletteTypeAndMethodSection() {
       </div>
 
       {!isCustom && (
-        <div className="bv-section">
-          <p className="bv-label">METHOD</p>
-          <OptionGroup
-            options={GENERATED_METHODS}
-            value={method}
-            onChange={setMethod}
-            ariaLabel="Palette generation method"
-          />
-        </div>
+        <>
+          <div className="bv-section">
+            <p className="bv-label">METHOD</p>
+            <OptionGroup
+              options={GENERATED_METHODS}
+              value={method}
+              onChange={setMethod}
+              ariaLabel="Palette generation method"
+            />
+          </div>
+
+          <div className="bv-section">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <p className="bv-label" style={{ margin: 0 }}>SAMPLE FRAME</p>
+              {sampleFrameMode === SAMPLE_FRAME_MODE.SELECTED && framesCount > 1 && (
+                <span style={{ fontSize: '0.75rem', opacity: 0.65, letterSpacing: '0.04em' }}>
+                  {selectedCount > 0 ? `${selectedCount} SELECTED` : 'ALL FRAMES'}
+                </span>
+              )}
+            </div>
+            <OptionGroup
+              options={SAMPLE_FRAME_OPTIONS}
+              value={sampleFrameMode}
+              onChange={setSampleFrameMode}
+              ariaLabel="Palette sample frame mode"
+            />
+          </div>
+        </>
       )}
     </>
   );

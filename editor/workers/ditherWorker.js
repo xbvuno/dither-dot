@@ -175,6 +175,7 @@ self.onmessage = async (event) => {
     forceCpu,
     excludeAlpha,
     watermarkEnabled,
+    histogramEnabled = true,
     skipStats,
   } = event.data;
 
@@ -281,7 +282,7 @@ self.onmessage = async (event) => {
     const outWidth = activeImage.width;
     const outHeight = activeImage.height;
 
-    // Clone the pre-dither pixels immediately — dithering mutates image.pixels in-place,
+    // Clone the pre-dither pixels immediately - dithering mutates image.pixels in-place,
     // so reading croppedBuffer later would yield quantized (post-dither) pixel data instead
     // of the original source colors, causing palette extraction to see only palette colors.
     const croppedSnapshot = new Uint8Array(croppedBuffer);
@@ -330,31 +331,33 @@ self.onmessage = async (event) => {
     }
     tFinal = performance.now() - tFinalStart;
 
-    // Render directly to OffscreenCanvas if available
-    if (viewportCanvas && viewportCtx) {
-      if (viewportCanvas.width !== outWidth || viewportCanvas.height !== outHeight) {
-        viewportCanvas.width = outWidth;
-        viewportCanvas.height = outHeight;
-      }
-      viewportCtx.clearRect(0, 0, outWidth, outHeight);
-      viewportCtx.imageSmoothingEnabled = false;
-      const imgDataOut = new ImageData(outputPixels, outWidth, outHeight);
-      viewportCtx.putImageData(imgDataOut, 0, 0);
-
-      if (watermarkEnabled) {
-        const useMini = outWidth < 64 || outHeight < 64;
-        const watermark = useMini ? watermarkMiniBitmap : watermarkBitmap;
-        if (watermark) {
-          const margin = useMini ? WATERMARK_MARGIN_MINI : WATERMARK_MARGIN_NORMAL;
-          const x = outWidth - margin - watermark.width;
-          const y = outHeight - margin - watermark.height;
-          viewportCtx.drawImage(watermark, x, y);
-        } else {
-          warn('Watermark', 'Watermark requested but bitmap is not loaded!');
+    // Render directly to OffscreenCanvas if available and not an idle/background job
+    if (!event.data.skipCanvasRender) {
+      if (viewportCanvas && viewportCtx) {
+        if (viewportCanvas.width !== outWidth || viewportCanvas.height !== outHeight) {
+          viewportCanvas.width = outWidth;
+          viewportCanvas.height = outHeight;
         }
+        viewportCtx.clearRect(0, 0, outWidth, outHeight);
+        viewportCtx.imageSmoothingEnabled = false;
+        const imgDataOut = new ImageData(outputPixels, outWidth, outHeight);
+        viewportCtx.putImageData(imgDataOut, 0, 0);
+
+        if (watermarkEnabled) {
+          const useMini = outWidth < 64 || outHeight < 64;
+          const watermark = useMini ? watermarkMiniBitmap : watermarkBitmap;
+          if (watermark) {
+            const margin = useMini ? WATERMARK_MARGIN_MINI : WATERMARK_MARGIN_NORMAL;
+            const x = outWidth - margin - watermark.width;
+            const y = outHeight - margin - watermark.height;
+            viewportCtx.drawImage(watermark, x, y);
+          } else {
+            warn('Watermark', 'Watermark requested but bitmap is not loaded!');
+          }
+        }
+      } else {
+        warn('Canvas', 'Cannot draw directly to OffscreenCanvas: viewportCanvas is %o, viewportCtx is %o', !!viewportCanvas, !!viewportCtx);
       }
-    } else {
-      warn('Canvas', 'Cannot draw directly to OffscreenCanvas: viewportCanvas is %o, viewportCtx is %o', !!viewportCanvas, !!viewportCtx);
     }
 
     const elapsed = (self.performance?.now?.() ?? Date.now()) - startTs;
@@ -400,20 +403,27 @@ self.onmessage = async (event) => {
 
         const tStatsStart = performance.now();
         
-        // Use the pre-dither snapshot — croppedBuffer was already mutated by dithering
+        // Use the pre-dither snapshot - croppedBuffer was already mutated by dithering
         const referenceCopy = new Uint8Array(croppedSnapshot);
         const croppedPixels = new Uint8ClampedArray(referenceCopy.buffer);
 
-        const tHistogramStart = performance.now();
-        const rCounts = new Uint32Array(256);
-        const gCounts = new Uint32Array(256);
-        const bCounts = new Uint32Array(256);
-        for (let i = 0; i < croppedPixels.length; i += 4) {
-          rCounts[croppedPixels[i]]++;
-          gCounts[croppedPixels[i + 1]]++;
-          bCounts[croppedPixels[i + 2]]++;
+        let rCounts = null;
+        let gCounts = null;
+        let bCounts = null;
+        let tHistogram = 0;
+
+        if (histogramEnabled) {
+          const tHistogramStart = performance.now();
+          rCounts = new Uint32Array(256);
+          gCounts = new Uint32Array(256);
+          bCounts = new Uint32Array(256);
+          for (let i = 0; i < croppedPixels.length; i += 4) {
+            rCounts[croppedPixels[i]]++;
+            gCounts[croppedPixels[i + 1]]++;
+            bCounts[croppedPixels[i + 2]]++;
+          }
+          tHistogram = performance.now() - tHistogramStart;
         }
-        const tHistogram = performance.now() - tHistogramStart;
 
         const tColorsStart = performance.now();
         const uniqueColorCount = countUniqueColors(outputPixels, excludeAlpha);
@@ -424,24 +434,29 @@ self.onmessage = async (event) => {
         log(
           'Worker',
           `Job ${jobId} stats computed (async):\n` +
-          `  - Histogram:       ${tHistogram.toFixed(2)}ms\n` +
+          (histogramEnabled ? `  - Histogram:       ${tHistogram.toFixed(2)}ms\n` : '') +
           `  - Color Count:     ${tColors.toFixed(2)}ms\n` +
           `  => Stats Total:    ${statsElapsed.toFixed(2)}ms`
         );
 
         if (activeJobId !== jobId) return;
 
+        const transferables = [referenceCopy.buffer];
+        if (rCounts) {
+          transferables.push(rCounts.buffer, gCounts.buffer, bCounts.buffer);
+        }
+
         self.postMessage(
           {
             jobId,
             referencePixels: referenceCopy.buffer,
             uniqueColorCount,
-            histogram: [rCounts, gCounts, bCounts],
+            histogram: rCounts ? [rCounts, gCounts, bCounts] : null,
             width: outWidth,
             height: outHeight,
             isStatsReady: true,
           },
-          [referenceCopy.buffer, rCounts.buffer, gCounts.buffer, bCounts.buffer],
+          transferables,
         );
       }, 10);
     }

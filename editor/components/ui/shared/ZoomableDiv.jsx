@@ -526,8 +526,10 @@ export default function ZoomableDiv({ content }) {
     updateScale();
     const initRafId = requestAnimationFrame(() => updateScale());
 
-    const mutationObserver = new MutationObserver(() => {
+    const mutationObserver = new MutationObserver((mutations) => {
       if (state.current.isUpdatingProgrammatically) return;
+      const relevant = mutations.some((m) => m.target !== inner);
+      if (!relevant) return;
       bindContentLoad();
       updateScale();
     });
@@ -535,7 +537,8 @@ export default function ZoomableDiv({ content }) {
     mutationObserver.observe(inner, {
       childList: true,
       subtree: true,
-      attributes: false,
+      attributes: true,
+      attributeFilter: ['style', 'width', 'height'],
     });
 
     return () => {

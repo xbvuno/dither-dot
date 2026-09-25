@@ -33,14 +33,17 @@ export default function AdjustmentsPage() {
     const isColorModified = useParamsStore(selectIsColorModified);
     const isNoiseModified = useParamsStore(selectIsNoiseModified);
     const isBlurModified = useParamsStore(selectIsBlurModified);
+    const histogramEnabled = useParamsStore((s) => s.histogramEnabled ?? true);
 
     return (
         <div>
             <MacroSection title="ADJUSTMENTS">
-                <div className="bv-section histogram-section">
-                    <span className="bv-label">HISTOGRAM</span>
-                    <Histogram />
-                </div>
+                {histogramEnabled && (
+                    <div className="bv-section histogram-section">
+                        <span className="bv-label">HISTOGRAM</span>
+                        <Histogram />
+                    </div>
+                )}
                 <div className="bv-section">
                     <p className="bv-label">ACTIONS</p>
                     <div className="bv-option-group">

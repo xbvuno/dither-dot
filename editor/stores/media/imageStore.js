@@ -16,8 +16,11 @@ export const DEFAULT_IMAGE_STATE = {
 };
 
 let autoDefaultPromise = null;
+let hasAttemptedAutoDefault = false;
 
-export async function fetchAutoDefaultImage() {
+export async function fetchAutoDefaultImage(force = false) {
+  if (hasAttemptedAutoDefault && !force) return autoDefaultPromise;
+  hasAttemptedAutoDefault = true;
   if (autoDefaultPromise) return autoDefaultPromise;
 
   autoDefaultPromise = (async () => {
@@ -51,7 +54,7 @@ export async function fetchAutoDefaultImage() {
 
       // Verify state hasn't been changed by user interaction while fetch was in-flight
       const currentState = useImageStore.getState();
-      if (currentState.sourceKind !== 'default') {
+      if (!force && currentState.sourceKind !== 'default') {
         return;
       }
 
@@ -68,12 +71,9 @@ export async function fetchAutoDefaultImage() {
       return newItem;
     } catch (error) {
       console.warn('Auto default image fetch failed, falling back to RANDOM 4:', error);
-      const currentState = useImageStore.getState();
-      if (currentState.sourceKind === 'default') {
-        const random4 =
-          useGalleryStore.getState().randomImages?.find((img) => img.name === 'RANDOM 4') || fallbackItem;
-        useImageStore.getState().setSourceDirect(random4.src, random4.name, 'default');
-      }
+      const random4 =
+        useGalleryStore.getState().randomImages?.find((img) => img.name === 'RANDOM 4') || fallbackItem;
+      useImageStore.getState().setSourceDirect(random4.src, random4.name, 'default');
       return fallbackItem;
     } finally {
       autoDefaultPromise = null;
@@ -83,11 +83,21 @@ export async function fetchAutoDefaultImage() {
   return autoDefaultPromise;
 }
 
-function purgeOversizedPersistedState(storageKey, maxChars = 250_000) {
+function purgeOversizedPersistedState(storageKey) {
   try {
     const raw = localStorage.getItem(storageKey);
-    if (raw && raw.length > maxChars) {
-      localStorage.removeItem(storageKey);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed?.state?.sourceImg) {
+          delete parsed.state.sourceImg;
+          delete parsed.state.sourceName;
+          delete parsed.state.sourceKind;
+          localStorage.setItem(storageKey, JSON.stringify(parsed));
+        }
+      } catch {
+        localStorage.removeItem(storageKey);
+      }
     }
   } catch {
     // localStorage can be unavailable in hardened browser contexts.
@@ -161,32 +171,11 @@ const useImageStore = create(
     {
       name: IMAGE_STORE_KEY,
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => {
-        if (state.sourceKind === 'webcam' || state.sourceImg === WEBCAM_SOURCE) {
-          return {
-            sourceImg: DEFAULT_IMAGE_STATE.sourceImg,
-            sourceName: DEFAULT_IMAGE_STATE.sourceName,
-            sourceKind: DEFAULT_IMAGE_STATE.sourceKind,
-            exportUpscale: state.exportUpscale,
-          };
-        }
-        return {
-          sourceImg: state.sourceImg,
-          sourceName: state.sourceName,
-          sourceKind: state.sourceKind,
-          exportUpscale: state.exportUpscale,
-        };
-      },
+      partialize: (state) => ({
+        exportUpscale: state.exportUpscale,
+      }),
       onRehydrateStorage: () => (state) => {
-        if (
-          state &&
-          (state.sourceImg === WEBCAM_SOURCE ||
-            state.sourceKind === 'webcam' ||
-            !state.sourceImg ||
-            state.sourceKind === 'default' ||
-            state.sourceName === 'STATUE' ||
-            state.sourceName === 'RANDOM 1')
-        ) {
+        if (state) {
           state.sourceImg = DEFAULT_IMAGE_STATE.sourceImg;
           state.sourceName = DEFAULT_IMAGE_STATE.sourceName;
           state.sourceKind = DEFAULT_IMAGE_STATE.sourceKind;

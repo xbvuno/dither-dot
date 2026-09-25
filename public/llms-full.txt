@@ -1,4 +1,4 @@
-# dither-dot — Full Technical & Agentic Documentation
+# dither-dot - Full Technical & Agentic Documentation
 
 > High-performance in-browser image and animated GIF dithering studio powered by WebAssembly and WebGL shaders.
 

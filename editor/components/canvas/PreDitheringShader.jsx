@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { getPaletteReference, subscribePaletteReference } from "../../utils/canvasRegistry";
 
-export default function PostProcessShader() {
+export default function PreDitheringShader() {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const hostRef = useRef(null);

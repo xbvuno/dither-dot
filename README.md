@@ -22,7 +22,7 @@ A fast, open-source image and animated GIF dithering studio running 100% client-
 - **🎨 10+ Dithering Algorithms**: Floyd-Steinberg, Bayer Matrix (Ordered 2×2, 4×4, 8×8), Atkinson, Jarvis-Judice-Ninke, Stucki, Burkes, Sierra, Two-Row Sierra, Sierra Lite, and Random noise.
 - **🧪 Advanced Palette Quantization**: Intelligent color reduction using Octree, Median-Cut, and K-Means in both RGB and LAB color spaces, plus curated retro presets (Game Boy, Macintosh, 1-Bit Noir, CGA, CRT).
 - **🎛️ Non-Destructive Adjustments & Export**: Real-time gamma, contrast, saturation, Kawase blur, noise injection, and pixel-perfect high-resolution upscaling to PNG or animated GIF.
-- **🔒 Privacy-First**: 100% client-side processing with zero server uploads — your images and camera feed never leave your machine.
+- **🔒 Privacy-First**: 100% client-side processing with zero server uploads - your images and camera feed never leave your machine.
 
 ---
 

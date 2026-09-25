@@ -5,6 +5,7 @@ import { sortColors } from '../../utils/colorConversions';
 import { getPaletteReference } from '../../utils/canvasRegistry';
 import useProcessingStore from '../engine/processingStore';
 import usePerformanceStore from '../engine/performanceStore';
+import useGifStore from '../media/gifStore';
 
 const MAX_PALETTE_COLORS = 64;
 const MIN_PALETTE_COLORS = 2;
@@ -51,6 +52,11 @@ export const EXTRACT_METHOD = {
   CUSTOM:     'custom',
 };
 
+export const SAMPLE_FRAME_MODE = {
+  CURRENT:  'current',
+  SELECTED: 'selected',
+};
+
 export const AUTOFIT_METHOD = {
   MEDIAN_CUT:    'median_cut',
   ADD_MIDPOINTS: 'add_midpoints',
@@ -67,6 +73,34 @@ function makeColor(hex, locked = false) {
   return { id: _uid++, hex, locked, hidden: false };
 }
 
+function downsampleFramePixels(srcPixels, srcWidth, srcHeight, maxDim = 128) {
+  if (!srcPixels || !srcWidth || !srcHeight) return null;
+  const scale = Math.min(1, maxDim / Math.max(srcWidth, srcHeight));
+  if (scale >= 1) {
+    return { pixels: new Uint8ClampedArray(srcPixels), width: srcWidth, height: srcHeight };
+  }
+  const dstWidth = Math.max(1, Math.round(srcWidth * scale));
+  const dstHeight = Math.max(1, Math.round(srcHeight * scale));
+  const dstPixels = new Uint8ClampedArray(dstWidth * dstHeight * 4);
+  const xRatio = srcWidth / dstWidth;
+  const yRatio = srcHeight / dstHeight;
+  for (let y = 0; y < dstHeight; y++) {
+    const srcY = Math.min(srcHeight - 1, Math.floor(y * yRatio));
+    const srcRow = srcY * srcWidth;
+    const dstRow = y * dstWidth;
+    for (let x = 0; x < dstWidth; x++) {
+      const srcX = Math.min(srcWidth - 1, Math.floor(x * xRatio));
+      const srcIdx = (srcRow + srcX) * 4;
+      const dstIdx = (dstRow + x) * 4;
+      dstPixels[dstIdx] = srcPixels[srcIdx];
+      dstPixels[dstIdx + 1] = srcPixels[srcIdx + 1];
+      dstPixels[dstIdx + 2] = srcPixels[srcIdx + 2];
+      dstPixels[dstIdx + 3] = srcPixels[srcIdx + 3];
+    }
+  }
+  return { pixels: dstPixels, width: dstWidth, height: dstHeight };
+}
+
 function logPaletteTime(method, count, duration) {
   const isDebugEnabled = typeof window !== 'undefined' && window.ditherEngine?.debugEnabled;
   if (!isDebugEnabled) return;
@@ -78,14 +112,46 @@ function logPaletteTime(method, count, duration) {
   );
 }
 
-function runExtractionAsync(pixels, method, count, options = {}) {
+function runExtractionAsync(target, method, count, options = {}) {
   if (!paletteWorker) {
     return Promise.reject(new Error('Palette worker is unavailable'));
   }
 
   const startTs = performance.now();
-  const bufferCopy = new Uint8ClampedArray(pixels);
   const jobId = ++paletteWorkerJobId;
+  const isMultiFrame = Array.isArray(target);
+
+  const transferables = [];
+  let payload;
+
+  if (isMultiFrame) {
+    const framesPayload = target.map((f) => {
+      const copy = new Uint8ClampedArray(f.pixels);
+      transferables.push(copy.buffer);
+      return {
+        width: f.width,
+        height: f.height,
+        pixels: copy.buffer,
+      };
+    });
+    payload = {
+      jobId,
+      frames: framesPayload,
+      method,
+      count,
+    };
+  } else {
+    const bufferCopy = new Uint8ClampedArray(target);
+    transferables.push(bufferCopy.buffer);
+    payload = {
+      jobId,
+      pixels: bufferCopy.buffer,
+      width: options.width,
+      height: options.height,
+      method,
+      count,
+    };
+  }
 
   return new Promise((resolve, reject) => {
     let settled = false;
@@ -96,7 +162,7 @@ function runExtractionAsync(pixels, method, count, options = {}) {
       paletteWorkerJobs.delete(jobId);
       console.warn('[palette] Worker timed out');
       reject(new Error('Palette extraction timed out'));
-    }, 15000);
+    }, 20000);
 
     const wrappedResolve = (result) => {
       if (settled) return;
@@ -119,17 +185,7 @@ function runExtractionAsync(pixels, method, count, options = {}) {
     paletteWorkerJobs.set(jobId, { resolve: wrappedResolve, reject: wrappedReject });
 
     try {
-      paletteWorker.postMessage(
-        {
-          jobId,
-          pixels: bufferCopy.buffer,
-          width: options.width,
-          height: options.height,
-          method,
-          count,
-        },
-        [bufferCopy.buffer],
-      );
+      paletteWorker.postMessage(payload, transferables);
     } catch (error) {
       paletteWorkerJobs.delete(jobId);
       clearTimeout(timeout);
@@ -158,6 +214,7 @@ const DEFAULT_PALETTE_SETTINGS = {
   autoFit: false,
   autoFitMethod: AUTOFIT_METHOD.MEDIAN_CUT,
   method: EXTRACT_METHOD.OCTREE,
+  sampleFrameMode: SAMPLE_FRAME_MODE.CURRENT,
 };
 
 const BUILTIN_PALETTES = [
@@ -303,6 +360,7 @@ const usePaletteStore = create(persist((set, get) => ({
   /* ---- palette ---- */
   colors: makeDefaultPalette(),
   isGeneratingPalette: false,
+  isAutoExtracting: false,
   customPaletteName: 'Custom Palette',
   lastAppliedPalette: null,
   selectedLibraryPaletteId: null,
@@ -351,6 +409,11 @@ const usePaletteStore = create(persist((set, get) => ({
   setAutoFit:       (v) => set({ autoFit: v }),
   setAutoFitMethod: (m) => set({ autoFitMethod: m }),
 
+  setSampleFrameMode: (mode) => {
+    const valid = mode === SAMPLE_FRAME_MODE.SELECTED ? SAMPLE_FRAME_MODE.SELECTED : SAMPLE_FRAME_MODE.CURRENT;
+    set({ sampleFrameMode: valid });
+  },
+
   setMethod: (m) => {
     if (m === EXTRACT_METHOD.CUSTOM) {
       // keep current palette but unlock everything
@@ -388,14 +451,14 @@ const usePaletteStore = create(persist((set, get) => ({
     };
 
     const generationToken = ++latestGenerationToken;
-    set({ isGeneratingPalette: true });
+    set({ isGeneratingPalette: true, isAutoExtracting: true });
 
-    const { method, colorCount, colors } = get();
+    const { method, colorCount, colors, sampleFrameMode } = get();
 
     // In CUSTOM mode the palette is user-authored and must never be regenerated.
     if (method === EXTRACT_METHOD.CUSTOM) {
       if (generationToken === latestGenerationToken) {
-        set({ isGeneratingPalette: false });
+        set({ isGeneratingPalette: false, isAutoExtracting: false });
       }
       finishProcessing();
       return;
@@ -410,29 +473,70 @@ const usePaletteStore = create(persist((set, get) => ({
 
     if (slots <= 0) {
       if (generationToken === latestGenerationToken) {
-        set({ colors: locked.slice(0, colorCount), isGeneratingPalette: false });
+        set({ colors: locked.slice(0, colorCount), isGeneratingPalette: false, isAutoExtracting: false });
       }
       finishProcessing();
       return;
     }
 
-    const reference = getPaletteReference();
-    const pixels = reference?.pixels;
-    if (!pixels) {
-      if (generationToken === latestGenerationToken) {
-        set({ isGeneratingPalette: false });
+    let extractionTarget = null;
+    let extractionOptions = {};
+
+    if (sampleFrameMode === SAMPLE_FRAME_MODE.SELECTED) {
+      const gifState = useGifStore.getState();
+      const frames = gifState.frames || [];
+      if (frames.length > 1) {
+        const selectedIndices = gifState.selectedFrameIndices?.length > 0
+          ? gifState.selectedFrameIndices
+          : frames.map((_, i) => i);
+
+        const sampledFrames = [];
+        for (const idx of selectedIndices) {
+          const frame = frames[idx];
+          if (!frame) continue;
+          const rendered = gifState.renderedFrames?.[idx] || (frame.originId ? gifState.renderedFrames?.[frame.originId] : null);
+          const rawPixels = rendered?.referencePixels || frame.pixels;
+          const rawWidth = rendered?.width || frame.width;
+          const rawHeight = rendered?.height || frame.height;
+          if (rawPixels && rawWidth && rawHeight) {
+            const downsampled = downsampleFramePixels(rawPixels, rawWidth, rawHeight, 128);
+            if (downsampled) {
+              sampledFrames.push(downsampled);
+            }
+          }
+        }
+
+        if (sampledFrames.length > 1) {
+          extractionTarget = sampledFrames;
+        } else if (sampledFrames.length === 1) {
+          extractionTarget = sampledFrames[0].pixels;
+          extractionOptions = { width: sampledFrames[0].width, height: sampledFrames[0].height };
+        }
       }
-      finishProcessing();
-      return;
+    }
+
+    if (!extractionTarget) {
+      const reference = getPaletteReference();
+      const pixels = reference?.pixels;
+      if (!pixels) {
+        if (generationToken === latestGenerationToken) {
+          set({ isGeneratingPalette: false, isAutoExtracting: false });
+        }
+        finishProcessing();
+        return;
+      }
+      extractionTarget = pixels;
+      extractionOptions = {
+        width: reference.width || 1,
+        height: reference.height || 1,
+      };
     }
 
     try {
-      const extracted = await runExtractionAsync(pixels, algoMethod, slots, {
-        width: reference.width || 1,
-        height: reference.height || 1,
-      });
+      const extracted = await runExtractionAsync(extractionTarget, algoMethod, slots, extractionOptions);
 
       if (generationToken !== latestGenerationToken) {
+        set({ isAutoExtracting: false });
         finishProcessing();
         return;
       }
@@ -443,6 +547,9 @@ const usePaletteStore = create(persist((set, get) => ({
       ].slice(0, colorCount);
 
       set({ colors: newColors, isGeneratingPalette: false });
+      setTimeout(() => {
+        set({ isAutoExtracting: false });
+      }, 50);
 
       const measuredDuration = performance.now() - paletteGenerationStart;
 
@@ -450,7 +557,7 @@ const usePaletteStore = create(persist((set, get) => ({
     } catch (error) {
       console.error(error);
       if (generationToken === latestGenerationToken) {
-        set({ isGeneratingPalette: false });
+        set({ isGeneratingPalette: false, isAutoExtracting: false });
       }
       usePerformanceStore.getState().setCurrentPhase(null);
       finishProcessing();

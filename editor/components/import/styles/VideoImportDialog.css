@@ -1,0 +1,269 @@
+.video-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-backdrop, rgba(0, 0, 0, 0.85));
+  backdrop-filter: var(--filter-floating-blur, blur(4px));
+  z-index: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.video-dialog-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 690px;
+  width: 100%;
+  max-height: 90vh;
+}
+
+.video-dialog {
+  background: var(--color-bg, #000);
+  border: 1px solid var(--color-border, #333);
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  box-shadow: var(--shadow-floating, 0 8px 32px rgba(0, 0, 0, 0.6));
+  display: flex;
+  flex-direction: column;
+}
+
+.video-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.9rem;
+  background: var(--color-surface, #0f0f0f);
+  border-bottom: 1px solid var(--color-border-subtle, #222);
+}
+
+.video-dialog-header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--color-text, #EDEDDE);
+}
+
+.video-dialog-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--color-text, #EDEDDE);
+  margin: 0;
+}
+
+.video-dialog-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted, #777);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  transition: color 0.15s ease;
+}
+
+.video-dialog-close-btn:hover {
+  color: var(--color-text, #EDEDDE);
+}
+
+.video-dialog-loading {
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.video-dialog-body {
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.video-dialog-warning-banner {
+  position: absolute;
+  bottom: calc(100% + 0.65rem);
+  left: 0;
+  width: 100%;
+  background: var(--color-bg, #000);
+  border: 1px solid var(--color-danger, #b53636);
+  padding: 0.45rem 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+
+.video-dialog-warning-text {
+  color: var(--color-danger-text, #ffc8c8) !important;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  line-height: 1.35;
+  margin: 0;
+  text-align: center;
+}
+
+.video-dialog-preview-wrap {
+  width: 100%;
+  max-height: 285px;
+  background: #000;
+  border: 1px solid var(--color-border-subtle, #222);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+}
+
+.video-dialog-preview-loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  z-index: 10;
+}
+
+.video-dialog-preview-inner {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
+  max-height: 285px;
+}
+
+.video-dialog-preview {
+  max-width: 100%;
+  max-height: 285px;
+  width: auto;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.video-dialog-crop-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.video-dialog-crop-shade {
+  position: absolute;
+  background: color-mix(in srgb, var(--color-danger, #b53636) 42%, transparent);
+  pointer-events: none;
+}
+
+.video-dialog-crop-box {
+  position: absolute;
+  border: 1.5px solid var(--color-danger-hover, #e43b44);
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.video-dialog-crop-hint-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -0.35rem;
+  padding: 0 0.15rem;
+}
+
+.video-dialog-crop-hint {
+  font-size: 0.7rem;
+  color: var(--color-text-muted, #777);
+  letter-spacing: 0.04em;
+  margin: 0;
+  text-align: center;
+}
+
+.video-dialog-play-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.video-dialog-preview-wrap:hover .video-dialog-play-overlay,
+.video-dialog-play-overlay.visible {
+  opacity: 1;
+}
+
+.video-dialog-meta-val {
+  font-size: 0.78rem;
+  font-family: var(--font-mono, monospace);
+  color: var(--color-text, #EDEDDE);
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.video-dialog-progress-bar-wrap {
+  width: 100%;
+  height: 5px;
+  background: var(--color-bg-subtle, #222);
+  border: 1px solid var(--color-border, #333);
+  overflow: hidden;
+  margin-top: 0.2rem;
+}
+
+.video-dialog-progress-bar-fill {
+  height: 100%;
+  background: var(--color-text, #fff);
+  transition: width 0.15s ease;
+}
+
+.video-dialog-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+.video-dialog-cancel-btn {
+  flex: 0 0 auto;
+  width: auto !important;
+  min-width: 80px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.8rem;
+  background: transparent;
+  border: 1px solid var(--color-border, #333);
+  color: var(--color-text-muted, #999);
+  text-align: center;
+  justify-content: center;
+}
+
+.video-dialog-cancel-btn:hover:not(:disabled) {
+  color: var(--color-text, #EDEDDE);
+  border-color: var(--color-border-hover, #666);
+  background: var(--color-surface, #1e1e1e);
+}
+
+.video-dialog-confirm-btn {
+  flex: 1 1 auto;
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-align: center;
+  justify-content: center;
+}

@@ -16,7 +16,18 @@ export const SUPPORTED_EXTENSIONS = new Set([
   'svg',
 ]);
 
-export const INPUT_ACCEPT = 'image/png,image/jpeg,image/webp,image/gif,image/bmp,image/tiff,image/avif,image/svg+xml';
+export const SUPPORTED_VIDEO_EXTENSIONS = new Set([
+  'mp4',
+  'webm',
+  'mov',
+  'mkv',
+  'avi',
+  'm4v',
+  'ogv',
+]);
+
+export const INPUT_ACCEPT =
+  'image/*,video/*,.png,.jpg,.jpeg,.webp,.gif,.bmp,.tiff,.avif,.svg,.mp4,.webm,.mov,.mkv,.avi,.m4v';
 export const LARGE_IMAGE_THRESHOLD = 1920 * 1080;
 
 export function getExtension(fileName = '') {
@@ -29,10 +40,20 @@ export function stripExtension(name = '') {
   return idx > 0 ? name.slice(0, idx) : name;
 }
 
+export function isVideoFile(file) {
+  if (!file) return false;
+  if (typeof file.type === 'string' && file.type.toLowerCase().startsWith('video/')) return true;
+  return SUPPORTED_VIDEO_EXTENSIONS.has(getExtension(file.name));
+}
+
 export function isLikelyImageFile(file) {
   if (!file) return false;
   if (typeof file.type === 'string' && file.type.startsWith('image/')) return true;
   return SUPPORTED_EXTENSIONS.has(getExtension(file.name));
+}
+
+export function isMediaFile(file) {
+  return isLikelyImageFile(file) || isVideoFile(file);
 }
 
 export function isGifFile(file) {
@@ -53,7 +74,7 @@ export function getSourceExtension(src = '') {
 
 export function isAnimatedSource(src = '') {
   const ext = getSourceExtension(src);
-  return ext === 'gif' || ext === 'webp';
+  return ext === 'gif' || ext === 'webp' || SUPPORTED_VIDEO_EXTENSIONS.has(ext);
 }
 
 export async function getImageDimensions(blob) {
@@ -130,8 +151,12 @@ export async function validateImageFile(file) {
     throw new Error('No file selected.');
   }
 
+  if (isVideoFile(file)) {
+    return;
+  }
+
   if (!isLikelyImageFile(file)) {
-    throw new Error('The selected file is not a supported image format.');
+    throw new Error('The selected file is not a supported image or video format.');
   }
 
   if (typeof createImageBitmap === 'function') {

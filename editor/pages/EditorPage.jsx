@@ -17,9 +17,9 @@ import Aside from '../components/layout/Aside';
 import watermarkMini from '../assets/watermark/watermark-mini.png';
 import ZoomableDiv from '../components/ui/shared/ZoomableDiv';
 import ImageShader from '../components/canvas/ImageShader';
-import PostProcessShader from '../components/canvas/PostProcessShader';
+import PreDitheringShader from '../components/canvas/PreDitheringShader';
 import OriginalMediaPreview from '../components/ui/shared/OriginalMediaPreview';
-import AsideRouter from '../components/layout/AsideRouter';
+import AsideRouter, { AsideLoadingFallback } from '../components/layout/AsideRouter';
 import GifTimeline from '../components/timeline/GifTimeline';
 import CameraControlsBar from '../components/camera/CameraControlsBar';
 import Footer from '../components/layout/Footer';
@@ -64,18 +64,15 @@ export default function EditorPage() {
   const setWatermarkEnabled = useWatermarkStore((s) => s.setEnabled);
   const splitView = useViewStore((s) => s.splitView);
   const splitDirection = useViewStore((s) => s.splitDirection || 'vertical');
-  const splitFirstView = useViewStore((s) => s.splitFirstView || 'post_process');
+  const splitFirstView = useViewStore((s) => s.splitFirstView || 'pre_dithering');
 
   const navRef = useRef(null);
   const lastScrollTimeRef = useRef(0);
   const currentPageRef = useRef(currentPage);
 
-  // Automatically fetch fresh Picsum image on initial load if using default image, fallback to RANDOM 4
+  // Automatically fetch fresh Picsum image on initial load / reload, fallback to RANDOM 4
   useEffect(() => {
-    const { sourceKind: currKind, sourceName: currName } = useImageStore.getState();
-    if (currKind === 'default' || currName === 'STATUE' || currName === 'RANDOM 1') {
-      fetchAutoDefaultImage();
-    }
+    fetchAutoDefaultImage(true);
   }, []);
 
   // Guard: Switch to import page if no media is loaded and webcam is not active
@@ -95,7 +92,7 @@ export default function EditorPage() {
       if (isPWA) {
         document.title = sourceName ? sourceName : 'Editor';
       } else {
-        document.title = sourceName ? `${sourceName} — DITHER-DOT` : defaultBrowserTitle;
+        document.title = sourceName ? `${sourceName} - DITHER-DOT` : defaultBrowserTitle;
       }
     };
 
@@ -149,7 +146,7 @@ export default function EditorPage() {
       }
 
       if (e.key === 'c' || e.key === 'C') {
-        if (!e.repeat) {
+        if (!e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) {
           useViewStore.getState().setPreviewingOriginal(true);
         }
       }
@@ -336,14 +333,14 @@ export default function EditorPage() {
                     <div className={`split-view-container split-view-container--${splitDirection}`}>
                       <div className='split-view-pane'>
                         <span className='split-view-badge'>
-                          {splitFirstView === 'original' ? 'ORIGINAL' : 'POST-PROCESSING'}
+                          {splitFirstView === 'original' ? 'ORIGINAL' : 'PRE-DITHERING'}
                         </span>
                         <ZoomableDiv
                           content={
                             splitFirstView === 'original' ? (
                               <OriginalMediaPreview />
                             ) : (
-                              <PostProcessShader />
+                              <PreDitheringShader />
                             )
                           }
                         />
@@ -389,7 +386,7 @@ export default function EditorPage() {
           )}
           {exportOpen && (
             <Aside side='right'>
-              <Suspense fallback={null}>
+              <Suspense fallback={<AsideLoadingFallback label="LOADING EXPORT..." />}>
                 <ExportPage />
               </Suspense>
             </Aside>

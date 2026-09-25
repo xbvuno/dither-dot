@@ -57,6 +57,11 @@
     font-feature-settings: 'mono' 1;
 }
 
+*:focus,
+*:focus-visible {
+    outline: none !important;
+}
+
 h2,
 p {
     font-family: var(--font-mono);

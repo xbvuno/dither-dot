@@ -146,7 +146,7 @@ const initialValues = Object.fromEntries(
 );
 
 const UI_DEFAULTS = {
-  histogramVisible: false,
+  histogramEnabled: true,
   pipelineVisible: false,
   forceCpu: false,
   excludeAlpha: false,
@@ -172,7 +172,8 @@ const useParamsStore = create(persist((set) => {
       }
       return randomized;
     }),
-    setHistogramVisible: (visible) => set(() => ({ histogramVisible: Boolean(visible) })),
+    setHistogramEnabled: (enabled) => set(() => ({ histogramEnabled: Boolean(enabled) })),
+    setHistogramVisible: (visible) => set(() => ({ histogramEnabled: Boolean(visible) })),
     setPipelineVisible: (visible) => set(() => ({ pipelineVisible: Boolean(visible) })),
     setForceCpu: (forceCpu) => set(() => ({ forceCpu: Boolean(forceCpu) })),
     setExcludeAlpha: (excludeAlpha) => set(() => ({ excludeAlpha: Boolean(excludeAlpha) })),
