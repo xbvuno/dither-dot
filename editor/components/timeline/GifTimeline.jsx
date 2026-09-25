@@ -301,7 +301,7 @@ export default function GifTimeline() {
       stopResize();
       root?.classList.remove('is-resizing-timeline');
     };
-  }, [frames.length]);
+  }, [frames.length, zoom]);
 
   useEffect(() => {
     if (!playing || frames.length <= 1) return;
@@ -383,21 +383,23 @@ export default function GifTimeline() {
   }, [frames, thumbnailsEnabled]);
 
   useEffect(() => {
-    const shell = timelineRef.current;
-    if (!shell) return;
-
     const onWheel = (e) => {
-      if (e.altKey) {
-        e.preventDefault();
-        e.stopPropagation();
-        const delta = e.deltaY < 0 ? 0.1 : -0.1;
-        const currentZoom = useGifStore.getState().zoom || 1;
-        useGifStore.getState().setZoom(currentZoom + delta);
-      }
+      if (!e.altKey) return;
+      const shell = timelineRef.current;
+      const isInside = shell && (shell.contains(e.target) || e.composedPath?.().includes(shell));
+      if (!isInside) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      const rawDelta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+      if (rawDelta === 0) return;
+      const delta = rawDelta < 0 ? 0.1 : -0.1;
+      const currentZoom = useGifStore.getState().zoom || 1;
+      useGifStore.getState().setZoom(currentZoom + delta);
     };
 
-    shell.addEventListener('wheel', onWheel, { passive: false });
-    return () => shell.removeEventListener('wheel', onWheel);
+    window.addEventListener('wheel', onWheel, { passive: false });
+    return () => window.removeEventListener('wheel', onWheel);
   }, []);
 
   useEffect(() => {
