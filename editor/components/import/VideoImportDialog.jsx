@@ -149,14 +149,15 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
 
   const handleTimeUpdate = useCallback(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || video.seeking) return;
 
     setCurrentPlayTime(video.currentTime);
 
     // Loop video within [startTime, endTime]
-    if (video.currentTime >= endTime || video.currentTime < startTime - 0.08) {
+    if (video.currentTime >= endTime) {
       video.currentTime = startTime;
-      video.play().catch(() => {});
+    } else if (video.currentTime < startTime - 0.2) {
+      video.currentTime = startTime;
     }
   }, [startTime, endTime]);
 
@@ -164,10 +165,12 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
     setStartTime(newStart);
     setEndTime(newEnd);
 
-    if (videoRef.current) {
-      videoRef.current.currentTime = newStart;
-      videoRef.current.play().catch(() => {});
-      setIsPlaying(true);
+    const video = videoRef.current;
+    if (video && !video.seeking) {
+      if (video.currentTime < newStart || video.currentTime >= newEnd) {
+        video.currentTime = newStart;
+        setCurrentPlayTime(newStart);
+      }
     }
   }, []);
 
@@ -333,6 +336,19 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
 
   const handleConfirm = async () => {
     if (isExtracting || !meta) return;
+
+    if (estimatedRamMb > 1800) {
+      const ok = window.confirm(
+        `L'importazione richiede circa ${estimatedRamMb} MB di memoria (${estimatedFrames} frame).\nContinuare comunque?`
+      );
+      if (!ok) return;
+    }
+
+    if (videoRef.current) {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+
     setIsExtracting(true);
     try {
       const result = await extractFramesFromVideo(file, {

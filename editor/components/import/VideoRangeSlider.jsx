@@ -175,18 +175,23 @@ export default function VideoRangeSlider({
   const handleTrackPointerDown = (e) => {
     if (disabled || e.button !== 0) return;
     const clickedTime = getTimeFromPointer(e.clientX);
-    const distToStart = Math.abs(clickedTime - safeStart);
-    const distToEnd = Math.abs(clickedTime - safeEnd);
+    const span = safeEnd - safeStart;
 
-    if (distToStart < distToEnd) {
-      const nextStart = Math.max(0, Math.min(safeEnd - MIN_SPAN, clickedTime));
-      onChange?.({ startTime: Number(nextStart.toFixed(3)), endTime: safeEnd });
-      handlePointerDown(e, 'start');
-    } else {
-      const nextEnd = Math.max(safeStart + MIN_SPAN, Math.min(safeDuration, clickedTime));
-      onChange?.({ startTime: safeStart, endTime: Number(nextEnd.toFixed(3)) });
-      handlePointerDown(e, 'end');
+    let nextStart = clickedTime - span / 2;
+    let nextEnd = clickedTime + span / 2;
+
+    if (nextStart < 0) {
+      nextStart = 0;
+      nextEnd = Math.min(safeDuration, span);
+    } else if (nextEnd > safeDuration) {
+      nextEnd = safeDuration;
+      nextStart = Math.max(0, safeDuration - span);
     }
+
+    const newStart = Number(nextStart.toFixed(3));
+    const newEnd = Number(nextEnd.toFixed(3));
+    onChange?.({ startTime: newStart, endTime: newEnd });
+    onSeek?.(Number(Math.max(newStart, Math.min(newEnd, clickedTime)).toFixed(3)));
   };
 
   return (

@@ -578,7 +578,16 @@ function seekVideo(video, time, timeoutMs = 3000) {
     video.addEventListener('error', onError, { once: true });
 
     try {
-      video.currentTime = Math.max(0, Math.min(video.duration || 0, time));
+      const maxDuration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : Infinity;
+      const target = Math.max(0, Math.min(maxDuration, time));
+      if (Math.abs(video.currentTime - target) < 0.001) {
+        if (timeoutId) clearTimeout(timeoutId);
+        video.removeEventListener('seeked', onSeeked);
+        video.removeEventListener('error', onError);
+        resolve();
+        return;
+      }
+      video.currentTime = target;
     } catch (err) {
       if (timeoutId) clearTimeout(timeoutId);
       reject(err);
@@ -683,7 +692,13 @@ export async function extractFramesFromVideo(
     }
   } finally {
     URL.revokeObjectURL(meta.url);
-    video.src = '';
+    try {
+      video.pause();
+      video.removeAttribute('src');
+      video.load();
+    } catch {
+      // ignore
+    }
     video.remove();
   }
 
