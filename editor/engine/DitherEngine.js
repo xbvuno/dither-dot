@@ -1861,10 +1861,18 @@ const action = this.debugEnabled ? "disable" : "enable";
       return;
     }
 
-    const currentActiveIndex = gifState.currentFrameIndex;
-    const pendingIndex = gifState.frameStates.findIndex(
-      (st, idx) => st === 'pending' && idx !== currentActiveIndex
-    );
+    const totalFrames = gifState.frames.length;
+    const currentActiveIndex = Math.max(0, Math.min(totalFrames - 1, Number(gifState.currentFrameIndex) || 0));
+    let pendingIndex = -1;
+
+    for (let offset = 0; offset < totalFrames; offset++) {
+      const idx = (currentActiveIndex + offset) % totalFrames;
+      if (gifState.frameStates?.[idx] === 'pending') {
+        pendingIndex = idx;
+        break;
+      }
+    }
+
     if (pendingIndex === -1) {
       return;
     }

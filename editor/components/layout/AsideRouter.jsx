@@ -1,5 +1,6 @@
 import { Suspense, lazy } from "react";
 import usePageStore, { PAGE } from "../../stores/ui/pageStore";
+import WaveGridSpinner from "../ui/shared/WaveGridSpinner";
 
 const ImportPage = lazy(() => import("../../pages/ImportPage"));
 const PinnedPage = lazy(() => import("../../pages/PinnedPage"));
@@ -24,7 +25,7 @@ const PAGES = {
 export function AsideLoadingFallback({ label = "LOADING PANEL..." }) {
   return (
     <div className="aside-loading-container" role="status" aria-label={label}>
-      <div className="aside-loading-spinner" />
+      <WaveGridSpinner />
       <span className="bv-label aside-loading-text">{label}</span>
     </div>
   );

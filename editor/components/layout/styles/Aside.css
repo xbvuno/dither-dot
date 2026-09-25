@@ -170,20 +170,6 @@ aside {
     color: var(--color-text-muted, #888);
 }
 
-.aside-loading-spinner {
-    width: 22px;
-    height: 22px;
-    border: 2px solid var(--color-border-subtle, #333);
-    border-top-color: var(--color-text, #EDEDDE);
-    border-radius: 50%;
-    animation: aside-spin 0.65s linear infinite;
-}
-
-@keyframes aside-spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
 
 .aside-loading-text {
     font-size: 0.72rem;
