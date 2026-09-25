@@ -415,7 +415,7 @@ export default function GifTimeline() {
           } else {
             const currentZoom = useGifStore.getState().zoom ?? 1;
             if (currentZoom < 1.0) {
-              useGifStore.getState().setZoom(Math.round((currentZoom + 0.1) * 100) / 100);
+              useGifStore.getState().setZoom(Math.round((currentZoom + 0.05) * 100) / 100);
             }
           }
         } else {
@@ -425,7 +425,7 @@ export default function GifTimeline() {
           } else {
             const currentZoom = useGifStore.getState().zoom ?? 1;
             if (currentZoom > 0.25) {
-              useGifStore.getState().setZoom(Math.round((currentZoom - 0.1) * 100) / 100);
+              useGifStore.getState().setZoom(Math.round((currentZoom - 0.05) * 100) / 100);
             }
           }
         }
@@ -742,7 +742,7 @@ export default function GifTimeline() {
               ref={zoomOutBtnRef}
               type='button'
               className='bv-option-btn gif-timeline-btn gif-timeline-icon-btn'
-              onClick={() => setZoom(zoom - 0.1)}
+              onClick={() => setZoom(zoom - 0.05)}
               aria-label='Zoom out frames'
               title='ZOOM OUT (SHIFT + WHEEL DOWN)'
               disabled={decoding || zoom <= 0.25}
@@ -753,7 +753,7 @@ export default function GifTimeline() {
               ref={zoomInBtnRef}
               type='button'
               className='bv-option-btn gif-timeline-btn gif-timeline-icon-btn'
-              onClick={() => setZoom(zoom + 0.1)}
+              onClick={() => setZoom(zoom + 0.05)}
               aria-label='Zoom in frames'
               title='ZOOM IN (SHIFT + WHEEL UP)'
               disabled={decoding || zoom >= 1.0}
