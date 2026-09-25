@@ -63,6 +63,9 @@ export default function GifTimeline() {
   const stripRef = useRef(null);
   const lastClickedIndexRef = useRef(0);
   const isHoveredRef = useRef(false);
+  const isAltDownRef = useRef(false);
+  const zoomInBtnRef = useRef(null);
+  const zoomOutBtnRef = useRef(null);
   const [contextMenu, setContextMenu] = useState(null);
 
   const frames = useGifStore((s) => s.frames);
@@ -385,10 +388,22 @@ export default function GifTimeline() {
 
   useEffect(() => {
     const onKeyDown = (e) => {
-      // Prevent Windows menu bar activation from stealing focus when Alt is pressed over timeline
-      if (e.key === 'Alt' && isHoveredRef.current) {
-        e.preventDefault();
+      if (e.key === 'Alt') {
+        isAltDownRef.current = true;
+        if (isHoveredRef.current) {
+          e.preventDefault();
+        }
       }
+    };
+
+    const onKeyUp = (e) => {
+      if (e.key === 'Alt') {
+        isAltDownRef.current = false;
+      }
+    };
+
+    const onWindowBlur = () => {
+      isAltDownRef.current = false;
     };
 
     const onWheel = (e) => {
@@ -405,18 +420,36 @@ export default function GifTimeline() {
       const isOverTimeline = isHoveredRef.current || inBounds || shell.contains(e.target);
       if (!isOverTimeline) return;
 
-      // Check if user is zooming with Alt, Ctrl, or Meta
-      if (e.altKey || e.ctrlKey || e.metaKey) {
+      // Detect if Alt is being pressed (via keydown/keyup ref or event modifier) or Ctrl / Meta
+      const isAlt = isAltDownRef.current || e.altKey || e.ctrlKey || e.metaKey;
+      if (isAlt) {
         e.preventDefault();
         e.stopPropagation();
 
         const rawDelta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
         if (rawDelta === 0) return;
 
-        const delta = rawDelta < 0 ? 0.1 : -0.1;
-        const currentZoom = useGifStore.getState().zoom ?? 1;
-        const nextZoom = Math.round((currentZoom + delta) * 100) / 100;
-        useGifStore.getState().setZoom(nextZoom);
+        if (rawDelta < 0) {
+          // Wheel Up: simulate click on zoom in button
+          if (zoomInBtnRef.current && !zoomInBtnRef.current.disabled) {
+            zoomInBtnRef.current.click();
+          } else {
+            const currentZoom = useGifStore.getState().zoom ?? 1;
+            if (currentZoom < 1.0) {
+              useGifStore.getState().setZoom(Math.round((currentZoom + 0.1) * 100) / 100);
+            }
+          }
+        } else {
+          // Wheel Down: simulate click on zoom out button
+          if (zoomOutBtnRef.current && !zoomOutBtnRef.current.disabled) {
+            zoomOutBtnRef.current.click();
+          } else {
+            const currentZoom = useGifStore.getState().zoom ?? 1;
+            if (currentZoom > 0.25) {
+              useGifStore.getState().setZoom(Math.round((currentZoom - 0.1) * 100) / 100);
+            }
+          }
+        }
         return;
       }
 
@@ -431,10 +464,14 @@ export default function GifTimeline() {
     };
 
     window.addEventListener('keydown', onKeyDown, { capture: true });
+    window.addEventListener('keyup', onKeyUp, { capture: true });
+    window.addEventListener('blur', onWindowBlur);
     window.addEventListener('wheel', onWheel, { passive: false, capture: true });
 
     return () => {
       window.removeEventListener('keydown', onKeyDown, { capture: true });
+      window.removeEventListener('keyup', onKeyUp, { capture: true });
+      window.removeEventListener('blur', onWindowBlur);
       window.removeEventListener('wheel', onWheel, { capture: true });
     };
   }, []);
@@ -729,6 +766,7 @@ export default function GifTimeline() {
           <div className='gif-zoom-controls'>
             <span className='gif-timeline-label gif-zoom-label'>{Math.round(zoom * 100)}%</span>
             <button
+              ref={zoomOutBtnRef}
               type='button'
               className='bv-option-btn gif-timeline-btn gif-timeline-icon-btn'
               onClick={() => setZoom(zoom - 0.1)}
@@ -739,6 +777,7 @@ export default function GifTimeline() {
               <ZoomOut size={13} strokeWidth={2} />
             </button>
             <button
+              ref={zoomInBtnRef}
               type='button'
               className='bv-option-btn gif-timeline-btn gif-timeline-icon-btn'
               onClick={() => setZoom(zoom + 0.1)}
