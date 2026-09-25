@@ -28,7 +28,7 @@ export default function SettingsPage() {
   const setSplitView = useViewStore((s) => s.setSplitView);
   const splitDirection = useViewStore((s) => s.splitDirection || 'vertical');
   const setSplitDirection = useViewStore((s) => s.setSplitDirection);
-  const splitFirstView = useViewStore((s) => s.splitFirstView || 'post_process');
+  const splitFirstView = useViewStore((s) => s.splitFirstView || 'pre_dithering');
   const setSplitFirstView = useViewStore((s) => s.setSplitFirstView);
   const previewScrollbars = useViewStore((s) => s.previewScrollbars ?? true);
   const setPreviewScrollbars = useViewStore((s) => s.setPreviewScrollbars);
@@ -269,7 +269,7 @@ export default function SettingsPage() {
             <OptionGroup
               options={[
                 { value: 'original', label: 'ORIGINAL' },
-                { value: 'post_process', label: 'POST P.' },
+                { value: 'pre_dithering', label: 'PRE DITH.' },
               ]}
               value={splitFirstView}
               onChange={setSplitFirstView}

@@ -43,7 +43,9 @@ function normalizeHistoryEntry(entry) {
   const name = typeof entry.name === 'string' ? entry.name : 'IMPORTED';
   if (!src) return null;
 
-  const kind = entry.kind === 'gif' ? 'gif' : 'image';
+  // Video frames in history are treated as static images (hide the video/film symbol)
+  const isVideo = isVideoItem(name);
+  const kind = !isVideo && entry.kind === 'gif' ? 'gif' : 'image';
   const gifDataUrl = kind === 'gif' && typeof entry.gifDataUrl === 'string' ? entry.gifDataUrl : null;
 
   return {
@@ -83,7 +85,7 @@ function isPresetItem(src, name, gifDataUrl) {
   });
 }
 
-const useGalleryStore = create((set) => ({
+const useGalleryStore = create((set, get) => ({
   history: [],
   hasHydratedHistory: false,
   randomImages: createRandomItems(),
@@ -112,9 +114,7 @@ const useGalleryStore = create((set) => ({
     const normalized = Array.isArray(storedHistory)
       ? storedHistory.map(normalizeHistoryEntry).filter(Boolean)
       : [];
-    const filtered = normalized
-      .filter((entry) => !isPresetItem(entry.src, entry.name, entry.gifDataUrl))
-      .filter((entry) => !isVideoItem(entry.name));
+    const filtered = normalized.filter((entry) => !isPresetItem(entry.src, entry.name, entry.gifDataUrl));
     set({
       history: filtered.slice(0, MAX_HISTORY_ITEMS),
       hasHydratedHistory: true,
@@ -122,7 +122,7 @@ const useGalleryStore = create((set) => ({
   },
 
   pushHistory: (src, name) => {
-    if (isPresetItem(src, name) || isVideoItem(name)) return;
+    if (isPresetItem(src, name)) return;
     let nextHistory = [];
     set((state) => {
       const deduped = state.history.filter((e) => e.src !== src && e.name.toUpperCase() !== String(name || '').toUpperCase());
@@ -140,7 +140,11 @@ const useGalleryStore = create((set) => ({
   },
 
   pushGifHistory: (previewSrc, name, gifDataUrl) => {
-    if (isPresetItem(previewSrc, name, gifDataUrl) || isVideoItem(name)) return;
+    if (isPresetItem(previewSrc, name, gifDataUrl)) return;
+    if (isVideoItem(name)) {
+      get().pushHistory(previewSrc, name);
+      return;
+    }
     let nextHistory = [];
     set((state) => {
       const deduped = state.history.filter((e) => e.gifDataUrl !== gifDataUrl && e.name.toUpperCase() !== String(name || '').toUpperCase());

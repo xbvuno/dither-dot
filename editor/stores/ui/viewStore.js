@@ -24,9 +24,10 @@ const useViewStore = create(
         window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
       },
 
-      splitFirstView: 'post_process',
+      splitFirstView: 'pre_dithering',
       setSplitFirstView: (v) => {
-        set({ splitFirstView: v || 'post_process' });
+        const val = v === 'post_process' ? 'pre_dithering' : (v || 'pre_dithering');
+        set({ splitFirstView: val });
         window.dispatchEvent(new CustomEvent('split-compare-layout-changed'));
       },
 
@@ -54,10 +55,15 @@ const useViewStore = create(
       partialize: (state) => ({
         splitView: state.splitView,
         splitDirection: state.splitDirection,
-        splitFirstView: state.splitFirstView,
+        splitFirstView: state.splitFirstView === 'post_process' ? 'pre_dithering' : state.splitFirstView,
         previewScrollbars: state.previewScrollbars,
         gifThumbnails: state.gifThumbnails,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state && (state.splitFirstView === 'post_process' || !state.splitFirstView)) {
+          state.splitFirstView = 'pre_dithering';
+        }
+      },
     }
   )
 );

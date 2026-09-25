@@ -47,6 +47,7 @@ export default function ImportPage() {
   const resetToDefault = useImageStore((s) => s.resetToDefault);
 
   const pushGifHistory = useGalleryStore((s) => s.pushGifHistory);
+  const pushHistory = useGalleryStore((s) => s.pushHistory);
 
   const setGifFrames = useGifStore((s) => s.setFrames);
   const setDecoding = useGifStore((s) => s.setDecoding);
@@ -125,7 +126,7 @@ export default function ImportPage() {
         await setSourceFromBlob(firstFrameBlob, name, { skipHistory: true });
 
         const previewSrc = await blobToDataUrl(firstFrameBlob);
-        pushGifHistory(previewSrc, name, previewSrc);
+        pushHistory(previewSrc, name);
       } catch (err) {
         alert(err instanceof Error ? err.message : 'Failed to finalize video import.');
       } finally {
@@ -133,7 +134,7 @@ export default function ImportPage() {
         setDecoding(false);
       }
     },
-    [pushGifHistory, setDecoding, setGifFrames, setPlaying, setSourceFromBlob, setViewerLoading],
+    [pushHistory, setDecoding, setGifFrames, setPlaying, setSourceFromBlob, setViewerLoading],
   );
 
   const importMultiImages = useCallback(
