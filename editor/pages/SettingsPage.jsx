@@ -10,6 +10,7 @@ import useWatermarkStore from '../stores/media/watermarkStore';
 export default function SettingsPage() {
   const [openSections, toggleSection] = useAccordion('dither-dot:open-sections-settings', {
     settings: true,
+    ui: true,
     engine: true,
     splitView: true,
     storage: false,
@@ -48,60 +49,14 @@ export default function SettingsPage() {
 
   return (
     <div>
-      {/* 1. SETTINGS (GENERALE) */}
+      {/* 1. SETTINGS (GENERAL & ABOUT INFO) */}
       <MacroSection
         title="SETTINGS"
         collapsible
         isOpen={openSections.settings ?? true}
         onToggle={() => toggleSection('settings')}
       >
-        <div className='bv-section pipeline-section'>
-          <div className='bv-controls-row'>
-            <span className='bv-label'>PIPELINE</span>
-            <OptionGroup
-              options={[
-                { value: true, label: 'SHOW' },
-                { value: false, label: 'HIDE' },
-              ]}
-              value={showPipeline}
-              onChange={setShowPipeline}
-              ariaLabel="Pipeline visibility"
-            />
-          </div>
-        </div>
-
-        <div className='bv-section preview-scrollbars-section'>
-          <div className='bv-controls-row'>
-            <span className='bv-label'>PREVIEW SCROLLBARS</span>
-            <OptionGroup
-              options={[
-                { value: true, label: 'SHOW' },
-                { value: false, label: 'HIDE' },
-              ]}
-              value={previewScrollbars}
-              onChange={setPreviewScrollbars}
-              ariaLabel="Preview scrollbars visibility"
-            />
-          </div>
-        </div>
-
-        <div className='bv-section gif-thumbnails-section'>
-          <div className='bv-controls-row'>
-            <span className='bv-label'>GIF THUMBNAILS</span>
-            <OptionGroup
-              options={[
-                { value: true, label: 'ON' },
-                { value: false, label: 'OFF' },
-              ]}
-              value={gifThumbnails}
-              onChange={setGifThumbnails}
-              ariaLabel="GIF thumbnails"
-            />
-          </div>
-        </div>
-
-        {/* INFORMAZIONI ABOUT SEPARATE DA UNA RIGA ORIZZONTALE */}
-        <div className='bv-section settings-about-section' style={{ gap: '0.75rem', borderTop: '1px solid var(--color-border-subtle)', paddingTop: '0.85rem', marginTop: '0.35rem' }}>
+        <div className='bv-section settings-about-section' style={{ gap: '0.75rem' }}>
           <div>
             <span className='bv-label' style={{ fontWeight: 600, color: 'var(--color-text)' }}>
               DITHER-DOT v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.4.4'}
@@ -147,7 +102,60 @@ export default function SettingsPage() {
         </div>
       </MacroSection>
 
-      {/* 2. ENGINE SETTINGS */}
+      {/* 2. UI SETTINGS */}
+      <MacroSection
+        title="UI"
+        collapsible
+        isOpen={openSections.ui ?? true}
+        onToggle={() => toggleSection('ui')}
+      >
+        <div className='bv-section pipeline-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>PIPELINE</span>
+            <OptionGroup
+              options={[
+                { value: true, label: 'SHOW' },
+                { value: false, label: 'HIDE' },
+              ]}
+              value={showPipeline}
+              onChange={setShowPipeline}
+              ariaLabel="Pipeline visibility"
+            />
+          </div>
+        </div>
+
+        <div className='bv-section preview-scrollbars-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>PREVIEW SCROLLBARS</span>
+            <OptionGroup
+              options={[
+                { value: true, label: 'SHOW' },
+                { value: false, label: 'HIDE' },
+              ]}
+              value={previewScrollbars}
+              onChange={setPreviewScrollbars}
+              ariaLabel="Preview scrollbars visibility"
+            />
+          </div>
+        </div>
+
+        <div className='bv-section gif-thumbnails-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>GIF THUMBNAILS</span>
+            <OptionGroup
+              options={[
+                { value: true, label: 'ON' },
+                { value: false, label: 'OFF' },
+              ]}
+              value={gifThumbnails}
+              onChange={setGifThumbnails}
+              ariaLabel="GIF thumbnails"
+            />
+          </div>
+        </div>
+      </MacroSection>
+
+      {/* 3. ENGINE SETTINGS */}
       <MacroSection
         title="ENGINE"
         collapsible
