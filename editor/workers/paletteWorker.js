@@ -17,8 +17,17 @@ function colorToHex({ r, g, b }) {
   return `#${R}${G}${B}`;
 }
 
+function createGenerator(method) {
+  if (method === 'octree') {
+    return new OctreeGenerator();
+  } else if (method === 'kmeans') {
+    return new KMeansGenerator();
+  }
+  return new MedianCutGenerator();
+}
+
 async function executeJob(jobData) {
-  const { jobId, pixels, width, height, method, count } = jobData;
+  const { jobId, pixels, width, height, frames, method, count } = jobData;
 
   let image = null;
   let wasmPalette = null;
@@ -30,19 +39,80 @@ async function executeJob(jobData) {
       wasmInitialized = true;
     }
 
+    const targetColorCount = Math.max(2, Math.min(256, Number(count) || 8));
+    const params = { n_of_colors: targetColorCount };
+
+    // Multi-frame 2-pass extraction
+    if (Array.isArray(frames) && frames.length > 0) {
+      const intermediateColors = [];
+
+      // Pass 1: Extract targetColorCount colors from each selected frame
+      for (const frame of frames) {
+        if (!frame?.pixels || !frame?.width || !frame?.height) continue;
+        let frameImg = null;
+        let frameGen = null;
+        let framePalette = null;
+        try {
+          const pixelsArray = new Uint8ClampedArray(frame.pixels);
+          const imageData = new ImageData(pixelsArray, frame.width, frame.height);
+          frameImg = new WasmImage(imageData);
+          frameGen = createGenerator(method);
+          framePalette = frameGen.calculate(frameImg, params);
+          if (framePalette?.colors) {
+            for (const col of framePalette.colors) {
+              intermediateColors.push({ r: col.r, g: col.g, b: col.b });
+            }
+          }
+        } finally {
+          if (framePalette) { try { framePalette.free(); } catch { /* ignore */ } }
+          if (frameGen) { try { frameGen.free(); } catch { /* ignore */ } }
+          if (frameImg) { try { frameImg.free(); } catch { /* ignore */ } }
+        }
+      }
+
+      if (intermediateColors.length <= targetColorCount) {
+        const palette = intermediateColors.map(colorToHex);
+        self.postMessage({ jobId, palette });
+        return;
+      }
+
+      // Pass 2: Re-quantize aggregated intermediate colors down to targetColorCount
+      const poolWidth = intermediateColors.length;
+      const poolHeight = 1;
+      const poolPixels = new Uint8ClampedArray(poolWidth * 4);
+      for (let i = 0; i < poolWidth; i++) {
+        const c = intermediateColors[i];
+        const idx = i * 4;
+        poolPixels[idx] = c.r;
+        poolPixels[idx + 1] = c.g;
+        poolPixels[idx + 2] = c.b;
+        poolPixels[idx + 3] = 255;
+      }
+
+      let pass2Img = null;
+      let pass2Gen = null;
+      let pass2Palette = null;
+      try {
+        const pass2ImgData = new ImageData(poolPixels, poolWidth, poolHeight);
+        pass2Img = new WasmImage(pass2ImgData);
+        pass2Gen = createGenerator(method);
+        pass2Palette = pass2Gen.calculate(pass2Img, params);
+        const palette = pass2Palette.colors.map(colorToHex);
+        self.postMessage({ jobId, palette });
+        return;
+      } finally {
+        if (pass2Palette) { try { pass2Palette.free(); } catch { /* ignore */ } }
+        if (pass2Gen) { try { pass2Gen.free(); } catch { /* ignore */ } }
+        if (pass2Img) { try { pass2Img.free(); } catch { /* ignore */ } }
+      }
+    }
+
+    // Single frame extraction
     const pixelsArray = new Uint8ClampedArray(pixels);
     const imageData = new ImageData(pixelsArray, width, height);
     image = new WasmImage(imageData);
 
-    if (method === 'octree') {
-      generator = new OctreeGenerator();
-    } else if (method === 'kmeans') {
-      generator = new KMeansGenerator();
-    } else {
-      generator = new MedianCutGenerator();
-    }
-
-    const params = { n_of_colors: Math.max(2, Math.min(256, Number(count) || 8)) };
+    generator = createGenerator(method);
     wasmPalette = generator.calculate(image, params);
 
     const palette = wasmPalette.colors.map(colorToHex);

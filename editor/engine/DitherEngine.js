@@ -492,18 +492,20 @@ const action = this.debugEnabled ? "disable" : "enable";
         const methodChanged = !prevState || state.method !== prevState.method;
         const colorCountChanged = !prevState || state.colorCount !== prevState.colorCount;
         const samplingAccuracyChanged = !prevState || state.samplingAccuracy !== prevState.samplingAccuracy;
+        const sampleFrameModeChanged = !prevState || state.sampleFrameMode !== prevState.sampleFrameMode;
         const colorsChanged = !prevState || state.colors !== prevState.colors;
 
         this.previousPaletteState = {
           method: state.method,
           colorCount: state.colorCount,
           samplingAccuracy: state.samplingAccuracy,
+          sampleFrameMode: state.sampleFrameMode,
           colors: state.colors,
         };
 
         const shouldRefreshPalette =
-          state.method !== EXTRACT_METHOD.CUSTOM && (methodChanged || colorCountChanged || samplingAccuracyChanged);
-        const shouldInvalidateFrames = methodChanged || colorCountChanged || samplingAccuracyChanged || colorsChanged;
+          state.method !== EXTRACT_METHOD.CUSTOM && (methodChanged || colorCountChanged || samplingAccuracyChanged || sampleFrameModeChanged);
+        const shouldInvalidateFrames = methodChanged || colorCountChanged || samplingAccuracyChanged || sampleFrameModeChanged || colorsChanged;
 
         if (shouldInvalidateFrames) {
           this.markGifFramesPending();
@@ -664,16 +666,30 @@ const action = this.debugEnabled ? "disable" : "enable";
         const hadFrames = (prevState.frames?.length || 0) > 1;
         const hasFrames = (state?.frames?.length || 0) > 1;
         const framesChanged = state.frames !== prevState.frames;
+        const selectionChanged = state.selectedFrameIndices !== prevState.selectedFrameIndices;
 
         this.previousGifState = {
           frames: state.frames,
           currentFrameIndex: state.currentFrameIndex,
+          selectedFrameIndices: state.selectedFrameIndices,
         };
 
         if (!hasFrames && !hadFrames) return;
 
         if (framesChanged || (!hadFrames && hasFrames) || state.currentFrameIndex !== prevState.currentFrameIndex) {
           this.swapSourceFrame(state.currentFrameIndex);
+        }
+
+        // If in SELECTED sample mode and selection changed, regenerate palette with debounce
+        if (selectionChanged && usePaletteStore.getState().sampleFrameMode === 'selected' && usePaletteStore.getState().method !== EXTRACT_METHOD.CUSTOM) {
+          if (this.selectionPaletteDebounceTimer) {
+            clearTimeout(this.selectionPaletteDebounceTimer);
+          }
+          this.selectionPaletteDebounceTimer = setTimeout(() => {
+            usePaletteStore.getState().generatePalette().catch((err) => {
+              this.error('Palette', 'Selection change palette generation failed: %o', err);
+            });
+          }, 150);
         }
       })
     );
@@ -700,6 +716,11 @@ const action = this.debugEnabled ? "disable" : "enable";
   destroy() {
     this.setEngineState('IDLE');
     this.disposed = true;
+
+    if (this.selectionPaletteDebounceTimer) {
+      clearTimeout(this.selectionPaletteDebounceTimer);
+      this.selectionPaletteDebounceTimer = null;
+    }
     
     // Unsubscribe from all stores and event listeners
     for (const unsubscribe of this.subscriptions) {
