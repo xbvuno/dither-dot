@@ -316,9 +316,11 @@ export default function GifTimeline() {
     };
   }, [frames.length, zoom]);
 
+  const isCurrentFrameDone = frameStates[currentFrameIndex] === 'done';
+
   useEffect(() => {
     if (!playing || frames.length <= 1) return;
-    if (frameStates[currentFrameIndex] !== 'done') return;
+    if (!isCurrentFrameDone) return;
 
     const nextIndex = (currentFrameIndex + 1) % frames.length;
     if (!frames[nextIndex]) {
@@ -334,7 +336,7 @@ export default function GifTimeline() {
     }, delay);
 
     return () => window.clearTimeout(timer);
-  }, [currentFrameIndex, frameStates, frames, playing, setCurrentFrameIndex, setPlaying]);
+  }, [currentFrameIndex, isCurrentFrameDone, frames, playing, setCurrentFrameIndex, setPlaying]);
 
   useEffect(() => {
     const activeFrameDelay = frames[currentFrameIndex]?.delay;

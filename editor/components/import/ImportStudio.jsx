@@ -325,10 +325,12 @@ export default function ImportStudio() {
     };
   }, [frames.length, setPlaying]);
 
+  const isCurrentFrameDone = frameStates[currentFrameIndex] === 'done';
+
   // GIF playback animation loop in Import view
   useEffect(() => {
     if (!playing || frames.length <= 1) return;
-    if (frameStates[currentFrameIndex] !== 'done') return;
+    if (!isCurrentFrameDone) return;
 
     const nextIndex = (currentFrameIndex + 1) % frames.length;
     if (!frames[nextIndex]) {
@@ -344,7 +346,7 @@ export default function ImportStudio() {
     }, delay);
 
     return () => window.clearTimeout(timer);
-  }, [currentFrameIndex, frameStates, frames, playing, setCurrentFrameIndex, setPlaying]);
+  }, [currentFrameIndex, isCurrentFrameDone, frames, playing, setCurrentFrameIndex, setPlaying]);
 
   // Resize column 1 handler
   useEffect(() => {
