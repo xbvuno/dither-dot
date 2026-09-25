@@ -59,6 +59,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
 
   const videoRef = useRef(null);
   const dragStartRef = useRef(null);
+  const isExtractingRef = useRef(false);
 
   // Load video metadata and initial container FPS
   useEffect(() => {
@@ -149,7 +150,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   }, [meta]);
 
   const handleTimeUpdate = useCallback(() => {
-    if (isExtracting) return;
+    if (isExtractingRef.current) return;
     const video = videoRef.current;
     if (!video || video.seeking) return;
 
@@ -161,7 +162,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
     } else if (video.currentTime < startTime - 0.2) {
       video.currentTime = startTime;
     }
-  }, [startTime, endTime, isExtracting]);
+  }, [startTime, endTime]);
 
   const handleRangeChange = useCallback(({ startTime: newStart, endTime: newEnd }) => {
     setStartTime(newStart);
@@ -236,7 +237,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   }, [meta]);
 
   const handlePointerDown = (e) => {
-    if (!isVideoReady) return;
+    if (!isVideoReady || isExtracting) return;
     if (e.button === 2) {
       // Right click resets crop
       e.preventDefault();
@@ -337,7 +338,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   const estimatedRamMb = Math.round((frameBytes + thumbnailBytes) / (1024 * 1024));
 
   const handleConfirm = async () => {
-    if (isExtracting || !meta) return;
+    if (isExtractingRef.current || isExtracting || !meta) return;
 
     if (estimatedRamMb > 1800) {
       const ok = window.confirm(
@@ -351,6 +352,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
       setIsPlaying(false);
     }
 
+    isExtractingRef.current = true;
     setIsExtracting(true);
     try {
       const videoSource = videoRef.current || file;
@@ -371,6 +373,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
       await onConfirm(result.frames, name, { thumbnailsEnabled });
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Video frame extraction failed.');
+      isExtractingRef.current = false;
       setIsExtracting(false);
     }
   };

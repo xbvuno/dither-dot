@@ -50,6 +50,7 @@ export default function ImportPage() {
 
   const setGifFrames = useGifStore((s) => s.setFrames);
   const setDecoding = useGifStore((s) => s.setDecoding);
+  const setPlaying = useGifStore((s) => s.setPlaying);
   const clearGifFrames = useGifStore((s) => s.clearFrames);
 
   const webcamActive = useWebcamStore((s) => s.active);
@@ -116,10 +117,15 @@ export default function ImportPage() {
       setViewerLoading(true);
       setDecoding(true);
       try {
+        const { rgbaFrameToPngBlob, blobToDataUrl } = await import('../utils/gifDecodeUtils');
         setGifFrames(frames, 0, options);
+        setPlaying(true);
 
         const firstFrameBlob = await rgbaFrameToPngBlob(frames[0]);
         await setSourceFromBlob(firstFrameBlob, name, { skipHistory: true });
+
+        const previewSrc = await blobToDataUrl(firstFrameBlob);
+        pushGifHistory(previewSrc, name, previewSrc);
       } catch (err) {
         alert(err instanceof Error ? err.message : 'Failed to finalize video import.');
       } finally {
@@ -127,7 +133,7 @@ export default function ImportPage() {
         setDecoding(false);
       }
     },
-    [setDecoding, setGifFrames, setSourceFromBlob, setViewerLoading],
+    [pushGifHistory, setDecoding, setGifFrames, setPlaying, setSourceFromBlob, setViewerLoading],
   );
 
   const importMultiImages = useCallback(
@@ -143,6 +149,7 @@ export default function ImportPage() {
 
         const name = `${stripExtension(files[0].name).toUpperCase()} (${files.length} FRAMES)`;
         setGifFrames(result.frames, 0);
+        setPlaying(true);
 
         const firstFrameBlob = await rgbaFrameToPngBlob(result.frames[0]);
         await setSourceFromBlob(firstFrameBlob, name, { skipHistory: true });
@@ -156,7 +163,7 @@ export default function ImportPage() {
         setDecoding(false);
       }
     },
-    [pushGifHistory, setDecoding, setGifFrames, setSourceFromBlob, setViewerLoading],
+    [pushGifHistory, setDecoding, setGifFrames, setPlaying, setSourceFromBlob, setViewerLoading],
   );
 
   const importWithSizeCheck = useCallback(

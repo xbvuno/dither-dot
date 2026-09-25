@@ -559,7 +559,111 @@ export async function getVideoMetadata(fileOrBlob) {
   };
 }
 
-function seekVideo(video, time, timeoutMs = 3000) {
+export function seekAndCaptureFrame(
+  video,
+  targetTime,
+  ctx,
+  crop,
+  targetWidth,
+  targetHeight,
+  timeoutMs = 4000
+) {
+  return new Promise((resolve, reject) => {
+    let timeoutId = null;
+    let rfcId = null;
+    let rfcFallbackTimer = null;
+    let settled = false;
+
+    const cleanup = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (rfcFallbackTimer) clearTimeout(rfcFallbackTimer);
+      video.removeEventListener('error', onError);
+      video.removeEventListener('seeked', onSeeked);
+      if (rfcId && typeof video.cancelVideoFrameCallback === 'function') {
+        try {
+          video.cancelVideoFrameCallback(rfcId);
+        } catch {
+          // ignore
+        }
+      }
+    };
+
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+
+      try {
+        ctx.clearRect(0, 0, targetWidth, targetHeight);
+        ctx.drawImage(
+          video,
+          crop.x,
+          crop.y,
+          crop.width,
+          crop.height,
+          0,
+          0,
+          targetWidth,
+          targetHeight
+        );
+        const imgData = ctx.getImageData(0, 0, targetWidth, targetHeight);
+        resolve(new Uint8ClampedArray(imgData.data));
+      } catch (err) {
+        reject(err);
+      }
+    };
+
+    const onError = (e) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(e || new Error('Error during video seek'));
+    };
+
+    const onSeeked = () => {
+      if (typeof video.requestVideoFrameCallback === 'function') {
+        rfcId = video.requestVideoFrameCallback(() => {
+          finish();
+        });
+        // Generous fallback if rfc doesn't fire after seeked (e.g. background tab or paused video)
+        rfcFallbackTimer = setTimeout(() => {
+          requestAnimationFrame(() => {
+            requestAnimationFrame(finish);
+          });
+        }, 800);
+      } else {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(finish);
+        });
+      }
+    };
+
+    timeoutId = setTimeout(() => {
+      console.warn(`[VideoExtract] Seek timed out at targetTime=${targetTime}, capturing current frame buffer.`);
+      finish();
+    }, timeoutMs);
+
+    video.addEventListener('error', onError, { once: true });
+    video.addEventListener('seeked', onSeeked, { once: true });
+
+    try {
+      const maxDuration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : Infinity;
+      const target = Math.max(0, Math.min(maxDuration - 0.001, targetTime));
+
+      if (Math.abs(video.currentTime - target) < 0.002) {
+        video.removeEventListener('seeked', onSeeked);
+        onSeeked();
+        return;
+      }
+
+      video.currentTime = target;
+    } catch (err) {
+      onError(err);
+    }
+  });
+}
+
+export function seekVideo(video, time, timeoutMs = 4000) {
   return new Promise((resolve, reject) => {
     let timeoutId = null;
     let rfcId = null;
@@ -594,7 +698,7 @@ function seekVideo(video, time, timeoutMs = 3000) {
       reject(e || new Error('Error during video seek'));
     };
 
-    const waitForFramePresentation = () => {
+    const onSeeked = () => {
       if (typeof video.requestVideoFrameCallback === 'function') {
         rfcId = video.requestVideoFrameCallback(() => {
           finish();
@@ -603,7 +707,7 @@ function seekVideo(video, time, timeoutMs = 3000) {
           requestAnimationFrame(() => {
             requestAnimationFrame(finish);
           });
-        }, 200);
+        }, 800);
       } else {
         requestAnimationFrame(() => {
           requestAnimationFrame(finish);
@@ -611,12 +715,8 @@ function seekVideo(video, time, timeoutMs = 3000) {
       }
     };
 
-    const onSeeked = () => {
-      waitForFramePresentation();
-    };
-
     timeoutId = setTimeout(() => {
-      finish(); // Safety fallback so process never hangs indefinitely
+      finish();
     }, timeoutMs);
 
     video.addEventListener('error', onError, { once: true });
@@ -626,10 +726,9 @@ function seekVideo(video, time, timeoutMs = 3000) {
       const maxDuration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : Infinity;
       const target = Math.max(0, Math.min(maxDuration - 0.001, time));
 
-      // If already at or extremely close to the target timestamp, seeked will not fire
-      if (Math.abs(video.currentTime - target) < 0.005) {
+      if (Math.abs(video.currentTime - target) < 0.002) {
         video.removeEventListener('seeked', onSeeked);
-        waitForFramePresentation();
+        onSeeked();
         return;
       }
 
@@ -745,20 +844,45 @@ export async function extractFramesFromVideo(
   const frames = [];
 
   try {
+    // If the video is currently positioned right at the first timestamp, nudge it slightly
+    // away so the first seek triggers a genuine currentTime change and 'seeked' event.
+    if (timestamps.length > 0 && Math.abs(video.currentTime - timestamps[0]) < 0.05) {
+      const nudge = timestamps[0] > 0.1 ? timestamps[0] - 0.1 : timestamps[0] + 0.1;
+      await new Promise((resolve) => {
+        let done = false;
+        const finishNudge = () => {
+          if (done) return;
+          done = true;
+          video.removeEventListener('seeked', finishNudge);
+          video.removeEventListener('error', finishNudge);
+          resolve();
+        };
+        video.addEventListener('seeked', finishNudge, { once: true });
+        video.addEventListener('error', finishNudge, { once: true });
+        setTimeout(finishNudge, 500);
+        video.currentTime = nudge;
+      });
+    }
+
+    const cropBox = { x: cropX, y: cropY, width: cropW, height: cropH };
+
     for (let i = 0; i < timestamps.length; i += 1) {
       const time = timestamps[i];
-      await seekVideo(video, time);
+      const pixels = await seekAndCaptureFrame(
+        video,
+        time,
+        ctx,
+        cropBox,
+        targetWidth,
+        targetHeight
+      );
 
-      ctx.clearRect(0, 0, targetWidth, targetHeight);
-      ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, targetWidth, targetHeight);
-
-      const imgData = ctx.getImageData(0, 0, targetWidth, targetHeight);
       frames.push({
         id: createInstanceId(),
         originId: createOriginId(),
         width: targetWidth,
         height: targetHeight,
-        pixels: new Uint8ClampedArray(imgData.data),
+        pixels,
         delay: frameDelay,
       });
 
