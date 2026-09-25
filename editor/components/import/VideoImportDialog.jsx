@@ -119,23 +119,28 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
     }
 
     let cancelled = false;
-    detectFpsFromVideoElement(video)
-      .then((elementFps) => {
-        if (!cancelled && elementFps) {
-          setDetectedFps(elementFps);
-          setFps((prev) => (prev > elementFps ? elementFps : prev));
-        }
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) {
-          if (videoRef.current) {
-            videoRef.current.currentTime = startTimeRef.current;
-            videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+
+    if (!meta.hasContainerFps) {
+      detectFpsFromVideoElement(video)
+        .then((elementFps) => {
+          if (!cancelled && elementFps) {
+            setDetectedFps(elementFps);
+            setFps((prev) => (prev > elementFps ? elementFps : prev));
           }
-          setIsVideoReady(true);
-        }
-      });
+        })
+        .catch(() => {})
+        .finally(() => {
+          if (!cancelled) {
+            if (videoRef.current) {
+              videoRef.current.currentTime = startTimeRef.current;
+              videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+            }
+            setIsVideoReady(true);
+          }
+        });
+    } else {
+      setIsVideoReady(true);
+    }
 
     return () => {
       cancelled = true;

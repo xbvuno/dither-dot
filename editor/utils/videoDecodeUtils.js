@@ -12,13 +12,22 @@ export function isVideoFile(file) {
 
 export function snapFps(fps) {
   if (!fps || !Number.isFinite(fps) || fps <= 0) return 24;
-  const standard = [10, 12, 15, 20, 24, 25, 30, 48, 50, 60, 120];
-  for (const s of standard) {
+
+  // Film & NTSC / PAL standards with realistic tolerance
+  if (Math.abs(fps - 23.976) < 0.25 || Math.abs(fps - 24) < 0.35) return 24;
+  if (Math.abs(fps - 25) < 0.45) return 25;
+  if (Math.abs(fps - 29.97) < 0.25 || Math.abs(fps - 30) < 0.45) return 30;
+  if (Math.abs(fps - 48) < 0.5) return 48;
+  if (Math.abs(fps - 50) < 0.5) return 50;
+  if (Math.abs(fps - 59.94) < 0.25 || Math.abs(fps - 60) < 0.5) return 60;
+  if (Math.abs(fps - 120) < 1.0) return 120;
+
+  // Other common low-framerate video / GIF / screen-recording standards
+  const common = [8, 10, 12, 15, 18, 20, 75, 90, 144];
+  for (const s of common) {
     if (Math.abs(fps - s) < 0.45) return s;
   }
-  if (Math.abs(fps - 23.976) < 0.5) return 24;
-  if (Math.abs(fps - 29.97) < 0.5) return 30;
-  if (Math.abs(fps - 59.94) < 0.5) return 60;
+
   return Math.round(fps);
 }
 
@@ -29,7 +38,7 @@ function parseMp4Stts(view, sttsOffset, timescale) {
 
   let totalSamples = 0;
   let totalDuration = 0;
-  const maxEntries = Math.min(entryCount, 120);
+  const maxEntries = Math.min(entryCount, 1000);
   let pos = sttsOffset + 16;
 
   for (let i = 0; i < maxEntries; i++) {
@@ -43,9 +52,11 @@ function parseMp4Stts(view, sttsOffset, timescale) {
 
   if (totalSamples > 0 && totalDuration > 0 && timescale > 0) {
     const avgDelta = totalDuration / totalSamples;
-    const fps = timescale / avgDelta;
-    if (fps >= 1 && fps <= 240) {
-      return snapFps(fps);
+    if (avgDelta > 0) {
+      const fps = timescale / avgDelta;
+      if (fps >= 1 && fps <= 240) {
+        return snapFps(fps);
+      }
     }
   }
   return null;
@@ -54,7 +65,9 @@ function parseMp4Stts(view, sttsOffset, timescale) {
 function parseMp4Mdia(view, mdiaOffset, mdiaEnd) {
   let isVideo = false;
   let timescale = 0;
+  let duration = 0;
   let sttsOffset = null;
+  let stszOffset = null;
 
   let pos = mdiaOffset;
   while (pos + 8 <= mdiaEnd) {
@@ -78,9 +91,17 @@ function parseMp4Mdia(view, mdiaOffset, mdiaEnd) {
       if (hType === 'vide') {
         isVideo = true;
       }
-    } else if (type === 'mdhd' && pos + 28 <= boxEnd) {
+    } else if (type === 'mdhd' && pos + 24 <= boxEnd) {
       const version = view.getUint8(pos + 8);
-      timescale = version === 0 ? view.getUint32(pos + 20) : view.getUint32(pos + 28);
+      if (version === 0 && pos + 28 <= boxEnd) {
+        timescale = view.getUint32(pos + 20);
+        duration = view.getUint32(pos + 24);
+      } else if (version === 1 && pos + 36 <= boxEnd) {
+        timescale = view.getUint32(pos + 28);
+        const durHigh = view.getUint32(pos + 32);
+        const durLow = view.getUint32(pos + 36);
+        duration = durHigh * 0x100000000 + durLow;
+      }
     } else if (type === 'minf') {
       let mPos = pos + 8;
       while (mPos + 8 <= boxEnd) {
@@ -107,7 +128,8 @@ function parseMp4Mdia(view, mdiaOffset, mdiaEnd) {
             );
             if (sType === 'stts') {
               sttsOffset = sPos;
-              break;
+            } else if (sType === 'stsz') {
+              stszOffset = sPos;
             }
             sPos += sSize;
           }
@@ -119,8 +141,72 @@ function parseMp4Mdia(view, mdiaOffset, mdiaEnd) {
     pos += size;
   }
 
-  if (isVideo && timescale > 0 && sttsOffset !== null) {
-    return parseMp4Stts(view, sttsOffset, timescale);
+  if (isVideo && timescale > 0) {
+    if (sttsOffset !== null) {
+      const fps = parseMp4Stts(view, sttsOffset, timescale);
+      if (fps) return fps;
+    }
+
+    // Fallback: total samples from stsz divided by duration in seconds
+    if (stszOffset !== null && duration > 0 && stszOffset + 20 <= view.byteLength) {
+      const sampleCount = view.getUint32(stszOffset + 16);
+      if (sampleCount > 0) {
+        const durSec = duration / timescale;
+        if (durSec > 0) {
+          const fps = sampleCount / durSec;
+          if (fps >= 1 && fps <= 240) {
+            return snapFps(fps);
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function parseMp4Trak(view, trakOffset, trakEnd) {
+  let pos = trakOffset;
+  while (pos + 8 <= trakEnd) {
+    const size = view.getUint32(pos);
+    if (size < 8) break;
+    const type = String.fromCharCode(
+      view.getUint8(pos + 4),
+      view.getUint8(pos + 5),
+      view.getUint8(pos + 6),
+      view.getUint8(pos + 7)
+    );
+    const end = Math.min(trakEnd, pos + size);
+
+    if (type === 'mdia') {
+      const res = parseMp4Mdia(view, pos + 8, end);
+      if (res) return res;
+    }
+    pos += size;
+  }
+  return null;
+}
+
+function parseMp4MoovBuffer(view) {
+  let pos = 0;
+  const len = view.byteLength;
+
+  while (pos + 8 <= len) {
+    const boxSize = view.getUint32(pos);
+    if (boxSize < 8) break;
+    const boxType = String.fromCharCode(
+      view.getUint8(pos + 4),
+      view.getUint8(pos + 5),
+      view.getUint8(pos + 6),
+      view.getUint8(pos + 7)
+    );
+    const boxEnd = Math.min(len, pos + boxSize);
+
+    if (boxType === 'trak') {
+      const fps = parseMp4Trak(view, pos + 8, boxEnd);
+      if (fps) return fps;
+    }
+
+    pos += boxSize;
   }
   return null;
 }
@@ -166,39 +252,8 @@ function parseMp4Buffer(view) {
     if (size < 8) break;
 
     if (type === 'moov') {
-      const moovEnd = Math.min(len, pos + size);
-      let tPos = pos + 8;
-      while (tPos + 8 <= moovEnd) {
-        const tSize = view.getUint32(tPos);
-        if (tSize < 8) break;
-        const tType = String.fromCharCode(
-          view.getUint8(tPos + 4),
-          view.getUint8(tPos + 5),
-          view.getUint8(tPos + 6),
-          view.getUint8(tPos + 7)
-        );
-        const trakEnd = Math.min(moovEnd, tPos + tSize);
-
-        if (tType === 'trak') {
-          let mPos = tPos + 8;
-          while (mPos + 8 <= trakEnd) {
-            const mSize = view.getUint32(mPos);
-            if (mSize < 8) break;
-            const mType = String.fromCharCode(
-              view.getUint8(mPos + 4),
-              view.getUint8(mPos + 5),
-              view.getUint8(mPos + 6),
-              view.getUint8(mPos + 7)
-            );
-            if (mType === 'mdia') {
-              const res = parseMp4Mdia(view, mPos + 8, Math.min(trakEnd, mPos + mSize));
-              if (res) return res;
-            }
-            mPos += mSize;
-          }
-        }
-        tPos += tSize;
-      }
+      const res = parseMp4MoovBuffer(new DataView(view.buffer, view.byteOffset + pos + 8, Math.min(size - 8, len - pos - 8)));
+      if (res) return res;
     }
 
     pos += size;
@@ -220,13 +275,20 @@ function parseMp4Buffer(view) {
 function parseWebmBuffer(view) {
   const len = view.byteLength - 7;
   for (let i = 0; i < len; i++) {
-    if (view.getUint8(i) === 0x23 && view.getUint8(i + 1) === 0xe3 && view.getUint8(i + 2) === 0x83) {
+    const b0 = view.getUint8(i);
+    const b1 = view.getUint8(i + 1);
+    const b2 = view.getUint8(i + 2);
+
+    // 1. DefaultDuration: [0x23, 0xE3, 0x83]
+    if (b0 === 0x23 && b1 === 0xe3 && b2 === 0x83) {
       let offset = i + 3;
+      if (offset >= view.byteLength) break;
       const sizeByte = view.getUint8(offset++);
+      const dataSize = (sizeByte & 0x80) ? (sizeByte & 0x7f) : (sizeByte === 0x40 ? 0 : 4);
       let durNs = 0;
-      if (sizeByte === 0x84 && offset + 4 <= view.byteLength) {
+      if (dataSize === 4 && offset + 4 <= view.byteLength) {
         durNs = view.getUint32(offset);
-      } else if (sizeByte === 0x88 && offset + 8 <= view.byteLength) {
+      } else if (dataSize === 8 && offset + 8 <= view.byteLength) {
         const high = view.getUint32(offset);
         const low = view.getUint32(offset + 4);
         durNs = high * 0x100000000 + low;
@@ -238,6 +300,67 @@ function parseWebmBuffer(view) {
         }
       }
     }
+
+    // 2. FrameRate float element: [0x23, 0x83, 0xE3]
+    if (b0 === 0x23 && b1 === 0x83 && b2 === 0xe3) {
+      let offset = i + 3;
+      if (offset >= view.byteLength) break;
+      const sizeByte = view.getUint8(offset++);
+      const dataSize = (sizeByte & 0x80) ? (sizeByte & 0x7f) : 4;
+      let fps = 0;
+      if (dataSize === 4 && offset + 4 <= view.byteLength) {
+        fps = view.getFloat32(offset);
+      } else if (dataSize === 8 && offset + 8 <= view.byteLength) {
+        fps = view.getFloat64(offset);
+      }
+      if (fps >= 1 && fps <= 240) {
+        return snapFps(fps);
+      }
+    }
+  }
+  return null;
+}
+
+async function readBoxHeader(fileOrBlob, offset) {
+  if (offset + 8 > fileOrBlob.size) return null;
+  const chunk = await fileOrBlob.slice(offset, offset + 16).arrayBuffer();
+  if (chunk.byteLength < 8) return null;
+  const view = new DataView(chunk);
+  let size = view.getUint32(0);
+  const type = String.fromCharCode(
+    view.getUint8(4),
+    view.getUint8(5),
+    view.getUint8(6),
+    view.getUint8(7)
+  );
+
+  let headerSize = 8;
+  if (size === 1) {
+    if (chunk.byteLength < 16) return null;
+    const high = view.getUint32(8);
+    const low = view.getUint32(12);
+    size = high * 0x100000000 + low;
+    headerSize = 16;
+  } else if (size === 0) {
+    size = fileOrBlob.size - offset;
+  }
+
+  if (size < headerSize) return null;
+  return { type, size, headerSize, offset };
+}
+
+async function findMoovBox(fileOrBlob) {
+  let offset = 0;
+  const maxIterations = 50;
+  let iterations = 0;
+
+  while (offset + 8 <= fileOrBlob.size && iterations++ < maxIterations) {
+    const box = await readBoxHeader(fileOrBlob, offset);
+    if (!box) break;
+    if (box.type === 'moov') {
+      return box;
+    }
+    offset += box.size;
   }
   return null;
 }
@@ -245,39 +368,75 @@ function parseWebmBuffer(view) {
 export async function parseVideoContainerFps(fileOrBlob) {
   if (!fileOrBlob || !fileOrBlob.size) return null;
   try {
+    // 1. Walk top-level boxes to locate 'moov' (efficiently handles MP4/MOV of any size, front or end)
+    const moovBox = await findMoovBox(fileOrBlob);
+    if (moovBox) {
+      const readLen = Math.min(moovBox.size, 16 * 1024 * 1024);
+      const moovBuf = await fileOrBlob.slice(moovBox.offset + moovBox.headerSize, moovBox.offset + readLen).arrayBuffer();
+      const moovView = new DataView(moovBuf);
+      const fps = parseMp4MoovBuffer(moovView);
+      if (fps) return fps;
+    }
+
+    // 2. WebM / Matroska: scan up to 4MB from start of file
+    const webmScanSize = Math.min(fileOrBlob.size, 4 * 1024 * 1024);
+    const webmBuf = await fileOrBlob.slice(0, webmScanSize).arrayBuffer();
+    const webmView = new DataView(webmBuf);
+    const webmFps = parseWebmBuffer(webmView);
+    if (webmFps) return webmFps;
+
+    // 3. Fallback: Quick scan of the initial 1MB for MP4/MOV if box walk didn't hit standard moov
     const headSize = Math.min(fileOrBlob.size, 1024 * 1024);
     const headBuf = await fileOrBlob.slice(0, headSize).arrayBuffer();
     const headView = new DataView(headBuf);
-
-    let fps = parseMp4Buffer(headView) || parseWebmBuffer(headView);
-    if (fps) return fps;
-
-    if (fileOrBlob.size > headSize) {
-      const tailStart = Math.max(0, fileOrBlob.size - 1024 * 1024);
-      const tailBuf = await fileOrBlob.slice(tailStart, fileOrBlob.size).arrayBuffer();
-      const tailView = new DataView(tailBuf);
-      fps = parseMp4Buffer(tailView);
-      if (fps) return fps;
-    }
+    const headFps = parseMp4Buffer(headView);
+    if (headFps) return headFps;
   } catch {
     // Ignore container parse errors
   }
   return null;
 }
 
-export function detectFpsFromVideoElement(video, timeoutMs = 1500) {
+export function detectFpsFromVideoElement(video, timeoutMs = 2000) {
   return new Promise((resolve) => {
-    if (!video || typeof video.requestVideoFrameCallback !== 'function') {
+    if (!video) return resolve(null);
+
+    // 1. Try immediate captureStream track setting if available
+    try {
+      const captureStream = video.captureStream || video.mozCaptureStream;
+      if (typeof captureStream === 'function') {
+        const stream = captureStream.call(video);
+        if (stream) {
+          const track = stream.getVideoTracks()?.[0];
+          const settings = track?.getSettings?.();
+          stream.getTracks().forEach((t) => {
+            try {
+              t.stop();
+            } catch {
+              // ignore
+            }
+          });
+          if (settings && typeof settings.frameRate === 'number' && settings.frameRate > 0) {
+            const snapped = snapFps(settings.frameRate);
+            if (snapped >= 1 && snapped <= 240) {
+              return resolve(snapped);
+            }
+          }
+        }
+      }
+    } catch {
+      // Ignore captureStream failure and proceed to requestVideoFrameCallback
+    }
+
+    if (typeof video.requestVideoFrameCallback !== 'function') {
       return resolve(null);
     }
+
     const samples = [];
     let lastTime = null;
-    let timer = setTimeout(() => {
-      cleanup();
-      finish();
-    }, timeoutMs);
-
+    let callCount = 0;
     let handle = null;
+
     const cleanup = () => {
       if (timer) clearTimeout(timer);
       if (handle && video.cancelVideoFrameCallback) {
@@ -286,27 +445,50 @@ export function detectFpsFromVideoElement(video, timeoutMs = 1500) {
     };
 
     const finish = () => {
-      if (samples.length >= 3) {
-        const avg = samples.reduce((a, b) => a + b, 0) / samples.length;
-        if (avg > 0) {
-          const rawFps = 1 / avg;
-          if (rawFps >= 1 && rawFps <= 240) {
-            return resolve(snapFps(rawFps));
+      if (samples.length >= 4) {
+        // Sort deltas to calculate median and eliminate dropped-frame / seek outliers
+        const sorted = [...samples].sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        const median = sorted.length % 2 !== 0
+          ? sorted[mid]
+          : (sorted[mid - 1] + sorted[mid]) / 2;
+
+        if (median > 0) {
+          // Keep samples within [0.65x, 1.45x] of the median (eliminates 2x dropped frames)
+          const inliers = sorted.filter((d) => d <= median * 1.45 && d >= median * 0.65);
+          const avg = inliers.length > 0
+            ? inliers.reduce((a, b) => a + b, 0) / inliers.length
+            : median;
+
+          if (avg > 0) {
+            const rawFps = 1 / avg;
+            if (rawFps >= 1 && rawFps <= 240) {
+              return resolve(snapFps(rawFps));
+            }
           }
         }
       }
       resolve(null);
     };
 
+    let timer = setTimeout(() => {
+      cleanup();
+      finish();
+    }, timeoutMs);
+
     const onFrame = (now, metadata) => {
-      if (lastTime !== null && metadata.mediaTime > lastTime) {
+      callCount++;
+      // Skip the first 2 callbacks to avoid seek/warm-up latency
+      if (callCount > 2 && lastTime !== null && metadata.mediaTime > lastTime) {
         const dt = metadata.mediaTime - lastTime;
         if (dt >= 0.004 && dt <= 0.5) {
           samples.push(dt);
         }
       }
       lastTime = metadata.mediaTime;
-      if (samples.length >= 8) {
+
+      // Stop once we have 18 clean delta samples (~0.6s of playback)
+      if (samples.length >= 18) {
         cleanup();
         finish();
         return;
@@ -364,6 +546,7 @@ export async function getVideoMetadata(fileOrBlob) {
   return {
     ...meta,
     fps: containerFps || null,
+    hasContainerFps: Boolean(containerFps),
   };
 }
 
