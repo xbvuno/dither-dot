@@ -391,6 +391,15 @@ const action = this.debugEnabled ? "disable" : "enable";
       // Setup store subscriptions
       this.setupSubscriptions();
 
+      const currentGifState = useGifStore.getState();
+      if ((currentGifState.frames?.length || 0) > 1) {
+        this.previousGifState = {
+          frames: currentGifState.frames,
+          currentFrameIndex: currentGifState.currentFrameIndex,
+        };
+        this.swapSourceFrame(currentGifState.currentFrameIndex);
+      }
+
       // Trigger initial processing
       this.queueProcessing(true);
       

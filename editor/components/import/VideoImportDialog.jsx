@@ -148,6 +148,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   }, [meta]);
 
   const handleTimeUpdate = useCallback(() => {
+    if (isExtracting) return;
     const video = videoRef.current;
     if (!video || video.seeking) return;
 
@@ -159,7 +160,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
     } else if (video.currentTime < startTime - 0.2) {
       video.currentTime = startTime;
     }
-  }, [startTime, endTime]);
+  }, [startTime, endTime, isExtracting]);
 
   const handleRangeChange = useCallback(({ startTime: newStart, endTime: newEnd }) => {
     setStartTime(newStart);
@@ -351,7 +352,8 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
 
     setIsExtracting(true);
     try {
-      const result = await extractFramesFromVideo(file, {
+      const videoSource = videoRef.current || file;
+      const result = await extractFramesFromVideo(videoSource, {
         startTime,
         endTime,
         scale,

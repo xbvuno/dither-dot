@@ -552,18 +552,24 @@ export async function getVideoMetadata(fileOrBlob) {
   };
 }
 
-function seekVideo(video, time, timeoutMs = 2500) {
+function seekVideo(video, time, timeoutMs = 3000) {
   return new Promise((resolve, reject) => {
     let timeoutId = null;
     let rfcId = null;
+    let rfcFallbackTimer = null;
     let settled = false;
 
     const cleanup = () => {
       if (timeoutId) clearTimeout(timeoutId);
+      if (rfcFallbackTimer) clearTimeout(rfcFallbackTimer);
       video.removeEventListener('error', onError);
       video.removeEventListener('seeked', onSeeked);
       if (rfcId && typeof video.cancelVideoFrameCallback === 'function') {
-        video.cancelVideoFrameCallback(rfcId);
+        try {
+          video.cancelVideoFrameCallback(rfcId);
+        } catch {
+          // ignore
+        }
       }
     };
 
@@ -581,13 +587,16 @@ function seekVideo(video, time, timeoutMs = 2500) {
       reject(e || new Error('Error during video seek'));
     };
 
-    const onSeeked = () => {
-      // Seek completed in media pipeline; wait until the frame is actually decoded and presented to the compositor
+    const waitForFramePresentation = () => {
       if (typeof video.requestVideoFrameCallback === 'function') {
         rfcId = video.requestVideoFrameCallback(() => {
           finish();
         });
-        setTimeout(finish, 150);
+        rfcFallbackTimer = setTimeout(() => {
+          requestAnimationFrame(() => {
+            requestAnimationFrame(finish);
+          });
+        }, 200);
       } else {
         requestAnimationFrame(() => {
           requestAnimationFrame(finish);
@@ -595,8 +604,12 @@ function seekVideo(video, time, timeoutMs = 2500) {
       }
     };
 
+    const onSeeked = () => {
+      waitForFramePresentation();
+    };
+
     timeoutId = setTimeout(() => {
-      finish(); // Proceed anyway rather than hanging
+      finish(); // Safety fallback so process never hangs indefinitely
     }, timeoutMs);
 
     video.addEventListener('error', onError, { once: true });
@@ -604,11 +617,15 @@ function seekVideo(video, time, timeoutMs = 2500) {
 
     try {
       const maxDuration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : Infinity;
-      const target = Math.max(0, Math.min(maxDuration, time));
-      if (Math.abs(video.currentTime - target) < 0.001) {
-        finish();
+      const target = Math.max(0, Math.min(maxDuration - 0.001, time));
+
+      // If already at or extremely close to the target timestamp, seeked will not fire
+      if (Math.abs(video.currentTime - target) < 0.005) {
+        video.removeEventListener('seeked', onSeeked);
+        waitForFramePresentation();
         return;
       }
+
       video.currentTime = target;
     } catch (err) {
       onError(err);
@@ -617,7 +634,7 @@ function seekVideo(video, time, timeoutMs = 2500) {
 }
 
 export async function extractFramesFromVideo(
-  fileOrBlob,
+  videoSource,
   {
     startTime = 0,
     endTime = null,
@@ -628,8 +645,55 @@ export async function extractFramesFromVideo(
     onProgress = null,
   } = {}
 ) {
-  const meta = await getVideoMetadata(fileOrBlob);
-  const totalDuration = meta.duration;
+  const isVideoElement = typeof HTMLVideoElement !== 'undefined' && videoSource instanceof HTMLVideoElement;
+
+  let video;
+  let videoUrl = null;
+  let naturalWidth = 0;
+  let naturalHeight = 0;
+  let totalDuration = 0;
+
+  if (isVideoElement) {
+    video = videoSource;
+    if (!video.paused) {
+      video.pause();
+    }
+    naturalWidth = video.videoWidth || 640;
+    naturalHeight = video.videoHeight || 480;
+    totalDuration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 1;
+  } else {
+    const meta = await getVideoMetadata(videoSource);
+    videoUrl = meta.url;
+    naturalWidth = meta.width;
+    naturalHeight = meta.height;
+    totalDuration = meta.duration;
+
+    video = document.createElement('video');
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.src = videoUrl;
+    // Keep in DOM with non-zero dimensions and opacity so Chromium compositor actively decodes frames
+    video.style.position = 'fixed';
+    video.style.left = '0';
+    video.style.top = '0';
+    video.style.width = '4px';
+    video.style.height = '4px';
+    video.style.opacity = '0.01';
+    video.style.pointerEvents = 'none';
+    video.style.zIndex = '-9999';
+    document.body.appendChild(video);
+
+    // Wait for canplay / loadeddata
+    await new Promise((resolve) => {
+      if (video.readyState >= 2) return resolve();
+      const handler = () => {
+        video.removeEventListener('loadeddata', handler);
+        resolve();
+      };
+      video.addEventListener('loadeddata', handler);
+    });
+  }
 
   const startSec = Math.max(0, Math.min(totalDuration, Number(startTime) || 0));
   const endSec = Math.max(startSec + 0.05, Math.min(totalDuration, endTime != null ? Number(endTime) : totalDuration));
@@ -653,10 +717,10 @@ export async function extractFramesFromVideo(
   }
 
   const clampedScale = Math.max(0.05, Math.min(1, Number(scale) || 1));
-  const cropX = crop ? Math.max(0, Math.min(meta.width - 1, Math.round(crop.x))) : 0;
-  const cropY = crop ? Math.max(0, Math.min(meta.height - 1, Math.round(crop.y))) : 0;
-  const cropW = crop ? Math.max(1, Math.min(meta.width - cropX, Math.round(crop.width))) : meta.width;
-  const cropH = crop ? Math.max(1, Math.min(meta.height - cropY, Math.round(crop.height))) : meta.height;
+  const cropX = crop ? Math.max(0, Math.min(naturalWidth - 1, Math.round(crop.x))) : 0;
+  const cropY = crop ? Math.max(0, Math.min(naturalHeight - 1, Math.round(crop.y))) : 0;
+  const cropW = crop ? Math.max(1, Math.min(naturalWidth - cropX, Math.round(crop.width))) : naturalWidth;
+  const cropH = crop ? Math.max(1, Math.min(naturalHeight - cropY, Math.round(crop.height))) : naturalHeight;
 
   const targetWidth = Math.max(1, Math.round(cropW * clampedScale));
   const targetHeight = Math.max(1, Math.round(cropH * clampedScale));
@@ -666,33 +730,9 @@ export async function extractFramesFromVideo(
   canvas.height = targetHeight;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   if (!ctx) {
-    URL.revokeObjectURL(meta.url);
+    if (videoUrl) URL.revokeObjectURL(videoUrl);
     throw new Error('Canvas 2D context creation failed.');
   }
-
-  const video = document.createElement('video');
-  video.muted = true;
-  video.playsInline = true;
-  video.preload = 'auto';
-  video.src = meta.url;
-  video.style.position = 'fixed';
-  video.style.top = '-99999px';
-  video.style.left = '-99999px';
-  video.style.width = '1px';
-  video.style.height = '1px';
-  video.style.opacity = '0';
-  video.style.pointerEvents = 'none';
-  document.body.appendChild(video);
-
-  // Wait for canplay
-  await new Promise((resolve) => {
-    if (video.readyState >= 2) return resolve();
-    const handler = () => {
-      video.removeEventListener('loadeddata', handler);
-      resolve();
-    };
-    video.addEventListener('loadeddata', handler);
-  });
 
   const frameDelay = Math.max(20, Math.round(1000 / effectiveFps));
   const frames = [];
@@ -722,15 +762,23 @@ export async function extractFramesFromVideo(
       });
     }
   } finally {
-    URL.revokeObjectURL(meta.url);
-    try {
-      video.pause();
-      video.removeAttribute('src');
-      video.load();
-    } catch {
-      // ignore
+    if (!isVideoElement) {
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
+      try {
+        video.pause();
+        video.removeAttribute('src');
+        video.load();
+      } catch {
+        // ignore
+      }
+      video.remove();
+    } else {
+      try {
+        video.currentTime = startSec;
+      } catch {
+        // ignore
+      }
     }
-    video.remove();
   }
 
   return {
