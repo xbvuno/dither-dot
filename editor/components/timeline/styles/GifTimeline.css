@@ -187,6 +187,11 @@
   cursor: not-allowed;
 }
 
+.gif-frame-btn.active {
+  border-color: var(--color-text, #fff);
+  border-top: 4px solid var(--color-text, #fff);
+}
+
 
 .gif-context-menu {
   position: fixed;
