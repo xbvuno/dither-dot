@@ -571,6 +571,10 @@ export default function ImportStudio() {
         const name = stripExtension(file.name).toUpperCase();
 
         if (isVideoFile(file)) {
+          if (typeof window.VideoDecoder === 'undefined') {
+            alert('Your browser does not support VideoDecoder');
+            return;
+          }
           setPendingVideo({ file, name });
           return;
         }

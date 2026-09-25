@@ -5,7 +5,9 @@ import {
   getVideoMetadata,
   extractFramesFromVideo,
   detectFpsFromVideoElement,
+  isWebCodecsSupported,
 } from '../../utils/videoDecodeUtils';
+import useViewStore from '../../stores/ui/viewStore';
 import VideoRangeSlider from './VideoRangeSlider';
 import Slider from '../ui/shared/Slider';
 import OptionGroup from '../ui/shared/OptionGroup';
@@ -47,7 +49,8 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   const [scalePercent, setScalePercent] = useState(100);
   const [detectedFps, setDetectedFps] = useState(24);
   const [fps, setFps] = useState(24);
-  const [thumbnailsEnabled, setThumbnailsEnabled] = useState(false);
+  const gifThumbnails = useViewStore((s) => s.gifThumbnails ?? true);
+  const setGifThumbnails = useViewStore((s) => s.setGifThumbnails);
   const [crop, setCrop] = useState(null);
   const [dragCrop, setDragCrop] = useState(null);
 
@@ -60,6 +63,13 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   const videoRef = useRef(null);
   const dragStartRef = useRef(null);
   const isExtractingRef = useRef(false);
+
+  useEffect(() => {
+    if (!isWebCodecsSupported()) {
+      alert('Your browser does not support VideoDecoder');
+      onCancel();
+    }
+  }, [onCancel]);
 
   // Load video metadata and initial container FPS
   useEffect(() => {
@@ -334,7 +344,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
   // If thumbnails are enabled: ~50x36 per frame (RGBA canvas + DataURL base64 string)
   const singleThumbnailBytes = estimatedFrames * 50 * 36 * 4 * 2;
   const thumbnailRamMb = Math.max(1, Math.round(singleThumbnailBytes / (1024 * 1024)));
-  const thumbnailBytes = thumbnailsEnabled ? singleThumbnailBytes : 0;
+  const thumbnailBytes = gifThumbnails ? singleThumbnailBytes : 0;
   const estimatedRamMb = Math.round((frameBytes + thumbnailBytes) / (1024 * 1024));
 
   const handleConfirm = async () => {
@@ -355,8 +365,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
     isExtractingRef.current = true;
     setIsExtracting(true);
     try {
-      const videoSource = videoRef.current || file;
-      const result = await extractFramesFromVideo(videoSource, {
+      const result = await extractFramesFromVideo(file, {
         startTime,
         endTime,
         scale,
@@ -370,7 +379,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
         throw new Error('No frames were extracted from the video.');
       }
 
-      await onConfirm(result.frames, name, { thumbnailsEnabled });
+      await onConfirm(result.frames, name, { thumbnailsEnabled: gifThumbnails });
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Video frame extraction failed.');
       isExtractingRef.current = false;
@@ -589,7 +598,7 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
               <div className="bv-controls-row">
                 <span className="bv-label">THUMBNAILS</span>
                 <span className="bv-label video-dialog-meta-val">
-                  {thumbnailsEnabled ? `ENABLED (~${thumbnailRamMb} MB)` : 'DISABLED (SAVING RAM)'}
+                  {gifThumbnails ? `ENABLED (~${thumbnailRamMb} MB)` : 'DISABLED (SAVING RAM)'}
                 </span>
               </div>
               <OptionGroup
@@ -597,8 +606,8 @@ export default function VideoImportDialog({ file, name, onConfirm, onCancel }) {
                   { value: 'disabled', label: 'DISABLED' },
                   { value: 'enabled', label: 'ENABLED' },
                 ]}
-                value={thumbnailsEnabled ? 'enabled' : 'disabled'}
-                onChange={(val) => setThumbnailsEnabled(val === 'enabled')}
+                value={gifThumbnails ? 'enabled' : 'disabled'}
+                onChange={(val) => setGifThumbnails(val === 'enabled')}
                 disabled={isExtracting}
               />
             </div>

@@ -1,4 +1,7 @@
 import { createInstanceId, createOriginId } from '../stores/media/gifStore';
+import { isWebCodecsSupported, extractFramesWithWebCodecs } from './webcodecsExtractUtils';
+
+export { isWebCodecsSupported, extractFramesWithWebCodecs };
 
 /**
  * Utilities for extracting frame sequences from HTML5 Video and multi-image files.
@@ -739,186 +742,21 @@ export function seekVideo(video, time, timeoutMs = 4000) {
   });
 }
 
-export async function extractFramesFromVideo(
-  videoSource,
-  {
-    startTime = 0,
-    endTime = null,
-    scale = 1,
-    fps = 20,
-    maxFrames = Infinity,
-    crop = null,
-    onProgress = null,
-  } = {}
-) {
-  const isVideoElement = typeof HTMLVideoElement !== 'undefined' && videoSource instanceof HTMLVideoElement;
-
-  let video;
-  let videoUrl = null;
-  let naturalWidth = 0;
-  let naturalHeight = 0;
-  let totalDuration = 0;
-
-  if (isVideoElement) {
-    video = videoSource;
-    if (!video.paused) {
-      video.pause();
-    }
-    naturalWidth = video.videoWidth || 640;
-    naturalHeight = video.videoHeight || 480;
-    totalDuration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 1;
-  } else {
-    const meta = await getVideoMetadata(videoSource);
-    videoUrl = meta.url;
-    naturalWidth = meta.width;
-    naturalHeight = meta.height;
-    totalDuration = meta.duration;
-
-    video = document.createElement('video');
-    video.muted = true;
-    video.playsInline = true;
-    video.preload = 'auto';
-    video.src = videoUrl;
-    // Keep in DOM with non-zero dimensions and opacity so Chromium compositor actively decodes frames
-    video.style.position = 'fixed';
-    video.style.left = '0';
-    video.style.top = '0';
-    video.style.width = '4px';
-    video.style.height = '4px';
-    video.style.opacity = '0.01';
-    video.style.pointerEvents = 'none';
-    video.style.zIndex = '-9999';
-    document.body.appendChild(video);
-
-    // Wait for canplay / loadeddata
-    await new Promise((resolve) => {
-      if (video.readyState >= 2) return resolve();
-      const handler = () => {
-        video.removeEventListener('loadeddata', handler);
-        resolve();
-      };
-      video.addEventListener('loadeddata', handler);
-    });
+export async function extractFramesFromVideo(videoSource, options = {}) {
+  if (!isWebCodecsSupported()) {
+    throw new Error('Your browser does not support VideoDecoder');
   }
 
-  const startSec = Math.max(0, Math.min(totalDuration, Number(startTime) || 0));
-  const endSec = Math.max(startSec + 0.05, Math.min(totalDuration, endTime != null ? Number(endTime) : totalDuration));
-  const rangeDuration = endSec - startSec;
+  const fileOrBlob =
+    videoSource instanceof Blob || (typeof File !== 'undefined' && videoSource instanceof File)
+      ? videoSource
+      : options?.file;
 
-  let effectiveFps = Math.max(1, Math.min(120, Number(fps) || 20));
-  let estimatedCount = Math.ceil(rangeDuration * effectiveFps);
-
-  if (Number.isFinite(maxFrames) && estimatedCount > maxFrames) {
-    effectiveFps = maxFrames / rangeDuration;
-    estimatedCount = maxFrames;
+  if (!fileOrBlob) {
+    throw new Error('VideoDecoder requires the original File or Blob object to decode video frames.');
   }
 
-  const timestamps = [];
-  const step = 1 / effectiveFps;
-  for (let t = startSec; t < endSec && (Number.isFinite(maxFrames) ? timestamps.length < maxFrames : true); t += step) {
-    timestamps.push(Number(t.toFixed(4)));
-  }
-  if (timestamps.length === 0) {
-    timestamps.push(Number(startSec.toFixed(4)));
-  }
-
-  const clampedScale = Math.max(0.05, Math.min(1, Number(scale) || 1));
-  const cropX = crop ? Math.max(0, Math.min(naturalWidth - 1, Math.round(crop.x))) : 0;
-  const cropY = crop ? Math.max(0, Math.min(naturalHeight - 1, Math.round(crop.y))) : 0;
-  const cropW = crop ? Math.max(1, Math.min(naturalWidth - cropX, Math.round(crop.width))) : naturalWidth;
-  const cropH = crop ? Math.max(1, Math.min(naturalHeight - cropY, Math.round(crop.height))) : naturalHeight;
-
-  const targetWidth = Math.max(1, Math.round(cropW * clampedScale));
-  const targetHeight = Math.max(1, Math.round(cropH * clampedScale));
-
-  const canvas = document.createElement('canvas');
-  canvas.width = targetWidth;
-  canvas.height = targetHeight;
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  if (!ctx) {
-    if (videoUrl) URL.revokeObjectURL(videoUrl);
-    throw new Error('Canvas 2D context creation failed.');
-  }
-
-  const frameDelay = Math.max(20, Math.round(1000 / effectiveFps));
-  const frames = [];
-
-  try {
-    // If the video is currently positioned right at the first timestamp, nudge it slightly
-    // away so the first seek triggers a genuine currentTime change and 'seeked' event.
-    if (timestamps.length > 0 && Math.abs(video.currentTime - timestamps[0]) < 0.05) {
-      const nudge = timestamps[0] > 0.1 ? timestamps[0] - 0.1 : timestamps[0] + 0.1;
-      await new Promise((resolve) => {
-        let done = false;
-        const finishNudge = () => {
-          if (done) return;
-          done = true;
-          video.removeEventListener('seeked', finishNudge);
-          video.removeEventListener('error', finishNudge);
-          resolve();
-        };
-        video.addEventListener('seeked', finishNudge, { once: true });
-        video.addEventListener('error', finishNudge, { once: true });
-        setTimeout(finishNudge, 500);
-        video.currentTime = nudge;
-      });
-    }
-
-    const cropBox = { x: cropX, y: cropY, width: cropW, height: cropH };
-
-    for (let i = 0; i < timestamps.length; i += 1) {
-      const time = timestamps[i];
-      const pixels = await seekAndCaptureFrame(
-        video,
-        time,
-        ctx,
-        cropBox,
-        targetWidth,
-        targetHeight
-      );
-
-      frames.push({
-        id: createInstanceId(),
-        originId: createOriginId(),
-        width: targetWidth,
-        height: targetHeight,
-        pixels,
-        delay: frameDelay,
-      });
-
-      onProgress?.({
-        current: i + 1,
-        total: timestamps.length,
-        percent: Math.round(((i + 1) / timestamps.length) * 100),
-      });
-    }
-  } finally {
-    if (!isVideoElement) {
-      if (videoUrl) URL.revokeObjectURL(videoUrl);
-      try {
-        video.pause();
-        video.removeAttribute('src');
-        video.load();
-      } catch {
-        // ignore
-      }
-      video.remove();
-    } else {
-      try {
-        video.currentTime = startSec;
-      } catch {
-        // ignore
-      }
-    }
-  }
-
-  return {
-    frames,
-    width: targetWidth,
-    height: targetHeight,
-    duration: rangeDuration,
-    fps: effectiveFps,
-  };
+  return extractFramesWithWebCodecs(fileOrBlob, options);
 }
 
 export async function loadImagesAsFrames(files, { defaultDelay = 100, onProgress = null } = {}) {
