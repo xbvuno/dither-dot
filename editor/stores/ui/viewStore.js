@@ -33,12 +33,12 @@ const useViewStore = create(
       previewScrollbars: true,
       setPreviewScrollbars: (v) => set({ previewScrollbars: Boolean(v) }),
 
-      disableGifThumbnails: false,
-      setDisableGifThumbnails: (v) => {
+      gifThumbnails: true,
+      setGifThumbnails: (v) => {
         const val = Boolean(v);
-        set({ disableGifThumbnails: val });
+        set({ gifThumbnails: val });
         try {
-          useGifStore.getState().setThumbnailsEnabled(!val);
+          useGifStore.getState().setThumbnailsEnabled(val);
         } catch {
           // ignore if gifStore is not yet initialized
         }
@@ -56,7 +56,7 @@ const useViewStore = create(
         splitDirection: state.splitDirection,
         splitFirstView: state.splitFirstView,
         previewScrollbars: state.previewScrollbars,
-        disableGifThumbnails: state.disableGifThumbnails,
+        gifThumbnails: state.gifThumbnails,
       }),
     }
   )

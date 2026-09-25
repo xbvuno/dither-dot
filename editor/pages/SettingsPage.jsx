@@ -31,8 +31,8 @@ export default function SettingsPage() {
   const setSplitFirstView = useViewStore((s) => s.setSplitFirstView);
   const previewScrollbars = useViewStore((s) => s.previewScrollbars ?? true);
   const setPreviewScrollbars = useViewStore((s) => s.setPreviewScrollbars);
-  const disableGifThumbnails = useViewStore((s) => s.disableGifThumbnails ?? false);
-  const setDisableGifThumbnails = useViewStore((s) => s.setDisableGifThumbnails);
+  const gifThumbnails = useViewStore((s) => s.gifThumbnails ?? true);
+  const setGifThumbnails = useViewStore((s) => s.setGifThumbnails);
 
   const handleClearCache = () => {
     if (window.confirm('Reset all saved settings and reload DITHER-DOT?')) {
@@ -48,7 +48,7 @@ export default function SettingsPage() {
 
   return (
     <div>
-      {/* 1. SETTINGS */}
+      {/* 1. SETTINGS (GENERALE) */}
       <MacroSection
         title="SETTINGS"
         collapsible
@@ -85,18 +85,64 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className='bv-section disable-gif-thumbnails-section'>
+        <div className='bv-section gif-thumbnails-section'>
           <div className='bv-controls-row'>
-            <span className='bv-label'>DISABLE GIF THUMBNAILS</span>
+            <span className='bv-label'>GIF THUMBNAILS</span>
             <OptionGroup
               options={[
                 { value: true, label: 'ON' },
                 { value: false, label: 'OFF' },
               ]}
-              value={disableGifThumbnails}
-              onChange={setDisableGifThumbnails}
-              ariaLabel="Disable GIF thumbnails"
+              value={gifThumbnails}
+              onChange={setGifThumbnails}
+              ariaLabel="GIF thumbnails"
             />
+          </div>
+        </div>
+
+        {/* INFORMAZIONI ABOUT SEPARATE DA UNA RIGA ORIZZONTALE */}
+        <div className='bv-section settings-about-section' style={{ gap: '0.75rem', borderTop: '1px solid var(--color-border-subtle)', paddingTop: '0.85rem', marginTop: '0.35rem' }}>
+          <div>
+            <span className='bv-label' style={{ fontWeight: 600, color: 'var(--color-text)' }}>
+              DITHER-DOT v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.4.4'}
+            </span>
+            <p className='bv-label' style={{ margin: '0.35rem 0 0 0', lineHeight: 1.4 }}>
+              A FAST, OPEN-SOURCE BROWSER DITHERING STUDIO FOR IMAGES AND GIFS - RUNNING ENTIRELY IN YOUR BROWSER WITH CLIENT-SIDE WEBGL SHADERS AND WEBASSEMBLY. 10+ ALGORITHMS, PALETTES &amp; WEBCAM SUPPORT.
+            </p>
+          </div>
+
+          <div className='bv-option-group'>
+            <a
+              href="https://ko-fi.com/xbvuno"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bv-option-btn"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                textDecoration: 'none',
+              }}
+            >
+              <Heart size={13} />
+              SUPPORT ON KO-FI
+            </a>
+
+            <a
+              href="https://github.com/xbvuno/dither-dot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bv-option-btn"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                textDecoration: 'none',
+              }}
+            >
+              <Cat size={13} />
+              SOURCE CODE (GITHUB)
+            </a>
           </div>
         </div>
       </MacroSection>
@@ -238,52 +284,6 @@ export default function SettingsPage() {
           </div>
         </div>
       </MacroSection>
-
-      {/* ABOUT & SUPPORT */}
-      <div className='bv-section' style={{ gap: '0.75rem', padding: '1.25rem 1rem', borderTop: '1px solid var(--color-border-subtle)', marginTop: '0.5rem' }}>
-        <div>
-          <span className='bv-label' style={{ fontWeight: 600, color: 'var(--color-text)' }}>
-            DITHER-DOT v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.4.4'}
-          </span>
-          <p className='bv-label' style={{ margin: '0.35rem 0 0 0', lineHeight: 1.4 }}>
-            A FAST, OPEN-SOURCE BROWSER DITHERING STUDIO FOR IMAGES AND GIFS - RUNNING ENTIRELY IN YOUR BROWSER WITH CLIENT-SIDE WEBGL SHADERS AND WEBASSEMBLY. 10+ ALGORITHMS, PALETTES &amp; WEBCAM SUPPORT.
-          </p>
-        </div>
-
-        <div className='bv-option-group'>
-          <a
-            href="https://ko-fi.com/xbvuno"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bv-option-btn"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              textDecoration: 'none',
-            }}
-          >
-            <Heart size={13} />
-            SUPPORT ON KO-FI
-          </a>
-
-          <a
-            href="https://github.com/xbvuno/dither-dot"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bv-option-btn"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              textDecoration: 'none',
-            }}
-          >
-            <Cat size={13} />
-            SOURCE CODE (GITHUB)
-          </a>
-        </div>
-      </div>
     </div>
   );
 }

@@ -82,8 +82,8 @@ export default function GifTimeline() {
   const playbackDelay = useGifStore((s) => s.playbackDelay);
   const frameStates = useGifStore((s) => s.frameStates);
   const renderedThumbnails = useGifStore((s) => s.renderedThumbnails);
-  const disableGifThumbnails = useViewStore((s) => s.disableGifThumbnails);
-  const thumbnailsEnabled = useGifStore((s) => s.thumbnailsEnabled) !== false && !disableGifThumbnails;
+  const gifThumbnails = useViewStore((s) => s.gifThumbnails);
+  const thumbnailsEnabled = useGifStore((s) => s.thumbnailsEnabled) !== false && gifThumbnails !== false;
   const decoding = useGifStore((s) => s.decoding);
   const clipboardFrames = useGifStore((s) => s.clipboardFrames) || [];
 
