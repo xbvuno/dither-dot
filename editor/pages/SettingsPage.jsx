@@ -9,11 +9,10 @@ import useWatermarkStore from '../stores/media/watermarkStore';
 
 export default function SettingsPage() {
   const [openSections, toggleSection] = useAccordion('dither-dot:open-sections-settings', {
-    ui: true,
+    settings: true,
     engine: true,
     splitView: true,
     storage: false,
-    about: true,
   });
 
   const showPipeline = useParamsStore((s) => s.pipelineVisible);
@@ -49,12 +48,12 @@ export default function SettingsPage() {
 
   return (
     <div>
-      {/* 1. UI SETTINGS */}
+      {/* 1. SETTINGS */}
       <MacroSection
-        title="UI"
+        title="SETTINGS"
         collapsible
-        isOpen={openSections.ui ?? true}
-        onToggle={() => toggleSection('ui')}
+        isOpen={openSections.settings ?? true}
+        onToggle={() => toggleSection('settings')}
       >
         <div className='bv-section pipeline-section'>
           <div className='bv-controls-row'>
@@ -240,58 +239,51 @@ export default function SettingsPage() {
         </div>
       </MacroSection>
 
-      {/* 3. ABOUT & SUPPORT */}
-      <MacroSection
-        title="ABOUT"
-        collapsible
-        isOpen={openSections.about}
-        onToggle={() => toggleSection('about')}
-      >
-        <div className='bv-section' style={{ gap: '0.75rem' }}>
-          <div>
-            <span className='bv-label' style={{ fontWeight: 600, color: 'var(--color-text)' }}>
-              DITHER-DOT v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.4.4'}
-            </span>
-            <p className='bv-label' style={{ margin: '0.35rem 0 0 0', lineHeight: 1.4 }}>
-              A FAST, OPEN-SOURCE BROWSER DITHERING STUDIO FOR IMAGES AND GIFS - RUNNING ENTIRELY IN YOUR BROWSER WITH CLIENT-SIDE WEBGL SHADERS AND WEBASSEMBLY. 10+ ALGORITHMS, PALETTES &amp; WEBCAM SUPPORT.
-            </p>
-          </div>
-
-          <div className='bv-option-group'>
-            <a
-              href="https://ko-fi.com/xbvuno"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bv-option-btn"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                textDecoration: 'none',
-              }}
-            >
-              <Heart size={13} />
-              SUPPORT ON KO-FI
-            </a>
-
-            <a
-              href="https://github.com/xbvuno/dither-dot"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bv-option-btn"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                textDecoration: 'none',
-              }}
-            >
-              <Cat size={13} />
-              SOURCE CODE (GITHUB)
-            </a>
-          </div>
+      {/* ABOUT & SUPPORT */}
+      <div className='bv-section' style={{ gap: '0.75rem', padding: '1.25rem 1rem', borderTop: '1px solid var(--color-border-subtle)', marginTop: '0.5rem' }}>
+        <div>
+          <span className='bv-label' style={{ fontWeight: 600, color: 'var(--color-text)' }}>
+            DITHER-DOT v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.4.4'}
+          </span>
+          <p className='bv-label' style={{ margin: '0.35rem 0 0 0', lineHeight: 1.4 }}>
+            A FAST, OPEN-SOURCE BROWSER DITHERING STUDIO FOR IMAGES AND GIFS - RUNNING ENTIRELY IN YOUR BROWSER WITH CLIENT-SIDE WEBGL SHADERS AND WEBASSEMBLY. 10+ ALGORITHMS, PALETTES &amp; WEBCAM SUPPORT.
+          </p>
         </div>
-      </MacroSection>
+
+        <div className='bv-option-group'>
+          <a
+            href="https://ko-fi.com/xbvuno"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bv-option-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              textDecoration: 'none',
+            }}
+          >
+            <Heart size={13} />
+            SUPPORT ON KO-FI
+          </a>
+
+          <a
+            href="https://github.com/xbvuno/dither-dot"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bv-option-btn"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              textDecoration: 'none',
+            }}
+          >
+            <Cat size={13} />
+            SOURCE CODE (GITHUB)
+          </a>
+        </div>
+      </div>
     </div>
   );
 }
