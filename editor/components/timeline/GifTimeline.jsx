@@ -62,6 +62,7 @@ export default function GifTimeline() {
   const controlsRef = useRef(null);
   const stripRef = useRef(null);
   const lastClickedIndexRef = useRef(0);
+  const isHoveredRef = useRef(false);
   const [contextMenu, setContextMenu] = useState(null);
 
   const frames = useGifStore((s) => s.frames);
@@ -138,7 +139,7 @@ export default function GifTimeline() {
     const getMetrics = () => {
       const currentZoom = useGifStore.getState().zoom || 1;
       const frameWidth = Math.max(14, Math.round(FRAME_CELL_WIDTH * currentZoom));
-      const frameHeight = Math.max(14, Math.round(FRAME_CELL_HEIGHT * currentZoom));
+      const frameHeight = FRAME_CELL_HEIGHT;
 
       const stripStyle = window.getComputedStyle(strip);
       const stripGap = toPx(stripStyle.getPropertyValue('gap'), 6);
@@ -383,23 +384,59 @@ export default function GifTimeline() {
   }, [frames, thumbnailsEnabled]);
 
   useEffect(() => {
-    const onWheel = (e) => {
-      if (!e.altKey) return;
-      const shell = timelineRef.current;
-      const isInside = shell && (shell.contains(e.target) || e.composedPath?.().includes(shell));
-      if (!isInside) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-      const rawDelta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
-      if (rawDelta === 0) return;
-      const delta = rawDelta < 0 ? 0.1 : -0.1;
-      const currentZoom = useGifStore.getState().zoom || 1;
-      useGifStore.getState().setZoom(currentZoom + delta);
+    const onKeyDown = (e) => {
+      // Prevent Windows menu bar activation from stealing focus when Alt is pressed over timeline
+      if (e.key === 'Alt' && isHoveredRef.current) {
+        e.preventDefault();
+      }
     };
 
-    window.addEventListener('wheel', onWheel, { passive: false });
-    return () => window.removeEventListener('wheel', onWheel);
+    const onWheel = (e) => {
+      const shell = timelineRef.current;
+      if (!shell) return;
+
+      const rect = shell.getBoundingClientRect();
+      const inBounds = (
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom
+      );
+      const isOverTimeline = isHoveredRef.current || inBounds || shell.contains(e.target);
+      if (!isOverTimeline) return;
+
+      // Check if user is zooming with Alt, Ctrl, or Meta
+      if (e.altKey || e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const rawDelta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+        if (rawDelta === 0) return;
+
+        const delta = rawDelta < 0 ? 0.1 : -0.1;
+        const currentZoom = useGifStore.getState().zoom ?? 1;
+        const nextZoom = Math.round((currentZoom + delta) * 100) / 100;
+        useGifStore.getState().setZoom(nextZoom);
+        return;
+      }
+
+      // If user scrolls vertically over horizontal strip without modifiers -> scroll horizontally
+      const strip = stripRef.current;
+      if (strip && (strip.contains(e.target) || e.target === strip)) {
+        if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && e.deltaY !== 0) {
+          e.preventDefault();
+          strip.scrollLeft += e.deltaY;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown, { capture: true });
+    window.addEventListener('wheel', onWheel, { passive: false, capture: true });
+
+    return () => {
+      window.removeEventListener('keydown', onKeyDown, { capture: true });
+      window.removeEventListener('wheel', onWheel, { capture: true });
+    };
   }, []);
 
   useEffect(() => {
@@ -627,7 +664,12 @@ export default function GifTimeline() {
   };
 
   return (
-    <div ref={timelineRef} className={`gif-timeline-shell${decoding ? ' gif-timeline-shell--decoding' : ''}`}>
+    <div
+      ref={timelineRef}
+      className={`gif-timeline-shell${decoding ? ' gif-timeline-shell--decoding' : ''}`}
+      onMouseEnter={() => { isHoveredRef.current = true; }}
+      onMouseLeave={() => { isHoveredRef.current = false; }}
+    >
       <section ref={timelineContentRef} className='gif-timeline' aria-label='GIF TIMELINE'>
         <div
           ref={resizeHandleRef}
@@ -702,7 +744,7 @@ export default function GifTimeline() {
               onClick={() => setZoom(zoom + 0.1)}
               aria-label='Zoom in frames'
               title='ZOOM IN (ALT + WHEEL UP)'
-              disabled={decoding || zoom >= 2.5}
+              disabled={decoding || zoom >= 1.0}
             >
               <ZoomIn size={13} strokeWidth={2} />
             </button>
@@ -740,7 +782,7 @@ export default function GifTimeline() {
             className='gif-frame-strip'
             style={{
               '--gif-frame-width': `${Math.max(14, Math.round(56 * zoom))}px`,
-              '--gif-frame-height': `${Math.max(14, Math.round(44 * zoom))}px`,
+              '--gif-frame-height': '44px',
             }}
           >
             {frames.map((_, index) => {

@@ -40,7 +40,7 @@ const clampDelay = (value) => {
 const clampZoom = (value) => {
   const n = Number(value);
   if (!Number.isFinite(n)) return 1;
-  return Math.max(0.25, Math.min(2.5, Math.round(n * 100) / 100));
+  return Math.max(0.25, Math.min(1.0, Math.round(n * 100) / 100));
 };
 
 const useGifStore = create((set) => ({
