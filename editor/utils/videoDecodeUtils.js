@@ -1,3 +1,5 @@
+import { createInstanceId, createOriginId } from '../stores/media/gifStore';
+
 /**
  * Utilities for extracting frame sequences from HTML5 Video and multi-image files.
  */
@@ -550,47 +552,66 @@ export async function getVideoMetadata(fileOrBlob) {
   };
 }
 
-function seekVideo(video, time, timeoutMs = 3000) {
+function seekVideo(video, time, timeoutMs = 2500) {
   return new Promise((resolve, reject) => {
     let timeoutId = null;
+    let rfcId = null;
+    let settled = false;
 
-    const onSeeked = () => {
+    const cleanup = () => {
       if (timeoutId) clearTimeout(timeoutId);
-      video.removeEventListener('seeked', onSeeked);
       video.removeEventListener('error', onError);
+      video.removeEventListener('seeked', onSeeked);
+      if (rfcId && typeof video.cancelVideoFrameCallback === 'function') {
+        video.cancelVideoFrameCallback(rfcId);
+      }
+    };
+
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      cleanup();
       resolve();
     };
 
     const onError = (e) => {
-      if (timeoutId) clearTimeout(timeoutId);
-      video.removeEventListener('seeked', onSeeked);
-      video.removeEventListener('error', onError);
+      if (settled) return;
+      settled = true;
+      cleanup();
       reject(e || new Error('Error during video seek'));
     };
 
+    const onSeeked = () => {
+      // Seek completed in media pipeline; wait until the frame is actually decoded and presented to the compositor
+      if (typeof video.requestVideoFrameCallback === 'function') {
+        rfcId = video.requestVideoFrameCallback(() => {
+          finish();
+        });
+        setTimeout(finish, 150);
+      } else {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(finish);
+        });
+      }
+    };
+
     timeoutId = setTimeout(() => {
-      video.removeEventListener('seeked', onSeeked);
-      video.removeEventListener('error', onError);
-      resolve(); // Proceed anyway rather than hanging
+      finish(); // Proceed anyway rather than hanging
     }, timeoutMs);
 
-    video.addEventListener('seeked', onSeeked, { once: true });
     video.addEventListener('error', onError, { once: true });
+    video.addEventListener('seeked', onSeeked, { once: true });
 
     try {
       const maxDuration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : Infinity;
       const target = Math.max(0, Math.min(maxDuration, time));
       if (Math.abs(video.currentTime - target) < 0.001) {
-        if (timeoutId) clearTimeout(timeoutId);
-        video.removeEventListener('seeked', onSeeked);
-        video.removeEventListener('error', onError);
-        resolve();
+        finish();
         return;
       }
       video.currentTime = target;
     } catch (err) {
-      if (timeoutId) clearTimeout(timeoutId);
-      reject(err);
+      onError(err);
     }
   });
 }
@@ -625,10 +646,10 @@ export async function extractFramesFromVideo(
   const timestamps = [];
   const step = 1 / effectiveFps;
   for (let t = startSec; t < endSec && (Number.isFinite(maxFrames) ? timestamps.length < maxFrames : true); t += step) {
-    timestamps.push(t);
+    timestamps.push(Number(t.toFixed(4)));
   }
   if (timestamps.length === 0) {
-    timestamps.push(startSec);
+    timestamps.push(Number(startSec.toFixed(4)));
   }
 
   const clampedScale = Math.max(0.05, Math.min(1, Number(scale) || 1));
@@ -654,6 +675,14 @@ export async function extractFramesFromVideo(
   video.playsInline = true;
   video.preload = 'auto';
   video.src = meta.url;
+  video.style.position = 'fixed';
+  video.style.top = '-99999px';
+  video.style.left = '-99999px';
+  video.style.width = '1px';
+  video.style.height = '1px';
+  video.style.opacity = '0';
+  video.style.pointerEvents = 'none';
+  document.body.appendChild(video);
 
   // Wait for canplay
   await new Promise((resolve) => {
@@ -678,6 +707,8 @@ export async function extractFramesFromVideo(
 
       const imgData = ctx.getImageData(0, 0, targetWidth, targetHeight);
       frames.push({
+        id: createInstanceId(),
+        originId: createOriginId(),
         width: targetWidth,
         height: targetHeight,
         pixels: new Uint8ClampedArray(imgData.data),
@@ -746,6 +777,8 @@ export async function loadImagesAsFrames(files, { defaultDelay = 100, onProgress
 
     const imgData = ctx.getImageData(0, 0, baseWidth, baseHeight);
     frames.push({
+      id: createInstanceId(),
+      originId: createOriginId(),
       width: baseWidth,
       height: baseHeight,
       pixels: new Uint8ClampedArray(imgData.data),

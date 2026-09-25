@@ -1,3 +1,5 @@
+import { createInstanceId, createOriginId } from '../stores/media/gifStore';
+
 export async function rgbaFrameToPngBlob(frame) {
   const canvas = document.createElement('canvas');
   canvas.width = frame.width;
@@ -49,6 +51,8 @@ export async function decodeGifWithWorker(blob) {
 
     const frames = Array.isArray(result.frames)
       ? result.frames.map((frame) => ({
+          id: createInstanceId(),
+          originId: createOriginId(),
           width: frame.width,
           height: frame.height,
           delay: frame.delay,
