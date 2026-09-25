@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import "./styles/Histogram.css";
 import { getPaletteReference, subscribePaletteReference } from '../../utils/canvasRegistry';
+import useParamsStore from '../../stores/data/paramsStore';
 
 const CHANNELS = [
   { index: 0, color: '#e05555' },
@@ -63,12 +64,13 @@ function drawHistogram(canvas, counts) {
 
 export default function Histogram() {
   const canvasRef = useRef(null);
+  const histogramEnabled = useParamsStore((s) => s.histogramEnabled ?? true);
 
-  const refresh = (reference) => {
+  const refresh = useCallback((reference) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    if (!reference) {
+    if (!histogramEnabled || !reference) {
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       return;
@@ -82,12 +84,25 @@ export default function Histogram() {
     }
 
     drawHistogram(canvas, counts);
-  };
+  }, [histogramEnabled]);
 
   useEffect(() => {
+    if (!histogramEnabled) {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      return;
+    }
+
     refresh(getPaletteReference());
     return subscribePaletteReference(refresh);
-  }, []);
+  }, [histogramEnabled, refresh]);
+
+  if (!histogramEnabled) {
+    return null;
+  }
 
   return (
     <div className="histogram-container">

@@ -34,6 +34,8 @@ export default function SettingsPage() {
   const setPreviewScrollbars = useViewStore((s) => s.setPreviewScrollbars);
   const gifThumbnails = useViewStore((s) => s.gifThumbnails ?? true);
   const setGifThumbnails = useViewStore((s) => s.setGifThumbnails);
+  const histogramEnabled = useParamsStore((s) => s.histogramEnabled ?? true);
+  const setHistogramEnabled = useParamsStore((s) => s.setHistogramEnabled);
 
   const handleClearCache = () => {
     if (window.confirm('Reset all saved settings and reload DITHER-DOT?')) {
@@ -150,6 +152,21 @@ export default function SettingsPage() {
               value={gifThumbnails}
               onChange={setGifThumbnails}
               ariaLabel="GIF thumbnails"
+            />
+          </div>
+        </div>
+
+        <div className='bv-section histogram-section'>
+          <div className='bv-controls-row'>
+            <span className='bv-label'>HISTOGRAM</span>
+            <OptionGroup
+              options={[
+                { value: true, label: 'ON' },
+                { value: false, label: 'OFF' },
+              ]}
+              value={histogramEnabled}
+              onChange={setHistogramEnabled}
+              ariaLabel="Histogram display and computation"
             />
           </div>
         </div>

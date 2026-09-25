@@ -175,6 +175,7 @@ self.onmessage = async (event) => {
     forceCpu,
     excludeAlpha,
     watermarkEnabled,
+    histogramEnabled = true,
     skipStats,
   } = event.data;
 
@@ -406,16 +407,23 @@ self.onmessage = async (event) => {
         const referenceCopy = new Uint8Array(croppedSnapshot);
         const croppedPixels = new Uint8ClampedArray(referenceCopy.buffer);
 
-        const tHistogramStart = performance.now();
-        const rCounts = new Uint32Array(256);
-        const gCounts = new Uint32Array(256);
-        const bCounts = new Uint32Array(256);
-        for (let i = 0; i < croppedPixels.length; i += 4) {
-          rCounts[croppedPixels[i]]++;
-          gCounts[croppedPixels[i + 1]]++;
-          bCounts[croppedPixels[i + 2]]++;
+        let rCounts = null;
+        let gCounts = null;
+        let bCounts = null;
+        let tHistogram = 0;
+
+        if (histogramEnabled) {
+          const tHistogramStart = performance.now();
+          rCounts = new Uint32Array(256);
+          gCounts = new Uint32Array(256);
+          bCounts = new Uint32Array(256);
+          for (let i = 0; i < croppedPixels.length; i += 4) {
+            rCounts[croppedPixels[i]]++;
+            gCounts[croppedPixels[i + 1]]++;
+            bCounts[croppedPixels[i + 2]]++;
+          }
+          tHistogram = performance.now() - tHistogramStart;
         }
-        const tHistogram = performance.now() - tHistogramStart;
 
         const tColorsStart = performance.now();
         const uniqueColorCount = countUniqueColors(outputPixels, excludeAlpha);
@@ -426,24 +434,29 @@ self.onmessage = async (event) => {
         log(
           'Worker',
           `Job ${jobId} stats computed (async):\n` +
-          `  - Histogram:       ${tHistogram.toFixed(2)}ms\n` +
+          (histogramEnabled ? `  - Histogram:       ${tHistogram.toFixed(2)}ms\n` : '') +
           `  - Color Count:     ${tColors.toFixed(2)}ms\n` +
           `  => Stats Total:    ${statsElapsed.toFixed(2)}ms`
         );
 
         if (activeJobId !== jobId) return;
 
+        const transferables = [referenceCopy.buffer];
+        if (rCounts) {
+          transferables.push(rCounts.buffer, gCounts.buffer, bCounts.buffer);
+        }
+
         self.postMessage(
           {
             jobId,
             referencePixels: referenceCopy.buffer,
             uniqueColorCount,
-            histogram: [rCounts, gCounts, bCounts],
+            histogram: rCounts ? [rCounts, gCounts, bCounts] : null,
             width: outWidth,
             height: outHeight,
             isStatsReady: true,
           },
-          [referenceCopy.buffer, rCounts.buffer, gCounts.buffer, bCounts.buffer],
+          transferables,
         );
       }, 10);
     }

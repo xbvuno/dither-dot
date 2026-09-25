@@ -438,6 +438,7 @@ const action = this.debugEnabled ? "disable" : "enable";
           saturation: state.saturation,
           hue: state.hue,
           excludeAlpha: state.excludeAlpha,
+          histogramEnabled: state.histogramEnabled ?? true,
         };
 
         const colorParamsChanged = !this.previousColorParams || (
@@ -455,11 +456,19 @@ const action = this.debugEnabled ? "disable" : "enable";
           prevParams.excludeAlpha !== nextParams.excludeAlpha
         );
 
+        const histogramToggledOn = Boolean(
+          this.previousColorParams &&
+          !prevParams.histogramEnabled &&
+          nextParams.histogramEnabled
+        );
+
         this.previousColorParams = nextParams;
 
         if (colorParamsChanged) {
           usePaletteStore.getState().clearPaletteCache?.();
           this.markGifFramesPending();
+          this.queueProcessing(true);
+        } else if (histogramToggledOn) {
           this.queueProcessing(true);
         }
       })
@@ -886,6 +895,7 @@ const action = this.debugEnabled ? "disable" : "enable";
           forceCpu: paramsState.forceCpu,
           excludeAlpha: Boolean(paramsState.excludeAlpha),
           watermarkEnabled: this.watermarkEnabled,
+          histogramEnabled: paramsState.histogramEnabled ?? true,
           skipStats: frameIndex >= 0 && (gifState.playing || gifState.exporting || frameIndex !== gifState.currentFrameIndex),
           dither: {
             enabled: ditherEnabled,
